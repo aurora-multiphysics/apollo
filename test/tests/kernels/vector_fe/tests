@@ -1,0 +1,11 @@
+[Tests]
+  design = 'syntax/Variables/index.md'
+  [./vector_fe]
+    type = Exodiff
+    input = 'vector_kernel.i'
+    exodiff = 'vector_kernel_out.e'
+    abs_zero = 1e-8
+    issues = "#10049"
+    requirement = "MOOSE shall be able to solve a curl-curl problem using NEDELEC_ONE elements"
+  []
+[]
