@@ -28,11 +28,11 @@
 
 [BCs]
   [./bnd]
-    type = VectorCurlPenaltyDirichletBC
+    type = VectorCurlBC
     boundary = 'left right top bottom'
-    penalty = 1e10
-    function_x = 'x_sln'
-    function_y = 'y_sln'
+    # penalty = 1e10
+    # function_x = 'x_sln'
+    # function_y = 'y_sln'
     variable = u
   [../]
 []
@@ -40,11 +40,11 @@
 [Functions]
   [./x_ffn]
     type = ParsedFunction
-    value = '(2*pi*pi + 1)*cos(pi*x)*sin(pi*y)'
+    value = '1'
   [../]
   [./y_ffn]
     type = ParsedFunction
-    value = '-(2*pi*pi + 1)*sin(pi*x)*cos(pi*y)'
+    value = '1'
   [../]
   [./x_sln]
     type = ParsedFunction
