@@ -35,4 +35,7 @@ protected:
   const Function & _x_ffn;
   const Function & _y_ffn;
   const Function & _z_ffn;
+
+  /// The resistivity at the current quadrature point.
+  const MaterialProperty<Real> & _resistivity;
 };

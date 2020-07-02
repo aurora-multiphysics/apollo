@@ -30,21 +30,23 @@ CurlE::CurlE(const InputParameters & parameters)
     _curl_u(_is_implicit ? _var.curlSln() : _var.curlSlnOld()),
     _x_ffn(getFunction("x_forcing_func")),
     _y_ffn(getFunction("y_forcing_func")),
-    _z_ffn(getFunction("z_forcing_func"))
+    _z_ffn(getFunction("z_forcing_func")),
+    _resistivity(getMaterialProperty<Real>("resistivity"))
 {
 }
 
 Real
 CurlE::computeQpResidual()
 {
-  return _curl_test[_i][_qp] * _curl_u[_qp] - RealVectorValue(_x_ffn.value(_t, _q_point[_qp]),
-                                                              _y_ffn.value(_t, _q_point[_qp]),
-                                                              _z_ffn.value(_t, _q_point[_qp])) *
-                                                  _test[_i][_qp];
+  return _curl_test[_i][_qp] * _resistivity[_qp] * _curl_u[_qp] -
+         RealVectorValue(_x_ffn.value(_t, _q_point[_qp]),
+                         _y_ffn.value(_t, _q_point[_qp]),
+                         _z_ffn.value(_t, _q_point[_qp])) *
+             _test[_i][_qp];
 }
-
+// Jc(B) implemented like ffn ->
 Real
 CurlE::computeQpJacobian()
 {
-  return _curl_test[_i][_qp] * _curl_phi[_j][_qp];
+  return _curl_test[_i][_qp] * _resistivity[_qp] * _curl_phi[_j][_qp];
 }
