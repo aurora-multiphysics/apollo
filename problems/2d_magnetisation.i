@@ -1,23 +1,26 @@
 # This example reproduces the libmesh vector_fe example 3 results
 
 [Mesh]
-  type = GeneratedMesh
-  dim = 2
-  nx = 40
-  ny = 40
-  xmin = -1
-  ymin = -1
-  elem_type = QUAD9
-[]
-
-[MeshModifiers]
-  [bottom]
-    type = SubdomainBoundingBox
-    location = inside
-    bottom_left = '-0.4 -0.2 0'
-    top_right = '0.4 0.2 0'
-    block_id = 1
+  [gen]
+    type = GeneratedMeshGenerator
+    dim = 3
+    nx = 40
+    ny = 40
+    nz = 2
+    xmin = -1
+    ymin = -1
+    zmin = -0.2
+    zmax = 0.2
+    elem_type = HEX27
   []
+  [./bottom]
+    input = gen
+    type = SubdomainBoundingBoxGenerator
+    location = inside
+    bottom_left = '-0.4 -0.2 -0.2'
+    top_right = '0.4 0.2 0.2'
+    block_id = 1
+  [../]
 []
 
 [Variables]
@@ -33,8 +36,8 @@
     variable = H
   [../]
   [./magnetic_field_time_derivative]
-  type = VectorTimeDerivative
-  variable = H
+    type = VectorTimeDerivative
+    variable = H
   [../]
 []
 
@@ -74,7 +77,7 @@
   [./block0]
     type = Conductor
     block = 0
-    resistivity = 1e7
+    resistivity = 1e8
   [../]
 
   [./block1]
@@ -89,11 +92,62 @@
     type = SMP
   [../]
 []
+[AuxVariables]
+  [current_density_x]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [current_density_y]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [current_density_z]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [current_density]
+    order = CONSTANT
+    family = MONOMIAL_VEC
+  []
+[]
+
+[AuxKernels]
+  [current_density]
+    type = CurrentDensity
+    magnetic_field = H
+    variable = current_density
+    execute_on = timestep_end
+  []
+  [current_density_x]
+    type = VectorVariableComponentAux
+    magnetic_field = H
+    variable = current_density_x
+    component = x
+    execute_on = timestep_end
+    vector_variable = current_density
+  []
+  [current_density_y]
+    type = VectorVariableComponentAux
+    magnetic_field = H
+    variable = current_density_y
+    component = y
+    execute_on = timestep_end
+    vector_variable = current_density
+  []
+  [current_density_z]
+    type = VectorVariableComponentAux
+    magnetic_field = H
+    variable = current_density_z
+    component = z
+    execute_on = timestep_end
+    vector_variable = current_density
+  []
+[]
 
 [Executioner]
   type = Transient
   dt = 0.1
-  num_steps = 100
+  num_steps = 20
   start_time = 0.0
   solve_type = 'LINEAR'
   petsc_options_iname = '-pc_type'
