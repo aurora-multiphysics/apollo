@@ -3,19 +3,22 @@
 [Mesh]
   [gen]
     type = GeneratedMeshGenerator
-    dim = 2
+    dim = 3
     nx = 40
     ny = 40
+    nz = 1
     xmin = -1
     ymin = -1
-    elem_type = QUAD9
+    zmin = -0.2
+    zmax = 0.2
+    elem_type = HEX27
   []
   [./bottom]
     input = gen
     type = SubdomainBoundingBoxGenerator
     location = inside
-    bottom_left = '-0.4 -0.2 0'
-    top_right = '0.4 0.2 0'
+    bottom_left = '-0.4 -0.2 -0.2'
+    top_right = '0.4 0.2 0.2'
     block_id = 1
   [../]
 []
@@ -58,7 +61,7 @@
 [Functions]
   [./field]
     type = ParsedVectorFunction
-    curl_z = '0.1'
+    curl_z = '0.0'
   [../]
   [./x_sln]
     type = ParsedFunction
@@ -140,11 +143,24 @@
     vector_variable = current_density
   []
 []
+[Postprocessors]
+  [magnetization]
+    type = MagnetizationIntegral
+    magnetic_field = H
+    component = y
+  []
+  [./H_applied]
+  type = FunctionValuePostprocessor
+  function = y_sln
+  execute_on = timestep_end
+[../]
+
+[]
 
 [Executioner]
   type = Transient
   dt = 0.1
-  num_steps = 20
+  num_steps = 40
   start_time = 0.0
   solve_type = 'LINEAR'
   petsc_options_iname = '-pc_type'
@@ -154,5 +170,6 @@
 
 [Outputs]
   exodus = true
-  output_material_properties = true  
+  csv = true
+  # output_material_properties = true  
 []
