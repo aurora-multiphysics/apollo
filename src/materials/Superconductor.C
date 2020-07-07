@@ -1,61 +1,74 @@
-// //* This file is part of the MOOSE framework
-// //* https://www.mooseframework.org
-// //*
-// //* All rights reserved, see COPYRIGHT for full restrictions
-// //* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-// //*
-// //* Licensed under LGPL 2.1, please see LICENSE for details
-// //* https://www.gnu.org/licenses/lgpl-2.1.html
+//* This file is part of the MOOSE framework
+//* https://www.mooseframework.org
+//*
+//* All rights reserved, see COPYRIGHT for full restrictions
+//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
 
-// #include "Superconductor.h"
-// #include "Function.h"
+#include "Superconductor.h"
+#include "Function.h"
 
-// registerMooseObject("HammerheadApp", Superconductor);
+registerMooseObject("HammerheadApp", Superconductor);
 
-// InputParameters
-// Superconductor::validParams()
-// {
-//   InputParameters params = Material::validParams();
+InputParameters
+Superconductor::validParams()
+{
+  InputParameters params = Material::validParams();
 
-//   // Parameter for radius of the spheres used to interpolate permeability.
-//   params.addParam<FunctionName>("critical_current_density",
-//                                 "1.0",
-//                                 "The critical current density ($J_c$) of the superconductor in
-//                                 arbitrary units.");
-//   params.addParam<Real>("nonlinearity_parameter",
-//                         "1.0",
-//                         "The nonlinearity parameter ($n$) of the superconductor. Defaults to 1, "
-//                         "representing a linear resistivity term");
+  // Parameter for radius of the spheres used to interpolate permeability.
+  params.addParam<Real>(
+      "critical_electric_field",
+      1.0,
+      "The critical electric field ($E_c$) of the superconductor in arbitrary units.");
+  params.addParam<Real>(
+      "critical_current_density",
+      1.0,
+      "The critical current density ($J_c$) of the superconductor in arbitrary units.");
+  params.addParam<Real>("nonlinearity_parameter",
+                        1.0,
+                        "The nonlinearity parameter ($n$) of the superconductor. Defaults to 1, "
+                        "representing a linear resistivity term");
+  params.addCoupledVar("magnetic_field", "The magnetic field ($H$) as a function of position.");
 
-//   return params;
-// }
+  return params;
+}
 
-// Superconductor::Superconductor(const InputParameters & parameters)
-//   : Material(parameters),
+Superconductor::Superconductor(const InputParameters & parameters)
+  : Material(parameters),
+    // DerivativeMaterialInterface<Material>(parameters),
 
-//     // Get the parameters from the input file
-//     _critical_current_density(getFunction("critical_current_density")),
-//     _nonlinearity_parameter(getParam<Real>("nonlinearity_parameter")),
+    // Get the parameters from the input file
+    _input_n(getParam<Real>("nonlinearity_parameter")),
+    _input_jc(getParam<Real>("critical_current_density")),
+    _input_ec(getParam<Real>("critical_electric_field")),
 
-//     // Declare two material properties by getting a reference from the MOOSE Material system
-//     _permeability(declareProperty<Real>("permeability")),
-//     _viscosity(declareADProperty<Real>("viscosity"))
-// {
-//   // From the paper: Table 1
-//   std::vector<Real> sphere_sizes = {1, 3};
-//   std::vector<Real> permeability = {0.8451e-9, 8.968e-9};
+    // Declare material properties
+    _ec(declareProperty<Real>("critical_electric_field")),
+    _jc(declareProperty<Real>("critical_current_density")),
+    _n(declareProperty<Real>("nonlinearity_parameter")),
 
-//   // Set the x,y data on the LinearInterpolation object.
-//   _permeability_interpolation.setData(sphere_sizes, permeability);
-// }
+    // get the c variable value, number, and name
+    // _H(coupledValue("magnetic_field")),
+    // _H_var(coupled("magnetic_field")),
+    // _H_name(getVar("magnetic_field", 0)->name()),
+    // Declare two material properties by getting a reference from the MOOSE Material system
+    _resistivity(declareProperty<Real>("resistivity")),
+    // _drdH(declarePropertyDerivative<Real>("resistivity", _H_name)),
+    // _d2rdH2(declarePropertyDerivative<Real>("resistivity", _H_name, _H_name))
 
-// void
-// Superconductor::computeQpProperties()
-// {
-//   Real value = _radius.value(_t, _q_point[_qp]);
-//   mooseAssert(value >= 1 && value <= 3,
-//               "The radius range must be in the range [1, 3], but " << value << " provided.");
+    // Declare two material properties by getting a reference from the MOOSE Material system
+    // _h(isCoupled("magnetic_field"),
+    _j(coupledCurl("magnetic_field"))
+{
+}
 
-//   _resistivity[_qp] = _input_viscosity;
-//   _permeability[_qp] = _permeability_interpolation.sample(value);
-// }
+void
+Superconductor::computeQpProperties()
+{
+  _ec[_qp] = _input_ec;
+  _jc[_qp] = _input_jc;
+  _n[_qp] = _input_n;
+  _resistivity[_qp] = (_ec[_qp] / _jc[_qp]) * pow((_j[_qp].norm() / _jc[_qp]), _n[_qp] - 1);
+}
