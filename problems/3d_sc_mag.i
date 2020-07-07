@@ -109,14 +109,6 @@
     order = CONSTANT
     family = MONOMIAL_VEC
   []
-  [magnetic_moment]
-    order = CONSTANT
-    family = MONOMIAL_VEC
-  []
-  [magnetic_moment_y]
-    order = CONSTANT
-    family = MONOMIAL
-  []    
 []
 
 [AuxKernels]
@@ -128,6 +120,7 @@
   []
   [current_density_x]
     type = VectorVariableComponentAux
+    magnetic_field = H
     variable = current_density_x
     component = x
     execute_on = timestep_end
@@ -135,6 +128,7 @@
   []
   [current_density_y]
     type = VectorVariableComponentAux
+    magnetic_field = H
     variable = current_density_y
     component = y
     execute_on = timestep_end
@@ -142,59 +136,26 @@
   []
   [current_density_z]
     type = VectorVariableComponentAux
+    magnetic_field = H
     variable = current_density_z
     component = z
     execute_on = timestep_end
     vector_variable = current_density
   []
-  [magnetic_moment]
-    type = MagneticMoment
-    magnetic_field = H
-    variable = magnetic_moment
-    execute_on = timestep_end
-  []  
-  [magnetic_moment_y]
-    type = VectorVariableComponentAux
-    variable = magnetic_moment_y
-    component = y
-    execute_on = timestep_end
-    vector_variable = magnetic_moment
-  []
 []
-
-[UserObjects]
-  [./block_magnetization]
-    type = BlockAverageValue
-    variable = magnetic_moment_y
-    execute_on = timestep_end
-    outputs = none
-  [../]
-[]
-
 [Postprocessors]
-  # [./magnetization]
-  #   type = MagnetizationIntegral
-  #   magnetic_field = H
-  #   component = y
-  # [../]
+  [magnetization]
+    type = MagnetizationIntegral
+    magnetic_field = H
+    component = y
+  []
   [./H_applied]
   type = FunctionValuePostprocessor
   function = y_sln
   execute_on = timestep_end
-  [../]
-  # [./magnetization_auxvar]
-  #   type = ElementIntegralVariablePostprocessor
-  #   variable = magnetic_moment_y
-  #   block =1
-  # [../]
-  [./magnetization_domain]
-    type = BlockAveragePostprocessor
-    block_average_userobject = block_magnetization
-    block = 1
-  [../]
+[../]
 
 []
-
 
 [Executioner]
   type = Transient
@@ -210,4 +171,5 @@
 [Outputs]
   exodus = true
   csv = true
+  # output_material_properties = true  
 []
