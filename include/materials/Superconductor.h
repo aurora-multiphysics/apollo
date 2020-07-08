@@ -49,6 +49,7 @@ protected:
 
   //   /// The resistivity (rho)
   MaterialProperty<Real> & _resistivity;
+  MaterialProperty<Real> & _drhodj;
   //   MaterialProperty<Real> & _drdH;
   //   MaterialProperty<Real> & _d2rdH2;
 };

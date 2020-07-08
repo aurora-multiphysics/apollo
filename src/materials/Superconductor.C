@@ -55,6 +55,7 @@ Superconductor::Superconductor(const InputParameters & parameters)
     // _H_name(getVar("magnetic_field", 0)->name()),
     // Declare two material properties by getting a reference from the MOOSE Material system
     _resistivity(declareProperty<Real>("resistivity")),
+    _drhodj(declareProperty<Real>("drhodj")),
     // _drdH(declarePropertyDerivative<Real>("resistivity", _H_name)),
     // _d2rdH2(declarePropertyDerivative<Real>("resistivity", _H_name, _H_name))
 
@@ -71,4 +72,5 @@ Superconductor::computeQpProperties()
   _jc[_qp] = _input_jc;
   _n[_qp] = _input_n;
   _resistivity[_qp] = (_ec[_qp] / _jc[_qp]) * pow((_j[_qp].norm() / _jc[_qp]), _n[_qp] - 1);
+  _drhodj[_qp] = (_ec[_qp] / _jc[_qp]) * _n[_qp] * (pow((_j[_qp].norm() / _jc[_qp]), _n[_qp] - 1));
 }

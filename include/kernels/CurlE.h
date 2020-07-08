@@ -38,4 +38,5 @@ protected:
 
   /// The resistivity at the current quadrature point.
   const MaterialProperty<Real> & _resistivity;
+  const MaterialProperty<Real> & _drhodj;
 };

@@ -9,6 +9,8 @@
     nz = 1
     xmin = -1
     ymin = -1
+    xmax = 1
+    ymax = 1    
     zmin = -0.2
     zmax = 0.2
     elem_type = HEX27
@@ -17,8 +19,8 @@
     input = gen
     type = SubdomainBoundingBoxGenerator
     location = inside
-    bottom_left = '-0.4 -0.2 -0.2'
-    top_right = '0.4 0.2 0.2'
+    bottom_left = '-0.5 -0.5 -0.2'
+    top_right = '0.5 0.5 0.2'
     block_id = 1
   [../]
 []
@@ -50,10 +52,11 @@
 #   [../]
   [./bnd]
     type = VectorCurlPenaltyDirichletBC
-    boundary = 'left right top bottom'
+    boundary = 'left right top bottom front back'
     penalty = 1e10
     function_x = 'x_sln'
     function_y = 'y_sln'
+    function_z = 'z_sln'    
     variable = H
   [../]  
 []
@@ -69,7 +72,12 @@
   [../]
   [./y_sln]
     type = ParsedFunction
+    value = '0'
+  [../]
+  [./z_sln]
+    type = ParsedFunction
     value = 'sin(0.1*pi*t)'
+
   [../]  
 []
 
@@ -83,8 +91,8 @@
   [./block1]
     type = Superconductor
     block = 1
-    nonlinearity_parameter = 5
-    critical_current_density = 1
+    nonlinearity_parameter = 50
+    critical_current_density = 2
     critical_electric_field = 0.1
     magnetic_field = H
   [../]
@@ -109,6 +117,8 @@
     family = MONOMIAL
   []
   [current_density]
+    # family = NEDELEC_ONE
+    # order = FIRST
     order = CONSTANT
     family = MONOMIAL_VEC
   []
@@ -116,7 +126,7 @@
     order = CONSTANT
     family = MONOMIAL_VEC
   []
-  [magnetic_moment_y]
+  [magnetic_moment_z]
     order = CONSTANT
     family = MONOMIAL
   []    
@@ -156,10 +166,10 @@
     variable = magnetic_moment
     execute_on = timestep_end
   []  
-  [magnetic_moment_y]
+  [magnetic_moment_z]
     type = VectorVariableComponentAux
-    variable = magnetic_moment_y
-    component = y
+    variable = magnetic_moment_z
+    component = z
     execute_on = timestep_end
     vector_variable = magnetic_moment
   []
@@ -168,7 +178,7 @@
 [UserObjects]
   [./block_magnetization]
     type = BlockAverageValue
-    variable = magnetic_moment_y
+    variable = magnetic_moment_z
     execute_on = timestep_end
     outputs = none
   [../]
@@ -182,7 +192,7 @@
   # [../]
   [./H_applied]
   type = FunctionValuePostprocessor
-  function = y_sln
+  function = z_sln
   execute_on = timestep_end
   [../]
   # [./magnetization_auxvar]
@@ -202,12 +212,23 @@
 [Executioner]
   type = Transient
   dt = 0.1
-  num_steps = 200
+  num_steps = 400
   start_time = 0.0
   solve_type = 'NEWTON'
+  automatic_scaling = true
+  #solve_type = PJFNK
+  # petsc_options_iname = '-pc_type -pc_hypre_type'
+  # petsc_options_value = 'hypre boomeramg'
+
   petsc_options_iname = '-pc_type'
   petsc_options_value = 'lu'
   petsc_options = '-snes_converged_reason -ksp_converged_reason -snes_linesearch_monitor'
+  # [TimeStepper]
+  #   type = IterationAdaptiveDT
+  #   optimal_iterations = 1
+  #   linear_iteration_ratio = 1
+  #   dt = 0.1
+  # []  
 []
 
 [Outputs]

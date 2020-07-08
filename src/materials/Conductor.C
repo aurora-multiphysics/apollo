@@ -30,7 +30,8 @@ Conductor::Conductor(const InputParameters & parameters)
     _input_resistivity(getParam<Real>("resistivity")),
 
     // Declare two material properties by getting a reference from the MOOSE Material system
-    _resistivity(declareProperty<Real>("resistivity"))
+    _resistivity(declareProperty<Real>("resistivity")),
+    _drhodj(declareProperty<Real>("drhodj"))
 {
 }
 
@@ -41,4 +42,5 @@ Conductor::computeQpProperties()
   // mooseAssert(value >= 1 && value <= 3,
   //             "The radius range must be in the range [1, 3], but " << value << " provided.");
   _resistivity[_qp] = _input_resistivity;
+  _drhodj[_qp] = _resistivity[_qp];
 }
