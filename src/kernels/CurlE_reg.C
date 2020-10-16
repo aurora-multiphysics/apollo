@@ -42,7 +42,7 @@ Real
 CurlE_reg::computeQpResidual()
 {
   return _curl_test[_i][_qp] * _resistivity[_qp] * _curl_u[_qp] +
-         _resistivity[_qp] * _grad_u[_qp].contract(_grad_test[_i][_qp]) -
+         _resistivity[_qp] * _grad_u[_qp].tr() * _grad_test[_i][_qp].tr() -
          RealVectorValue(_x_ffn.value(_t, _q_point[_qp]),
                          _y_ffn.value(_t, _q_point[_qp]),
                          _z_ffn.value(_t, _q_point[_qp])) *
@@ -52,6 +52,6 @@ CurlE_reg::computeQpResidual()
 Real
 CurlE_reg::computeQpJacobian()
 {
-  return _curl_test[_i][_qp] * _drhodj[_qp] * _curl_phi[_j][_qp] +
-         _drhodj[_qp] * _grad_phi[_j][_qp].contract(_grad_test[_i][_qp]);
+  return _drhodj[_qp] * _curl_test[_i][_qp] * _curl_phi[_j][_qp] +
+         _drhodj[_qp] * _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr();
 }
