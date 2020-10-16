@@ -32,5 +32,6 @@ protected:
   const VariableValue & _dv_dot_dv;
   VectorMooseVariable & _v_var;
   const VectorVariablePhiValue & _vector_phi;
+  const MaterialProperty<Real> & _permeability;
   Real _sgn;
 };

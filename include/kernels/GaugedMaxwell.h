@@ -49,6 +49,7 @@ protected:
   const Function & _z_ffn;
 
   /// The resistivity at the current quadrature point.
+  const MaterialProperty<Real> & _permeability;
   const MaterialProperty<Real> & _resistivity;
   const MaterialProperty<Real> & _drhodj;
 };

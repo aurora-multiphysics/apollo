@@ -56,7 +56,8 @@ GaugedMaxwell::GaugedMaxwell(const InputParameters & parameters)
     _y_ffn(getFunction("y_forcing_func")),
     _z_ffn(getFunction("z_forcing_func")),
     _resistivity(getMaterialProperty<Real>("resistivity")),
-    _drhodj(getMaterialProperty<Real>("drhodj"))
+    _drhodj(getMaterialProperty<Real>("drhodj")),
+    _permeability(getMaterialProperty<Real>("permeability"))
 {
   // use component-wise curl on phi, u and test?
 }
@@ -70,7 +71,7 @@ GaugedMaxwell::computeQpResidual()
                          _y_ffn.value(_t, _q_point[_qp]),
                          _z_ffn.value(_t, _q_point[_qp])) *
              _test[_i][_qp] +
-         _test[_i][_qp] * (_u_dot[_qp] + _grad_v_dot[_qp]);
+         _test[_i][_qp] * _permeability[_qp] * (_u_dot[_qp] + _grad_v_dot[_qp]);
 }
 
 Real
@@ -78,14 +79,14 @@ GaugedMaxwell::computeQpJacobian()
 {
   return _drhodj[_qp] * _curl_phi[_j][_qp] * _curl_test[_i][_qp] +
          _drhodj[_qp] * _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr() +
-         _test[_i][_qp] * _du_dot_du[_qp] * _phi[_j][_qp];
+         _test[_i][_qp] * _permeability[_qp] * _du_dot_du[_qp] * _phi[_j][_qp];
 }
 
 Real
 GaugedMaxwell::computeQpOffDiagJacobian(unsigned jvar)
 {
   if (jvar == _v_id)
-    return _test[_i][_qp] * _dv_dot_dv[_qp] * _standard_grad_phi[_j][_qp];
+    return _test[_i][_qp] * _permeability[_qp] * _dv_dot_dv[_qp] * _standard_grad_phi[_j][_qp];
   else
     return 0.;
 }

@@ -33,8 +33,9 @@ protected:
 
   /// Value of resistivity from the input file
   const Real & _input_resistivity;
-
+  const Real & _input_permeability;
   /// The resistivity (rho)
+  MaterialProperty<Real> & _permeability;
   MaterialProperty<Real> & _resistivity;
   MaterialProperty<Real> & _drhodj;
 };

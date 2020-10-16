@@ -31,6 +31,7 @@
     type = Conductor
     block = 0
     resistivity = 1e10
+    permeability = 1.0
   [../]
   [./block1]
     type = Superconductor
@@ -38,6 +39,7 @@
     nonlinearity_parameter = 10
     critical_current_density = 2
     critical_electric_field = 0.1
+    permeability = 1.0
     magnetic_field = T
   [../]
 []
@@ -54,7 +56,7 @@
     type = ParsedVectorFunction
     value_x = '0.0'
     value_y = '0.0'
-    value_z ='-0.1*pi*cos(0.1*pi*t)'
+    value_z ='0.1*pi*cos(0.1*pi*t)'
     # value_z ='0'
     # value_z ='-0.1*pi*cos(0.1*pi*t)'
   [../]  
@@ -96,17 +98,11 @@
     boundary = 'left right top bottom front back'
     function = 'Applied_dBdt'
   [../]
-  # [./bnd2]
-  #   type = VectorCurlBC
-  #   boundary = 'left right top bottom front back'
-  #   curl_value = 'Applied_dBdt'
-  #   variable = T
-  # [../]  
   [./bnd2]
     type = VectorCurlPenaltyDirichletBC
     boundary = 'left right top bottom front back'
     penalty = 1e10
-    function = 'Applied_H'
+    function_z = 'z_sln'
     variable = T
   [../]  
 []
