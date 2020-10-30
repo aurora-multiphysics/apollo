@@ -12,14 +12,14 @@
 //* div (s * (u + grad p) )= 0
 //*
 //* in weak form:
-//* (a * curl u, curl v) + (a * div u, div v) + (d/dt s*( u + grad p), v)
-//* - <(a*curl u) x n, v> - <a*div u, v.n>  = 0
-//* (d/dt s*( u + grad p), grad w) - <d/dt s*( u + grad p) . n, w> =0
+//* (xi * curl u, curl v) + (xi * div u, div v) + (d/dt eta*( u + grad p), v)
+//* - <(xi*curl u) x n, v> - <xi*div u, v.n>  = 0
+//* (d/dt eta*( u + grad p), grad w) - <d/dt eta*( u + grad p) . n, w> =0
 
-//* For T-phi formulation, u = T, p = omega, a = rho, s = mu
+//* For T-phi formulation, u = T, p = omega, xi = rho, eta = mu
 //* and H = T0 + T - grad phi = u + grad p
 
-//* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
+//* For A-V formulation, u = A, p = int(V dt), xi = mu^-1, eta = sigma
 //* B = curl A
 
 #include "UngaugedMaxwell.h"
@@ -32,9 +32,15 @@ InputParameters
 UngaugedMaxwell::validParams()
 {
   InputParameters params = VectorTimeKernel::validParams();
-  params.addParam<FunctionName>("x_forcing_func", 0, "The x forcing function.");
-  params.addParam<FunctionName>("y_forcing_func", 0, "The y forcing function.");
-  params.addParam<FunctionName>("z_forcing_func", 0, "The z forcing function.");
+  params.addRequiredParam<MaterialPropertyName>("xi_name",
+                                                "Base name of the coefficient appearing"
+                                                "in curl curl and grad div terms.");
+  params.addRequiredParam<MaterialPropertyName>("dxicurlu_dcurlu_name",
+                                                "Base name of the coefficient appearing"
+                                                "in curl curl and grad div terms.");
+  params.addRequiredParam<MaterialPropertyName>("eta_name",
+                                                "Base name of the coefficient appearing"
+                                                "in time dependent terms.");
   return params;
 }
 
@@ -45,31 +51,22 @@ UngaugedMaxwell::UngaugedMaxwell(const InputParameters & parameters)
     _curl_u(_is_implicit ? _var.curlSln() : _var.curlSlnOld()),
     _u_dot(_var.uDot()),
     _du_dot_du(_var.duDotDu()),
-    // _curl_u(coupledCurl(_var)),
-    _x_ffn(getFunction("x_forcing_func")),
-    _y_ffn(getFunction("y_forcing_func")),
-    _z_ffn(getFunction("z_forcing_func")),
-    _resistivity(getMaterialProperty<Real>("resistivity")),
-    _drhodj(getMaterialProperty<Real>("drhodj")),
-    _permeability(getMaterialProperty<Real>("permeability"))
+    _xi(getMaterialProperty<Real>("xi_name")),
+    _dxicurlu_dcurlu(getMaterialProperty<Real>("dxicurlu_dcurlu_name")),
+    _eta(getMaterialProperty<Real>("eta_name"))
 {
-  // use component-wise curl on phi, u and test?
 }
-
+// xi = E/J = rho
+// dxi du = dE/dJ = J drdJ +
 Real
 UngaugedMaxwell::computeQpResidual()
 {
-  return _resistivity[_qp] * _curl_u[_qp] * _curl_test[_i][_qp] +
-         RealVectorValue(_x_ffn.value(_t, _q_point[_qp]),
-                         _y_ffn.value(_t, _q_point[_qp]),
-                         _z_ffn.value(_t, _q_point[_qp])) *
-             _test[_i][_qp] +
-         _test[_i][_qp] * _permeability[_qp] * _u_dot[_qp];
+  return _xi[_qp] * _curl_u[_qp] * _curl_test[_i][_qp] + _test[_i][_qp] * _eta[_qp] * _u_dot[_qp];
 }
 
 Real
 UngaugedMaxwell::computeQpJacobian()
 {
-  return _drhodj[_qp] * _curl_phi[_j][_qp] * _curl_test[_i][_qp] +
-         _test[_i][_qp] * _permeability[_qp] * _du_dot_du[_qp] * _phi[_j][_qp];
+  return _dxicurlu_dcurlu[_qp] * _curl_phi[_j][_qp] * _curl_test[_i][_qp] +
+         _test[_i][_qp] * _eta[_qp] * _du_dot_du[_qp] * _phi[_j][_qp];
 }

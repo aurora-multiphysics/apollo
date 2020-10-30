@@ -12,12 +12,12 @@
 #include "VectorTimeKernel.h"
 #include "MaterialProperty.h"
 
-class UngaugedMaxwell : public VectorTimeKernel
+class ExplicitUngaugedMaxwell : public VectorTimeKernel
 {
 public:
   static InputParameters validParams();
 
-  UngaugedMaxwell(const InputParameters & parameters);
+  ExplicitUngaugedMaxwell(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;
@@ -38,7 +38,8 @@ protected:
   const VariableValue & _du_dot_du;
 
   /// The resistivity at the current quadrature point. See MatDiffusionBase
-  const MaterialProperty<Real> & _xi;
-  const MaterialProperty<Real> & _dxicurlu_dcurlu;
-  const MaterialProperty<Real> & _eta;
+  const MaterialProperty<Real> & _jc;
+  const MaterialProperty<Real> & _n;
+  const MaterialProperty<Real> & _rho;
+  const MaterialProperty<Real> & _mu;
 };
