@@ -1,7 +1,7 @@
 [Mesh]
   [gen]
     type = FileMeshGenerator
-    file = cyl.e
+    file = gold/cyl.e
   [../]
 []
 
