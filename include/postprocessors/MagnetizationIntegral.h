@@ -33,11 +33,11 @@ public:
 protected:
   virtual Real computeQpIntegral() override;
 
+  /// Will hold 0, 1, or 2 corresponding to x, y, or z.
+  int _component;
   /// Holds the solution at current quadrature points
   const VectorVariableValue & _u;
   /// Holds the solution curl at the current quadrature points
   const VectorVariableCurl & _curl_u;
 
-  /// Will hold 0, 1, or 2 corresponding to x, y, or z.
-  int _component;
 };

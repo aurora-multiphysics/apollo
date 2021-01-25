@@ -38,7 +38,6 @@ protected:
   /// The critical electric field of the superconductor (Jc)
   const Real & _input_ec;
   const Real & _input_permeability;
-  const VectorVariableCurl & _j;
 
   /// Nonlinearity parameter (n)
   MaterialProperty<Real> & _n;
@@ -51,6 +50,8 @@ protected:
   MaterialProperty<Real> & _permeability;
   MaterialProperty<Real> & _resistivity;
   MaterialProperty<Real> & _drhodj;
+
+  const VectorVariableCurl & _j;
   //   MaterialProperty<Real> & _drdH;
   //   MaterialProperty<Real> & _d2rdH2;
 };

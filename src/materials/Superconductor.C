@@ -47,9 +47,9 @@ Superconductor::Superconductor(const InputParameters & parameters)
     _input_ec(getParam<Real>("critical_electric_field")),
     _input_permeability(getParam<Real>("permeability")),
     // Declare material properties
-    _ec(declareProperty<Real>("critical_electric_field")),
-    _jc(declareProperty<Real>("critical_current_density")),
     _n(declareProperty<Real>("nonlinearity_parameter")),
+    _jc(declareProperty<Real>("critical_current_density")),
+    _ec(declareProperty<Real>("critical_electric_field")),
     // get the c variable value, number, and name
     // _H(coupledValue("magnetic_field")),
     // _H_var(coupled("magnetic_field")),

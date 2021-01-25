@@ -38,6 +38,6 @@ protected:
   MaterialProperty<Real> & _permeability;
   MaterialProperty<Real> & _resistivity;
   MaterialProperty<Real> & _drhodj;
-  MaterialProperty<Real> & _jc;
   MaterialProperty<Real> & _n;
+  MaterialProperty<Real> & _jc;  
 };
