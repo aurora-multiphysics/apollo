@@ -37,7 +37,4 @@ protected:
   /// The resistivity (rho)
   MaterialProperty<Real> & _permeability;
   MaterialProperty<Real> & _resistivity;
-  MaterialProperty<Real> & _drhodj;
-  MaterialProperty<Real> & _n;
-  MaterialProperty<Real> & _jc;  
 };

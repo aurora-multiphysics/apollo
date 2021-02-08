@@ -33,10 +33,7 @@ Conductor::Conductor(const InputParameters & parameters)
     _input_permeability(getParam<Real>("permeability")),
     // Declare two material properties by getting a reference from the MOOSE Material system
     _permeability(declareProperty<Real>("permeability")),
-    _resistivity(declareProperty<Real>("resistivity")),
-    _drhodj(declareProperty<Real>("drhodj")),
-    _n(declareProperty<Real>("nonlinearity_parameter")),
-    _jc(declareProperty<Real>("critical_current_density"))
+    _resistivity(declareProperty<Real>("resistivity"))
 {
 }
 
@@ -46,9 +43,7 @@ Conductor::computeQpProperties()
   // Real value = _radius.value(_t, _q_point[_qp]);
   // mooseAssert(value >= 1 && value <= 3,
   //             "The radius range must be in the range [1, 3], but " << value << " provided.");
-  _n[_qp] = 1.0;
-  _jc[_qp] = 1.0;
   _permeability[_qp] = _input_permeability;
   _resistivity[_qp] = _input_resistivity;
-  _drhodj[_qp] = _resistivity[_qp]; // actually de_dj
+  // _drhodj[_qp] = _resistivity[_qp]; // actually de_dj
 }

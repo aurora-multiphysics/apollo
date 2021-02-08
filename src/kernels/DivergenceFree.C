@@ -48,7 +48,6 @@ DivergenceFree::DivergenceFree(const InputParameters & parameters)
     _vector_phi(_assembly.phi(_v_var)),
     _permeability(getMaterialProperty<Real>("permeability"))
 {
-  // use component-wise curl on phi, u and test?
 }
 
 Real
@@ -56,7 +55,7 @@ DivergenceFree::computeQpResidual()
 {
   return _grad_test[_i][_qp] * _permeability[_qp] * (_grad_u[_qp] + _v[_qp]);
 }
-// Jc(B) implemented like ffn ->
+
 Real
 DivergenceFree::computeQpJacobian()
 {
