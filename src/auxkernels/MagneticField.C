@@ -16,7 +16,7 @@ MagneticField::validParams()
 {
   InputParameters params = VectorAuxKernel::validParams();
   params.addRequiredCoupledVar("electric_vector_potential", "The electric vector potential (T).");
-  params.addRequiredCoupledVar("magnetic_scalar_potential",
+  params.addCoupledVar("magnetic_scalar_potential",0,
                                "The magnetic scalar potential (omega).");
   return params;
 }
