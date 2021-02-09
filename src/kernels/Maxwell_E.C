@@ -31,37 +31,28 @@ registerMooseObject("HammerheadApp", Maxwell_E);
 InputParameters
 Maxwell_E::validParams()
 {
-  InputParameters params = CurlCurl::validParams();
+  InputParameters params = MaxwellBase::validParams();
   return params;
 }
 
 Maxwell_E::Maxwell_E(const InputParameters & parameters)
-  : VectorTimeKernel(parameters),
-    _curl_curl(parameters),
-    _gauge_penalty(parameters),
-    _curl_phi(_assembly.curlPhi(_var)),
-    _curl_test(_var.curlPhi()),
-    _curl_u(_is_implicit ? _var.curlSln() : _var.curlSlnOld()),
-    _u_dot(_var.uDot()),
-    _du_dot_du(_var.duDotDu()),
-    _rho(getMaterialProperty<Real>("resistivity")),
-    _mu(getMaterialProperty<Real>("permeability"))
+  : MaxwellBase(parameters), 
+      _rho(getMaterialProperty<Real>("resistivity")),
+    _mu(getMaterialProperty<Real>("permeability")) 
 {
-  // use component-wise curl on phi, u and test?
 }
 
 Real
 Maxwell_E::computeQpResidual()
 {
   return (1.0/_mu[_qp]) *
-             (_curl_u[_qp] * _curl_test[_i][_qp] + _grad_u[_qp].tr() * _grad_test[_i][_qp].tr()) +
-         (1.0/_rho[_qp]) * _test[_i][_qp] * _u_dot[_qp]  ;
+             (MaxwellBase::curlCurlTerm() + MaxwellBase::gaugePenaltyTerm()) +
+         (1.0/_rho[_qp]) * MaxwellBase::firstOrderTimeDerivTerm();
 }
 
 Real
 Maxwell_E::computeQpJacobian()
 {
-  return (1.0/_mu[_qp]) * (_curl_phi[_j][_qp] * _curl_test[_i][_qp] +
-                      _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr()) +
-         (1.0/_rho[_qp]) * _test[_i][_qp] *  _du_dot_du[_qp] * _phi[_j][_qp];
+  return (1.0/_mu[_qp]) * (MaxwellBase::dCurlCurlDU() + MaxwellBase::dGaugePenaltyDU()) +
+         (1.0/_rho[_qp]) * MaxwellBase::dFirstOrderTimeDerivDU();
 }

@@ -31,42 +31,42 @@ registerMooseObject("HammerheadApp", UngaugedMaxwell);
 InputParameters
 UngaugedMaxwell::validParams()
 {
-  InputParameters params = VectorTimeKernel::validParams();
-  params.addRequiredParam<MaterialPropertyName>("xi_name",
+  InputParameters params = MaxwellBase::validParams();
+  params.addRequiredParam<MaterialPropertyName>("alpha_name",
                                                 "Base name of the coefficient appearing"
                                                 "in curl curl and grad div terms.");
-  params.addRequiredParam<MaterialPropertyName>("dxicurlu_dcurlu_name",
-                                                "Base name of the coefficient appearing"
-                                                "in curl curl and grad div terms.");
-  params.addRequiredParam<MaterialPropertyName>("eta_name",
+  params.addRequiredParam<MaterialPropertyName>("beta_name",
                                                 "Base name of the coefficient appearing"
                                                 "in time dependent terms.");
   return params;
 }
 
 UngaugedMaxwell::UngaugedMaxwell(const InputParameters & parameters)
-  : VectorTimeKernel(parameters),
+  : MaxwellBase(parameters),
     _curl_phi(_assembly.curlPhi(_var)),
     _curl_test(_var.curlPhi()),
     _curl_u(_is_implicit ? _var.curlSln() : _var.curlSlnOld()),
     _u_dot(_var.uDot()),
     _du_dot_du(_var.duDotDu()),
-    _xi(getMaterialProperty<Real>("xi_name")),
-    _dxicurlu_dcurlu(getMaterialProperty<Real>("dxicurlu_dcurlu_name")),
-    _eta(getMaterialProperty<Real>("eta_name"))
+    _alpha(getMaterialProperty<Real>("alpha_name")),
+    _beta(getMaterialProperty<Real>("beta_name"))
 {
 }
-// xi = E/J = rho
-// dxi du = dE/dJ = J drdJ +
+Real
+UngaugedMaxwell::curlCurlTerm()
+{
+  return MaxwellBase::curlCurlTerm();
+}
+
 Real
 UngaugedMaxwell::computeQpResidual()
 {
-  return _xi[_qp] * _curl_u[_qp] * _curl_test[_i][_qp] + _test[_i][_qp] * _eta[_qp] * _u_dot[_qp];
+  return _alpha[_qp] * MaxwellBase::curlCurlTerm() + _beta[_qp] * _test[_i][_qp] * _u_dot[_qp];
 }
 
 Real
 UngaugedMaxwell::computeQpJacobian()
 {
-  return _dxicurlu_dcurlu[_qp] * _curl_phi[_j][_qp] * _curl_test[_i][_qp] +
-         _test[_i][_qp] * _eta[_qp] * _du_dot_du[_qp] * _phi[_j][_qp];
+  return _alpha[_qp] * _curl_phi[_j][_qp] * _curl_test[_i][_qp] +
+         _test[_i][_qp] * _beta[_qp] * _du_dot_du[_qp] * _phi[_j][_qp];
 }
