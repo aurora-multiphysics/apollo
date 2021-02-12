@@ -10,8 +10,7 @@
 #pragma once
 
 #include "VectorTimeKernel.h"
-#include "CurlCurl.h"
-#include "GaugePenalty.h"
+
 #include "MaterialProperty.h"
 
 class Maxwell_H : public VectorTimeKernel

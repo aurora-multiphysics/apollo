@@ -10,8 +10,6 @@
 #pragma once
 
 #include "MaxwellBase.h"
-#include "CurlCurl.h"
-#include "GaugePenalty.h"
 #include "MaterialProperty.h"
 
 class Maxwell_E : public MaxwellBase
