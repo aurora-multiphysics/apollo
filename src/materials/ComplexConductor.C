@@ -33,12 +33,14 @@ ComplexConductor::validParams()
   params.addParam<Real>(
       "imag_rel_permeability", 0.0, "The imaginary component of the relative permeability ($\\mu$) of the conductor. Defaults to 0");
 
+  params.addParam<Real>("frequency", 0, "The frequency of the EM mode in Hz.");
+
   return params;
 }
 
 ComplexConductor::ComplexConductor(const InputParameters & parameters)
   : Material(parameters),
-
+    _angular_frequency(getParam<Real>("frequency")/(2*M_PI)),
     // Get the parameters from the input file
     _input_real_conductivity(getParam<Real>("real_conductivity")),
     _input_imag_conductivity(getParam<Real>("imag_conductivity")),
@@ -57,7 +59,10 @@ ComplexConductor::ComplexConductor(const InputParameters & parameters)
     _imag_permittivity(declareProperty<Real>("imag_permittivity")),
 
     _real_permeability(declareProperty<Real>("real_permeability")),
-    _imag_permeability(declareProperty<Real>("imag_permeability"))
+    _imag_permeability(declareProperty<Real>("imag_permeability")),
+
+    _real_reluctance(declareProperty<Real>("real_reluctance")),
+    _imag_reluctance(declareProperty<Real>("imag_reluctance"))    
 {
 }
 
@@ -71,8 +76,11 @@ ComplexConductor::computeQpProperties()
   _imag_conductivity[_qp] = _input_imag_conductivity;
 
   _real_permittivity[_qp] = 8.85418782e-12 * _input_real_rel_permittivity;
-  _imag_permittivity[_qp] = 8.85418782e-12 * _input_imag_rel_permittivity;
+  _imag_permittivity[_qp] = 8.85418782e-12 * _real_conductivity[_qp]/_angular_frequency;
 
   _real_permeability[_qp] = 1.25663706e-6 * _input_real_rel_permeability;
   _imag_permeability[_qp] = 1.25663706e-6 * _input_imag_rel_permeability;
+
+  _real_reluctance[_qp] = _real_permeability[_qp]/(_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);
+  _imag_reluctance[_qp] = -_imag_permeability[_qp]/(_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);  
 }

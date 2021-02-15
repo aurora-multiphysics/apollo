@@ -32,6 +32,7 @@ protected:
   virtual void computeQpProperties() override;
 
   /// Value of resistivity from the input file
+  const Real & _angular_frequency;  
   const Real & _input_real_conductivity;
   const Real & _input_imag_conductivity;
   const Real & _input_real_rel_permittivity;
@@ -46,4 +47,6 @@ protected:
   MaterialProperty<Real> & _imag_permittivity;
   MaterialProperty<Real> & _real_permeability;
   MaterialProperty<Real> & _imag_permeability;
+  MaterialProperty<Real> & _real_reluctance;
+  MaterialProperty<Real> & _imag_reluctance;  
 };

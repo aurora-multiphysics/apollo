@@ -24,8 +24,6 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
-  CurlCurl _curl_curl;
-  GaugePenalty _gauge_penalty;
   /// curl of the shape function
   const VectorVariablePhiCurl & _curl_phi;
 

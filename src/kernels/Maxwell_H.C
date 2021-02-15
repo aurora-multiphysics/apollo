@@ -31,14 +31,12 @@ registerMooseObject("HammerheadApp", Maxwell_H);
 InputParameters
 Maxwell_H::validParams()
 {
-  InputParameters params = CurlCurl::validParams();
+  InputParameters params = VectorTimeKernel::validParams();
   return params;
 }
 
 Maxwell_H::Maxwell_H(const InputParameters & parameters)
   : VectorTimeKernel(parameters),
-    _curl_curl(parameters),
-    _gauge_penalty(parameters),
     _curl_phi(_assembly.curlPhi(_var)),
     _curl_test(_var.curlPhi()),
     _curl_u(_is_implicit ? _var.curlSln() : _var.curlSlnOld()),
