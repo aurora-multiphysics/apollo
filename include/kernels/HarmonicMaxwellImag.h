@@ -11,6 +11,7 @@
 
 #include "HarmonicMaxwellBase.h"
 #include "MaterialProperty.h"
+#include "WaveguideProperties.h"
 
 class HarmonicMaxwellImag : public HarmonicMaxwellBase
 {

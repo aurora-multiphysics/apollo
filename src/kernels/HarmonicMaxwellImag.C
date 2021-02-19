@@ -35,13 +35,14 @@ HarmonicMaxwellImag::validParams()
   params.addClassDescription("This class computes various components of the"
                              "Maxwell equations which can then be assembled "
                              "together in child classes.");
-  params.addParam<Real>("frequency", 0, "The frequency of the EM mode in Hz.");
+  params.addRequiredParam<UserObjectName>("waveguide_properties",
+                                          "The name of the user object for waveguide properties");  
   return params;
 }
 
 HarmonicMaxwellImag::HarmonicMaxwellImag(const InputParameters & parameters)
   : HarmonicMaxwellBase(parameters),
-  _omega(getParam<Real>("frequency")/(2*M_PI)),
+  _omega(getUserObject<WaveguideProperties>("waveguide_properties")._omega),
   _sigma_re(getMaterialProperty<Real>("real_conductivity")),
   _sigma_im(getMaterialProperty<Real>("imag_conductivity")),
   _epsilon_re(getMaterialProperty<Real>("real_permittivity")),

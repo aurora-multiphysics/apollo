@@ -31,7 +31,7 @@ registerMooseObject("HammerheadApp", HarmonicMaxwellBase);
 InputParameters
 HarmonicMaxwellBase::validParams()
 {
-  InputParameters params = MaxwellBase::validParams();
+  InputParameters params = VectorKernel::validParams();
   params.addClassDescription("This class computes various components of the"
                              "Maxwell equations which can then be assembled "
                              "together in child classes.");
@@ -40,11 +40,38 @@ HarmonicMaxwellBase::validParams()
 }
 
 HarmonicMaxwellBase::HarmonicMaxwellBase(const InputParameters & parameters)
-  : MaxwellBase(parameters),
+  : VectorKernel(parameters),
+    _curl_phi(_assembly.curlPhi(_var)),
+    _curl_test(_var.curlPhi()),
+    _curl_u(_is_implicit ? _var.curlSln() : _var.curlSlnOld()),
     _v_id(coupled("v")),
     _v(coupledVectorValue("v")),
     _curl_v(coupledCurl("v"))
 {
+}
+
+Real
+HarmonicMaxwellBase::curlCurlTerm()
+{
+  return _curl_u[_qp] * _curl_test[_i][_qp];
+}
+
+Real
+HarmonicMaxwellBase::dCurlCurlDU()
+{
+  return _curl_phi[_j][_qp] * _curl_test[_i][_qp];
+}
+
+Real
+HarmonicMaxwellBase::gaugePenaltyTerm()
+{
+  return _grad_u[_qp].tr() * _grad_test[_i][_qp].tr();
+}
+
+Real
+HarmonicMaxwellBase::dGaugePenaltyDU()
+{
+  return _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr();
 }
 
 Real
@@ -58,42 +85,6 @@ HarmonicMaxwellBase::dCoupledCurlCurlDU()
 {
   return _curl_phi[_j][_qp] * _curl_test[_i][_qp];
 }
-
-// Real
-// HarmonicMaxwellBase::coupledGaugePenaltyTerm()
-// {
-//   return _grad_u[_qp].tr() * _grad_test[_i][_qp].tr();
-// }
-
-// Real
-// HarmonicMaxwellBase::dCoupledGaugePenaltyDU()
-// {
-//   return _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr();
-// }
-
-// Real
-// HarmonicMaxwellBase::coupledFirstOrderTimeDerivTerm()
-// {
-//   return _test[_i][_qp] * _v_dot[_qp];
-// }
-
-// Real
-// HarmonicMaxwellBase::dCoupledFirstOrderTimeDerivDU()
-// {
-//   return _test[_i][_qp] * _dv_dot_du[_qp] * _phi[_j][_qp];
-// }
-
-// Real
-// HarmonicMaxwellBase::coupledSecondOrderTimeDerivTerm()
-// {
-//   return _test[_i][_qp] * _v_dotdot[_qp];
-// }
-
-// Real
-// HarmonicMaxwellBase::dCoupledSecondOrderTimeDerivDU()
-// {
-//   return _test[_i][_qp] *  _dv_dotdot_du[_qp] * _phi[_j][_qp];
-// }
 
 Real
 HarmonicMaxwellBase::computeQpResidual() {return 0;}

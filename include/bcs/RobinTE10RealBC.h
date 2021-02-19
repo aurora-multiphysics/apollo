@@ -10,20 +10,18 @@
 #pragma once
 
 #include "VectorIntegratedBC.h"
-
-class RobinTE10Real : public VectorIntegratedBC
+#include "WaveguideProperties.h"
+class RobinTE10RealBC : public VectorIntegratedBC
 {
 public:
   static InputParameters validParams();
 
-  RobinTE10Real(const InputParameters & parameters);
+  RobinTE10RealBC(const InputParameters & parameters);
 
 protected:
   Real _penalty;
   virtual Real computeQpResidual();
   virtual Real computeQpJacobian();
-  const Function * const _E10_re;
-  const Function * const _E10_im;
-  const Function * const _gamma_im;
+  const WaveguideProperties & _wp;
   bool _input_port;
 };

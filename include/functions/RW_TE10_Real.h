@@ -10,7 +10,7 @@
 #pragma once
 
 #include "Function.h"
-
+#include "WaveguideProperties.h"
 class RW_TE10_Real;
 
 template <>
@@ -22,9 +22,7 @@ public:
   RW_TE10_Real(const InputParameters & parameters);
 
   virtual RealVectorValue vectorValue(Real t, const Point & p) const override;
-  Real const _a;
-  Real const _b;
-  Real const _omega;
-protected:
 
+protected:
+  const WaveguideProperties & _wp;
 };

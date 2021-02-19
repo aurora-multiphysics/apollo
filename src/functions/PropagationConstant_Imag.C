@@ -27,7 +27,7 @@ PropagationConstant_Imag::PropagationConstant_Imag(const InputParameters & param
   : Function(parameters), 
   _a(getParam<Real>("port_length")),
   _b(getParam<Real>("port_width")),
-  _omega(getParam<Real>("frequency")/(2*M_PI))
+  _omega(getParam<Real>("frequency")*(2*M_PI))
 {
 }
 
@@ -38,6 +38,5 @@ PropagationConstant_Imag::value(Real t, const Point & p) const
   Real epsilon0 = 8.85418782e-12;
   Real kc = M_PI/_a;
   Real k0 = _omega*sqrt(epsilon0*mu0);
-  Real gamma_im = sqrt(k0*k0-kc*kc);
   return sqrt(k0*k0-kc*kc); // p(0) == x
 }

@@ -16,33 +16,30 @@ InputParameters
 validParams<RW_TE10_Real>()
 {
   InputParameters params = validParams<Function>();
-  params.addParam<Real>("port_length", 1.0, "The length of the port in the x direction in m.");
-  params.addParam<Real>("port_width", 1.0, "The length of the port in the y direction in m.");
-  params.addParam<Real>("frequency", 1.0, "The input frequency in Hz.");
+  params.addRequiredParam<UserObjectName>("waveguide_properties",
+                                          "The name of the user object for waveguide properties");  
   return params;
 }
 
 RW_TE10_Real::RW_TE10_Real(const InputParameters & parameters)
   : Function(parameters), 
-  _a(getParam<Real>("port_length")),
-  _b(getParam<Real>("port_width")),
-  _omega(getParam<Real>("frequency")/(2*M_PI))
+   _wp(getUserObject<WaveguideProperties>("waveguide_properties"))
 {
 }
 
 RealVectorValue
 RW_TE10_Real::vectorValue(Real t, const Point & p) const
 {
-  Real mu0 = 1.25663706e-6;
-  Real epsilon0 = 8.85418782e-12;
-  Real kc = M_PI/_a;
-  Real k0 = _omega*sqrt(epsilon0*mu0);
-  Real gamma_im = sqrt(k0*k0-kc*kc);
-  Real E0 = -sqrt(2*_omega*mu0/(_a*_b*gamma_im));
-  Real E10_re = E0*sin(kc*p(0))*cos(gamma_im*p(2));
-  Real E10_im = E0*sin(kc*p(0))*sin(gamma_im*p(2));
+  Real gamma_im = _wp.getImagPropagationConstant();
+  Real E0 = -sqrt(2*_wp._omega*_wp._mu0/(_wp._a*_wp._b*gamma_im));
 
-  return RealVectorValue(0, E10_re, 0);
+  // Real E10_re = E0*sin(kc*p(1))*cos(gamma_im*p(0));
+  // Real E10_im = E0*sin(kc*p(1))*sin(gamma_im*p(0));
+  Real E10_re = E0*sin(M_PI*p(1)/_wp._a);
+
+  return RealVectorValue(0, 0, E10_re);
+  // return RealVectorValue(0, 0, 0);
+
   // return _function_ptr->evaluate<RealVectorValue>(t, p);
 }
 
