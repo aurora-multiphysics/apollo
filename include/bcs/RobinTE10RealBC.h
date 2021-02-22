@@ -22,6 +22,8 @@ protected:
   Real _penalty;
   virtual Real computeQpResidual();
   virtual Real computeQpJacobian();
+  // Holds the solution curl at the current quadrature points
+  const VectorVariableValue & _v;
   const WaveguideProperties & _wp;
   bool _input_port;
 };
