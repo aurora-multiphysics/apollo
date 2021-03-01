@@ -76,7 +76,7 @@ ComplexConductor::computeQpProperties()
   _imag_conductivity[_qp] = _input_imag_conductivity;
 
   _real_permittivity[_qp] = 8.85418782e-12 * _input_real_rel_permittivity;
-  _imag_permittivity[_qp] = 8.85418782e-12 * _input_real_conductivity/(5.843e10);
+  _imag_permittivity[_qp] = _input_real_conductivity/(2*M_PI*9.3e9); //7.5e-10 for balance
 
   _real_permeability[_qp] = 1.25663706e-6 * _input_real_rel_permeability;
   _imag_permeability[_qp] = 1.25663706e-6 * _input_imag_rel_permeability;

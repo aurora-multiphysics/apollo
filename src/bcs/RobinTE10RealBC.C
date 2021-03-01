@@ -26,6 +26,7 @@ RobinTE10RealBC::validParams()
 
 RobinTE10RealBC::RobinTE10RealBC(const InputParameters & parameters)
   : VectorIntegratedBC(parameters),
+    _v_id(coupled("v")), 
     _v(coupledVectorValue("v")),  
     _wp(getUserObject<WaveguideProperties>("waveguide_properties")),
     _input_port(getParam<bool>("input_port"))
@@ -44,7 +45,7 @@ RobinTE10RealBC::computeQpResidual()
   }else{
     u_exact_re = RealVectorValue(0, 0, 0);
     u_exact_im = RealVectorValue(0, 0, 0);
-  }RealVectorValue Ncu_re = -_wp.getImagPropagationConstant()* (_v[_qp] - u_exact_im).cross(_normals[_qp]);
+  }RealVectorValue Ncu_re = _wp.getImagPropagationConstant()* (_v[_qp] - u_exact_im).cross(_normals[_qp]);
   // RealVectorValue Ncu_im = _gamma_im* (_u[_qp] - u_exact_re).cross(_normals[_qp]);
   return  (1/_wp._mu0) * Ncu_re * ((_test[_i][_qp]).cross(_normals[_qp]));
 }
@@ -52,5 +53,14 @@ RobinTE10RealBC::computeQpResidual()
 Real
 RobinTE10RealBC::computeQpJacobian()
 {
-  return -(1/_wp._mu0) * _wp.getImagPropagationConstant() * (_phi[_j][_qp]).cross(_normals[_qp]) * (_test[_i][_qp]).cross(_normals[_qp]);
+  return 0.0;
 }
+
+Real
+RobinTE10RealBC::computeQpOffDiagJacobian(unsigned int jvar)
+{
+  if (jvar == _v_id)
+  return (1/_wp._mu0) * _wp.getImagPropagationConstant() * (_phi[_j][_qp]).cross(_normals[_qp]) * (_test[_i][_qp]).cross(_normals[_qp]);
+  return 0.0;
+}
+

@@ -39,7 +39,7 @@ Real
 WaveguideProperties::getImagPropagationConstant() const
 {
   Real kc = M_PI/_a;
-  Real k0 = _omega*sqrt(_epsilon0*_mu0);
+  Real k0 = _omega*sqrt(_epsilon0*_mu0); //2 pi f/c 
   return sqrt(k0*k0-kc*kc);
 }
 
@@ -47,24 +47,27 @@ RealVectorValue
 WaveguideProperties::getRealRWTE10(Real t, const Point & p) const
 {
   Real gamma_im = getImagPropagationConstant();
-  Real E0 = -sqrt(2*_omega*_mu0/(_a*_b*gamma_im));
-
-  // Real E10_re = E0*sin(kc*p(1))*cos(gamma_im*p(0));
-  // Real E10_im = E0*sin(kc*p(1))*sin(gamma_im*p(0));
-  Real E10_re = E0*sin(M_PI*p(1)/_a);
-
+  Real E0 = sqrt(2*_omega*_mu0/(_a*_b*gamma_im));
+  Real kc = M_PI/_a;
+  Real E10_re = E0*sin(kc*p(1))*cos(gamma_im*p(0));
+  Real E10_im = -E0*sin(kc*p(1))*sin(gamma_im*p(0));
+  // Real E10_re = E0*sin(M_PI*p(1)/_a);
   return RealVectorValue(0, 0, E10_re);
+
+  // return RealVectorValue(0, 0, (E10_re+E10_im)/sqrt(2));
 }
 
 RealVectorValue
 WaveguideProperties::getImagRWTE10(Real t, const Point & p) const
 {
   Real gamma_im = getImagPropagationConstant();
-  Real E0 = -sqrt(2*_omega*_mu0/(_a*_b*gamma_im));
+  Real E0 = sqrt(2*_omega*_mu0/(_a*_b*gamma_im));
+  Real kc = M_PI/_a;
 
-  // Real E10_re = E0*sin(kc*p(1))*cos(gamma_im*p(0));
-  // Real E10_im = E0*sin(kc*p(1))*sin(gamma_im*p(0));
+  Real E10_re = E0*sin(kc*p(1))*cos(gamma_im*p(0));
+  Real E10_im = -E0*sin(kc*p(1))*sin(gamma_im*p(0));
   // Real E10_re = E0*sin(M_PI*p(1)/_a);
 
-  return RealVectorValue(0, 0, 0);
+  return RealVectorValue(0, 0, E10_im);
+  // return RealVectorValue(0, 0, (E10_re+E10_im)/sqrt(2));  
 }
