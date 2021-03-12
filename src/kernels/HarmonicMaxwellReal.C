@@ -55,23 +55,29 @@ HarmonicMaxwellReal::HarmonicMaxwellReal(const InputParameters & parameters)
 Real
 HarmonicMaxwellReal::computeQpResidual()
 {
+  Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
+  Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;
   return _nu_re[_qp]*HarmonicMaxwellBase::curlCurlTerm() 
        - _nu_im[_qp]*HarmonicMaxwellBase::coupledCurlCurlTerm()
-       -_omega*_omega*(_epsilon_re[_qp]*_u[_qp]-_epsilon_im[_qp]*_v[_qp])*_test[_i][_qp];
+       -_omega*_omega*(_epsilon_re_eff*_u[_qp]-_epsilon_im_eff*_v[_qp])*_test[_i][_qp];
 }
 
 Real
 HarmonicMaxwellReal::computeQpJacobian()
 {
+  Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
+  Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;  
   return _nu_re[_qp]*HarmonicMaxwellBase::dCurlCurlDU() 
-       -_omega*_omega*_epsilon_re[_qp]*_phi[_j][_qp]*_test[_i][_qp];
+       -_omega*_omega*_epsilon_re_eff*_phi[_j][_qp]*_test[_i][_qp];
 }
 
 Real
 HarmonicMaxwellReal::computeQpOffDiagJacobian(unsigned int jvar)
 {
+  Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
+  Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;  
   if (jvar == _v_id)
   return - _nu_im[_qp]*HarmonicMaxwellBase::dCoupledCurlCurlDU()
-       +_omega*_omega*_epsilon_im[_qp]*_phi[_j][_qp]*_test[_i][_qp];
+       +_omega*_omega*_epsilon_im_eff*_phi[_j][_qp]*_test[_i][_qp];
   return 0.0;
 }

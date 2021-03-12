@@ -41,7 +41,6 @@
   [./Metal]
     type = ComplexConductor
     real_conductivity = 0.0 #rel
-    frequency = 9.3e9
   [../]      
 []
 

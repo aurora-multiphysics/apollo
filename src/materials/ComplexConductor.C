@@ -19,7 +19,7 @@ ComplexConductor::validParams()
 
   // Parameter for radius of the spheres used to interpolate permeability.
   params.addParam<Real>(
-      "real_conductivity", 1.0, "The real component of the conductivity ($\\sigma$) of the conductor. Defaults to 1");
+      "real_conductivity", 0.0, "The real component of the conductivity ($\\sigma$) of the conductor. Defaults to 1");
   params.addParam<Real>(
       "imag_conductivity", 0.0, "The imaginary component of the conductivity ($\\sigma$) of the conductor. Defaults to 0");
 
@@ -32,15 +32,11 @@ ComplexConductor::validParams()
       "real_rel_permeability", 1.0, "The real component of the relative permeability ($\\mu$) of the conductor. Defaults to 1");
   params.addParam<Real>(
       "imag_rel_permeability", 0.0, "The imaginary component of the relative permeability ($\\mu$) of the conductor. Defaults to 0");
-
-  params.addParam<Real>("frequency", 1.0, "The frequency of the EM mode in Hz.");
-
   return params;
 }
 
 ComplexConductor::ComplexConductor(const InputParameters & parameters)
   : Material(parameters),
-    _angular_frequency(getParam<Real>("frequency")*(2*M_PI)),
     // Get the parameters from the input file
     _input_real_conductivity(getParam<Real>("real_conductivity")),
     _input_imag_conductivity(getParam<Real>("imag_conductivity")),
@@ -62,7 +58,8 @@ ComplexConductor::ComplexConductor(const InputParameters & parameters)
     _imag_permeability(declareProperty<Real>("imag_permeability")),
 
     _real_reluctance(declareProperty<Real>("real_reluctance")),
-    _imag_reluctance(declareProperty<Real>("imag_reluctance"))    
+    _imag_reluctance(declareProperty<Real>("imag_reluctance"))
+
 {
 }
 
@@ -76,7 +73,7 @@ ComplexConductor::computeQpProperties()
   _imag_conductivity[_qp] = _input_imag_conductivity;
 
   _real_permittivity[_qp] = 8.85418782e-12 * _input_real_rel_permittivity;
-  _imag_permittivity[_qp] = _input_real_conductivity/(2*M_PI*9.3e9); //7.5e-10 for balance
+  _imag_permittivity[_qp] = 8.85418782e-12 * _input_imag_rel_permittivity;
 
   _real_permeability[_qp] = 1.25663706e-6 * _input_real_rel_permeability;
   _imag_permeability[_qp] = 1.25663706e-6 * _input_imag_rel_permeability;
