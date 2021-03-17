@@ -6,43 +6,43 @@
 //*
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
-#include "HammerheadTestApp.h"
-#include "HammerheadApp.h"
+#include "ApolloTestApp.h"
+#include "ApolloApp.h"
 #include "Moose.h"
 #include "AppFactory.h"
 #include "MooseSyntax.h"
 
 InputParameters
-HammerheadTestApp::validParams()
+ApolloTestApp::validParams()
 {
-  InputParameters params = HammerheadApp::validParams();
+  InputParameters params = ApolloApp::validParams();
   return params;
 }
 
-HammerheadTestApp::HammerheadTestApp(InputParameters parameters) : MooseApp(parameters)
+ApolloTestApp::ApolloTestApp(InputParameters parameters) : MooseApp(parameters)
 {
-  HammerheadTestApp::registerAll(
+  ApolloTestApp::registerAll(
       _factory, _action_factory, _syntax, getParam<bool>("allow_test_objects"));
 }
 
-HammerheadTestApp::~HammerheadTestApp() {}
+ApolloTestApp::~ApolloTestApp() {}
 
 void
-HammerheadTestApp::registerAll(Factory & f, ActionFactory & af, Syntax & s, bool use_test_objs)
+ApolloTestApp::registerAll(Factory & f, ActionFactory & af, Syntax & s, bool use_test_objs)
 {
-  HammerheadApp::registerAll(f, af, s);
+  ApolloApp::registerAll(f, af, s);
   if (use_test_objs)
   {
-    Registry::registerObjectsTo(f, {"HammerheadTestApp"});
-    Registry::registerActionsTo(af, {"HammerheadTestApp"});
+    Registry::registerObjectsTo(f, {"ApolloTestApp"});
+    Registry::registerActionsTo(af, {"ApolloTestApp"});
   }
 }
 
 void
-HammerheadTestApp::registerApps()
+ApolloTestApp::registerApps()
 {
-  registerApp(HammerheadApp);
-  registerApp(HammerheadTestApp);
+  registerApp(ApolloApp);
+  registerApp(ApolloTestApp);
 }
 
 /***************************************************************************************************
@@ -50,12 +50,12 @@ HammerheadTestApp::registerApps()
  **************************************************************************************************/
 // External entry point for dynamic application loading
 extern "C" void
-HammerheadTestApp__registerAll(Factory & f, ActionFactory & af, Syntax & s)
+ApolloTestApp__registerAll(Factory & f, ActionFactory & af, Syntax & s)
 {
-  HammerheadTestApp::registerAll(f, af, s);
+  ApolloTestApp::registerAll(f, af, s);
 }
 extern "C" void
-HammerheadTestApp__registerApps()
+ApolloTestApp__registerApps()
 {
-  HammerheadTestApp::registerApps();
+  ApolloTestApp::registerApps();
 }

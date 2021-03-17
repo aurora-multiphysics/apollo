@@ -51,20 +51,20 @@ ADDITIONAL_LIBS     := $(FRAMEWORK_DIR)/contrib/gtest/libgtest.la
 # dep apps
 CURRENT_DIR        := $(shell pwd)
 APPLICATION_DIR    := $(CURRENT_DIR)/..
-APPLICATION_NAME   := hammerhead
+APPLICATION_NAME   := apollo
 include            $(FRAMEWORK_DIR)/app.mk
 
 APPLICATION_DIR    := $(CURRENT_DIR)
-APPLICATION_NAME   := hammerhead-unit
+APPLICATION_NAME   := apollo-unit
 BUILD_EXEC         := yes
 
 DEP_APPS    ?= $(shell $(FRAMEWORK_DIR)/scripts/find_dep_apps.py $(APPLICATION_NAME))
 include $(FRAMEWORK_DIR)/app.mk
 
-# Find all the Hammerhead unit test source files and include their dependencies.
-hammerhead_unit_srcfiles := $(shell find $(CURRENT_DIR)/src -name "*.C")
-hammerhead_unit_deps := $(patsubst %.C, %.$(obj-suffix).d, $(hammerhead_unit_srcfiles))
--include $(hammerhead_unit_deps)
+# Find all the Apollo unit test source files and include their dependencies.
+apollo_unit_srcfiles := $(shell find $(CURRENT_DIR)/src -name "*.C")
+apollo_unit_deps := $(patsubst %.C, %.$(obj-suffix).d, $(apollo_unit_srcfiles))
+-include $(apollo_unit_deps)
 
 ###############################################################################
 # Additional special case targets should be added here
