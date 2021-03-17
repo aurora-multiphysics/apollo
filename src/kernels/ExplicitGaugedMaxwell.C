@@ -26,7 +26,7 @@
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("HammerheadApp", ExplicitGaugedMaxwell);
+registerMooseObject("ApolloApp", ExplicitGaugedMaxwell);
 
 InputParameters
 ExplicitGaugedMaxwell::validParams()

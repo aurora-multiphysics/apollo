@@ -9,7 +9,7 @@
 
 #include "MagneticMoment.h"
 
-registerMooseObject("HammerheadApp", MagneticMoment);
+registerMooseObject("ApolloApp", MagneticMoment);
 
 InputParameters
 MagneticMoment::validParams()

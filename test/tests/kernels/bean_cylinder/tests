@@ -6,6 +6,6 @@
     exodiff = 'bean_cyl_out.e'
     abs_zero = 1e-8
     issues = "#10049"
-    requirement = "Hammerhead shall be able to reproduce the Bean field profile of a quasi-2D cylindrical superconductor at full penetration under an axial field."
+    requirement = "Apollo shall be able to reproduce the Bean field profile of a quasi-2D cylindrical superconductor at full penetration under an axial field."
   []
 []

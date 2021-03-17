@@ -15,7 +15,7 @@
 
 #include "libmesh/dof_map.h"
 
-registerMooseObject("HammerheadApp", BlockAveragePostprocessor);
+registerMooseObject("ApolloApp", BlockAveragePostprocessor);
 
 defineLegacyParams(BlockAveragePostprocessor);
 

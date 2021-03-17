@@ -10,7 +10,7 @@
 
 #include "MagnetizationIntegral.h"
 
-registerMooseObject("HammerheadApp", MagnetizationIntegral);
+registerMooseObject("ApolloApp", MagnetizationIntegral);
 
 defineLegacyParams(MagnetizationIntegral);
 

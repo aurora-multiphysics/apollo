@@ -10,7 +10,7 @@
 #include "ComplexConductor.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", ComplexConductor);
+registerMooseObject("ApolloApp", ComplexConductor);
 
 InputParameters
 ComplexConductor::validParams()

@@ -9,7 +9,7 @@
 
 #include "VectorCurl.h"
 
-registerMooseObject("HammerheadApp", VectorCurl);
+registerMooseObject("ApolloApp", VectorCurl);
 
 InputParameters
 VectorCurl::validParams()

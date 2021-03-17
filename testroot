@@ -1,4 +1,4 @@
-app_name = hammerhead
+app_name = apollo
 allow_warnings = false
 allow_unused = false
 allow_override = false

@@ -12,7 +12,7 @@
 
 #include "libmesh/mesh_tools.h"
 
-registerMooseObject("HammerheadApp", BlockAverageValue);
+registerMooseObject("ApolloApp", BlockAverageValue);
 
 template <>
 InputParameters

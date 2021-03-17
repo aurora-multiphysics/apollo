@@ -10,7 +10,7 @@
 #include "VectorCurlBC.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", VectorCurlBC);
+registerMooseObject("ApolloApp", VectorCurlBC);
 
 InputParameters
 VectorCurlBC::validParams()

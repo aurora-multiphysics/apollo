@@ -10,7 +10,7 @@
 #include "Conductor.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", Conductor);
+registerMooseObject("ApolloApp", Conductor);
 
 InputParameters
 Conductor::validParams()

@@ -11,7 +11,7 @@
 #include "RobinTE10RealBC.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", RobinTE10RealBC);
+registerMooseObject("ApolloApp", RobinTE10RealBC);
 
 InputParameters
 RobinTE10RealBC::validParams()

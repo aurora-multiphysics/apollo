@@ -1,11 +1,11 @@
-#include "HammerheadApp.h"
+#include "ApolloApp.h"
 #include "Moose.h"
 #include "AppFactory.h"
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
 InputParameters
-HammerheadApp::validParams()
+ApolloApp::validParams()
 {
   InputParameters params = MooseApp::validParams();
   params.set<bool>("use_legacy_material_output") = false;
@@ -18,12 +18,12 @@ HammerheadApp::validParams()
   return params;
 }
 
-HammerheadApp::HammerheadApp(InputParameters parameters) : MooseApp(parameters)
+ApolloApp::ApolloApp(InputParameters parameters) : MooseApp(parameters)
 {
-  HammerheadApp::registerAll(_factory, _action_factory, _syntax);
+  ApolloApp::registerAll(_factory, _action_factory, _syntax);
 }
 
-HammerheadApp::~HammerheadApp() {}
+ApolloApp::~ApolloApp() {}
 
 // static void
 // associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
@@ -38,31 +38,31 @@ HammerheadApp::~HammerheadApp() {}
 // }
 
 void
-HammerheadApp::registerAll(Factory & f, ActionFactory & af, Syntax & s)
+ApolloApp::registerAll(Factory & f, ActionFactory & af, Syntax & s)
 {
   ModulesApp::registerAll(f, af, s);
-  Registry::registerObjectsTo(f, {"HammerheadApp"});
-  Registry::registerActionsTo(af, {"HammerheadApp"});
+  Registry::registerObjectsTo(f, {"ApolloApp"});
+  Registry::registerActionsTo(af, {"ApolloApp"});
 
   /* register custom execute flags, action syntax, etc. here */
 }
 
 void
-HammerheadApp::registerApps()
+ApolloApp::registerApps()
 {
-  registerApp(HammerheadApp);
+  registerApp(ApolloApp);
 }
 
 /***************************************************************************************************
  *********************** Dynamic Library Entry Points - DO NOT MODIFY ******************************
  **************************************************************************************************/
 extern "C" void
-HammerheadApp__registerAll(Factory & f, ActionFactory & af, Syntax & s)
+ApolloApp__registerAll(Factory & f, ActionFactory & af, Syntax & s)
 {
-  HammerheadApp::registerAll(f, af, s);
+  ApolloApp::registerAll(f, af, s);
 }
 extern "C" void
-HammerheadApp__registerApps()
+ApolloApp__registerApps()
 {
-  HammerheadApp::registerApps();
+  ApolloApp::registerApps();
 }

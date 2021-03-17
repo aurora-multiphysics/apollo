@@ -10,7 +10,7 @@
 #include "FunctionFluxBC.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", FunctionFluxBC);
+registerMooseObject("ApolloApp", FunctionFluxBC);
 
 InputParameters
 FunctionFluxBC::validParams()

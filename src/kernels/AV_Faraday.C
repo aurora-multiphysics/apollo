@@ -26,7 +26,7 @@
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("HammerheadApp", AV_Faraday);
+registerMooseObject("ApolloApp", AV_Faraday);
 
 InputParameters
 AV_Faraday::validParams()

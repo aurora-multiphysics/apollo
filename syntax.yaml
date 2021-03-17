@@ -46356,7 +46356,7 @@
       default: !!str 
       cpp_type: MooseEnum
       group_name: 
-      options: HammerheadApp HammerheadTestApp
+      options: ApolloApp ApolloTestApp
       description: |
         The type of application to build (applications not registered can be loaded with dynamic libraries. Master application type will be used if not provided.
     - name: block
@@ -46614,7 +46614,7 @@
       default: !!str 
       cpp_type: MooseEnum
       group_name: 
-      options: HammerheadApp HammerheadTestApp
+      options: ApolloApp ApolloTestApp
       description: |
         The type of application to build (applications not registered can be loaded with dynamic libraries. Master application type will be used if not provided.
     - name: bounding_box_inflation
@@ -46816,7 +46816,7 @@
       default: !!str 
       cpp_type: MooseEnum
       group_name: 
-      options: HammerheadApp HammerheadTestApp
+      options: ApolloApp ApolloTestApp
       description: |
         The type of application to build (applications not registered can be loaded with dynamic libraries. Master application type will be used if not provided.
     - name: bounding_box_inflation

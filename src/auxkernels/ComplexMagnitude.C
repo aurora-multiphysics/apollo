@@ -9,7 +9,7 @@
 
 #include "ComplexMagnitude.h"
 
-registerMooseObject("HammerheadApp", ComplexMagnitude);
+registerMooseObject("ApolloApp", ComplexMagnitude);
 
 InputParameters
 ComplexMagnitude::validParams()

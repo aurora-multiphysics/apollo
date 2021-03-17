@@ -9,7 +9,7 @@
 
 #include "WaveguideProperties.h"
 
-registerMooseObject("HammerheadApp", WaveguideProperties);
+registerMooseObject("ApolloApp", WaveguideProperties);
 
 const Real WaveguideProperties::_mu0 = 1.25663706e-6;
 const Real WaveguideProperties::_epsilon0 = 8.85418782e-12;

@@ -26,7 +26,7 @@
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("HammerheadApp", MaxwellBase);
+registerMooseObject("ApolloApp", MaxwellBase);
 
 InputParameters
 MaxwellBase::validParams()

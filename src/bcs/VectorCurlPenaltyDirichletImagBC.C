@@ -10,7 +10,7 @@
 #include "VectorCurlPenaltyDirichletImagBC.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", VectorCurlPenaltyDirichletImagBC);
+registerMooseObject("ApolloApp", VectorCurlPenaltyDirichletImagBC);
 
 InputParameters
 VectorCurlPenaltyDirichletImagBC::validParams()

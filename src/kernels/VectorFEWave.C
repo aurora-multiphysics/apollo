@@ -11,7 +11,7 @@
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("HammerheadApp", VectorFEWave);
+registerMooseObject("ApolloApp", VectorFEWave);
 
 InputParameters
 VectorFEWave::validParams()

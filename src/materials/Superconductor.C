@@ -10,7 +10,7 @@
 #include "Superconductor.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", Superconductor);
+registerMooseObject("ApolloApp", Superconductor);
 
 InputParameters
 Superconductor::validParams()

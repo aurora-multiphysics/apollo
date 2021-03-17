@@ -11,15 +11,15 @@
 
 #include "MooseApp.h"
 
-class HammerheadApp : public MooseApp
+class ApolloTestApp : public MooseApp
 {
 public:
   static InputParameters validParams();
 
-  HammerheadApp(InputParameters parameters);
-  virtual ~HammerheadApp();
+  ApolloTestApp(InputParameters parameters);
+  virtual ~ApolloTestApp();
 
   static void registerApps();
-  static void registerAll(Factory & f, ActionFactory & af, Syntax & s);
+  static void registerAll(Factory & f, ActionFactory & af, Syntax & s, bool use_test_objs = false);
 };
 

@@ -27,7 +27,7 @@
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("HammerheadApp", DivergenceFree);
+registerMooseObject("ApolloApp", DivergenceFree);
 
 InputParameters
 DivergenceFree::validParams()

@@ -10,7 +10,7 @@
 #include "ElementNedelecL2Error.h"
 #include "Function.h"
 
-registerMooseObject("HammerheadApp", ElementNedelecL2Error);
+registerMooseObject("ApolloApp", ElementNedelecL2Error);
 
 defineLegacyParams(ElementNedelecL2Error);
 

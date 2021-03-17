@@ -9,7 +9,7 @@
 
 #include "CurrentDensity.h"
 
-registerMooseObject("HammerheadApp", CurrentDensity);
+registerMooseObject("ApolloApp", CurrentDensity);
 
 InputParameters
 CurrentDensity::validParams()

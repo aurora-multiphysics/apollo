@@ -1,5 +1,5 @@
 Content:
-    Hammerhead:
+    Apollo:
         root_dir: ${ROOT_DIR}/doc/content
     moose:
         root_dir: ${MOOSE_DIR}/framework/doc/content
@@ -14,7 +14,7 @@ Renderer:
 
 Extensions:
     MooseDocs.extensions.navigation:
-        name: Hammerhead
+        name: Apollo
     MooseDocs.extensions.appsyntax:
         executable: ${ROOT_DIR}
         hide:

@@ -6,7 +6,7 @@ figure = plt.figure(facecolor='white')
 axes0 = figure.add_subplot(111)
 
 # Read Postprocessor Data
-data = mooseutils.PostprocessorReader('/home/alexander/Development/moose_projects/hammerhead/problems/3d_sc_trel_out.csv')
+data = mooseutils.PostprocessorReader('/home/alexander/Development/moose_projects/apollo/problems/3d_sc_trel_out.csv')
 
 x = data['H_applied']
 y = data['magnetization_domain']

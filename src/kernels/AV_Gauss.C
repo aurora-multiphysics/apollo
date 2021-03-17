@@ -27,7 +27,7 @@
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("HammerheadApp", AV_Gauss);
+registerMooseObject("ApolloApp", AV_Gauss);
 
 InputParameters
 AV_Gauss::validParams()
