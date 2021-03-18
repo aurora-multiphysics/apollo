@@ -25,7 +25,7 @@
 
 [Kernels]
   [./curl_curl_H]
-    type = CurlE
+    type = H_CurlE
     variable = H
   [../]
   [./magnetic_field_time_derivative]

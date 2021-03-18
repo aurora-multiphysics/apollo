@@ -20,7 +20,6 @@ VectorCurlPenaltyDirichletBC::validParams()
   params.addParam<FunctionName>("function_x", 0, "The function for the x component");
   params.addParam<FunctionName>("function_y", 0, "The function for the y component");
   params.addParam<FunctionName>("function_z", 0, "The function for the z component");
-  params.addRequiredCoupledVar("v", "Coupled vector variable");
   params.addDeprecatedParam<FunctionName>(
       "x_exact_soln", "The exact solution for the x component", "Use 'function_x' instead.");
   params.addDeprecatedParam<FunctionName>(
@@ -33,8 +32,6 @@ VectorCurlPenaltyDirichletBC::validParams()
 VectorCurlPenaltyDirichletBC::VectorCurlPenaltyDirichletBC(const InputParameters & parameters)
   : VectorIntegratedBC(parameters),
     _penalty(getParam<Real>("penalty")),
-    _v(coupledVectorValue("v")), 
-    _v_id(coupled("v")),      
     _function(isParamValid("function") ? &getFunction("function") : nullptr),
     _function_x(isParamValid("x_exact_soln") ? getFunction("x_exact_soln")
                                              : getFunction("function_x")),
@@ -64,7 +61,7 @@ VectorCurlPenaltyDirichletBC::computeQpResidual()
     u_exact = {_function_x.value(_t, _q_point[_qp]),
                _function_y.value(_t, _q_point[_qp]),
                _function_z.value(_t, _q_point[_qp])};
-  RealVectorValue Ncu = (_u[_qp] + _v[_qp] - u_exact).cross(_normals[_qp]);
+  RealVectorValue Ncu = (_u[_qp] - u_exact).cross(_normals[_qp]);
   return _penalty * Ncu * ((_test[_i][_qp]).cross(_normals[_qp]));
 }
 
@@ -72,12 +69,4 @@ Real
 VectorCurlPenaltyDirichletBC::computeQpJacobian()
 {
   return _penalty * (_phi[_j][_qp]).cross(_normals[_qp]) * (_test[_i][_qp]).cross(_normals[_qp]);
-}
-
-Real
-VectorCurlPenaltyDirichletBC::computeQpOffDiagJacobian(unsigned int jvar)
-{
-  if (jvar == _v_id)
-     return _penalty * (_phi[_j][_qp]).cross(_normals[_qp]) * (_test[_i][_qp]).cross(_normals[_qp]);
-  return 0.0;
 }
