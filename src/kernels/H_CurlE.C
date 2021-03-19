@@ -22,7 +22,7 @@ H_CurlE::H_CurlE(const InputParameters & parameters)
     _x_ffn(getFunction("x_forcing_func")),
     _y_ffn(getFunction("y_forcing_func")),
     _z_ffn(getFunction("z_forcing_func")),
-    _resistivity(getMaterialProperty<Real>("resistivity")),
+    _rho(getMaterialProperty<Real>("resistivity")),
     _drhodj(getMaterialProperty<Real>("drhodj"))
 {
 }
@@ -40,7 +40,7 @@ H_CurlE::computeQpResidual()
   //                        _z_ffn.value(_t, _q_point[_qp])) *
   //            _test[_i][_qp];
 
-  return _curl_test[_i][_qp] * _resistivity[_qp] * _curl_u[_qp] -
+  return _curl_test[_i][_qp] * _rho[_qp] * _curl_u[_qp] -
          RealVectorValue(_x_ffn.value(_t, _q_point[_qp]),
                          _y_ffn.value(_t, _q_point[_qp]),
                          _z_ffn.value(_t, _q_point[_qp])) *

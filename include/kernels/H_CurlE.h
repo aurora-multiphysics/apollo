@@ -28,6 +28,6 @@ protected:
   const Function & _z_ffn;
 
   /// The resistivity at the current quadrature point.
-  const MaterialProperty<Real> & _resistivity;
+  const MaterialProperty<Real> & _rho;
   const MaterialProperty<Real> & _drhodj;
 };

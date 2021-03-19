@@ -7,6 +7,7 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
+//* Base class for solution of (complex) Maxwell equations in frequency domain.
 //* Solves:
 //* curl(a * curl u) - grad(a * div u) + d/dt s*( u + grad p) = 0
 //* div (s * (u + grad p) )= 0

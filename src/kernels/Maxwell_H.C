@@ -31,34 +31,27 @@ registerMooseObject("ApolloApp", Maxwell_H);
 InputParameters
 Maxwell_H::validParams()
 {
-  InputParameters params = VectorTimeKernel::validParams();
+  InputParameters params = MaxwellBase::validParams();
   return params;
 }
 
 Maxwell_H::Maxwell_H(const InputParameters & parameters)
-  : VectorTimeKernel(parameters),
-    _curl_phi(_assembly.curlPhi(_var)),
-    _curl_test(_var.curlPhi()),
-    _curl_u(_is_implicit ? _var.curlSln() : _var.curlSlnOld()),
-    _u_dot(_var.uDot()),
-    _du_dot_du(_var.duDotDu()),
+  : MaxwellBase(parameters),
     _rho(getMaterialProperty<Real>("resistivity")),
     _mu(getMaterialProperty<Real>("permeability"))
 {
-  // use component-wise curl on phi, u and test?
 }
 
 Real
 Maxwell_H::computeQpResidual()
 {
-  return _rho[_qp] * (_curl_u[_qp] * _curl_test[_i][_qp] + _grad_u[_qp].tr() * _grad_test[_i][_qp].tr())
-         + _mu[_qp] * _test[_i][_qp] * _u_dot[_qp]  ;
+  return _rho[_qp] * MaxwellBase::steadyStateTerm() +
+         + _mu[_qp] * MaxwellBase::firstOrderTimeDerivTerm();
 }
 
 Real
 Maxwell_H::computeQpJacobian()
 {
-  return _rho[_qp] * (_curl_phi[_j][_qp] * _curl_test[_i][_qp] +
-                      _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr()) +
-         _mu[_qp] * _test[_i][_qp] *  _du_dot_du[_qp] * _phi[_j][_qp];
+  return _rho[_qp] * MaxwellBase::dSteadyStateTermDU() +
+         _mu[_qp] *  MaxwellBase::dFirstOrderTimeDerivDU();
 }

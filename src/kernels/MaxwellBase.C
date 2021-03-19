@@ -7,6 +7,7 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
+//* Base class for solution of (real) Maxwell equations in time domain.
 //* Solves:
 //* curl(a * curl u) - grad(a * div u) + d/dt s*( u + grad p) = 0
 //* div (s * (u + grad p) )= 0
@@ -78,6 +79,18 @@ Real
 MaxwellBase::dGaugePenaltyDU()
 {
   return _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr();
+}
+
+Real
+MaxwellBase::steadyStateTerm()
+{
+  return curlCurlTerm() + (_gauge_penalty ? gaugePenaltyTerm() : 0);
+}
+
+Real
+MaxwellBase::dSteadyStateTermDU()
+{
+  return dCurlCurlDU() + (_gauge_penalty ? dGaugePenaltyDU() : 0);
 }
 
 Real

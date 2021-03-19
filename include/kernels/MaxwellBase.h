@@ -27,6 +27,8 @@ protected:
   virtual Real gaugePenaltyTerm();
   virtual Real dCurlCurlDU();
   virtual Real dGaugePenaltyDU();
+  virtual Real steadyStateTerm();
+  virtual Real dSteadyStateTermDU();
   virtual Real firstOrderTimeDerivTerm();
   virtual Real dFirstOrderTimeDerivDU();
   virtual Real secondOrderTimeDerivTerm();

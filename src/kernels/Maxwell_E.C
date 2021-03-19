@@ -37,7 +37,7 @@ Maxwell_E::validParams()
 
 Maxwell_E::Maxwell_E(const InputParameters & parameters)
   : MaxwellBase(parameters), 
-      _rho(getMaterialProperty<Real>("resistivity")),
+    _rho(getMaterialProperty<Real>("resistivity")),
     _mu(getMaterialProperty<Real>("permeability")) 
 {
 }
@@ -45,14 +45,13 @@ Maxwell_E::Maxwell_E(const InputParameters & parameters)
 Real
 Maxwell_E::computeQpResidual()
 {
-  return (1.0/_mu[_qp]) *
-             (MaxwellBase::curlCurlTerm() + MaxwellBase::gaugePenaltyTerm()) +
+  return (1.0/_mu[_qp]) * MaxwellBase::steadyStateTerm() +
          (1.0/_rho[_qp]) * MaxwellBase::firstOrderTimeDerivTerm();
 }
 
 Real
 Maxwell_E::computeQpJacobian()
 {
-  return (1.0/_mu[_qp]) * (MaxwellBase::dCurlCurlDU() + MaxwellBase::dGaugePenaltyDU()) +
+  return (1.0/_mu[_qp]) * dSteadyStateTermDU() +
          (1.0/_rho[_qp]) * MaxwellBase::dFirstOrderTimeDerivDU();
 }
