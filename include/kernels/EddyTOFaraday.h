@@ -6,12 +6,12 @@
 #include "MaxwellBase.h"
 #include "MaterialProperty.h"
 
-class EddyAVFaraday : public MaxwellBase
+class EddyTOFaraday : public MaxwellBase
 {
 public:
   static InputParameters validParams();
 
-  EddyAVFaraday(const InputParameters & parameters);
+  EddyTOFaraday(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;
@@ -23,8 +23,8 @@ protected:
   MooseVariable & _v_var;
   const VariablePhiGradient & _standard_grad_phi;
 
-  const MaterialProperty<Real> & _nu;
-  const MaterialProperty<Real> & _sigma;
+  const MaterialProperty<Real> & _rho;
+  const MaterialProperty<Real> & _mu;
 
   /// The resistivity at the current quadrature point.
   // const MaterialProperty<Real> & _permeability;

@@ -51,7 +51,7 @@ EddyTOGauss::EddyTOGauss(const InputParameters & parameters)
     // _grad_v(coupledVectorGradient("vector_potential")),
     _v_var(*getVectorVar("vector_potential", 0)),
     _vector_phi(_assembly.phi(_v_var)),
-    _permeability(getMaterialProperty<Real>("permeability"))
+    _mu(getMaterialProperty<Real>("permeability"))
 {
   // use component-wise curl on phi, u and test?
 }
@@ -59,20 +59,20 @@ EddyTOGauss::EddyTOGauss(const InputParameters & parameters)
 Real
 EddyTOGauss::computeQpResidual()
 {
-  return _grad_test[_i][_qp] * _permeability[_qp] * (_grad_u_dot[_qp] + _v_dot[_qp]);
+  return _grad_test[_i][_qp] * _mu[_qp] * (_grad_u_dot[_qp] + _v_dot[_qp]);
 }
 // Jc(B) implemented like ffn ->
 Real
 EddyTOGauss::computeQpJacobian()
 {
-  return _grad_test[_i][_qp] * _permeability[_qp] * _du_dot_du[_qp] * _grad_phi[_j][_qp];
+  return _grad_test[_i][_qp] * _mu[_qp] * _du_dot_du[_qp] * _grad_phi[_j][_qp];
 }
 
 Real
 EddyTOGauss::computeQpOffDiagJacobian(unsigned int jvar)
 {
   if (jvar == _v_id)
-    return _grad_test[_i][_qp] * _permeability[_qp] * _dv_dot_dv[_qp] * _vector_phi[_j][_qp];
+    return _grad_test[_i][_qp] * _mu[_qp] * _dv_dot_dv[_qp] * _vector_phi[_j][_qp];
   else
     return 0;
 }

@@ -19,31 +19,38 @@ Conductor::validParams()
 
   // Parameter for radius of the spheres used to interpolate permeability.
   params.addParam<Real>(
-      "resistivity", 1.0, "The resistivity ($\\rho$) of the conductor. Defaults to 1");
+      "conductivity", 0.0, "The conductivity ($\\sigma$) of the conductor. Defaults to 1");
   params.addParam<Real>(
-      "permeability", 1.0, "The permeability ($\\mu$) of the conductor. Defaults to 1");
+      "rel_permittivity", 1.0, "The relative permittivity ($\\varepsilon$) of the conductor. Defaults to 1");
+  params.addParam<Real>(
+      "rel_permeability", 1.0, "The relative permeability ($\\mu$) of the conductor. Defaults to 1");
   return params;
 }
 
 Conductor::Conductor(const InputParameters & parameters)
   : Material(parameters),
-
     // Get the parameters from the input file
-    _input_resistivity(getParam<Real>("resistivity")),
-    _input_permeability(getParam<Real>("permeability")),
-    // Declare two material properties by getting a reference from the MOOSE Material system
+    _input_conductivity(getParam<Real>("conductivity")),
+    _input_rel_permittivity(getParam<Real>("rel_permittivity")),    
+    _input_rel_permeability(getParam<Real>("rel_permeability")),
+
+    // Declare material properties by getting a reference from the MOOSE Material system
+    _conductivity(declareProperty<Real>("conductivity")),
+    _permittivity(declareProperty<Real>("permittivity")),
     _permeability(declareProperty<Real>("permeability")),
-    _resistivity(declareProperty<Real>("resistivity"))
+    _resistivity(declareProperty<Real>("resistivity")),
+    _reluctance(declareProperty<Real>("reluctance"))
 {
 }
 
 void
 Conductor::computeQpProperties()
 {
-  // Real value = _radius.value(_t, _q_point[_qp]);
-  // mooseAssert(value >= 1 && value <= 3,
-  //             "The radius range must be in the range [1, 3], but " << value << " provided.");
-  _permeability[_qp] = _input_permeability;
-  _resistivity[_qp] = _input_resistivity;
-  // _drhodj[_qp] = _resistivity[_qp]; // actually de_dj
+  const Real _epsilon0 = 8.85418782e-12;
+  const Real _mu0 = 1.25663706e-6;
+  _conductivity[_qp] = _input_conductivity;
+  _permittivity[_qp] = _epsilon0 * _input_rel_permittivity;
+  _permeability[_qp] = _mu0 * _input_rel_permeability;
+  _resistivity[_qp] =  1.0/_conductivity[_qp];
+  _reluctance[_qp] =  1.0/_permeability[_qp];
 }

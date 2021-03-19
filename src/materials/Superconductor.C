@@ -76,5 +76,4 @@ Superconductor::computeQpProperties()
   _permeability[_qp] = _input_permeability;
   _resistivity[_qp] = (_ec[_qp] / _jc[_qp]) * pow((_j[_qp].norm() / _jc[_qp]), _n[_qp] - 1);
   _drhodj[_qp] = (_ec[_qp] / _jc[_qp]) * _n[_qp] * (pow((_j[_qp].norm() / _jc[_qp]), _n[_qp] - 1));
-  // DRHODJ should be de/dj = n * rho
 }

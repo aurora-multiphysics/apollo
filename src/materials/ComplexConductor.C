@@ -66,9 +66,6 @@ ComplexConductor::ComplexConductor(const InputParameters & parameters)
 void
 ComplexConductor::computeQpProperties()
 {
-  // Real value = _radius.value(_t, _q_point[_qp]);
-  // mooseAssert(value >= 1 && value <= 3,
-  //             "The radius range must be in the range [1, 3], but " << value << " provided.");
   _real_conductivity[_qp] = _input_real_conductivity;
   _imag_conductivity[_qp] = _input_imag_conductivity;
 

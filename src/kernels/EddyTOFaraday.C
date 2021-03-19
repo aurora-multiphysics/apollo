@@ -17,50 +17,50 @@
 //* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
 //* B = curl A
 
-#include "EddyAVFaraday.h"
+#include "EddyTOFaraday.h"
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("ApolloApp", EddyAVFaraday);
+registerMooseObject("ApolloApp", EddyTOFaraday);
 
 InputParameters
-EddyAVFaraday::validParams()
+EddyTOFaraday::validParams()
 {
   InputParameters params = MaxwellBase::validParams();
   params.addCoupledVar("scalar_potential", 0, "Scalar potential");
   return params;
 }
 
-EddyAVFaraday::EddyAVFaraday(const InputParameters & parameters)
+EddyTOFaraday::EddyTOFaraday(const InputParameters & parameters)
   : MaxwellBase(parameters),
     _grad_v(coupledGradient("scalar_potential")),
     _v_id(coupled("scalar_potential")),
     _v_var(*getVar("scalar_potential", 0)),
     _standard_grad_phi(_assembly.gradPhi(_v_var)),
-    _nu(getMaterialProperty<Real>("reluctance")),
-    _sigma(getMaterialProperty<Real>("conductivity"))
+    _rho(getMaterialProperty<Real>("resistivity")),
+    _mu(getMaterialProperty<Real>("permeability"))
 {
 }
 
 Real
-EddyAVFaraday::computeQpResidual()
+EddyTOFaraday::computeQpResidual()
 {
-  return _nu[_qp] * MaxwellBase::steadyStateTerm() +
-         _sigma[_qp] * (MaxwellBase::firstOrderTimeDerivTerm() + _test[_i][_qp] * _grad_v[_qp]);
+  return _rho[_qp] * MaxwellBase::steadyStateTerm() +
+         _mu[_qp] * (MaxwellBase::firstOrderTimeDerivTerm() + _test[_i][_qp] * _grad_v[_qp]);
 }
 
 Real
-EddyAVFaraday::computeQpJacobian()
+EddyTOFaraday::computeQpJacobian()
 {
-  return _nu[_qp] * MaxwellBase::dSteadyStateTermDU() +
-         _sigma[_qp] * MaxwellBase::dFirstOrderTimeDerivDU();
+  return _rho[_qp] * MaxwellBase::dSteadyStateTermDU() +
+         _mu[_qp] * MaxwellBase::dFirstOrderTimeDerivDU();
 }
 
 Real
-EddyAVFaraday::computeQpOffDiagJacobian(unsigned jvar)
+EddyTOFaraday::computeQpOffDiagJacobian(unsigned jvar)
 {
   if (jvar == _v_id)
-    return _test[_i][_qp] * _sigma[_qp] * _standard_grad_phi[_j][_qp];
+    return _test[_i][_qp] * _mu[_qp] * _standard_grad_phi[_j][_qp];
   else
     return 0.;
 }

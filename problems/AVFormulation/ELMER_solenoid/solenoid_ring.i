@@ -1,7 +1,7 @@
 [Mesh]
   [gen]
     type = FileMeshGenerator
-    file = solenoid_ring.msh
+    file = gold/solenoid_ring.msh
   [../]
   second_order = true
 []
@@ -9,20 +9,17 @@
 [Materials]
   [./solenoid]
     type = Conductor
-    resistivity = 795774.715457 #rel
-    permeability = 1e-10 # [m/S]
+    conductivity = 1e-10 #[S/m]
     block = 1
   [../]      
   [./ring]
     type = Conductor
-    resistivity = 795774.715457
-    permeability = 2.273e7 # [m/S]
+    conductivity = 2.273e7 # [S/m]
     block = 3
   [../]
   [./air]
     type = Conductor
-    resistivity = 795774.715457 #rel
-    permeability = 1e-10 # [m/S]
+    conductivity = 1e-10 #[S/m]
     block = 2
   [../]
 []

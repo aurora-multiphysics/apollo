@@ -32,9 +32,14 @@ protected:
   virtual void computeQpProperties() override;
 
   /// Value of resistivity from the input file
-  const Real & _input_resistivity;
-  const Real & _input_permeability;
+  const Real & _input_conductivity;
+  const Real & _input_rel_permittivity;
+  const Real & _input_rel_permeability;
+
   /// The resistivity (rho)
+  MaterialProperty<Real> & _conductivity;
+  MaterialProperty<Real> & _permittivity;
   MaterialProperty<Real> & _permeability;
   MaterialProperty<Real> & _resistivity;
+  MaterialProperty<Real> & _reluctance;
 };

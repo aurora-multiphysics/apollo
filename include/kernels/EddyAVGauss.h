@@ -29,6 +29,6 @@ protected:
   const VariableValue & _dv_dot_dv;
   VectorMooseVariable & _v_var;  
   const VectorVariablePhiValue & _vector_phi;
-  const MaterialProperty<Real> & _permeability;
+  const MaterialProperty<Real> & _sigma;
   Real _sgn;
 };
