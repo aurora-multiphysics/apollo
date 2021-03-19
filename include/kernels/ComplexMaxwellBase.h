@@ -12,12 +12,12 @@
 #include "MaxwellBase.h"
 #include "MaterialProperty.h"
 
-class HarmonicMaxwellBase : public VectorKernel
+class ComplexMaxwellBase : public VectorKernel
 {
 public:
   static InputParameters validParams();
 
-  HarmonicMaxwellBase(const InputParameters & parameters);
+  ComplexMaxwellBase(const InputParameters & parameters);
   
 protected:
   virtual Real computeQpResidual() override;

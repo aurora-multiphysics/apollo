@@ -56,13 +56,13 @@
 []
 [Kernels]
   [./Real]
-    type = HarmonicMaxwellReal
+    type = ComplexMaxwellReal
     variable = E_real
     v = E_imag
     waveguide_properties = WaveguideProps
   [../]
   [./Imag]
-    type = HarmonicMaxwellImag
+    type = ComplexMaxwellImag
     variable = E_imag
     v = E_real
     waveguide_properties = WaveguideProps

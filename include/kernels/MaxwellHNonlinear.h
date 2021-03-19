@@ -3,12 +3,12 @@
 #include "VectorKernel.h"
 #include "MaterialProperty.h"
 
-class H_CurlE : public VectorKernel
+class MaxwellHNonlinear : public VectorKernel
 {
 public:
   static InputParameters validParams();
 
-  H_CurlE(const InputParameters & parameters);
+  MaxwellHNonlinear(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;

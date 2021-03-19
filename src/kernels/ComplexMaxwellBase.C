@@ -23,14 +23,14 @@
 //* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
 //* B = curl A
 
-#include "HarmonicMaxwellBase.h"
+#include "ComplexMaxwellBase.h"
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("ApolloApp", HarmonicMaxwellBase);
+registerMooseObject("ApolloApp", ComplexMaxwellBase);
 
 InputParameters
-HarmonicMaxwellBase::validParams()
+ComplexMaxwellBase::validParams()
 {
   InputParameters params = VectorKernel::validParams();
   params.addClassDescription("This class computes various components of the"
@@ -40,7 +40,7 @@ HarmonicMaxwellBase::validParams()
   return params;
 }
 
-HarmonicMaxwellBase::HarmonicMaxwellBase(const InputParameters & parameters)
+ComplexMaxwellBase::ComplexMaxwellBase(const InputParameters & parameters)
   : VectorKernel(parameters),
     _curl_phi(_assembly.curlPhi(_var)),
     _curl_test(_var.curlPhi()),
@@ -52,43 +52,43 @@ HarmonicMaxwellBase::HarmonicMaxwellBase(const InputParameters & parameters)
 }
 
 Real
-HarmonicMaxwellBase::curlCurlTerm()
+ComplexMaxwellBase::curlCurlTerm()
 {
   return _curl_u[_qp] * _curl_test[_i][_qp];
 }
 
 Real
-HarmonicMaxwellBase::dCurlCurlDU()
+ComplexMaxwellBase::dCurlCurlDU()
 {
   return _curl_phi[_j][_qp] * _curl_test[_i][_qp];
 }
 
 Real
-HarmonicMaxwellBase::gaugePenaltyTerm()
+ComplexMaxwellBase::gaugePenaltyTerm()
 {
   return _grad_u[_qp].tr() * _grad_test[_i][_qp].tr();
 }
 
 Real
-HarmonicMaxwellBase::dGaugePenaltyDU()
+ComplexMaxwellBase::dGaugePenaltyDU()
 {
   return _grad_phi[_j][_qp].tr() * _grad_test[_i][_qp].tr();
 }
 
 Real
-HarmonicMaxwellBase::coupledCurlCurlTerm()
+ComplexMaxwellBase::coupledCurlCurlTerm()
 {
   return _curl_v[_qp] * _curl_test[_i][_qp];
 }
 
 Real
-HarmonicMaxwellBase::dCoupledCurlCurlDU()
+ComplexMaxwellBase::dCoupledCurlCurlDU()
 {
   return _curl_phi[_j][_qp] * _curl_test[_i][_qp];
 }
 
 Real
-HarmonicMaxwellBase::computeQpResidual() {return 0;}
+ComplexMaxwellBase::computeQpResidual() {return 0;}
 
 Real
-HarmonicMaxwellBase::computeQpJacobian(){return 0;}
+ComplexMaxwellBase::computeQpJacobian(){return 0;}

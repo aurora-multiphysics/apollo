@@ -22,36 +22,36 @@
 //* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
 //* B = curl A
 
-#include "Maxwell_H.h"
+#include "MaxwellE.h"
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("ApolloApp", Maxwell_H);
+registerMooseObject("ApolloApp", MaxwellE);
 
 InputParameters
-Maxwell_H::validParams()
+MaxwellE::validParams()
 {
   InputParameters params = MaxwellBase::validParams();
   return params;
 }
 
-Maxwell_H::Maxwell_H(const InputParameters & parameters)
-  : MaxwellBase(parameters),
+MaxwellE::MaxwellE(const InputParameters & parameters)
+  : MaxwellBase(parameters), 
     _rho(getMaterialProperty<Real>("resistivity")),
-    _mu(getMaterialProperty<Real>("permeability"))
+    _mu(getMaterialProperty<Real>("permeability")) 
 {
 }
 
 Real
-Maxwell_H::computeQpResidual()
+MaxwellE::computeQpResidual()
 {
-  return _rho[_qp] * MaxwellBase::steadyStateTerm() +
-         + _mu[_qp] * MaxwellBase::firstOrderTimeDerivTerm();
+  return (1.0/_mu[_qp]) * MaxwellBase::steadyStateTerm() +
+         (1.0/_rho[_qp]) * MaxwellBase::firstOrderTimeDerivTerm();
 }
 
 Real
-Maxwell_H::computeQpJacobian()
+MaxwellE::computeQpJacobian()
 {
-  return _rho[_qp] * MaxwellBase::dSteadyStateTermDU() +
-         _mu[_qp] *  MaxwellBase::dFirstOrderTimeDerivDU();
+  return (1.0/_mu[_qp]) * MaxwellBase::dSteadyStateTermDU() +
+         (1.0/_rho[_qp]) * MaxwellBase::dFirstOrderTimeDerivDU();
 }

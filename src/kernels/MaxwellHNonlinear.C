@@ -1,11 +1,11 @@
-#include "H_CurlE.h"
+#include "MaxwellHNonlinear.h"
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("ApolloApp", H_CurlE);
+registerMooseObject("ApolloApp", MaxwellHNonlinear);
 
 InputParameters
-H_CurlE::validParams()
+MaxwellHNonlinear::validParams()
 {
   InputParameters params = VectorKernel::validParams();
   params.addParam<FunctionName>("x_forcing_func", 0, "The x forcing function.");
@@ -14,7 +14,7 @@ H_CurlE::validParams()
   return params;
 }
 
-H_CurlE::H_CurlE(const InputParameters & parameters)
+MaxwellHNonlinear::MaxwellHNonlinear(const InputParameters & parameters)
   : VectorKernel(parameters),
     _curl_test(_var.curlPhi()),
     _curl_phi(_assembly.curlPhi(_var)),
@@ -28,7 +28,7 @@ H_CurlE::H_CurlE(const InputParameters & parameters)
 }
 
 Real
-H_CurlE::computeQpResidual()
+MaxwellHNonlinear::computeQpResidual()
 {
   // ec = 0.1
   // n = 10
@@ -48,10 +48,13 @@ H_CurlE::computeQpResidual()
 }
 // Jc(B) implemented like ffn ->
 Real
-H_CurlE::computeQpJacobian()
+MaxwellHNonlinear::computeQpJacobian()
 {
-  // return _curl_test[_i][_qp] * 0.1 * 9 * pow(_curl_u[_qp].norm(), 8) * _curl_phi[_j][_qp];
-
   return _curl_test[_i][_qp] * _drhodj[_qp] * _curl_phi[_j][_qp];
+          //  _rho[_qp] * _curl_phi[_j][_qp] * _curl_test[_i][_qp] +
+          //  _test[_i][_qp] * _mu[_qp] * _du_dot_du[_qp] * _phi[_j][_qp] +
+          //  +(_n[_qp] - 1) * _rho[_qp] * (1 / (1e-99 + pow((_curl_u[_qp].norm()), 2))) *
+          //    (1e-99 + ((_curl_phi[_j][_qp].contract(_curl_u[_qp]))) *
+          //                 ((_curl_u[_qp].contract(_curl_test[_i][_qp]))));
 }
 

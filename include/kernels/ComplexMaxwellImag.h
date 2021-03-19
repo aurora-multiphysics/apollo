@@ -9,15 +9,16 @@
 //*
 #pragma once
 
-#include "HarmonicMaxwellBase.h"
+#include "ComplexMaxwellBase.h"
 #include "MaterialProperty.h"
 #include "WaveguideProperties.h"
-class HarmonicMaxwellReal : public HarmonicMaxwellBase
+
+class ComplexMaxwellImag : public ComplexMaxwellBase
 {
 public:
   static InputParameters validParams();
 
-  HarmonicMaxwellReal(const InputParameters & parameters);
+  ComplexMaxwellImag(const InputParameters & parameters);
   
 protected:
   virtual Real computeQpResidual() override;

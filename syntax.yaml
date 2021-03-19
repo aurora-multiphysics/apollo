@@ -30449,7 +30449,7 @@
       description: |
         The tag for the vectors this Kernel should fill
     subblocks:
-  - name: /Kernels/H_CurlE
+  - name: /Kernels/MaxwellHNonlinear
     description: |
       
     parameters:
@@ -30533,7 +30533,7 @@
         The seed for the master random number generator
     - name: type
       required: No
-      default: !!str H_CurlE
+      default: !!str MaxwellHNonlinear
       cpp_type: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >
       group_name: 
       description: |

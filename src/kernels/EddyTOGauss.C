@@ -23,14 +23,14 @@
 //* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
 //* B = curl A
 
-#include "MaxwellDivergenceFree.h"
+#include "EddyTOGauss.h"
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("ApolloApp", MaxwellDivergenceFree);
+registerMooseObject("ApolloApp", EddyTOGauss);
 
 InputParameters
-MaxwellDivergenceFree::validParams()
+EddyTOGauss::validParams()
 {
   InputParameters params = TimeKernel::validParams();
   params.addParam<FunctionName>("x_forcing_func", 0, "The x forcing function.");
@@ -40,7 +40,7 @@ MaxwellDivergenceFree::validParams()
   return params;
 }
 
-MaxwellDivergenceFree::MaxwellDivergenceFree(const InputParameters & parameters)
+EddyTOGauss::EddyTOGauss(const InputParameters & parameters)
   : TimeKernel(parameters),
     _grad_u_dot(_var.gradSlnDot()),
     _du_dot_du(_var.duDotDu()),
@@ -57,19 +57,19 @@ MaxwellDivergenceFree::MaxwellDivergenceFree(const InputParameters & parameters)
 }
 
 Real
-MaxwellDivergenceFree::computeQpResidual()
+EddyTOGauss::computeQpResidual()
 {
   return _grad_test[_i][_qp] * _permeability[_qp] * (_grad_u_dot[_qp] + _v_dot[_qp]);
 }
 // Jc(B) implemented like ffn ->
 Real
-MaxwellDivergenceFree::computeQpJacobian()
+EddyTOGauss::computeQpJacobian()
 {
   return _grad_test[_i][_qp] * _permeability[_qp] * _du_dot_du[_qp] * _grad_phi[_j][_qp];
 }
 
 Real
-MaxwellDivergenceFree::computeQpOffDiagJacobian(unsigned int jvar)
+EddyTOGauss::computeQpOffDiagJacobian(unsigned int jvar)
 {
   if (jvar == _v_id)
     return _grad_test[_i][_qp] * _permeability[_qp] * _dv_dot_dv[_qp] * _vector_phi[_j][_qp];

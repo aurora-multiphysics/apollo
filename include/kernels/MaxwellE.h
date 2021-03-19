@@ -3,12 +3,12 @@
 #include "MaxwellBase.h"
 #include "MaterialProperty.h"
 
-class Maxwell_E : public MaxwellBase
+class MaxwellE : public MaxwellBase
 {
 public:
   static InputParameters validParams();
 
-  Maxwell_E(const InputParameters & parameters);
+  MaxwellE(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;

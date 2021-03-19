@@ -9,26 +9,26 @@
 //*
 #pragma once
 
-#include "TimeKernel.h"
+#include "ComplexMaxwellBase.h"
 #include "MaterialProperty.h"
-
-class AV_Gauss : public TimeKernel
+#include "WaveguideProperties.h"
+class ComplexMaxwellReal : public ComplexMaxwellBase
 {
 public:
   static InputParameters validParams();
 
-  AV_Gauss(const InputParameters & parameters);
-
+  ComplexMaxwellReal(const InputParameters & parameters);
+  
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
   virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
-  const unsigned int _v_id;
-  // const VectorVariableValue & _v;
-  const VectorVariableValue & _v_dot;
-  const VariableValue & _dv_dot_dv;
-  VectorMooseVariable & _v_var;  
-  const VectorVariablePhiValue & _vector_phi;
-  const MaterialProperty<Real> & _permeability;
-  Real _sgn;
+
+  const Real _omega;
+  const MaterialProperty<Real> & _sigma_re;
+  const MaterialProperty<Real> & _sigma_im;
+  const MaterialProperty<Real> & _epsilon_re;
+  const MaterialProperty<Real> & _epsilon_im;
+  const MaterialProperty<Real> & _nu_re;
+  const MaterialProperty<Real> & _nu_im;
 };

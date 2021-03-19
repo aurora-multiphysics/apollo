@@ -22,16 +22,16 @@
 //* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
 //* B = curl A
 
-#include "HarmonicMaxwellReal.h"
+#include "ComplexMaxwellReal.h"
 #include "Function.h"
 #include "Assembly.h"
 
-registerMooseObject("ApolloApp", HarmonicMaxwellReal);
+registerMooseObject("ApolloApp", ComplexMaxwellReal);
 
 InputParameters
-HarmonicMaxwellReal::validParams()
+ComplexMaxwellReal::validParams()
 {
-  InputParameters params = HarmonicMaxwellBase::validParams();
+  InputParameters params = ComplexMaxwellBase::validParams();
   params.addClassDescription("This class computes various components of the"
                              "Maxwell equations which can then be assembled "
                              "together in child classes.");
@@ -40,8 +40,8 @@ HarmonicMaxwellReal::validParams()
   return params;
 }
 
-HarmonicMaxwellReal::HarmonicMaxwellReal(const InputParameters & parameters)
-  : HarmonicMaxwellBase(parameters),
+ComplexMaxwellReal::ComplexMaxwellReal(const InputParameters & parameters)
+  : ComplexMaxwellBase(parameters),
   _omega(getUserObject<WaveguideProperties>("waveguide_properties")._omega),
   _sigma_re(getMaterialProperty<Real>("real_conductivity")),
   _sigma_im(getMaterialProperty<Real>("imag_conductivity")),
@@ -53,31 +53,31 @@ HarmonicMaxwellReal::HarmonicMaxwellReal(const InputParameters & parameters)
 }
 
 Real
-HarmonicMaxwellReal::computeQpResidual()
+ComplexMaxwellReal::computeQpResidual()
 {
   Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
   Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;
-  return _nu_re[_qp]*HarmonicMaxwellBase::curlCurlTerm() 
-       - _nu_im[_qp]*HarmonicMaxwellBase::coupledCurlCurlTerm()
+  return _nu_re[_qp]*ComplexMaxwellBase::curlCurlTerm() 
+       - _nu_im[_qp]*ComplexMaxwellBase::coupledCurlCurlTerm()
        -_omega*_omega*(_epsilon_re_eff*_u[_qp]-_epsilon_im_eff*_v[_qp])*_test[_i][_qp];
 }
 
 Real
-HarmonicMaxwellReal::computeQpJacobian()
+ComplexMaxwellReal::computeQpJacobian()
 {
   Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
   Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;  
-  return _nu_re[_qp]*HarmonicMaxwellBase::dCurlCurlDU() 
+  return _nu_re[_qp]*ComplexMaxwellBase::dCurlCurlDU() 
        -_omega*_omega*_epsilon_re_eff*_phi[_j][_qp]*_test[_i][_qp];
 }
 
 Real
-HarmonicMaxwellReal::computeQpOffDiagJacobian(unsigned int jvar)
+ComplexMaxwellReal::computeQpOffDiagJacobian(unsigned int jvar)
 {
   Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
   Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;  
   if (jvar == _v_id)
-  return - _nu_im[_qp]*HarmonicMaxwellBase::dCoupledCurlCurlDU()
+  return - _nu_im[_qp]*ComplexMaxwellBase::dCoupledCurlCurlDU()
        +_omega*_omega*_epsilon_im_eff*_phi[_j][_qp]*_test[_i][_qp];
   return 0.0;
 }

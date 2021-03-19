@@ -25,7 +25,7 @@
 
 [Kernels]
   [./curl_curl_H]
-    type = H_CurlE
+    type = MaxwellHNonlinear
     variable = H
   [../]
   [./magnetic_field_time_derivative]

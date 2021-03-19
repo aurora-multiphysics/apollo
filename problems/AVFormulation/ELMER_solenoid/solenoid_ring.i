@@ -53,12 +53,12 @@
 
 [Kernels]
   [./Faraday]
-    type = AV_Faraday
+    type = EddyAVFaraday
     variable = A
     # scalar_potential = V
   [../]
   # [./Gauge]
-  #   type = AV_Gauss
+  #   type = EddyAVGauss
   #   variable = V
   #   vector_potential = A
   # [../]
