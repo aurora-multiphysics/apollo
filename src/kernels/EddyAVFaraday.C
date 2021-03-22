@@ -1,21 +1,24 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-//* Base class for solution of (real) Maxwell equations in time domain.
 //* Solves:
-//* curl(a * curl u) - grad(a * div u) + d/dt s*( u + grad p) = 0
-//* div (s * (u + grad p) )= 0
+//* EddyAVFaraday: ∇×(ν∇×A) - ∇(ν∇·A) + σ(dA/dt + ∇ V) = 0
+//* EddyAVGauss:   ∇·(σ(dA/dt + ∇ V))= 0
 //*
-//* in weak form:
-//* (a * curl u, curl v) + (a * div u, div v) + (d/dt s*( u + grad p), v)
-//* - <(a*curl u) x n, v> - <a*div u, v.n>  = 0
-//* (d/dt s*( u + grad p), grad w) - <d/dt s*( u + grad p) . n, w> =0
-
-//* For T-phi formulation, u = T, p = omega, a = rho, s = mu
-//* and H = T0 + T - grad phi = u + grad p
-
-//* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
-//* B = curl A
+//* in weak form
+//* EddyAVFaraday:
+//* (ν∇×A, ∇×v) + (ν∇·A, ∇·v) + (σ(dA/dt + ∇ V), v)
+//* - <(ν∇×A) × n, v> - <ν∇·A, v·n>  = 0
+//* EddyAVGauss:
+//* (σ(dA/dt + ∇ V), ∇w) - <σ(dA/dt + ∇ V)·n, w> =0
+//*
+//* where: 
+//* Reluctance ν = 1/μ
+//* Conductivity σ=1/ρ
+//* Magnetic vector potential A
+//* Scalar electric potential V
+//* Electric field, E = -dA/dt -∇V
+//* Magnetic flux density, B = ∇×A
 
 #include "EddyAVFaraday.h"
 #include "Function.h"

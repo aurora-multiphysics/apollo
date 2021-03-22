@@ -1,27 +1,24 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 //* Solves:
-//* curl(a * curl u) - grad(a * div u) + d/dt s*( u + grad p) = 0
-//* div (s * (u + grad p) )= 0
+//* EddyTOFaraday: ∇×(ρ∇×T) - ∇(ρ∇·T) + μd/dt(T-∇ω) = 0
+//* EddyTOGauss:   ∇·(μd/dt(T-∇ω))=0
 //*
-//* in weak form:
-//* (a * curl u, curl v) + (a * div u, div v) + (d/dt s*( u + grad p), v)
-//* - <(a*curl u) x n, v> - <a*div u, v.n>  = 0
-//* (d/dt s*( u + grad p), grad w) - <d/dt s*( u + grad p) . n, w> =0
-
-// aux div u = 0 with u = B or J
-//* For T-phi formulation, u = T, p = omega, a = rho, s = mu
-//* and H = T0 + T - grad phi = u + grad p
-
-//* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
-//* B = curl A
+//* in weak form
+//* EddyTOFaraday:
+//* (ρ∇×T, ∇×v) + (ρ∇·T, ∇·v) + (μd/dt(T-∇ω), v)
+//* - <(ρ∇×T)×n, v> - <ρ∇·T, v·n>  = 0
+//* EddyTOGauss:
+//* (μd/dt(T-∇ω), ∇w) - <μd/dt(T-∇ω)·n, w> =0
+//*
+//* where: 
+//* Permeability μ
+//* Resistivity ρ=1/σ
+//* Electric vector potential T
+//* Magnetic scalar potential ω
+//* Electric field, E = ρ∇×T
+//* Magnetic flux density, B = μ(T-∇ω)
 
 #include "EddyTOGauss.h"
 #include "Function.h"
@@ -59,7 +56,7 @@ EddyTOGauss::EddyTOGauss(const InputParameters & parameters)
 Real
 EddyTOGauss::computeQpResidual()
 {
-  return _grad_test[_i][_qp] * _mu[_qp] * (_grad_u_dot[_qp] + _v_dot[_qp]);
+  return _grad_test[_i][_qp] * _mu[_qp] * (_grad_u_dot[_qp] - _v_dot[_qp]);
 }
 // Jc(B) implemented like ffn ->
 Real
@@ -72,7 +69,7 @@ Real
 EddyTOGauss::computeQpOffDiagJacobian(unsigned int jvar)
 {
   if (jvar == _v_id)
-    return _grad_test[_i][_qp] * _mu[_qp] * _dv_dot_dv[_qp] * _vector_phi[_j][_qp];
+    return -_grad_test[_i][_qp] * _mu[_qp] * _dv_dot_dv[_qp] * _vector_phi[_j][_qp];
   else
     return 0;
 }

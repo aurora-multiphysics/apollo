@@ -1,21 +1,26 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-//* Base class for solution of (real) Maxwell equations in time domain.
 //* Solves:
-//* curl(a * curl u) - grad(a * div u) + d/dt s*( u + grad p) = 0
-//* div (s * (u + grad p) )= 0
+//* EddyTOFaraday: ∇×(ρ∇×T) - ∇(ρ∇·T) + μd/dt(T-∇ω) = 0
+//* EddyTOGauss:   ∇·(μd/dt(T-∇ω))=0
 //*
-//* in weak form:
-//* (a * curl u, curl v) + (a * div u, div v) + (d/dt s*( u + grad p), v)
-//* - <(a*curl u) x n, v> - <a*div u, v.n>  = 0
-//* (d/dt s*( u + grad p), grad w) - <d/dt s*( u + grad p) . n, w> =0
-
-//* For T-phi formulation, u = T, p = omega, a = rho, s = mu
-//* and H = T0 + T - grad phi = u + grad p
-
-//* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
-//* B = curl A
+//* in weak form
+//* EddyTOFaraday:
+//* (ρ∇×T, ∇×v) + (ρ∇·T, ∇·v) + (μd/dt(T-∇ω), v)
+//* - <(ρ∇×T)×n, v> - <ρ∇·T, v·n>  = 0
+//* EddyTOGauss:
+//* (μd/dt(T-∇ω), ∇w) - <μd/dt(T-∇ω)·n, w> =0
+//*
+//* where: 
+//* Permeability μ
+//* Resistivity ρ=1/σ
+//* Electric vector potential T
+//* Magnetic scalar potential ω
+//* Electric field, E = ρ∇×T
+//* Magnetic flux density, B = μ(T-∇ω)
+//* Magnetic field H = T-∇ω
+//* Current density J = ∇×T
 
 #include "EddyTOFaraday.h"
 #include "Function.h"
@@ -46,7 +51,7 @@ Real
 EddyTOFaraday::computeQpResidual()
 {
   return _rho[_qp] * MaxwellBase::steadyStateTerm() +
-         _mu[_qp] * (MaxwellBase::firstOrderTimeDerivTerm() + _test[_i][_qp] * _grad_v[_qp]);
+         _mu[_qp] * (MaxwellBase::firstOrderTimeDerivTerm() - _test[_i][_qp] * _grad_v[_qp]);
 }
 
 Real
@@ -60,7 +65,7 @@ Real
 EddyTOFaraday::computeQpOffDiagJacobian(unsigned jvar)
 {
   if (jvar == _v_id)
-    return _test[_i][_qp] * _mu[_qp] * _standard_grad_phi[_j][_qp];
+    return -_test[_i][_qp] * _mu[_qp] * _standard_grad_phi[_j][_qp];
   else
     return 0.;
 }
