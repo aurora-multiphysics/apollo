@@ -1,26 +1,21 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-//* Solves:
-//* curl(a * curl u) - grad(a * div u) + d/dt s*( u + grad p) = 0
-//* div (s * (u + grad p) )= 0
-//*
-//* in weak form:
-//* (a * curl u, curl v) + (a * div u, div v) + (d/dt s*( u + grad p), v)
-//* - <(a*curl u) x n, v> - <a*div u, v.n>  = 0
-//* (d/dt s*( u + grad p), grad w) - <d/dt s*( u + grad p) . n, w> =0
-
-//* For T-phi formulation, u = T, p = omega, a = rho, s = mu
-//* and H = T0 + T - grad phi = u + grad p
-
-//* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
-//* B = curl A
+//* Solves imaginary component of (complex) Maxwell equations in frequency domain.
+//* ComplexMaxwellImag:
+//* Im{∇×(ν∇×E꜀) - εω²E꜀ - iωJ}꜀ = 0
+//* where
+//* E꜀ is the complex electric field
+//* The complex magnetic field H꜀ = (ν∇×E꜀)/iω
+//* The real electric field E = Re{E꜀exp(-iωt)}
+//* The real magnetic field H = Re{H꜀exp(-iωt)}
+//* In weak form:꜀
+//* ComplexMaxwellImag:
+//* Im{(ν∇×E꜀, ∇×v) - (εω²E꜀, v) - <(ν∇×E꜀)×n, v> - (iωJ꜀, v)} = 0
+//* The (complex) current density can be rewritten as
+//* J꜀ = σE꜀+ J꜀ᵉ
+//* where J꜀ᵉ is an externally imposed current density distribution.
+//* u = Im(E꜀), v = Re(E꜀)
 
 #include "ComplexMaxwellImag.h"
 #include "Function.h"

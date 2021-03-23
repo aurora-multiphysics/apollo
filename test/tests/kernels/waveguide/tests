@@ -1,0 +1,17 @@
+[Tests]
+  [./waveguide_hex]
+    type = 'Exodiff'
+    input = 'waveguide_hex.i'
+    exodiff = 'waveguide_hex_out.e'
+    abs_zero = 1e-4
+    requirement = "MOOSE shall be able to solve the complex Maxwell equations for a transmissive waveguide, meshed with HEX20 elements."
+  [../]
+  [./waveguide_tet]
+    type = 'Exodiff'
+    input = 'waveguide_tet.i'
+    exodiff = 'waveguide_tet_out.e'
+    abs_zero = 1e-4
+    requirement = "MOOSE shall be able to solve the complex Maxwell equations for a transmissive waveguide, meshed with TET10 elements."
+  [../]
+[]
+
