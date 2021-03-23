@@ -6,7 +6,12 @@
 //*
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
-
+//*
+//* Adds to residual the term 
+//* penalty*<n×n×(u-u_exact),v>
+//*
+//* When the penalty p is large, this imposes a penalty-based Dirichlet BC:
+//* <n×n×(u-u_exact),v> = -<(u-u_exact)×n,v×n> = 0
 #include "VectorCurlPenaltyDirichletBC.h"
 #include "Function.h"
 

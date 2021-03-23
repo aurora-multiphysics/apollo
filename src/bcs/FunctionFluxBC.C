@@ -48,4 +48,3 @@ FunctionFluxBC::computeQpResidual()
                _function_z.value(_t, _q_point[_qp])};
   return -_test[_i][_qp] * (_values * _normals[_qp]);
 }
-// -_test[_i][_qp] * _func.value(_t, _q_point[_qp]);

@@ -1,20 +1,12 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-//* Solves:
-//* curl(a * curl u) - grad(a * div u) + d/dt s*( u + grad p) = 0
-//* div (s * (u + grad p) )= 0
+//* Solves Faraday's law in the quasistatic limit:
+//* MaxwellH: ∇×(ρ∇×H) + μdH/dt = 0
 //*
-//* in weak form:
-//* (a * curl u, curl v) + (a * div u, div v) + (d/dt s*( u + grad p), v)
-//* - <(a*curl u) x n, v> - <a*div u, v.n>  = 0
-//* (d/dt s*( u + grad p), grad w) - <d/dt s*( u + grad p) . n, w> =0
-
-//* For T-phi formulation, u = T, p = omega, a = rho, s = mu
-//* and H = T0 + T - grad phi = u + grad p
-
-//* For A-V formulation, u = A, p = int(V dt), a = mu^-1, s = sigma
-//* B = curl A
+//* in weak form
+//* MaxwellH:
+//* (ρ∇×H, ∇×v) + (μdH/dt, v) - <(ρ∇×H)×n, v>  = 0
 
 #include "MaxwellH.h"
 #include "Function.h"

@@ -19,6 +19,8 @@
 //* Scalar electric potential V
 //* Electric field, E = -dA/dt -∇V
 //* Magnetic flux density, B = ∇×A
+//* Magnetic field H = ν∇×A
+//* Current density J = -σ(dA/dt + ∇ V)
 
 #include "EddyAVGauss.h"
 #include "Function.h"
@@ -46,7 +48,6 @@ EddyAVGauss::EddyAVGauss(const InputParameters & parameters)
     _vector_phi(_assembly.phi(_v_var)),
     _sigma(getMaterialProperty<Real>("conductivity"))
 {
-  // use component-wise curl on phi, u and test?
 }
 
 Real
@@ -54,7 +55,7 @@ EddyAVGauss::computeQpResidual()
 {
   return _grad_test[_i][_qp] * _sigma[_qp] * (_grad_u[_qp] + _v_dot[_qp]);
 }
-// Jc(B) implemented like ffn ->
+
 Real
 EddyAVGauss::computeQpJacobian()
 {
@@ -65,7 +66,6 @@ Real
 EddyAVGauss::computeQpOffDiagJacobian(unsigned int jvar)
 {
   if (jvar == _v_id)
-    // return _grad_test[_i][_qp] * _permeability[_qp] * _vector_phi[_j][_qp];
     return _grad_test[_i][_qp] * _sigma[_qp] * _dv_dot_dv[_qp] * _vector_phi[_j][_qp];
   else
     return 0;

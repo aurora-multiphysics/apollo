@@ -123,7 +123,7 @@
   # [../]
 
   [./wallReal]
-    type = VectorCurlPenaltyDirichletBC
+    type = VectorCurlPenaltyDirichletRealBC
     boundary = 'left top bottom'
     penalty = 1.75e30
     variable = E_real

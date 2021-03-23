@@ -46,7 +46,6 @@ RobinTE10ImagBC::computeQpResidual()
     u_exact_re = RealVectorValue(0, 0, 0);
     u_exact_im = RealVectorValue(0, 0, 0);
   }
-  // RealVectorValue Ncu_re = -_gamma_im->value(_t, _q_point[_qp])* (_u[_qp] - u_exact_im).cross(_normals[_qp]);
   RealVectorValue Ncu_im = _wp.getImagPropagationConstant()* (_v[_qp] - u_exact_re).cross(_normals[_qp]);
   return  -(1/_wp._mu0) * Ncu_im * ((_test[_i][_qp]).cross(_normals[_qp]));
 }

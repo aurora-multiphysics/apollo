@@ -8,6 +8,8 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 //* Equivalent to VectorCurlPenalty with penalty = gamma/mu_0, u_exact = -2E_10 or 0
 //* Variable should be IMAGINARY
+//* Adds to residual the term:
+//* 
 #include "RobinTE10RealBC.h"
 #include "Function.h"
 
@@ -45,9 +47,9 @@ RobinTE10RealBC::computeQpResidual()
   }else{
     u_exact_re = RealVectorValue(0, 0, 0);
     u_exact_im = RealVectorValue(0, 0, 0);
-  }RealVectorValue Ncu_re = _wp.getImagPropagationConstant()* (_v[_qp] - u_exact_im).cross(_normals[_qp]);
-  // RealVectorValue Ncu_im = _gamma_im* (_u[_qp] - u_exact_re).cross(_normals[_qp]);
-  return  (1/_wp._mu0) * Ncu_re * ((_test[_i][_qp]).cross(_normals[_qp]));
+  }
+  RealVectorValue Ncu_re = -_wp.getImagPropagationConstant()* (_v[_qp] - u_exact_im).cross(_normals[_qp]);
+  return  -(1/_wp._mu0) * Ncu_re * ((_test[_i][_qp]).cross(_normals[_qp]));
 }
 
 Real

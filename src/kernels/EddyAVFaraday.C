@@ -19,6 +19,8 @@
 //* Scalar electric potential V
 //* Electric field, E = -dA/dt -∇V
 //* Magnetic flux density, B = ∇×A
+//* Magnetic field H = ν∇×A
+//* Current density J = -σ(dA/dt + ∇ V)
 
 #include "EddyAVFaraday.h"
 #include "Function.h"
