@@ -35,7 +35,7 @@
 
 [BCs]
   [./bnd]
-    type = VectorCurlPenaltyDirichletBC
+    type = VectorTangentialPenaltyDirichletBC
     #boundary = 'top bottom rmax'   
     boundary = 'left right top bottom front back'         
     penalty = 1e10

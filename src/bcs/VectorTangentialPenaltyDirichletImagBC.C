@@ -7,13 +7,13 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "VectorCurlPenaltyDirichletRealBC.h"
+#include "VectorTangentialPenaltyDirichletImagBC.h"
 #include "Function.h"
 
-registerMooseObject("ApolloApp", VectorCurlPenaltyDirichletRealBC);
+registerMooseObject("ApolloApp", VectorTangentialPenaltyDirichletImagBC);
 
 InputParameters
-VectorCurlPenaltyDirichletRealBC::validParams()
+VectorTangentialPenaltyDirichletImagBC::validParams()
 {
   InputParameters params = VectorIntegratedBC::validParams();
   params.addRequiredParam<Real>("penalty", "The penalty coefficient");
@@ -30,11 +30,11 @@ VectorCurlPenaltyDirichletRealBC::validParams()
   return params;
 }
 
-VectorCurlPenaltyDirichletRealBC::VectorCurlPenaltyDirichletRealBC(const InputParameters & parameters)
+VectorTangentialPenaltyDirichletImagBC::VectorTangentialPenaltyDirichletImagBC(const InputParameters & parameters)
   : VectorIntegratedBC(parameters),
     _penalty(getParam<Real>("penalty")),
-    _v(coupledVectorValue("v")), 
-    _v_id(coupled("v")),      
+    _v(coupledVectorValue("v")),  
+    _v_id(coupled("v")),          
     _function(isParamValid("function") ? &getFunction("function") : nullptr),
     _function_x(isParamValid("x_exact_soln") ? getFunction("x_exact_soln")
                                              : getFunction("function_x")),
@@ -55,7 +55,7 @@ VectorCurlPenaltyDirichletRealBC::VectorCurlPenaltyDirichletRealBC(const InputPa
 }
 
 Real
-VectorCurlPenaltyDirichletRealBC::computeQpResidual()
+VectorTangentialPenaltyDirichletImagBC::computeQpResidual()
 {
   RealVectorValue u_exact;
   if (_function)
@@ -64,20 +64,21 @@ VectorCurlPenaltyDirichletRealBC::computeQpResidual()
     u_exact = {_function_x.value(_t, _q_point[_qp]),
                _function_y.value(_t, _q_point[_qp]),
                _function_z.value(_t, _q_point[_qp])};
-  RealVectorValue Ncu = (_u[_qp] + _v[_qp] - u_exact).cross(_normals[_qp]);
+  RealVectorValue Ncu = (_u[_qp] - _v[_qp] - u_exact).cross(_normals[_qp]);
   return _penalty * Ncu * ((_test[_i][_qp]).cross(_normals[_qp]));
 }
 
 Real
-VectorCurlPenaltyDirichletRealBC::computeQpJacobian()
+VectorTangentialPenaltyDirichletImagBC::computeQpJacobian()
 {
   return _penalty * (_phi[_j][_qp]).cross(_normals[_qp]) * (_test[_i][_qp]).cross(_normals[_qp]);
 }
 
+
 Real
-VectorCurlPenaltyDirichletRealBC::computeQpOffDiagJacobian(unsigned int jvar)
+VectorTangentialPenaltyDirichletImagBC::computeQpOffDiagJacobian(unsigned int jvar)
 {
   if (jvar == _v_id)
-     return _penalty * (_phi[_j][_qp]).cross(_normals[_qp]) * (_test[_i][_qp]).cross(_normals[_qp]);
+     return -_penalty * (_phi[_j][_qp]).cross(_normals[_qp]) * (_test[_i][_qp]).cross(_normals[_qp]);
   return 0.0;
 }

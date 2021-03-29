@@ -11,12 +11,12 @@
 
 #include "VectorIntegratedBC.h"
 
-class VectorCurlPenaltyDirichletImagBC : public VectorIntegratedBC
+class VectorTangentialPenaltyDirichletImagBC : public VectorIntegratedBC
 {
 public:
   static InputParameters validParams();
 
-  VectorCurlPenaltyDirichletImagBC(const InputParameters & parameters);
+  VectorTangentialPenaltyDirichletImagBC(const InputParameters & parameters);
 
 protected:
   Real _penalty;

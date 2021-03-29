@@ -28,7 +28,7 @@
 
 [BCs]
   [./bnd]
-    type = VectorCurlPenaltyDirichletBC
+    type = VectorTangentialPenaltyDirichletBC
     boundary = 'left right top bottom'
     penalty = 1e10
     function_x = 'x_sln'

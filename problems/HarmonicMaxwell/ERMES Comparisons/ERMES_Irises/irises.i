@@ -71,14 +71,14 @@
 
 [BCs]
   [./wallReal]
-    type = VectorCurlPenaltyDirichletRealBC
+    type = VectorTangentialPenaltyDirichletRealBC
     boundary = '1'
     penalty = 1.75e30
     variable = E_real
     v = E_imag 
   [../]
   [./wallImag]
-    type = VectorCurlPenaltyDirichletImagBC
+    type = VectorTangentialPenaltyDirichletImagBC
     boundary = '1'
     penalty = 1.75e30
     variable = E_imag

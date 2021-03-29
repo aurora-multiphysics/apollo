@@ -82,7 +82,7 @@
   #   function = 'Zero_Vector'
   # [../]  
   [./bnd2]
-    type = VectorCurlPenaltyDirichletBC
+    type = VectorTangentialPenaltyDirichletBC
     boundary = '21 22 23 24 25 26'
     penalty = 1e20
     function_z = '0'
