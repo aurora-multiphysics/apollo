@@ -8,7 +8,7 @@
     xmin = -1
     ymin = -1
     xmax = 1
-    ymax = 1    
+    ymax = 1
     zmin = -0.02
     zmax = 0.02
     elem_type = HEX20
@@ -37,14 +37,14 @@
 [BCs]
   [./bnd]
     type = VectorTangentialPenaltyDirichletBC
-    #boundary = 'top bottom rmax'   
-    boundary = 'left right top bottom front back'         
+    #boundary = 'top bottom rmax'
+    boundary = 'left right top bottom front back'
     penalty = 1e10
     function_x = 'x_sln'
     function_y = 'y_sln'
-    function_z = 'z_sln'    
+    function_z = 'z_sln'
     variable = H
-  [../]  
+  [../]
 []
 
 [Functions]
@@ -59,17 +59,17 @@
   [./z_sln]
     type = ParsedFunction
     value = 'sin(0.1*pi*t)'
-  [../] 
+  [../]
   [./H_exact_fcn]
     type = ParsedVectorFunction
     #value_z = 'if(sqrt(x^2 + y^2)<(1-(sin(0.1*pi*t))), 0, sin(0.1*pi*t) - (1-sqrt(x^2 + y^2)))'
-    value_z = 'if(max(abs(x),abs(y))<(1-(sin(0.1*pi*t))), 
-                  0, 
-                  if(abs(x)>abs(y), 
+    value_z = 'if(max(abs(x),abs(y))<(1-(sin(0.1*pi*t))),
+                  0,
+                  if(abs(x)>abs(y),
                     sin(0.1*pi*t) - (1-abs(x)),
-                    sin(0.1*pi*t) - (1-abs(y))) 
+                    sin(0.1*pi*t) - (1-abs(y)))
                   )'
-  [../] 
+  [../]
 
 []
 
@@ -109,7 +109,7 @@
   [H_exact]
     family = NEDELEC_ONE
     order = FIRST
-  []    
+  []
   [magnetic_moment]
     order = CONSTANT
     family = MONOMIAL_VEC
@@ -158,7 +158,7 @@
     magnetic_field = H
     variable = magnetic_moment
     execute_on = timestep_end
-  [../]  
+  [../]
   [magnetic_moment_z]
     type = VectorVariableComponentAux
     variable = magnetic_moment_z
@@ -191,7 +191,7 @@
   [./error]
     type = ElementNedelecL2Error
     variable = H
-    function = H_exact_fcn   
+    function = H_exact_fcn
     execute_on = timestep_end
   [../]
   [./h]
@@ -219,7 +219,7 @@
   #   optimal_iterations = 1
   #   linear_iteration_ratio = 1
   #   dt = 0.1
-  # []  
+  # []
 []
 
 [Outputs]

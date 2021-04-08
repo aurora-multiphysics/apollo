@@ -9,7 +9,7 @@
 
 #include "VectorVariableComplexMagnitudeAux.h"
 
-registerMooseObject("MooseApp", VectorVariableComplexMagnitudeAux);
+registerMooseObject("ApolloApp", VectorVariableComplexMagnitudeAux);
 
 InputParameters
 VectorVariableComplexMagnitudeAux::validParams()
@@ -20,7 +20,7 @@ VectorVariableComplexMagnitudeAux::validParams()
   params.addRequiredCoupledVar("real_vector",
                                "The variable from which to compute the component");
   params.addRequiredCoupledVar("imag_vector",
-                               "The variable from which to compute the component");                               
+                               "The variable from which to compute the component");
   return params;
 }
 

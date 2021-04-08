@@ -8,11 +8,14 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 //*
 //* Tangential component of vector u = -n×n×u
-//* Adds to residual the term 
-//* penalty*<n×n×(u-u_exact),v>
+//* Adds to residual the term
+//* penalty*<n×n×(u-u_0),v>
+//*
+//* Used when imposing the Robin boundary condition
+//* <n×∇×u,v> - p<n×n×(u-u_0),v>= 0
 //*
 //* When the penalty p is large, this imposes a penalty-based Dirichlet BC:
-//* p*<n×n×(u-u_exact),v> = -p*<(u-u_exact)×n,v×n> = 0
+//* p*<n×n×(u-u_0),v> = -p*<(u-u_0)×n,v×n> = 0
 #include "VectorTangentialPenaltyDirichletBC.h"
 #include "Function.h"
 
@@ -24,17 +27,17 @@ VectorTangentialPenaltyDirichletBC::validParams()
   InputParameters params = VectorIntegratedBC::validParams();
   params.addRequiredParam<Real>("penalty", "The penalty coefficient");
   params.addParam<FunctionName>("function",
-                                "The boundary condition vector function of the tangential component." 
-                                "This cannot be supplied with the component parameters.");  
+                                "The boundary condition vector function of the tangential component."
+                                "This cannot be supplied with the component parameters.");
   params.addParam<FunctionName>("function_x", 0, "The function for the x component");
   params.addParam<FunctionName>("function_y", 0, "The function for the y component");
   params.addParam<FunctionName>("function_z", 0, "The function for the z component");
   params.addClassDescription(
       "Enforces a Dirichlet boundary condition on the tangential components of a vector "
       "at a surface in a weak sense with $p<n×n×(\\vec{u} - \\vec{u}_0), \\vec{v}>$, where: "
-      "$p$ is the constant scalar penalty; " 
+      "$p$ is the constant scalar penalty; "
       "$n$ is the surface normal vector; "
-      "$\\vec{v}$ is the test function; " 
+      "$\\vec{v}$ is the test function; "
       "and $\\vec{u} - \\vec{u}_0$ is the difference "
       "between the current solution and the Dirichlet data.");
   return params;

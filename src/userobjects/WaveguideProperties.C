@@ -6,7 +6,7 @@
 //*
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
-
+//* Convert into Action; see INSAction for example.
 #include "WaveguideProperties.h"
 
 registerMooseObject("ApolloApp", WaveguideProperties);
@@ -18,21 +18,33 @@ InputParameters
 WaveguideProperties::validParams()
 {
   InputParameters params = GeneralUserObject::validParams();
-  MooseEnum propagationdirection("x y z", "x");
-  params.addRequiredParam<MooseEnum>("propagation_direction",
-                             propagationdirection,
-                             "Direction of propagation of wave at port.");  
-  params.addRequiredParam<Real>("port_length", "The length in m of the port perpendicular to the propagation direction and applied E field.");
-  params.addRequiredParam<Real>("port_width", "The length in m of the port along the axis of the applied E field.");
+  params.addRequiredParam<RealVectorValue>("port_length_vector", "The vector directed along the longest length of a rectangular waveguide port,"
+                                "with magnitude equal to the length of this edge in m ");
+  params.addRequiredParam<RealVectorValue>("port_width_vector", "The vector directed along the shortest length of a rectangular waveguide port,"
+                                "with magnitude equal to the length of this edge in m ");
   params.addRequiredParam<Real>("frequency", "The input frequency in Hz.");
   return params;
 }
 
 WaveguideProperties::WaveguideProperties(const InputParameters & parameters)
   : GeneralUserObject(parameters),
-  _a(getParam<Real>("port_length")),
-  _b(getParam<Real>("port_width")),
-  _omega(getParam<Real>("frequency")*(2*M_PI))
+  _a1(getParam<RealVectorValue>("port_length_vector")),
+  _a2(getParam<RealVectorValue>("port_width_vector")),
+  _a3(_a1.cross(_a2)),
+  _a(sqrt(_a1*_a1)),
+  _b(sqrt(_a2*_a2)),
+  _omega(getParam<Real>("frequency")*(2*M_PI)),
+  kc(M_PI/_a),
+  k0(_omega*sqrt(_epsilon0*_mu0)),
+  gamma_im(sqrt(k0*k0-kc*kc)),
+  E0(sqrt(2*_omega*_mu0/(_a*_b*gamma_im))),
+  V(_a1*_a2.cross(_a3)),
+  _n(1),
+  _m(0),
+  k_a((M_PI*_n/V)*_a2.cross(_a3)),
+  k_b((M_PI*_m/V)*_a3.cross(_a1)),
+  k_c(gamma_im*_a3/sqrt(_a3*_a3)),
+  E_hat(k_c.cross(k_a)/sqrt(k_c.cross(k_a)*k_c.cross(k_a)))
 {
 }
 
@@ -41,64 +53,19 @@ WaveguideProperties::~WaveguideProperties() {}
 Real
 WaveguideProperties::getImagPropagationConstant() const
 {
-  Real kc = M_PI/_a;
-  Real k0 = _omega*sqrt(_epsilon0*_mu0); //2 pi f/c 
-  return sqrt(k0*k0-kc*kc);
+  return gamma_im;
 }
 
 RealVectorValue
 WaveguideProperties::getRealRWTE10(Real t, const Point & p) const
 {
-  Real gamma_im = getImagPropagationConstant();
-  Real E0 = sqrt(2*_omega*_mu0/(_a*_b*gamma_im));
-  Real kc = M_PI/_a;
-  MooseEnum propagation_direction = getParam<MooseEnum>("propagation_direction");
-
-  if (propagation_direction == "x"){
-    Real E10_re = E0*sin(kc*p(1))*cos(gamma_im*p(0));
-    Real E10_im = -E0*sin(kc*p(1))*sin(gamma_im*p(0));
-    return RealVectorValue(0, 0, E10_re);
-  }
-  else if (propagation_direction == "y"){
-    Real E10_re = E0*sin(kc*p(2))*cos(gamma_im*p(1));
-    Real E10_im = -E0*sin(kc*p(2))*sin(gamma_im*p(1));
-    return RealVectorValue(E10_re, 0, 0);
-  }
-  else if (propagation_direction == "z"){
-    Real E10_re = E0*sin(kc*p(0))*cos(gamma_im*p(2));
-    Real E10_im = -E0*sin(kc*p(0))*sin(gamma_im*p(2));
-    return RealVectorValue(0, E10_re, 0);
-  }
-  else{
-    mooseError("Propagation direction not recognised. Please choose from (x, z)");
-    return RealVectorValue(0, 0, 0);
-  }
+  RealVectorValue E10_re = E0*sin(k_a*p)*cos(k_c*p)*E_hat;
+  return E10_re;
 }
 
 RealVectorValue
 WaveguideProperties::getImagRWTE10(Real t, const Point & p) const
 {
-  Real gamma_im = getImagPropagationConstant();
-  Real E0 = sqrt(2*_omega*_mu0/(_a*_b*gamma_im));
-  Real kc = M_PI/_a;
-  MooseEnum propagation_direction = getParam<MooseEnum>("propagation_direction");
-  if (propagation_direction == "x"){
-    Real E10_re = E0*sin(kc*p(1))*cos(gamma_im*p(0));
-    Real E10_im = -E0*sin(kc*p(1))*sin(gamma_im*p(0));
-    return RealVectorValue(0, 0, E10_im);
-  }
-  else if (propagation_direction == "y"){
-    Real E10_re = E0*sin(kc*p(2))*cos(gamma_im*p(1));
-    Real E10_im = -E0*sin(kc*p(2))*sin(gamma_im*p(1));
-    return RealVectorValue(E10_im, 0, 0);
-  }
-  else if (propagation_direction == "z"){
-    Real E10_re = E0*sin(kc*p(0))*cos(gamma_im*p(2));
-    Real E10_im = -E0*sin(kc*p(0))*sin(gamma_im*p(2));
-    return RealVectorValue(0, E10_im, 0);
-  }
-  else{
-    mooseError("Propagation direction not recognised. Please choose from (x, z)");
-    return RealVectorValue(0, 0, 0);
-  }
+  RealVectorValue E10_im = -E0*sin(k_a*p)*sin(k_c*p)*E_hat;
+  return E10_im;
 }

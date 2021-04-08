@@ -17,11 +17,10 @@
 [UserObjects]
   [./Waveguide]
     type = WaveguideProperties
-    propagation_direction = "z"
-    port_length = 22.86e-3
-    port_width = 10.16e-3
+    port_length_vector = '22.86e-3 0 0'
+    port_width_vector = '0 10.16e-3 0'
     frequency = 9.3e9
-  [../]      
+  [../]
 []
 
 [Materials]
@@ -29,7 +28,7 @@
     type = ComplexConductor
     real_conductivity = 0.0 #rel
     frequency = 9.3e9
-  [../]      
+  [../]
 []
 
 [Variables]
@@ -45,7 +44,7 @@
 [AuxVariables]
   [./E_mag]
     family = MONOMIAL
-    order = FIRST  
+    order = FIRST
   [../]
 []
 
@@ -80,7 +79,7 @@
     boundary = 'left top bottom'
     penalty = 1.75e30
     variable = E_real
-    v = E_imag 
+    v = E_imag
   [../]
   [./wallImag]
     type = VectorTangentialPenaltyDirichletImagBC
@@ -93,7 +92,7 @@
     type = RobinTE10RealBC
     boundary = 'back'
     variable = E_real
-    v = E_imag    
+    v = E_imag
     waveguide_properties = Waveguide
     input_port = true
   [../]
@@ -102,7 +101,7 @@
     boundary = 'back'
     waveguide_properties = Waveguide
     variable = E_imag
-    v = E_real    
+    v = E_real
     input_port = true
   [../]
   [./outputPortReal]
@@ -110,7 +109,7 @@
     boundary = 'front'
     waveguide_properties = Waveguide
     variable = E_real
-    v = E_imag    
+    v = E_imag
     input_port = false
   [../]
   [./outputPortImag]
@@ -120,7 +119,7 @@
     variable = E_imag
     v = E_real
     input_port = false
-  [../]    
+  [../]
 []
 
 [Preconditioning]

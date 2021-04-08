@@ -33,8 +33,8 @@ VectorTangentialPenaltyDirichletImagBC::validParams()
 VectorTangentialPenaltyDirichletImagBC::VectorTangentialPenaltyDirichletImagBC(const InputParameters & parameters)
   : VectorIntegratedBC(parameters),
     _penalty(getParam<Real>("penalty")),
-    _v(coupledVectorValue("v")),  
-    _v_id(coupled("v")),          
+    _v(coupledVectorValue("v")),
+    _v_id(coupled("v")),
     _function(isParamValid("function") ? &getFunction("function") : nullptr),
     _function_x(isParamValid("x_exact_soln") ? getFunction("x_exact_soln")
                                              : getFunction("function_x")),
