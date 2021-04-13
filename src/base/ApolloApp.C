@@ -25,17 +25,28 @@ ApolloApp::ApolloApp(InputParameters parameters) : MooseApp(parameters)
 
 ApolloApp::~ApolloApp() {}
 
-// static void
-// associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
-// {
-//   registerSyntaxTask(
-//       "AddWaveguidePropertiesAction", "Modules/WaveguideProperties/*", "add_waveguide_properties");
-//   registerMooseObjectTask("add_waveguide_properties", WaveguideProperties, false);
-//   syntax.addDependency("add_waveguide_properties", "init_displaced_problem");
+static void
+associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
+{
+  // Create the syntax
+  registerSyntax("CMAction", "Modules/ComplexMaxwell");
 
-//   // syntax.registerActionSyntax("AddWaveguidePropertiesInterrogatorAction",
-//   //                             "FluidPropertiesInterrogator");
-// }
+  // add variables action
+  registerTask("add_maxwell_variables", /*is_required=*/false);
+  addTaskDependency("add_maxwell_variables", "add_variable");
+
+  // add ICs action
+  registerTask("add_maxwell_ics", /*is_required=*/false);
+  addTaskDependency("add_maxwell_ics", "add_ic");
+
+  // add Kernels action
+  registerTask("add_maxwell_kernels", /*is_required=*/false);
+  addTaskDependency("add_maxwell_kernels", "add_kernel");
+
+  // add BCs actions
+  registerTask("add_maxwell_bcs", /*is_required=*/false);
+  addTaskDependency("add_maxwell_bcs", "add_bc");
+}
 
 void
 ApolloApp::registerAll(Factory & f, ActionFactory & af, Syntax & s)
@@ -43,8 +54,8 @@ ApolloApp::registerAll(Factory & f, ActionFactory & af, Syntax & s)
   ModulesApp::registerAll(f, af, s);
   Registry::registerObjectsTo(f, {"ApolloApp"});
   Registry::registerActionsTo(af, {"ApolloApp"});
-
   /* register custom execute flags, action syntax, etc. here */
+  associateSyntaxInner(s, af);
 }
 
 void

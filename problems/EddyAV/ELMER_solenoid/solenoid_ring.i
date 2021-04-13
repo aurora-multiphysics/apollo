@@ -11,7 +11,7 @@
     type = Conductor
     conductivity = 1e-10 #[S/m]
     block = 1
-  [../]      
+  [../]
   [./ring]
     type = Conductor
     conductivity = 2.273e7 # [S/m]
@@ -45,7 +45,7 @@
   [./V_surf]
     type = ParsedFunction
     value = '0'
-  [../]       
+  [../]
 []
 
 [Kernels]
@@ -80,7 +80,7 @@
   #   variable = T
   #   boundary = '1 2 3 4 5 6'
   #   function = 'Zero_Vector'
-  # [../]  
+  # [../]
   [./bnd2]
     type = VectorTangentialPenaltyDirichletBC
     boundary = '21 22 23 24 25 26'
@@ -88,11 +88,11 @@
     function_z = '0'
     #function_z = 'z_sln'
     variable = A
-  [../]  
+  [../]
 []
 
 [AuxVariables]
-  [E] 
+  [E]
     # Cannot use Lagrange, as components may be discontinuous
     # at material boundaries.
     family = MONOMIAL_VEC
@@ -145,7 +145,7 @@
   #   magnetic_field = T
   #   variable = magnetic_moment
   #   execute_on = timestep_end
-  # [../]  
+  # [../]
   # [magnetic_moment_z]
   #   type = VectorVariableComponentAux
   #   variable = magnetic_moment_z
@@ -170,7 +170,7 @@
     full = true
     # petsc_options = '-ksp_diagonal_scale -ksp_diagonal_scale_fix'
     # petsc_options_iname = '-pc_type -sub_pc_type -sub_pc_factor_shift_type -pc_asm_overlap'
-    # petsc_options_value = ' asm      lu           NONZERO                   2'    
+    # petsc_options_value = ' asm      lu           NONZERO                   2'
   [../]
 []
 
@@ -178,7 +178,7 @@
   type = Transient
   dt = 0.1 # doesn't remove discrepancies
   start_time = 0.0
-  end_time = 1.0 
+  end_time = 1.0
   automatic_scaling = true
   scheme=BDF2
   # petsc_options_iname = '-pc_type -pc_hypre_type'
@@ -186,7 +186,7 @@
 
   solve_type = 'NEWTON'
   # nl_rel_tol = 1e-5
-  # solve_type = JFNK  
+  # solve_type = JFNK
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   petsc_options_value = 'lu mumps'
   petsc_options = '-snes_converged_reason -ksp_converged_reason -snes_linesearch_monitor'

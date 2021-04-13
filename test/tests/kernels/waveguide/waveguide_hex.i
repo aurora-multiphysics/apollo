@@ -31,16 +31,13 @@
   [../]
 []
 
-[Variables]
-  [./E_real]
+[Modules]
+  [ComplexMaxwell]
     family = NEDELEC_ONE
     order = FIRST
-  [../]
-  [./E_imag]
-    family = NEDELEC_ONE
-    order = FIRST
-  [../]
+  []
 []
+
 [AuxVariables]
   [./E_mag]
     family = MONOMIAL
