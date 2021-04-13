@@ -19,7 +19,8 @@
     family = NEDELEC_ONE
     order = FIRST
 
-
+    pec_boundaries = 'left top bottom'
+    pec_penalty = 1.75e30
   []
 []
 
@@ -56,37 +57,8 @@
     execute_on = 'initial timestep_end'
   [../]
 []
-# [Kernels]
-#   [./Real]
-#     type = ComplexMaxwellReal
-#     variable = E_real
-#     v = E_imag
-#     waveguide_properties = Waveguide
-#   [../]
-#   [./Imag]
-#     type = ComplexMaxwellImag
-#     variable = E_imag
-#     v = E_real
-#     waveguide_properties = Waveguide
-#   [../]
-# []
-
 
 [BCs]
-  [./wallReal]
-    type = VectorTangentialPenaltyDirichletBC
-    boundary = 'left top bottom'
-    penalty = 1.75e30
-    variable = E_real
-    v = E_imag
-  [../]
-  [./wallImag]
-    type = VectorTangentialPenaltyDirichletImagBC
-    boundary = 'left top bottom'
-    penalty = 1.75e30
-    variable = E_imag
-    v = E_real
-  [../]
   [./inputPortReal]
     type = RobinTE10RealBC
     boundary = 'back'

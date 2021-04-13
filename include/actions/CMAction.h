@@ -33,6 +33,13 @@ public:
 
 protected:
   void addCMKernels();
+  void addCMPECBC();
   /// FE type for various variables
   FEType _fe_type;
+  /// Boundaries at which perfect electrical
+  /// conductor conditions are applied
+  std::vector<BoundaryName> _pec_boundaries;
+  /// Penalty term for penalty-based Dirichlet methods at PEC boundaries.
+  Real _pec_penalty;
+
 };

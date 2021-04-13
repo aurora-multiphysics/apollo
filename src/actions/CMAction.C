@@ -44,6 +44,13 @@ CMAction::validParams()
                              "Specifies the order of the FE shape function to use "
                              "for this variable (additional orders not listed are "
                              "allowed)");
+  params.addParam<std::vector<BoundaryName>>(
+      "pec_boundaries", std::vector<BoundaryName>(), "Boundaries at which perfect electrical conductor "
+      "(PEC) boundary conditions are applied");
+  params.addParam<Real>(
+      "pec_penalty", 0, "Penalty coefficient for PEC boundary conditions");
+  params.addParamNamesToGroup("pec_boundaries pec_penalty",
+                        "BoundaryCondition");
   params.addParamNamesToGroup(
       "family order", "Variable");
   return params;
@@ -51,7 +58,9 @@ CMAction::validParams()
 
 CMAction::CMAction(InputParameters parameters)
   : Action(parameters),
-  _fe_type(AddVariableAction::feType(parameters))
+  _fe_type(AddVariableAction::feType(parameters)),
+    _pec_boundaries(getParam<std::vector<BoundaryName>>("pec_boundaries")),
+    _pec_penalty(getParam<Real>("pec_penalty"))
 {
 }
 
@@ -106,41 +115,36 @@ CMAction::act()
     //   addCMVelocityAux();
   }
 
-  // if (_current_task == "add_maxwell_bcs")
-  // {
-  //   if (_velocity_boundary.size() > 0)
-  //     addCMVelocityBC();
-
-  //   if (_has_pinned_node)
-  //     addCMPinnedPressureBC();
-
-  //   if (_no_bc_boundary.size() > 0)
-  //     addCMNoBCBC();
-
-  //   if (_pressure_boundary.size() > 0)
-  //     addCMPressureBC();
-
-  //   if (getParam<bool>("add_temperature_equation"))
-  //   {
-  //     if (_fixed_temperature_boundary.size() > 0)
-  //       addCMTemperatureBC();
-  //   }
-  // }
-  //   if (getParam<bool>("supg") || getParam<bool>("pspg"))
-  //   {
-  //     InputParameters params = _factory.getValidParams("CMADTauMaterial");
-  //     set_common_parameters(params);
-  //     params.set<Real>("alpha") = getParam<Real>("alpha");
-  //     _problem->addMaterial("CMADTauMaterial", "ins_ad_material", params);
-  //   }
-  //   else
-  //   {
-  //     InputParameters params = _factory.getValidParams("CMADMaterial");
-  //     set_common_parameters(params);
-  //     _problem->addMaterial("CMADMaterial", "ins_ad_material", params);
-  //   }
-  // }
+  if (_current_task == "add_maxwell_bcs")
+  {
+    if (_pec_boundaries.size() > 0)
+      addCMPECBC();
+  }
 }
+void
+CMAction::addCMPECBC()
+{
+  std::string bc_type;
+  for (unsigned int i = 0; i < _pec_boundaries.size(); ++i)
+  {
+    bc_type = "VectorTangentialPenaltyDirichletRealBC";
+    InputParameters re_params = _factory.getValidParams(bc_type);
+    re_params.set<NonlinearVariableName>("variable") = Maxwell::e_field_re;
+    re_params.set<std::vector<VariableName>>("v") = {Maxwell::e_field_im};
+    re_params.set<Real>("penalty") = _pec_penalty;
+    re_params.set<std::vector<BoundaryName>>("boundary") = {_pec_boundaries[i]};
+    _problem->addBoundaryCondition(bc_type, "PEC_real_" + _pec_boundaries[i], re_params);
+
+    bc_type = "VectorTangentialPenaltyDirichletImagBC";
+    InputParameters im_params = _factory.getValidParams(bc_type);
+    im_params.set<NonlinearVariableName>("variable") = Maxwell::e_field_im;
+    im_params.set<std::vector<VariableName>>("v") = {Maxwell::e_field_re};
+    im_params.set<Real>("penalty") = _pec_penalty;
+    im_params.set<std::vector<BoundaryName>>("boundary") = {_pec_boundaries[i]};
+    _problem->addBoundaryCondition(bc_type, "PEC_imag_" + _pec_boundaries[i], im_params);
+  }
+}
+
 
 void
 CMAction::addCMKernels()
@@ -158,18 +162,4 @@ CMAction::addCMKernels()
   im_params.set<std::vector<VariableName>>("v") = {Maxwell::e_field_re};
   im_params.set<UserObjectName>("waveguide_properties") = "Waveguide";
   _problem->addKernel(kernel_type, "Imag", im_params);
-
-  // if (getParam<bool>("add_temperature_equation"))
-  // {
-  //   const std::string kernel_type = "INSTemperatureTimeDerivative";
-  //   InputParameters params = _factory.getValidParams(kernel_type);
-  //   params.set<NonlinearVariableName>("variable") = _temperature_variable_name;
-  //   if (_blocks.size() > 0)
-  //     params.set<std::vector<SubdomainName>>("block") = _blocks;
-  //   params.set<MaterialPropertyName>("rho_name") = getParam<MaterialPropertyName>("density_name");
-  //   params.set<MaterialPropertyName>("cp_name") =
-  //       getParam<MaterialPropertyName>("specific_heat_name");
-  //   _problem->addKernel(kernel_type, "ins_temperature_time_deriv", params);
-  // }
 }
-
