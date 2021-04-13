@@ -10,7 +10,6 @@
 #pragma once
 
 #include "Action.h"
-
 #include "MooseEnum.h"
 #include "libmesh/fe_type.h"
 
