@@ -14,28 +14,30 @@
   elem_type = HEX20
 []
 
-[UserObjects]
-  [./Waveguide]
-    type = WaveguideProperties
-    port_length_vector = '22.86e-3 0 0'
-    port_width_vector = '0 10.16e-3 0'
-    frequency = 9.3e9
-  [../]
-[]
-
-[Materials]
-  [./Metal]
-    type = ComplexConductor
-    real_conductivity = 0.0 #rel
-    frequency = 9.3e9
-  [../]
-[]
-
 [Modules]
   [ComplexMaxwell]
     family = NEDELEC_ONE
     order = FIRST
+
+
   []
+[]
+
+# [UserObjects]
+#   [./Waveguide]
+#     type = WaveguideProperties
+#     port_length_vector = '22.86e-3 0 0'
+#     port_width_vector = '0 10.16e-3 0'
+#     frequency = 9.3e9
+#   [../]
+# []
+
+[Materials]
+  [./Cavity]
+    type = ComplexConductor
+    real_conductivity = 0.0 #rel
+    frequency = 9.3e9
+  [../]
 []
 
 [AuxVariables]
@@ -54,20 +56,20 @@
     execute_on = 'initial timestep_end'
   [../]
 []
-[Kernels]
-  [./Real]
-    type = ComplexMaxwellReal
-    variable = E_real
-    v = E_imag
-    waveguide_properties = Waveguide
-  [../]
-  [./Imag]
-    type = ComplexMaxwellImag
-    variable = E_imag
-    v = E_real
-    waveguide_properties = Waveguide
-  [../]
-[]
+# [Kernels]
+#   [./Real]
+#     type = ComplexMaxwellReal
+#     variable = E_real
+#     v = E_imag
+#     waveguide_properties = Waveguide
+#   [../]
+#   [./Imag]
+#     type = ComplexMaxwellImag
+#     variable = E_imag
+#     v = E_real
+#     waveguide_properties = Waveguide
+#   [../]
+# []
 
 
 [BCs]

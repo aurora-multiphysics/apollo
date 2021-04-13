@@ -32,6 +32,7 @@ public:
   virtual void act() override;
 
 protected:
+  void addCMKernels();
   /// FE type for various variables
   FEType _fe_type;
 };
