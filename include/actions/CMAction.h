@@ -34,6 +34,7 @@ public:
 protected:
   void addCMKernels();
   void addCMPECBC();
+  void addCMWaveguidePortsBC();
   /// FE type for various variables
   FEType _fe_type;
   /// Boundaries at which perfect electrical
@@ -41,5 +42,6 @@ protected:
   std::vector<BoundaryName> _pec_boundaries;
   /// Penalty term for penalty-based Dirichlet methods at PEC boundaries.
   Real _pec_penalty;
-
+  std::vector<BoundaryName> _wg_input_ports;
+  std::vector<BoundaryName> _wg_output_ports;
 };

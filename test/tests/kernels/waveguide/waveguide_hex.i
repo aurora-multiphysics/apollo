@@ -21,6 +21,9 @@
 
     pec_boundaries = 'left top bottom'
     pec_penalty = 1.75e30
+
+    wg_input_boundaries = 'back'
+    wg_output_boundaries = 'front'
   []
 []
 
@@ -58,40 +61,40 @@
   [../]
 []
 
-[BCs]
-  [./inputPortReal]
-    type = RobinTE10RealBC
-    boundary = 'back'
-    variable = E_real
-    v = E_imag
-    waveguide_properties = Waveguide
-    input_port = true
-  [../]
-  [./inputPortImag]
-    type = RobinTE10ImagBC
-    boundary = 'back'
-    waveguide_properties = Waveguide
-    variable = E_imag
-    v = E_real
-    input_port = true
-  [../]
-  [./outputPortReal]
-    type = RobinTE10RealBC
-    boundary = 'front'
-    waveguide_properties = Waveguide
-    variable = E_real
-    v = E_imag
-    input_port = false
-  [../]
-  [./outputPortImag]
-    type = RobinTE10ImagBC
-    boundary = 'front'
-    waveguide_properties = Waveguide
-    variable = E_imag
-    v = E_real
-    input_port = false
-  [../]
-[]
+# [BCs]
+#   [./inputPortReal]
+#     type = RobinTE10RealBC
+#     boundary = 'back'
+#     variable = E_real
+#     v = E_imag
+#     waveguide_properties = Waveguide
+#     input_port = true
+#   [../]
+#   [./inputPortImag]
+#     type = RobinTE10ImagBC
+#     boundary = 'back'
+#     waveguide_properties = Waveguide
+#     variable = E_imag
+#     v = E_real
+#     input_port = true
+#   [../]
+#   [./outputPortReal]
+#     type = RobinTE10RealBC
+#     boundary = 'front'
+#     waveguide_properties = Waveguide
+#     variable = E_real
+#     v = E_imag
+#     input_port = false
+#   [../]
+#   [./outputPortImag]
+#     type = RobinTE10ImagBC
+#     boundary = 'front'
+#     waveguide_properties = Waveguide
+#     variable = E_imag
+#     v = E_real
+#     input_port = false
+#   [../]
+# []
 
 [Preconditioning]
   [./pre]
