@@ -32,6 +32,6 @@ protected:
 
   /// Holds the magnitude of the local electric field at the quadrature points
   const VectorVariableValue & _e_field;
-  /// The local conductivity of the material.
+  /// The local electrical_conductivity of the material.
   const MaterialProperty<Real> & _sigma;
 };

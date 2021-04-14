@@ -9,17 +9,17 @@
 [Materials]
   [./solenoid]
     type = Conductor
-    conductivity = 1e-10 #[S/m]
+    electrical_conductivity = 1e-10 #[S/m]
     block = 1
   [../]
   [./ring]
     type = Conductor
-    conductivity = 2.273e7 # [S/m]
+    electrical_conductivity = 2.273e7 # [S/m]
     block = 3
   [../]
   [./air]
     type = Conductor
-    conductivity = 1e-10 #[S/m]
+    electrical_conductivity = 1e-10 #[S/m]
     block = 2
   [../]
 []

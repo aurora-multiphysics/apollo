@@ -34,7 +34,7 @@
   [./electric]
     type = HeatConduction
     variable = elec
-    diffusion_coefficient = electrical_conductivity
+    diffusion_coefficient = electrical_electrical_conductivity
   [../]
 []
 
@@ -62,7 +62,7 @@
 [Materials]
   [./k]
     type = GenericConstantMaterial
-    prop_names = 'thermal_conductivity'
+    prop_names = 'thermal_electrical_conductivity'
     prop_values = '397.48' #copper in W/(m K)
     block = 0
   [../]
@@ -79,7 +79,7 @@
     block = 0
   [../]
   [./sigma] #copper is default material
-    type = ElectricalConductivity
+    type = Electricalelectrical_conductivity
     temperature = T
   [../]
 []

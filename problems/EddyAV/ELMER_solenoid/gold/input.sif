@@ -17,9 +17,9 @@ Simulation
 End
 
 Constants
-!	$Iconel625Conductivity = 7.752e5
-!	$SS304Conductivity = 1.389e6
-!	$A356Conductivity = 2.273e7
+!	$Iconel625electrical_conductivity = 7.752e5
+!	$SS304electrical_conductivity = 1.389e6
+!	$A356electrical_conductivity = 2.273e7
 End
 
 Solver 1
@@ -54,12 +54,12 @@ Solver 2
 	Linear System Residual Output = 1
 	Linear System Precondition Recompute = 1
 
-	! Vectors "Electric Field", "Magnetic Field Strength", "Current Density" 
+	! Vectors "Electric Field", "Magnetic Field Strength", "Current Density"
 	! will be computed.
 	Calculate Electric Field = True
 	Calculate Magnetic Field Strength = True
 	Calculate Current Density = True
-	Calculate Magnetic Flux Density = True	
+	Calculate Magnetic Flux Density = True
 End
 
 Solver 3
@@ -68,7 +68,7 @@ Solver 3
 	Procedure = "ResultOutputSolve" "ResultOutputSolver"
 
 	Vtu format = Logical True
-	Ascii Output = False 
+	Ascii Output = False
 	Vector Field 1 = Electric Field
 	Vector Field 2 = Magnetic Field Strength
 	Vector Field 3 = Current Density
@@ -102,7 +102,7 @@ End
 Material 2
 	Name = "Aluminum"
 	Relative Permeability = 1
-	Electric Conductivity = 2.273e7
+	Electric electrical_conductivity = 2.273e7
 End
 
 Material 3
@@ -128,7 +128,7 @@ Body 2
 	Material = 2
 End
 
-Body 3 
+Body 3
 	Name = "Air"
 	Target Bodies(1) = 3
 	Equation = 3

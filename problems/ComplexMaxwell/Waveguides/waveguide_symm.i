@@ -24,7 +24,7 @@
 #     input = gen
 #     transform = SCALE
 #     vector_value ='1e-3 1e-3 1e-3'
-#   []  
+#   []
 #   second_order = true
 #   # uniform_refine = 1
 # []
@@ -35,15 +35,15 @@
     port_length = 22.86e-3
     port_width = 10.16e-3
     frequency = 9.3e9
-  [../]      
+  [../]
 []
 
 [Materials]
   [./Metal]
     type = ComplexConductor
-    real_conductivity = 0.0 #rel
+    real_electrical_conductivity = 0.0 #rel
     frequency = 9.3e9
-  [../]      
+  [../]
 []
 
 [Variables]
@@ -59,7 +59,7 @@
 [AuxVariables]
   [./E_mag]
     family = MONOMIAL
-    order = FIRST  
+    order = FIRST
   [../]
 []
 
@@ -127,7 +127,7 @@
     boundary = 'bottom front back'
     penalty = 1.75e30
     variable = E_real
-    v = E_imag 
+    v = E_imag
   [../]
   [./wallImag]
     type = VectorTangentialPenaltyDirichletImagBC
@@ -140,7 +140,7 @@
     type = RobinTE10RealBC
     boundary = 'left'
     variable = E_real
-    v = E_imag    
+    v = E_imag
     waveguide_properties = Waveguide
     input_port = true
   [../]
@@ -149,7 +149,7 @@
     boundary = 'left'
     waveguide_properties = Waveguide
     variable = E_imag
-    v = E_real    
+    v = E_real
     input_port = true
   [../]
   [./outputPortReal]
@@ -157,7 +157,7 @@
     boundary = 'right'
     waveguide_properties = Waveguide
     variable = E_real
-    v = E_imag    
+    v = E_imag
     input_port = false
   [../]
   [./outputPortImag]
@@ -167,10 +167,10 @@
     variable = E_imag
     v = E_real
     input_port = false
-  [../]    
+  [../]
 []
 # [AuxVariables]
-#   [E] 
+#   [E]
 #     family = NEDELEC_ONE
 #     order = FIRST
 #   []
@@ -200,7 +200,7 @@
 
   # solve_type = 'NEWTON'
   # nl_rel_tol = 1e-5
-  # solve_type = JFNK  
+  # solve_type = JFNK
   solve_type = 'LINEAR'
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   petsc_options_value = 'lu mumps'

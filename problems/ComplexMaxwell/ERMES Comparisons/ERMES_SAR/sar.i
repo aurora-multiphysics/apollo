@@ -17,7 +17,7 @@
 [Materials]
   [./Mouse]
     type = ComplexConductor
-    real_conductivity = 0.97
+    real_electrical_conductivity = 0.97
     real_rel_permittivity = 43
     block = 'mouse'
   [../]

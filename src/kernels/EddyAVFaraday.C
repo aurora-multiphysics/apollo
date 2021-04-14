@@ -12,9 +12,9 @@
 //* EddyAVGauss:
 //* (σ(dA/dt + ∇ V), ∇w) - <σ(dA/dt + ∇ V)·n, w> =0
 //*
-//* where: 
+//* where:
 //* Reluctance ν = 1/μ
-//* Conductivity σ=1/ρ
+//* electrical_conductivity σ=1/ρ
 //* Magnetic vector potential A
 //* Scalar electric potential V
 //* Electric field, E = -dA/dt -∇V
@@ -43,7 +43,7 @@ EddyAVFaraday::EddyAVFaraday(const InputParameters & parameters)
     _v_var(*getVar("scalar_potential", 0)),
     _standard_grad_phi(_assembly.gradPhi(_v_var)),
     _nu(getMaterialProperty<Real>("reluctance")),
-    _sigma(getMaterialProperty<Real>("conductivity"))
+    _sigma(getMaterialProperty<Real>("electrical_conductivity"))
 {
 }
 

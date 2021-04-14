@@ -24,7 +24,7 @@ JouleHeating::validParams()
 JouleHeating::JouleHeating(const InputParameters & parameters)
   : AuxKernel(parameters),
   _e_field(coupledVectorValue("electric_field")),
-  _sigma(getMaterialProperty<Real>("conductivity"))
+  _sigma(getMaterialProperty<Real>("electrical_conductivity"))
 {
 }
 

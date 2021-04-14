@@ -31,19 +31,19 @@ ComplexMaxwellImag::validParams()
                              "Maxwell equations which can then be assembled "
                              "together in child classes.");
   params.addRequiredParam<UserObjectName>("waveguide_properties",
-                                          "The name of the user object for waveguide properties");  
+                                          "The name of the user object for waveguide properties");
   return params;
 }
 
 ComplexMaxwellImag::ComplexMaxwellImag(const InputParameters & parameters)
   : ComplexMaxwellBase(parameters),
   _omega(getUserObject<WaveguideProperties>("waveguide_properties")._omega),
-  _sigma_re(getMaterialProperty<Real>("real_conductivity")),
-  _sigma_im(getMaterialProperty<Real>("imag_conductivity")),
+  _sigma_re(getMaterialProperty<Real>("real_electrical_conductivity")),
+  _sigma_im(getMaterialProperty<Real>("imag_electrical_conductivity")),
   _epsilon_re(getMaterialProperty<Real>("real_permittivity")),
   _epsilon_im(getMaterialProperty<Real>("imag_permittivity")),
   _nu_re(getMaterialProperty<Real>("real_reluctance")),
-  _nu_im(getMaterialProperty<Real>("imag_reluctance"))     
+  _nu_im(getMaterialProperty<Real>("imag_reluctance"))
 {
 }
 
@@ -53,7 +53,7 @@ ComplexMaxwellImag::computeQpResidual()
   Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
   Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;
 
-  return _nu_re[_qp]*ComplexMaxwellBase::curlCurlTerm() 
+  return _nu_re[_qp]*ComplexMaxwellBase::curlCurlTerm()
        + _nu_im[_qp]*ComplexMaxwellBase::coupledCurlCurlTerm()
        -_omega*_omega*(_epsilon_re_eff*_u[_qp]+_epsilon_im_eff*_v[_qp])*_test[_i][_qp];
 }
@@ -63,7 +63,7 @@ ComplexMaxwellImag::computeQpJacobian()
 {
   Real _epsilon_re_eff =  _epsilon_re[_qp] - _sigma_im[_qp]/_omega;
   Real _epsilon_im_eff =  _epsilon_im[_qp] + _sigma_re[_qp]/_omega;
-  return _nu_re[_qp]*ComplexMaxwellBase::dCurlCurlDU() 
+  return _nu_re[_qp]*ComplexMaxwellBase::dCurlCurlDU()
        -_omega*_omega*_epsilon_re_eff*_phi[_j][_qp]*_test[_i][_qp];
 }
 
