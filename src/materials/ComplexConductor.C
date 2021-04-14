@@ -41,13 +41,14 @@ ComplexConductor::ComplexConductor(const InputParameters & parameters)
     _input_real_conductivity(getParam<Real>("real_conductivity")),
     _input_imag_conductivity(getParam<Real>("imag_conductivity")),
 
-    _input_real_rel_permittivity(getParam<Real>("real_rel_permittivity")),    
+    _input_real_rel_permittivity(getParam<Real>("real_rel_permittivity")),
     _input_imag_rel_permittivity(getParam<Real>("imag_rel_permittivity")),
-    
+
     _input_real_rel_permeability(getParam<Real>("real_rel_permeability")),
-    _input_imag_rel_permeability(getParam<Real>("imag_rel_permeability")), 
+    _input_imag_rel_permeability(getParam<Real>("imag_rel_permeability")),
 
     // Declare two material properties by getting a reference from the MOOSE Material system
+    _conductivity(declareProperty<Real>("conductivity")),
     _real_conductivity(declareProperty<Real>("real_conductivity")),
     _imag_conductivity(declareProperty<Real>("imag_conductivity")),
 
@@ -66,6 +67,8 @@ ComplexConductor::ComplexConductor(const InputParameters & parameters)
 void
 ComplexConductor::computeQpProperties()
 {
+  //Added for auxkernel compatibility
+  _conductivity[_qp] = _real_conductivity[_qp];
   _real_conductivity[_qp] = _input_real_conductivity;
   _imag_conductivity[_qp] = _input_imag_conductivity;
 
@@ -76,5 +79,6 @@ ComplexConductor::computeQpProperties()
   _imag_permeability[_qp] = 1.25663706e-6 * _input_imag_rel_permeability;
 
   _real_reluctance[_qp] =  _real_permeability[_qp]/(1e-99 +_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);
-  _imag_reluctance[_qp] = -_imag_permeability[_qp]/(1e-99 +_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);  
+  _imag_reluctance[_qp] = -_imag_permeability[_qp]/(1e-99 +_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);
+
 }

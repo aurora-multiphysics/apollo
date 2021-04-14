@@ -8,11 +8,10 @@
 [UserObjects]
   [./WaveguideProps]
     type = WaveguideProperties
-    port_length = 24.76e-2
-    port_width = 12.38e-2
+    port_length_vector = '24.76e-2 0 0'
+    port_width_vector = '0 12.38e-2 0'
     frequency = 900e6
-    propagation_direction = "z"
-  [../]      
+  [../]
 []
 
 [Materials]
@@ -25,7 +24,7 @@
   [./Waveguide]
     type = ComplexConductor
     block = 'waveguide'
-  [../]     
+  [../]
 []
 
 [Variables]
@@ -41,8 +40,12 @@
 [AuxVariables]
   [./E]
     family = NEDELEC_ONE
-    order = FIRST  
-  [../]  
+    order = FIRST
+  [../]
+  [./q]
+    family = MONOMIAL
+    order = FIRST
+  [../]
 []
 
 [AuxKernels]
@@ -51,6 +54,12 @@
     vector_re = E_real
     vector_im = E_imag
     variable = E
+    execute_on = 'timestep_end'
+  [../]
+  [heat_source]
+    type = JouleHeating
+    electric_field = E
+    variable = q
     execute_on = 'timestep_end'
   [../]
 []
@@ -77,7 +86,7 @@
     boundary = 'left top bottom'
     penalty = 1.75e30
     variable = E_real
-    v = E_imag 
+    v = E_imag
   [../]
   [./wallImag]
     type = VectorTangentialPenaltyDirichletImagBC
@@ -90,7 +99,7 @@
     type = RobinTE10RealBC
     boundary = 'back'
     variable = E_real
-    v = E_imag    
+    v = E_imag
     waveguide_properties = WaveguideProps
     input_port = true
   [../]
@@ -99,7 +108,7 @@
     boundary = 'back'
     waveguide_properties = WaveguideProps
     variable = E_imag
-    v = E_real    
+    v = E_real
     input_port = true
   [../]
   [./outputPortReal]
@@ -107,7 +116,7 @@
     boundary = 'front'
     waveguide_properties = WaveguideProps
     variable = E_real
-    v = E_imag    
+    v = E_imag
     input_port = false
   [../]
   [./outputPortImag]
@@ -117,7 +126,7 @@
     variable = E_imag
     v = E_real
     input_port = false
-  [../]    
+  [../]
 []
 
 [Preconditioning]
@@ -127,7 +136,7 @@
     petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
     petsc_options_value = 'lu mumps'
     # petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -snes_max_it -sub_pc_factor_shift_type -pc_asm_overlap -snes_atol -snes_rtol '
-    # petsc_options_value = 'gmres asm lu 100 NONZERO 2 1E-14 1E-12'    
+    # petsc_options_value = 'gmres asm lu 100 NONZERO 2 1E-14 1E-12'
   []
 []
 

@@ -40,6 +40,7 @@ protected:
   const Real & _input_imag_rel_permeability;
 
   /// The resistivity (rho)
+  MaterialProperty<Real> & _conductivity;
   MaterialProperty<Real> & _real_conductivity;
   MaterialProperty<Real> & _imag_conductivity;
   MaterialProperty<Real> & _real_permittivity;
