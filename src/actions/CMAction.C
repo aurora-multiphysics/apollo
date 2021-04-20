@@ -110,6 +110,7 @@ CMAction::act()
 void
 CMAction::addCMPECBC()
 {
+  /// Set perfect electric conductor boundary conditions, at which E x n = 0.
   std::string bc_type;
   for (unsigned int i = 0; i < _pec_boundaries.size(); ++i)
   {

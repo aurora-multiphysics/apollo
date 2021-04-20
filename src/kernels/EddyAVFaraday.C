@@ -21,6 +21,15 @@
 //* Magnetic flux density, B = ∇×A
 //* Magnetic field H = ν∇×A
 //* Current density J = -σ(dA/dt + ∇ V)
+//*
+
+//* Either:
+//* set B.n (or E×n) at boundary: A×n (Dirichlet), ν∇·A (Neumann)
+//* set H×n at boundary: ν∇×A (Neumann), A·n (Dirichlet)
+//* Scalar V: -σ(dA/dt + ∇ V)·n (J·n, Neumann), V (potential, Dirichlet)
+//* Natural boundary conditions:
+//* setting on H×n and J·n at surface, along with a gauge constraint.
+//* B.n and E×n at surface imposed with Dirichlet conditions.
 
 #include "EddyAVFaraday.h"
 #include "Function.h"

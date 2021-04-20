@@ -21,26 +21,30 @@
  * [ComplexMaxwell]
  * []
  */
-class CMAction : public Action
+class AVAction : public Action
 {
 public:
   static InputParameters validParams();
 
-  CMAction(InputParameters parameters);
+  AVAction(InputParameters parameters);
 
   virtual void act() override;
 
 protected:
-  void addCMKernels();
-  void addCMPECBC();
-  void addCMWaveguidePortsBC();
+  void addAVKernels();
+  void addZeroFluxBC();
+  void addTangentialHBC();
+  void addElectricPotentialBC();
   /// FE type for various variables
-  FEType _fe_type;
+  FEType _vector_fe_type;
+  FEType _scalar_fe_type;
   /// Boundaries at which perfect electrical
   /// conductor conditions are applied
-  std::vector<BoundaryName> _pec_boundaries;
+  std::vector<BoundaryName> _tangent_h_boundaries;
+  Real _tangent_h_penalty;
+  std::vector<BoundaryName> _zero_flux_boundaries;
   /// Penalty term for penalty-based Dirichlet methods at PEC boundaries.
-  Real _pec_penalty;
-  std::vector<BoundaryName> _wg_input_ports;
-  std::vector<BoundaryName> _wg_output_ports;
+  Real _zero_flux_penalty;
+  std::vector<BoundaryName> _electric_potential_boundaries;
+
 };

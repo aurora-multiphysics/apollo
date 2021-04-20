@@ -12,7 +12,7 @@
 //* EddyTOGauss:
 //* (μd/dt(T-∇ω), ∇w) - <μd/dt(T-∇ω)·n, w> =0
 //*
-//* where: 
+//* where:
 //* Permeability μ
 //* Resistivity ρ=1/σ
 //* Electric vector potential T
@@ -21,6 +21,10 @@
 //* Magnetic flux density, B = μ(T-∇ω)
 //* Magnetic field H = T-∇ω
 //* Current density J = ∇×T
+//*
+//* Natural boundary conditions are Neumann conditions setting
+//* E×n (for T) and B·n (for ω) at surface, along with a gauge constraint.
+//* J·n and H×n at surface imposed with Dirichlet conditions.
 
 #include "EddyTOFaraday.h"
 #include "Function.h"

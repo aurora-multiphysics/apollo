@@ -29,6 +29,10 @@ const std::string b_field = "B_field";
 const std::string b_field_re = "B_real";
 const std::string b_field_im = "B_imag";
 
+const std::string magnetic_vector_potential = "magnetic_vector_potential";
+const std::string electric_scalar_potential = "electric_scalar_potential";
+const std::string electric_vector_potential = "electric_vector_potential";
+const std::string magnetic_scalar_potential = "magnetic_scalar_potential";
 
 static const Real mu0 = 1.25663706e-6;
 static const Real epsilon0 = 8.85418782e-12;
