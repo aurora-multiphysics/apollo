@@ -15,11 +15,12 @@
     scalar_order = FIRST
 
     tangent_h_boundaries = '21 22 23 24 25 26'
-    tangent_h_penalty = 1e20
+    surface_h_fields = 'zv zv zv zv zv zv'
 
     electric_potential_boundaries = '21 22 23 24 25 26'
   []
 []
+
 [Materials]
   [./solenoid]
     type = Conductor
@@ -38,22 +39,17 @@
   [../]
 []
 
-# [Variables]
-#   [./A]
-#     family = LAGRANGE_VEC
-#     order = FIRST
-#   [../]
-#   # [./V]
-#   #   family = LAGRANGE
-#   #   order = FIRST
-#   # [../]
-# []
-
 [Functions]
   [./solenoid_current_density]
     type = ParsedVectorFunction
     value_x = '-(1.0*y/sqrt(x*x+y*y))*t'
     value_y = '(1.0*x/sqrt(x*x+y*y))*t'
+    value_z ='0.0'
+  [../]
+  [./zv]
+    type = ParsedVectorFunction
+    value_x = '0.0'
+    value_y = '0.0'
     value_z ='0.0'
   [../]
   # [./V_surf]
@@ -63,16 +59,6 @@
 []
 
 [Kernels]
-  # [./Faraday]
-  #   type = EddyAVFaraday
-  #   variable = A
-  #   # scalar_potential = V
-  # [../]
-  # [./Gauge]
-  #   type = EddyAVGauss
-  #   variable = V
-  #   vector_potential = A
-  # [../]
   [./body_force] # looks just like boundary form but solves slower
     type = VectorBodyForce
     variable = magnetic_vector_potential
@@ -154,29 +140,7 @@
     variable = B
     execute_on = timestep_end
   [../]
-  # [magnetic_moment]
-  #   type = MagneticMoment
-  #   magnetic_field = T
-  #   variable = magnetic_moment
-  #   execute_on = timestep_end
-  # [../]
-  # [magnetic_moment_z]
-  #   type = VectorVariableComponentAux
-  #   variable = magnetic_moment_z
-  #   component = z
-  #   execute_on = timestep_end
-  #   vector_variable = magnetic_moment
-  # [../]
 []
-
-# [UserObjects]
-#   [./block_magnetization]
-#     type = BlockAverageValue
-#     variable = magnetic_moment_z
-#     execute_on = timestep_end
-#     outputs = none
-#   [../]
-# []
 
 [Preconditioning]
   [./pre]
@@ -212,18 +176,6 @@
   # [../]
 []
 
-# [Postprocessors]
-#   [./H_applied]
-#   type = FunctionValuePostprocessor
-#   function = z_sln
-#   execute_on = timestep_end
-#   [../]
-#   [./magnetization_domain]
-#     type = BlockAveragePostprocessor
-#     block_average_userobject = block_magnetization
-#     block = 1
-#   [../]
-# []
 [Outputs]
   exodus = true
   csv = true
