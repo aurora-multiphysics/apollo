@@ -18,6 +18,7 @@
     surface_h_fields = 'zv zv zv zv zv zv'
 
     electric_potential_boundaries = '21 22 23 24 25 26'
+    surface_electric_potentials = '0 0 0 0 0 0'
   []
 []
 

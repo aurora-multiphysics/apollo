@@ -70,8 +70,8 @@ AVAction::validParams()
       "electric_current_boundaries", std::vector<BoundaryName>(), "Boundaries on which electric current flows into or out of the system."
       "(J_ext=J·n)");
   params.addParam<std::vector<Real>>(
-      "surface_electric_currents", std::vector<Real>(), "Real values representing total current flowing across the surface in the direction of the surface normal");
-  params.addParamNamesToGroup("tangent_h_boundaries surface_h_fields zero_flux_boundaries zero_flux_penalty electric_potential_boundaries"
+      "surface_electric_currents", std::vector<Real>(), "Real values representing current density flowing across the surface in the direction of the surface normal");
+  params.addParamNamesToGroup("tangent_h_boundaries surface_h_fields zero_flux_boundaries zero_flux_penalty "
                               "electric_potential_boundaries surface_electric_potentials electric_current_boundaries surface_electric_currents",
                         "BoundaryCondition");
   params.addParamNamesToGroup(
@@ -131,6 +131,8 @@ AVAction::act()
       addZeroFluxBC();
     if (_electric_potential_boundaries.size() > 0)
       addElectricPotentialBC();
+    if (_electric_current_boundaries.size() > 0)
+      addElectricCurrentBC();
   }
 }
 
@@ -146,12 +148,12 @@ AVAction::addTangentialHBC()
     InputParameters tngt_params = _factory.getValidParams(tngt_bc_type);
     tngt_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
     tngt_params.set<FunctionName>("curl_value") = _surface_h_fields[i];
-    tngt_params.set<std::vector<BoundaryName>>("boundary") = { _tangent_h_boundaries[i]};
+    tngt_params.set<std::vector<BoundaryName>>("boundary") = {_tangent_h_boundaries[i]};
     _problem->addBoundaryCondition(tngt_bc_type, "tangent_H_field_" + _tangent_h_boundaries[i], tngt_params);
 
     InputParameters norm_params = _factory.getValidParams(norm_bc_type);
     norm_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
-    norm_params.set<std::vector<BoundaryName>>("boundary") = { _tangent_h_boundaries[i]};
+    norm_params.set<std::vector<BoundaryName>>("boundary") = {_tangent_h_boundaries[i]};
     _problem->addBoundaryCondition(norm_bc_type, "tangent_H_gauging_" + _tangent_h_boundaries[i], norm_params);
   }
 }
@@ -187,17 +189,27 @@ AVAction::addElectricPotentialBC()
     InputParameters params = _factory.getValidParams(bc_type);
     params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
     params.set<Real>("value") = _surface_electric_potentials[i];
-    params.set<std::vector<BoundaryName>>("boundary") = { _electric_potential_boundaries[i]};
+    params.set<std::vector<BoundaryName>>("boundary") = {_electric_potential_boundaries[i]};
     _problem->addBoundaryCondition(bc_type, "electric_potential_bc_" + _electric_potential_boundaries[i], params);
   }
 }
 
-// void
-// AVAction::addElectricCurrentBC()
-// {
-//   //Neumann BC for the scalar potential that fixes the integrated
-//   //current density over a surface.
-// }
+void
+AVAction::addElectricCurrentBC()
+{
+  //Neumann BC for the scalar potential V that fixes the integrated
+  // current density over a surface in the direction of the surface normal.
+  std::string bc_type = "NeumannBC";
+  for (unsigned int i = 0; i < _electric_current_boundaries.size(); ++i)
+  {
+    InputParameters params = _factory.getValidParams(bc_type);
+    params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
+    params.set<Real>("value") = _surface_electric_currents[i];
+    params.set<std::vector<BoundaryName>>("boundary") = {_electric_current_boundaries[i]};
+    _problem->addBoundaryCondition(bc_type, "electric_current_bc_" + _electric_current_boundaries[i], params);
+  }
+
+}
 
 void
 AVAction::addAVKernels()
@@ -215,12 +227,4 @@ AVAction::addAVKernels()
   scalar_params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
   scalar_params.set<std::vector<VariableName>>("vector_potential") = {Maxwell::magnetic_vector_potential};
   _problem->addKernel(scalar_kernel_type, "EddyAVGauss", scalar_params);
-
-
-  // kernel_type = "ComplexMaxwellImag";
-  // InputParameters im_params = _factory.getValidParams(kernel_type);
-  // im_params.set<NonlinearVariableName>("variable") = Maxwell::e_field_im;
-  // im_params.set<std::vector<VariableName>>("v") = {Maxwell::e_field_re};
-  // im_params.set<UserObjectName>("waveguide_properties") = getParam<UserObjectName>("wg_properties");
-  // _problem->addKernel(kernel_type, "Imag", im_params);
 }

@@ -18,7 +18,7 @@
  * following which automatically adds variables, kernels, aux kernels, bcs
  * for setting up the incompressible Navier-Stokes equation.
  *
- * [ComplexMaxwell]
+ * [AVFormulation]
  * []
  */
 class AVAction : public Action
@@ -35,6 +35,7 @@ protected:
   void addZeroFluxBC();
   void addTangentialHBC();
   void addElectricPotentialBC();
+  void addElectricCurrentBC();
   /// FE type for various variables
   FEType _vector_fe_type;
   FEType _scalar_fe_type;
