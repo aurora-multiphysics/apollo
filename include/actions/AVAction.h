@@ -42,6 +42,7 @@ protected:
   /// Boundaries at which perfect electrical
   /// conductor conditions are applied
   std::vector<BoundaryName> _tangent_h_boundaries;
+  Real _tangent_h_penalty;
   std::vector<FunctionName> _surface_h_fields;
   std::vector<BoundaryName> _zero_flux_boundaries;
   /// Penalty term for penalty-based Dirichlet methods at PEC boundaries.

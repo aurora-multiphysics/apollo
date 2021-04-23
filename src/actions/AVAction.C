@@ -54,6 +54,8 @@ AVAction::validParams()
   params.addParam<std::vector<BoundaryName>>(
       "tangent_h_boundaries", std::vector<BoundaryName>(), "Boundaries through which the tangential H field is constrained passes"
       "(H×n=H_ext×n)");
+  params.addParam<Real>(
+      "tangent_h_penalty", 0, "Penalty coefficient for tangent h boundary conditions");
   params.addParam<std::vector<FunctionName>>(
       "surface_h_fields", std::vector<FunctionName>(), "Vector functions representing H fields on tangent_h_boundaries.");
   params.addParam<std::vector<BoundaryName>>(
@@ -86,6 +88,7 @@ AVAction::AVAction(InputParameters parameters)
     _scalar_fe_type(Utility::string_to_enum<Order>(getParam<MooseEnum>("scalar_order")),
                     Utility::string_to_enum<FEFamily>(getParam<MooseEnum>("scalar_family"))),
   _tangent_h_boundaries(getParam<std::vector<BoundaryName>>("tangent_h_boundaries")),
+  _tangent_h_penalty(getParam<Real>("tangent_h_penalty")),
   _surface_h_fields(getParam<std::vector<FunctionName>>("surface_h_fields")),
   _zero_flux_boundaries(getParam<std::vector<BoundaryName>>("zero_flux_boundaries")),
   _zero_flux_penalty(getParam<Real>("zero_flux_penalty")),
@@ -141,7 +144,7 @@ AVAction::addTangentialHBC()
 {
   // Set H×n at boundary: ν∇×A×n (Neumann) with gauge constraint A·n=0 (Dirichlet)
   std::string tngt_bc_type = "VectorCurlBC";
-  std::string norm_bc_type = "VectorFunctionDirichletBC";
+  std::string norm_bc_type = "VectorNormalPenaltyDirichletBC";
 
   for (unsigned int i = 0; i < _tangent_h_boundaries.size(); ++i)
   {
@@ -153,6 +156,7 @@ AVAction::addTangentialHBC()
 
     InputParameters norm_params = _factory.getValidParams(norm_bc_type);
     norm_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
+    norm_params.set<Real>("penalty") = _tangent_h_penalty;
     norm_params.set<std::vector<BoundaryName>>("boundary") = {_tangent_h_boundaries[i]};
     _problem->addBoundaryCondition(norm_bc_type, "tangent_H_gauging_" + _tangent_h_boundaries[i], norm_params);
   }
@@ -162,21 +166,16 @@ void
 AVAction::addZeroFluxBC()
 {
   // Set B·n=0 at boundary: A×n=0 (Dirichlet) with gauge imposed by ν∇·A=0 (Neumann)
-  // std::string tngt_bc_type = "VectorTangentialPenaltyDirichletBC";
-  // std::string norm_bc_type = "VectorFunctionDirichletBC";
-  // for (unsigned int i = 0; i < _tangent_h_boundaries.size(); ++i)
-  // {
-  //   InputParameters tngt_params = _factory.getValidParams(tngt_bc_type);
-  //   tngt_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
-  //   tngt_params.set<Real>("penalty") = _tangent_h_penalty;
-  //   tngt_params.set<std::vector<BoundaryName>>("boundary") = { _tangent_h_boundaries[i]};
-  //   _problem->addBoundaryCondition(tngt_bc_type, "tangent_H_field" + _tangent_h_boundaries[i], tngt_params);
-
-  //   InputParameters norm_params = _factory.getValidParams(norm_bc_type);
-  //   norm_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
-  //   norm_params.set<std::vector<BoundaryName>>("boundary") = { _tangent_h_boundaries[i]};
-  //   _problem->addBoundaryCondition(norm_bc_type, "tangent_H_gauging" + _tangent_h_boundaries[i], norm_params);
-  // }
+  // Coulomb gauge imposed in weak form naturally.
+  std::string tngt_bc_type = "VectorTangentialPenaltyDirichletBC";
+  for (unsigned int i = 0; i < _zero_flux_boundaries.size(); ++i)
+  {
+    InputParameters tngt_params = _factory.getValidParams(tngt_bc_type);
+    tngt_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
+    tngt_params.set<Real>("penalty") = _zero_flux_penalty;
+    tngt_params.set<std::vector<BoundaryName>>("boundary") = { _zero_flux_boundaries[i]};
+    _problem->addBoundaryCondition(tngt_bc_type, "zero_flux_" + _zero_flux_boundaries[i], tngt_params);
+  }
 }
 
 void

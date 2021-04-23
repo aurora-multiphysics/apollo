@@ -15,7 +15,11 @@
     scalar_order = FIRST
 
     tangent_h_boundaries = '21 22 23 24 25 26'
+    tangent_h_penalty = 1e20
     surface_h_fields = 'zv zv zv zv zv zv'
+
+    # zero_flux_boundaries = '21 22 23 24 25 26'
+    # zero_flux_penalty = 1e20
 
     electric_potential_boundaries = '21 22 23 24 25 26'
     surface_electric_potentials = '0 0 0 0 0 0'
@@ -68,30 +72,6 @@
   [../]
 []
 
-
-[BCs]
-  # [./bnd3]
-  #   type = FunctionDirichletBC
-  #   variable = V
-  #   boundary = '21 22 23 24 25 26'
-  #   function = 'V_surf'
-  # [../]
-  # [./bnd2]
-  #   type = VectorFunctionDirichletBC
-  #   variable = T
-  #   boundary = '1 2 3 4 5 6'
-  #   function = 'Zero_Vector'
-  # [../]
-  # [./bnd2]
-  #   type = VectorTangentialPenaltyDirichletBC
-  #   boundary = '21 22 23 24 25 26'
-  #   penalty = 1e20
-  #   function_z = '0'
-  #   #function_z = 'z_sln'
-  #   variable = A
-  # [../]
-[]
-
 [AuxVariables]
   [E]
     # Cannot use Lagrange, as components may be discontinuous
@@ -116,8 +96,8 @@
     family = MONOMIAL
   []
   [B]
-    order = CONSTANT
-    family = MONOMIAL_VEC
+    order = FIRST
+    family = NEDELEC_ONE
   []
 []
 
