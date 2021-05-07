@@ -50,5 +50,5 @@ protected:
   std::vector<BoundaryName> _electric_potential_boundaries;
   std::vector<Real> _surface_electric_potentials;
   std::vector<BoundaryName> _electric_current_boundaries;
-  std::vector<Real> _surface_electric_currents;
+  std::vector<FunctionName> _surface_electric_currents;
 };

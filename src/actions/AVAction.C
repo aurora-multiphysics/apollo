@@ -71,8 +71,8 @@ AVAction::validParams()
   params.addParam<std::vector<BoundaryName>>(
       "electric_current_boundaries", std::vector<BoundaryName>(), "Boundaries on which electric current flows into or out of the system."
       "(J_ext=J·n)");
-  params.addParam<std::vector<Real>>(
-      "surface_electric_currents", std::vector<Real>(), "Real values representing current density flowing across the surface in the direction of the surface normal");
+  params.addParam<std::vector<FunctionName>>(
+      "surface_electric_currents", std::vector<FunctionName>(), "Real values representing current density flowing across the surface in the direction of the surface normal");
   params.addParamNamesToGroup("tangent_h_boundaries surface_h_fields zero_flux_boundaries zero_flux_penalty "
                               "electric_potential_boundaries surface_electric_potentials electric_current_boundaries surface_electric_currents",
                         "BoundaryCondition");
@@ -95,7 +95,7 @@ AVAction::AVAction(InputParameters parameters)
   _electric_potential_boundaries(getParam<std::vector<BoundaryName>>("electric_potential_boundaries")),
   _surface_electric_potentials(getParam<std::vector<Real>>("surface_electric_potentials")),
   _electric_current_boundaries(getParam<std::vector<BoundaryName>>("electric_current_boundaries")),
-  _surface_electric_currents(getParam<std::vector<Real>>("surface_electric_currents"))
+  _surface_electric_currents(getParam<std::vector<FunctionName>>("surface_electric_currents"))
 {
 }
 
@@ -197,13 +197,14 @@ void
 AVAction::addElectricCurrentBC()
 {
   //Neumann BC for the scalar potential V that fixes the integrated
-  // current density over a surface in the direction of the surface normal.
-  std::string bc_type = "NeumannBC";
+  // current density over a surface on an external boundary in the direction of the surface normal.
+  std::string bc_type = "FunctionFluxBC";
+  // std::string bc_type = "FunctionNeumannBC";
   for (unsigned int i = 0; i < _electric_current_boundaries.size(); ++i)
   {
     InputParameters params = _factory.getValidParams(bc_type);
     params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
-    params.set<Real>("value") = _surface_electric_currents[i];
+    params.set<FunctionName>("function") = _surface_electric_currents[i];
     params.set<std::vector<BoundaryName>>("boundary") = {_electric_current_boundaries[i]};
     _problem->addBoundaryCondition(bc_type, "electric_current_bc_" + _electric_current_boundaries[i], params);
   }
