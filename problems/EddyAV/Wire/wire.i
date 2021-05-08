@@ -18,10 +18,11 @@
     zero_flux_penalty = 1e30
 
     electric_current_boundaries = 'TopWire'
-    surface_electric_currents = 'wire_current_density'
+    surface_electric_currents = 'zv'
+    # surface_electric_currents = 'wire_current_density'
 
-    electric_potential_boundaries = 'BottomWire BottomAir'
-    surface_electric_potentials = '0.0 0.0'
+    electric_potential_boundaries = 'BottomWire'
+    surface_electric_potentials = '0.0'
   []
 []
 
@@ -119,9 +120,9 @@
 
 [Executioner]
   type = Transient
-  dt = 0.001 # doesn't remove discrepancies
+  dt = 10 # doesn't remove discrepancies
   start_time = 0.0
-  end_time = 0.01
+  end_time = 100
   automatic_scaling = true
   scheme=BDF2
   # petsc_options_iname = '-pc_type -pc_hypre_type'
