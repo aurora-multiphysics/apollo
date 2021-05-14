@@ -17,10 +17,13 @@
     vector_order = FIRST
 
     scalar_family = LAGRANGE
-    scalar_order = FIRST
+    scalar_order = SECOND
 
     zero_flux_boundaries = 'top bottom left right front back'
     zero_flux_penalty = 1e30
+
+    electric_current_boundaries = 'top bottom left right front back'
+    surface_electric_currents = 'zv zv zv zv zv zv'
   []
 []
 
@@ -84,6 +87,10 @@
     order = FIRST
     family = MONOMIAL_VEC
   []
+  [J_eddy]
+    order = FIRST
+    family = NEDELEC_ONE
+  []
   [B]
     family = MONOMIAL_VEC
     order = FIRST
@@ -96,6 +103,13 @@
     function = coil_current_density
     variable = J
   [../]
+  [J_eddy]
+   type = AVCurrentDensity
+    magnetic_vector_potential = magnetic_vector_potential
+    electric_scalar_potential = electric_scalar_potential
+    variable = J_eddy
+    execute_on = timestep_end
+  [../]
   [E_field]
     type = ElectricField
     magnetic_vector_potential = magnetic_vector_potential
@@ -104,8 +118,8 @@
     execute_on = timestep_end
   []
   [B_field]
-    type = CurrentDensity
-    magnetic_field = magnetic_vector_potential
+    type = VectorCurl
+    vector_variable = magnetic_vector_potential
     variable = B
     execute_on = timestep_end
   [../]
@@ -132,8 +146,6 @@
   # petsc_options_value = 'hypre boomeramg'
 
   solve_type = 'LINEAR'
-  # nl_rel_tol = 1e-5
-  # solve_type = JFNK
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   petsc_options_value = 'lu mumps'
   petsc_options = '-snes_converged_reason -ksp_converged_reason -snes_linesearch_monitor'
