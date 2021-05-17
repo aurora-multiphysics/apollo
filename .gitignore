@@ -92,7 +92,7 @@ temp_print_trace.*
 failed-unittest
 compile_commands.json
 build
-**/problems/archive/*
+
 # Allow certain files in gold directories
 !**/gold/*.e
 !**/gold/*.e-s*
@@ -240,3 +240,6 @@ conf_vars.mk
 
 # GPerf performance
 *.prof
+
+# Tarred Docker images
+*docker/**/*.tar.gz

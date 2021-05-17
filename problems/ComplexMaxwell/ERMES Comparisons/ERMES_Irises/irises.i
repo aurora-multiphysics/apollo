@@ -12,37 +12,41 @@
   uniform_refine=1
 []
 
+[Modules]
+  [ComplexMaxwell]
+    family = NEDELEC_ONE
+    order = FIRST
+
+    pec_boundaries = '1'
+    pec_penalty = 1.75e30
+
+    wg_input_boundaries = '2'
+    wg_output_boundaries = '3'
+    wg_properties = 'Waveguide'
+  []
+[]
+
 [UserObjects]
   [./Waveguide]
     type = WaveguideProperties
-    port_length = 22.86e-3
-    port_width = 10.16e-3
+    port_length_vector = '0 22.86e-3 0'
+    port_width_vector = '0 0 10.16e-3'
     frequency = 9.3e9
-  [../]      
+  [../]
 []
 
 [Materials]
   [./Vacuum]
     type = ComplexConductor
     block = '1'
-  [../]      
+  [../]
 []
 
-[Variables]
-  [./E_real]
-    family = NEDELEC_ONE
-    order = FIRST
-  [../]
-  [./E_imag]
-    family = NEDELEC_ONE
-    order = FIRST
-  [../]
-[]
 [AuxVariables]
   [./E]
     family = NEDELEC_ONE
-    order = FIRST  
-  [../]  
+    order = FIRST
+  [../]
 []
 
 [AuxKernels]
@@ -54,69 +58,6 @@
     execute_on = 'timestep_end'
   [../]
 []
-[Kernels]
-  [./Real]
-    type = ComplexMaxwellReal
-    variable = E_real
-    v = E_imag
-    waveguide_properties = Waveguide
-  [../]
-  [./Imag]
-    type = ComplexMaxwellImag
-    variable = E_imag
-    v = E_real
-    waveguide_properties = Waveguide
-  [../]
-[]
-
-[BCs]
-  [./wallReal]
-    type = VectorTangentialPenaltyDirichletRealBC
-    boundary = '1'
-    penalty = 1.75e30
-    variable = E_real
-    v = E_imag 
-  [../]
-  [./wallImag]
-    type = VectorTangentialPenaltyDirichletImagBC
-    boundary = '1'
-    penalty = 1.75e30
-    variable = E_imag
-    v = E_real
-  [../]
-  [./inputPortReal]
-    type = RobinTE10RealBC
-    boundary = '2'
-    variable = E_real
-    v = E_imag    
-    waveguide_properties = Waveguide
-    input_port = true
-  [../]
-  [./inputPortImag]
-    type = RobinTE10ImagBC
-    boundary = '2'
-    waveguide_properties = Waveguide
-    variable = E_imag
-    v = E_real    
-    input_port = true
-  [../]
-  [./outputPortReal]
-    type = RobinTE10RealBC
-    boundary = '3'
-    waveguide_properties = Waveguide
-    variable = E_real
-    v = E_imag    
-    input_port = false
-  [../]
-  [./outputPortImag]
-    type = RobinTE10ImagBC
-    boundary = '3'
-    waveguide_properties = Waveguide
-    variable = E_imag
-    v = E_real
-    input_port = false
-  [../]    
-[]
 
 [Preconditioning]
   [pre]
@@ -124,8 +65,6 @@
     full = true
     petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
     petsc_options_value = 'lu mumps'
-    # petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -snes_max_it -sub_pc_factor_shift_type -pc_asm_overlap -snes_atol -snes_rtol '
-    # petsc_options_value = 'gmres asm lu 100 NONZERO 2 1E-14 1E-12'    
   []
 []
 
