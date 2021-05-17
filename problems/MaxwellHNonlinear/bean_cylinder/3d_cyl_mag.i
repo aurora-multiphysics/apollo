@@ -1,7 +1,7 @@
 [Mesh]
   [gen]
     type = FileMeshGenerator
-    file = cyltest.e
+    file = gold/cyltest.e
   [../]
 []
 
@@ -26,13 +26,13 @@
 [BCs]
   [./bnd]
     type = VectorTangentialPenaltyDirichletBC
-    boundary = 'top bottom rmax'        
+    boundary = 'top bottom rmax'
     penalty = 1e10
     function_x = 'x_sln'
     function_y = 'y_sln'
-    function_z = 'z_sln'    
+    function_z = 'z_sln'
     variable = H
-  [../]  
+  [../]
 []
 
 [Functions]
@@ -47,11 +47,11 @@
   [./z_sln]
     type = ParsedFunction
     value = 'sin(0.1*pi*t)'
-  [../] 
+  [../]
   [./H_exact_fcn]
     type = ParsedVectorFunction
     value_z = 'if(sqrt(x^2 + y^2)<(1-(sin(0.1*pi*t))), 0, sin(0.1*pi*t) - (1-sqrt(x^2 + y^2)))'
-  [../] 
+  [../]
 
 []
 
@@ -91,7 +91,7 @@
   [H_exact]
     family = NEDELEC_ONE
     order = FIRST
-  []    
+  []
   [magnetic_moment]
     order = CONSTANT
     family = MONOMIAL_VEC
@@ -140,7 +140,7 @@
     magnetic_field = H
     variable = magnetic_moment
     execute_on = timestep_end
-  [../]  
+  [../]
   [magnetic_moment_z]
     type = VectorVariableComponentAux
     variable = magnetic_moment_z
@@ -173,7 +173,7 @@
   [./error]
     type = ElementNedelecL2Error
     variable = H
-    function = H_exact_fcn   
+    function = H_exact_fcn
     execute_on = timestep_end
   [../]
   [./h]
@@ -201,7 +201,7 @@
   #   optimal_iterations = 1
   #   linear_iteration_ratio = 1
   #   dt = 0.1
-  # []  
+  # []
 []
 
 [Outputs]
