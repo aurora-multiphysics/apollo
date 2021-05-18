@@ -23,8 +23,6 @@ AVCurrentDensity::AVCurrentDensity(const InputParameters & parameters)
 RealVectorValue
 AVCurrentDensity::computeValue()
 {
-  // Access the gradient of the pressure at this quadrature point, then pull out the "component" of
-  // it requested (x, y or z). Note, that getting a particular component of a gradient is done using
-  // the parenthesis operator.
+  // Calculate the current density in the AV formulation
   return -_sigma[_qp]*(_a_dot[_qp] + _grad_v[_qp]);
 }
