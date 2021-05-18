@@ -1,15 +1,7 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
 //* Equivalent to VectorCurlPenalty with penalty = gamma/mu_0, u_exact = -2E_10 or 0
 //* Variable should be IMAGINARY
 //* Adds to residual the term:
-//* 
+//*
 #include "RobinTE10RealBC.h"
 #include "Function.h"
 
@@ -20,7 +12,7 @@ RobinTE10RealBC::validParams()
 {
   InputParameters params = VectorIntegratedBC::validParams();
   params.addRequiredParam<UserObjectName>("waveguide_properties",
-                                          "The name of the user object for waveguide properties");  
+                                          "The name of the user object for waveguide properties");
   params.addParam<bool>("input_port", false, "Whether the boundary is being applied on the input port.");
   params.addRequiredCoupledVar("v", "Coupled vector variable");
   return params;
@@ -28,8 +20,8 @@ RobinTE10RealBC::validParams()
 
 RobinTE10RealBC::RobinTE10RealBC(const InputParameters & parameters)
   : VectorIntegratedBC(parameters),
-    _v_id(coupled("v")), 
-    _v(coupledVectorValue("v")),  
+    _v_id(coupled("v")),
+    _v(coupledVectorValue("v")),
     _wp(getUserObject<WaveguideProperties>("waveguide_properties")),
     _input_port(getParam<bool>("input_port"))
 {

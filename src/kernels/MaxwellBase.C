@@ -1,12 +1,3 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
 //* Base class for solution of (real) Maxwell equations in time domain.
 
 #include "MaxwellBase.h"
@@ -26,8 +17,8 @@ MaxwellBase::validParams()
   "If false, a time integrator such as NewmarkBeta that calculates second order time derivatives must be used.");
   params.addParam<bool>("gauge_penalty",
                         false,
-                        "Whether a gauge penalty term should be included for regularisation.");                             
-  
+                        "Whether a gauge penalty term should be included for regularisation.");
+
   return params;
 }
 
