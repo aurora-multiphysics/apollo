@@ -8,15 +8,14 @@ Superconductor::validParams()
 {
   InputParameters params = Material::validParams();
 
-  // Parameter for radius of the spheres used to interpolate permeability.
   params.addParam<Real>(
       "critical_electric_field",
       1.0,
-      "The critical electric field ($E_c$) of the superconductor in arbitrary units.");
+      "The critical electric field ($E_c$) of the superconductor");
   params.addParam<Real>(
       "critical_current_density",
       1.0,
-      "The critical current density ($J_c$) of the superconductor in arbitrary units.");
+      "The critical current density ($J_c$) of the superconductor");
   params.addParam<Real>(
       "permeability", 1.0, "The permeability ($\\mu$) of the conductor. Defaults to 1");
   params.addParam<Real>("nonlinearity_parameter",
@@ -31,7 +30,6 @@ Superconductor::validParams()
 Superconductor::Superconductor(const InputParameters & parameters)
   : Material(parameters),
     // DerivativeMaterialInterface<Material>(parameters),
-
     // Get the parameters from the input file
     _input_n(getParam<Real>("nonlinearity_parameter")),
     _input_jc(getParam<Real>("critical_current_density")),
@@ -41,7 +39,6 @@ Superconductor::Superconductor(const InputParameters & parameters)
     _n(declareProperty<Real>("nonlinearity_parameter")),
     _jc(declareProperty<Real>("critical_current_density")),
     _ec(declareProperty<Real>("critical_electric_field")),
-    // get the c variable value, number, and name
     // _H(coupledValue("magnetic_field")),
     // _H_var(coupled("magnetic_field")),
     // _H_name(getVar("magnetic_field", 0)->name()),
