@@ -23,6 +23,6 @@ protected:
 
   /// Holds the local current density at the quadrature points
   const VectorVariableValue & _j_field;
-  /// Holds the local magnetic flix density density at the quadrature points
+  /// Holds the local magnetic flux density density at the quadrature points
   const VectorVariableValue & _b_field;
 };

@@ -9,7 +9,7 @@ template <>
 InputParameters validParams<CoupledVectorForce>();
 
 /**
- * Simple class to demonstrate off diagonal Jacobian contributions.
+ * Class to use a coupled auxvariable to apply a vector body force.
  */
 class CoupledVectorForce : public VectorKernel
 {

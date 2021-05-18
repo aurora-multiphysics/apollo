@@ -3,8 +3,8 @@
 #include "AuxKernel.h"
 
 /**
- * Auxiliary kernel responsible for computing the Darcy velocity given
- * several fluid properties and the pressure gradient.
+ * Auxiliary kernel responsible for computing the magnetic moment
+ * given the current density distribution.
  */
 class MagneticMoment : public VectorAuxKernel
 {

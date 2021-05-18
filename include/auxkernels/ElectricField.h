@@ -3,8 +3,9 @@
 #include "AuxKernel.h"
 
 /**
- * Auxiliary kernel responsible for computing the Darcy velocity given
- * several fluid properties and the pressure gradient.
+ * Auxiliary kernel responsible for computing the electric field
+ * in the AV formulation, given the magnetic vector potential
+ * and electric scalar potential.
  */
 class ElectricField : public VectorAuxKernel
 {
@@ -21,7 +22,6 @@ protected:
    */
   virtual RealVectorValue computeValue() override;
 
-  /// Holds the  local current density at the quadrature points
   const VectorVariableValue & _a_dot;
   const VariableGradient & _grad_v;
 };

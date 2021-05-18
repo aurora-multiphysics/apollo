@@ -3,8 +3,9 @@
 #include "AuxKernel.h"
 
 /**
- * Auxiliary kernel responsible for computing the Darcy velocity given
- * several fluid properties and the pressure gradient.
+ * Deprecated auxiliary kernel responsible for computing the
+ * current density given the magnetic field.
+ * Deprecated in favour of Vector Curl or AVCurrentDensity.
  */
 class CurrentDensity : public VectorAuxKernel
 {

@@ -26,7 +26,7 @@ protected:
   const Real & _input_n;
   /// The critical current density of the superconductor (Jc)
   const Real & _input_jc;
-  /// The critical electric field of the superconductor (Jc)
+  /// The critical electric field of the superconductor (Ec)
   const Real & _input_ec;
   const Real & _input_permeability;
 
@@ -34,7 +34,7 @@ protected:
   MaterialProperty<Real> & _n;
   /// The critical current density of the superconductor (Jc)
   MaterialProperty<Real> & _jc;
-  /// The critical current density of the superconductor (Jc)
+  /// The critical current density of the superconductor (Ec)
   MaterialProperty<Real> & _ec;
 
   //   /// The resistivity (rho)

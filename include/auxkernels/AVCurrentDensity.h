@@ -3,8 +3,8 @@
 #include "AuxKernel.h"
 
 /**
- * Auxiliary kernel responsible for computing the Darcy velocity given
- * several fluid properties and the pressure gradient.
+ * Auxiliary kernel responsible for computing the current density given
+ * the magnetic vector potential A and the electric scalar potential V.
  */
 class AVCurrentDensity : public VectorAuxKernel
 {

@@ -3,8 +3,8 @@
 #include "AuxKernel.h"
 
 /**
- * Auxiliary kernel responsible for computing the Darcy velocity given
- * several fluid properties and the pressure gradient.
+ * Auxiliary kernel responsible for computing the magnitude of
+ * a complex vector given the real and imaginary components.
  */
 class ComplexMagnitude : public VectorAuxKernel
 {
@@ -21,7 +21,7 @@ protected:
    */
   virtual RealVectorValue computeValue() override;
 
-  /// Holds the  local current density at the quadrature points
+  /// Vectors holding the real and imaginary components of the complex variable.
   const VectorVariableValue & _vec_real;
   const VectorVariableValue & _vec_imag;
 };

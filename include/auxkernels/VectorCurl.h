@@ -3,8 +3,7 @@
 #include "AuxKernel.h"
 
 /**
- * Auxiliary kernel responsible for computing the Darcy velocity given
- * several fluid properties and the pressure gradient.
+ * Auxiliary kernel responsible for returning the curl of a given vector field.
  */
 class VectorCurl : public VectorAuxKernel
 {
@@ -21,6 +20,6 @@ protected:
    */
   virtual RealVectorValue computeValue() override;
 
-  /// Holds the  local current density at the quadrature points
+  /// Holds the  local vector curl at the quadrature points
   const VectorVariableCurl & _vector_curl;
 };

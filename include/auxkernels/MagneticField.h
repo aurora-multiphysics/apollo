@@ -3,8 +3,9 @@
 #include "AuxKernel.h"
 
 /**
- * Auxiliary kernel responsible for computing the Darcy velocity given
- * several fluid properties and the pressure gradient.
+ * Auxiliary kernel responsible for computing the magnetic field
+ * in the TO formulation given the electric vector potential and
+ * magnetic scalar potential.
  */
 class MagneticField : public VectorAuxKernel
 {

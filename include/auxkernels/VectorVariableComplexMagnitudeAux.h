@@ -3,7 +3,8 @@
 #include "AuxKernel.h"
 
 /**
- * Compute the magnitude of a vector variable
+ * Compute the magnitude of a vector variable.
+ * Deprecated in favour of ComplexMagnitude.
  */
 class VectorVariableComplexMagnitudeAux : public AuxKernel
 {
