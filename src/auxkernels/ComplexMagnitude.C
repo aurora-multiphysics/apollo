@@ -21,8 +21,6 @@ ComplexMagnitude::ComplexMagnitude(const InputParameters & parameters)
 RealVectorValue
 ComplexMagnitude::computeValue()
 {
-  // Access the gradient of the pressure at this quadrature point, then pull out the "component" of
-  // it requested (x, y or z). Note, that getting a particular component of a gradient is done using
-  // the parenthesis operator.
+  // Calculate the magnitude of the complex vector variable.
   return sqrt(_vec_real[_qp]*_vec_real[_qp] + _vec_imag[_qp]*_vec_imag[_qp]);
 }

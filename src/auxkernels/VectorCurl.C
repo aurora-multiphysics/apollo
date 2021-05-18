@@ -20,8 +20,6 @@ VectorCurl::VectorCurl(const InputParameters & parameters)
 RealVectorValue
 VectorCurl::computeValue()
 {
-  // Access the gradient of the pressure at this quadrature point, then pull out the "component" of
-  // it requested (x, y or z). Note, that getting a particular component of a gradient is done using
-  // the parenthesis operator.
+  // Return the curl of the input vector
   return _vector_curl[_qp];
 }

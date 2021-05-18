@@ -22,8 +22,6 @@ JouleHeating::JouleHeating(const InputParameters & parameters)
 Real
 JouleHeating::computeValue()
 {
-  // Access the gradient of the pressure at this quadrature point, then pull out the "component" of
-  // it requested (x, y or z). Note, that getting a particular component of a gradient is done using
-  // the parenthesis operator.
+  // Calculate the Ohmic power dissipation per unit volume
   return _sigma[_qp]*_e_field[_qp]*_e_field[_qp];
 }

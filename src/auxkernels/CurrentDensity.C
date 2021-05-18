@@ -20,8 +20,6 @@ CurrentDensity::CurrentDensity(const InputParameters & parameters)
 RealVectorValue
 CurrentDensity::computeValue()
 {
-  // Access the gradient of the pressure at this quadrature point, then pull out the "component" of
-  // it requested (x, y or z). Note, that getting a particular component of a gradient is done using
-  // the parenthesis operator.
+  // Return the current density.
   return _current_density[_qp];
 }

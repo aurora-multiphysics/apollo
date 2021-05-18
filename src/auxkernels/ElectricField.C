@@ -22,8 +22,6 @@ ElectricField::ElectricField(const InputParameters & parameters)
 RealVectorValue
 ElectricField::computeValue()
 {
-  // Access the gradient of the pressure at this quadrature point, then pull out the "component" of
-  // it requested (x, y or z). Note, that getting a particular component of a gradient is done using
-  // the parenthesis operator.
+  // Calculate the electric field in the AV formulation
   return -_a_dot[_qp] - _grad_v[_qp];
 }

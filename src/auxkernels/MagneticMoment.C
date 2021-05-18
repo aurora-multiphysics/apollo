@@ -20,8 +20,6 @@ MagneticMoment::MagneticMoment(const InputParameters & parameters)
 RealVectorValue
 MagneticMoment::computeValue()
 {
-  // Access the gradient of the pressure at this quadrature point, then pull out the "component" of
-  // it requested (x, y or z). Note, that getting a particular component of a gradient is done using
-  // the parenthesis operator.
+  // Calculate the local magnetic moment from the current density.
   return 0.5 * _q_point[_qp].cross(_current_density[_qp]);
 }

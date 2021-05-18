@@ -24,7 +24,7 @@ AVAction::validParams()
 {
   InputParameters params = Action::validParams();
   params.addClassDescription("This class allows us to have a section of the input file for "
-                             "setting up incompressible Navier-Stokes equations.");
+                             "setting up Maxwell's equations according to the AV formulation.");
 
   MooseEnum families(AddVariableAction::getNonlinearVariableFamilies());
   MooseEnum orders(AddVariableAction::getNonlinearVariableOrders());
