@@ -1,7 +1,7 @@
 [Mesh]
   [gen]
     type = FileMeshGenerator
-    file = wire.e
+    file = gold/wire.e
   [../]
   second_order=true
 []

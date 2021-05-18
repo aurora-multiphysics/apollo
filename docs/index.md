@@ -1,37 +1,21 @@
-## Welcome to GitHub Pages
+---
+title: Home
+layout: template
+filename: index.md
+---
 
-You can use the [editor on GitHub](https://github.com/aurora-multiphysics/apollo/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+# Apollo
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Apollo is a MOOSE-based application for electromagnetic problems as part of the Aurora multiphysics package.
 
-### Markdown
+Apollo is still under active development and is being updated frequently.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+"Fork Apollo" to create a new MOOSE-based application.
 
-```markdown
-Syntax highlighted code block
+For more information see: [http://mooseframework.org/create-an-app/](http://mooseframework.org/create-an-app/)
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/aurora-multiphysics/apollo/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Electromagnetic Models
+Apollo currently provides three sub-modules for solving electromagnetic problems in MOOSE in different regimes:
+- [ComplexMaxwell.md](ComplexMaxwell), for solving the full-wave Maxwell equations in the frequency domain using edge-based FEs.
+- [EddyAV.md](EddyAV), for solving the low-frequency Maxwell equations for eddy current problems in the time domain using nodal FEs under the $$A-V$$ formulation.
+- [MaxwellHNonlinear.md](MaxwellHNonlinear), for solving low-frequency $$H$$-formulation problems for systems containing highly nonlinear conductors (such as superconductors).
