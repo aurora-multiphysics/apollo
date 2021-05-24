@@ -37,7 +37,7 @@
   [./CurlCurlA] # looks just like boundary form but solves slower
     type = MatCoefDiffusion
     variable = Az
-    conductivity = 'reluctance'
+    conductivity = 'reluctivity'
   [../]
   [./CoefTimeDerivative] # looks just like boundary form but solves slower
     type = MatTimeDerivative

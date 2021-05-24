@@ -23,7 +23,7 @@ Dielectric::Dielectric(const InputParameters & parameters)
     // Declare material properties by getting a reference from the MOOSE Material system
     _permittivity(declareProperty<Real>("permittivity")),
     _permeability(declareProperty<Real>("permeability")),
-    _reluctance(declareProperty<Real>("reluctance"))
+    _reluctivity(declareProperty<Real>("reluctivity"))
 {
 }
 
@@ -34,5 +34,5 @@ Dielectric::computeQpProperties()
   const Real _mu0 = 1.25663706e-6;
   _permittivity[_qp] = _epsilon0 * _input_rel_permittivity;
   _permeability[_qp] = _mu0 * _input_rel_permeability;
-  _reluctance[_qp] =  1.0/_permeability[_qp];
+  _reluctivity[_qp] =  1.0/_permeability[_qp];
 }

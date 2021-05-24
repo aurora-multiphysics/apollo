@@ -13,7 +13,7 @@
 //* (σ(dA/dt + ∇ V), ∇w) - <σ(dA/dt + ∇ V)·n, w> =0
 //*
 //* where:
-//* Reluctance ν = 1/μ
+//* reluctivity ν = 1/μ
 //* electrical_conductivity σ=1/ρ
 //* Magnetic vector potential A
 //* Scalar electric potential V

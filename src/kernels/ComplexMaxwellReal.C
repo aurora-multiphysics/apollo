@@ -42,8 +42,8 @@ ComplexMaxwellReal::ComplexMaxwellReal(const InputParameters & parameters)
   _sigma_im(getMaterialProperty<Real>("imag_electrical_conductivity")),
   _epsilon_re(getMaterialProperty<Real>("real_permittivity")),
   _epsilon_im(getMaterialProperty<Real>("imag_permittivity")),
-  _nu_re(getMaterialProperty<Real>("real_reluctance")),
-  _nu_im(getMaterialProperty<Real>("imag_reluctance"))
+  _nu_re(getMaterialProperty<Real>("real_reluctivity")),
+  _nu_im(getMaterialProperty<Real>("imag_reluctivity"))
 {
 }
 

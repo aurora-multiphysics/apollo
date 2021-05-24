@@ -30,7 +30,7 @@ Conductor::Conductor(const InputParameters & parameters)
     _permittivity(declareProperty<Real>("permittivity")),
     _permeability(declareProperty<Real>("permeability")),
     _resistivity(declareProperty<Real>("resistivity")),
-    _reluctance(declareProperty<Real>("reluctance"))
+    _reluctivity(declareProperty<Real>("reluctivity"))
 {
 }
 
@@ -43,5 +43,5 @@ Conductor::computeQpProperties()
   _permittivity[_qp] = _epsilon0 * _input_rel_permittivity;
   _permeability[_qp] = _mu0 * _input_rel_permeability;
   _resistivity[_qp] =  1.0/_electrical_conductivity[_qp];
-  _reluctance[_qp] =  1.0/_permeability[_qp];
+  _reluctivity[_qp] =  1.0/_permeability[_qp];
 }

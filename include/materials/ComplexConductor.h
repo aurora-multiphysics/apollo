@@ -38,6 +38,6 @@ protected:
   MaterialProperty<Real> & _imag_permittivity;
   MaterialProperty<Real> & _real_permeability;
   MaterialProperty<Real> & _imag_permeability;
-  MaterialProperty<Real> & _real_reluctance;
-  MaterialProperty<Real> & _imag_reluctance;
+  MaterialProperty<Real> & _real_reluctivity;
+  MaterialProperty<Real> & _imag_reluctivity;
 };

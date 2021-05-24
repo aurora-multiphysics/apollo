@@ -49,8 +49,8 @@ ComplexConductor::ComplexConductor(const InputParameters & parameters)
     _real_permeability(declareProperty<Real>("real_permeability")),
     _imag_permeability(declareProperty<Real>("imag_permeability")),
 
-    _real_reluctance(declareProperty<Real>("real_reluctance")),
-    _imag_reluctance(declareProperty<Real>("imag_reluctance"))
+    _real_reluctivity(declareProperty<Real>("real_reluctivity")),
+    _imag_reluctivity(declareProperty<Real>("imag_reluctivity"))
 
 {
 }
@@ -69,7 +69,7 @@ ComplexConductor::computeQpProperties()
   _real_permeability[_qp] = 1.25663706e-6 * _input_real_rel_permeability;
   _imag_permeability[_qp] = 1.25663706e-6 * _input_imag_rel_permeability;
 
-  _real_reluctance[_qp] =  _real_permeability[_qp]/(1e-99 +_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);
-  _imag_reluctance[_qp] = -_imag_permeability[_qp]/(1e-99 +_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);
+  _real_reluctivity[_qp] =  _real_permeability[_qp]/(1e-99 +_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);
+  _imag_reluctivity[_qp] = -_imag_permeability[_qp]/(1e-99 +_real_permeability[_qp]*_real_permeability[_qp]+_imag_permeability[_qp]*_imag_permeability[_qp]);
 
 }

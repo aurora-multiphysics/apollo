@@ -27,5 +27,5 @@ protected:
 
   MaterialProperty<Real> & _permittivity;
   MaterialProperty<Real> & _permeability;
-  MaterialProperty<Real> & _reluctance;
+  MaterialProperty<Real> & _reluctivity;
 };

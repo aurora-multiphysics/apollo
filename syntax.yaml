@@ -26232,7 +26232,7 @@
       description: |
         A string representing the Moose Object that will be built by this Action
     subblocks:
-  - name: /Functions/Axisymmetric2D3DSolutionFunction
+  - name: /Functions/2DXY3DSolutionFunction
     description: |
 
     parameters:
@@ -26322,7 +26322,7 @@
         The SolutionUserObject to extract data from.
     - name: type
       required: No
-      default: !!str Axisymmetric2D3DSolutionFunction
+      default: !!str 2DXY3DSolutionFunction
       cpp_type: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >
       group_name:
       description: |
