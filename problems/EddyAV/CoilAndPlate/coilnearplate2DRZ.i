@@ -85,7 +85,7 @@
                  if(t>t2, if(t<(t2+Deltat),1-(t-t2)/Deltat,0),
                     1))'
     vars = 'J0 Deltat t2'
-    vals = '1e6 40e-3 10'
+    vals = '1e6 10e-3 10'
   [../]
 []
 
@@ -104,24 +104,65 @@
     order = FIRST
     family = MONOMIAL_VEC
   []
+  [Fx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [Fy]
+    order = FIRST
+    family = MONOMIAL
+  []
+
   [J_source]
     # J defined on faces - RT elements preferable
-    order = SECOND
+    order = CONSTANT
     family = MONOMIAL
   []
   [J_eddy]
     # J defined on faces - RT elements preferable
-    order = SECOND
+    order = FIRST
     family = MONOMIAL
   []
   [B]
     # B defined on edges
-    family = NEDELEC_ONE
+    family = MONOMIAL_VEC
     order = FIRST
+  []
+  [Bx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [By]
+    order = FIRST
+    family = MONOMIAL
   []
 []
 
 [AuxKernels]
+  [Fx]
+    type = VectorVariableComponentAux
+    variable = Fx
+    vector_variable = F
+    component = 'x'
+  []
+  [Fy]
+    type = VectorVariableComponentAux
+    variable = Fy
+    vector_variable = F
+    component = 'y'
+  []
+  [Bx]
+    type = VectorVariableComponentAux
+    variable = Bx
+    vector_variable = B
+    component = 'x'
+  []
+  [By]
+    type = VectorVariableComponentAux
+    variable = By
+    vector_variable = B
+    component = 'y'
+  []
   [J_source]
     type = FunctionAux
     function = coil_current_density
@@ -154,6 +195,7 @@
     execute_on = timestep_end
   [../]
 []
+
 [Preconditioning]
   [./pre]
     type = SMP
@@ -178,9 +220,108 @@
   [../]
 []
 
+[Postprocessors]
+  [./J_inner]
+    type = PointValue
+    point = '3.001 0.0 0.0'
+    variable = 'J_eddy'
+  [../]
+  [./Fx_inner]
+    type = PointValue
+    point = '3.001 0.0 0.0'
+    variable = 'Fx'
+  [../]
+  [./Fy_inner]
+    type = PointValue
+    point = '3.001 0.0 0.0'
+    variable = 'Fy'
+  [../]
+  [./Bx_inner]
+    type = PointValue
+    point = '3.001 0.0 0.0'
+    variable = 'Bx'
+  [../]
+  [./By_inner]
+    type = PointValue
+    point = '3.001 0.0 0.0'
+    variable = 'By'
+  [../]
+
+  [./J_centre]
+    type = PointValue
+    point = '3.015 0.0 0.0'
+    variable = 'J_eddy'
+  [../]
+  [./Fx_centre]
+    type = PointValue
+    point = '3.015 0.0 0.0'
+    variable = 'Fx'
+  [../]
+  [./Fy_centre]
+    type = PointValue
+    point = '3.015 0.0 0.0'
+    variable = 'Fy'
+  [../]
+  [./Bx_centre]
+    type = PointValue
+    point = '3.015 0.0 0.0'
+    variable = 'Bx'
+  [../]
+  [./By_centre]
+    type = PointValue
+    point = '3.015 0.0 0.0'
+    variable = 'By'
+  [../]
+
+  [./J_outer]
+    type = PointValue
+    point = '3.029 0.0 0.0'
+    variable = 'J_eddy'
+  [../]
+  [./Fx_outer]
+    type = PointValue
+    point = '3.029 0.0 0.0'
+    variable = 'Fx'
+  [../]
+  [./Fy_outer]
+    type = PointValue
+    point = '3.029 0.0 0.0'
+    variable = 'Fy'
+  [../]
+  [./Bx_outer]
+    type = PointValue
+    point = '3.029 0.0 0.0'
+    variable = 'Bx'
+  [../]
+  [./By_outer]
+    type = PointValue
+    point = '3.029 0.0 0.0'
+    variable = 'By'
+  [../]
+[]
+
+[VectorPostprocessors]
+  [./line_data]
+    type = LineValueSampler
+    start_point = '2.999 0.0 0.0'
+    end_point = '3.031 0.0 0.0'
+    num_points = 100
+    sort_by = x
+    variable = 'J_eddy Fx Fy Bx By'
+  [../]
+  # [./time_data]
+  #   type = PointValueSampler
+  #   sort_by = x
+  #   points = '3.001 0.0 0.0'
+  #   variable = 'J_eddy Fx Fy Bx By'
+  #   contains_complete_history = true
+  # [../]
+[]
+
 [Outputs]
   exodus = true
-  csv = true
-
-  # perf_graph = true
+  [./csv]
+    type = CSV
+    time_data = true
+  [../]
 []
