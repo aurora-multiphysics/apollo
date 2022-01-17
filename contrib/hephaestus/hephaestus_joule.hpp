@@ -259,7 +259,7 @@ public:
 // terms of the BSD-3 license. We welcome feedback and contributions, see file
 // CONTRIBUTING.md for details.
 
-#include "joule_solver.hpp"
+// #include "joule_solver.hpp"
 
 // #ifdef MFEM_USE_MPI
 
