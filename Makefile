@@ -46,6 +46,15 @@ XFEM                        := no
 
 include $(MOOSE_DIR)/modules/modules.mk
 ###############################################################################
+include config.inc
+ADDITIONAL_INCLUDES += $(MFEM_INC)
+EXTERNAL_FLAGS += $(MFEM_LIB)
+
+.PHONY : printer
+
+printer:
+	@echo $(MFEM_LIB)
+	@echo $(MFEM_INC)
 
 # dep apps
 APPLICATION_DIR    := $(CURDIR)
