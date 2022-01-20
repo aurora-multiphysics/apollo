@@ -46,9 +46,6 @@ XFEM                        := no
 
 include $(MOOSE_DIR)/modules/modules.mk
 ###############################################################################
-include config.inc
-ADDITIONAL_INCLUDES += $(MFEM_INC)
-EXTERNAL_FLAGS += $(MFEM_LIB)
 
 .PHONY : printer
 
@@ -58,10 +55,13 @@ printer:
 
 # dep apps
 APPLICATION_DIR    := $(CURDIR)
+APOLLO_DIR         := $(CURDIR)
 APPLICATION_NAME   := apollo
 BUILD_EXEC         := yes
 GEN_REVISION       := no
+DEP_APPS           := $(shell $(FRAMEWORK_DIR)/scripts/find_dep_apps.py $(APPLICATION_NAME))
 include            $(FRAMEWORK_DIR)/app.mk
+
 
 ###############################################################################
 # Additional special case targets should be added here
