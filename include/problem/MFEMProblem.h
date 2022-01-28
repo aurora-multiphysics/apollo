@@ -17,5 +17,7 @@ class MFEMProblem : public ExternalProblem
   virtual bool converged () override { return true; };
 
   virtual void syncSolutions(Direction direction) override {};
-
+ protected:
+ std::string _problem_type;
+ std::string _input_mesh;
 };
