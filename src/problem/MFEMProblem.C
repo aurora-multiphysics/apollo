@@ -10,21 +10,29 @@ registerMooseObject("ApolloApp", MFEMProblem);
 InputParameters MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
+  params.addParam<std::string>("input_mesh", "Input mesh for MFEM. "
+  "Should be consistent with problem type.");
+  params.addParam<std::string>("problem_type", "Problem type for Joule solver. "
+  "Should be 'rod' or 'coil'.");
   return params;
 }
 
 MFEMProblem::MFEMProblem(const InputParameters & params)
-  : ExternalProblem(params)
+  : ExternalProblem(params),
+  _input_mesh(getParam<std::string>("input_mesh")),
+  _problem_type(getParam<std::string>("problem_type"))
 {
 
 }
 
 void MFEMProblem::externalSolve(){
     std::cout << "Launching MFEM solve\n\n" << std::endl;
+    std::cout << "Proof: " << _input_mesh << std::endl;
+
     MeshBase &meshy = mesh().getMesh();
     std::cout << meshy.spatial_dimension() << std::endl;
 
-    std::vector<std::string> arguments = {"joule", "-m", "./cylinder-tet.mesh", "-o", "2", "-p", "rod"};
+    std::vector<std::string> arguments = {"joule", "-m", _input_mesh, "-o", "2", "-p", _problem_type};
 
     std::vector<char*> argv;
     for (const auto& arg : arguments)
