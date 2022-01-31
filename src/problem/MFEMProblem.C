@@ -19,8 +19,8 @@ InputParameters MFEMProblem::validParams()
 
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
-  _input_mesh(getParam<std::string>("input_mesh")),
-  _problem_type(getParam<std::string>("problem_type"))
+  _problem_type(getParam<std::string>("problem_type")),
+  _input_mesh(getParam<std::string>("input_mesh"))
 {
 
 }
