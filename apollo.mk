@@ -1,7 +1,7 @@
 #
 # Check the existence of the contrib submodules and build accordingly
 #
-MFEM_DIR?=$(APOLLO_DIR)/../mfem_build
+MFEM_DIR?=$(APOLLO_DIR)/../mfem/build
 include $(MFEM_DIR)/config/config.mk
 
 
