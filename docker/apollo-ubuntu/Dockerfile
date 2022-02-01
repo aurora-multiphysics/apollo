@@ -5,8 +5,7 @@
 # docker build -t apollo-ubuntu --build-arg build_git_sha=${GITHUB_SHA} .
 
 # Get MOOSE image
-# FROM herter4171/ubuntu-moose:latest
-FROM herter4171/ubuntu-moose:f90fe66a8b6af15b7e2d706f2b11990e322b82df
+FROM herter4171/ubuntu-moose:latest
 
 # By default one core is used to compile
 ARG compile_cores=1
