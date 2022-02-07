@@ -19,13 +19,14 @@ InputParameters MFEMProblem::validParams()
 
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
-  _problem_type(getParam<std::string>("problem_type")),
-  _input_mesh(getParam<std::string>("input_mesh"))
+  _mfem_inputs(params)
 {
-
 }
 
 void MFEMProblem::externalSolve(){
+    std::string _problem_type = _mfem_inputs._problem_type;
+    std::string _input_mesh = _mfem_inputs._input_mesh;
+
     std::cout << "Launching MFEM solve\n\n" << std::endl;
     std::cout << "Proof: " << _input_mesh << std::endl;
 
