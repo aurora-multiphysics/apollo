@@ -19,6 +19,10 @@ class MFEMProblem : public ExternalProblem
 
   virtual void syncSolutions(Direction direction) override {};
 
+  void addBoundaryCondition(const std::string & bc_name,
+                            const std::string & name,
+                            InputParameters & parameters) override;
+
   MFEMInputs _mfem_inputs;
 
  protected:
