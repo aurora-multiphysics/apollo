@@ -17,7 +17,8 @@ MFEMInputs::validParams()
 MFEMInputs::MFEMInputs(const InputParameters & parameters)
   : MooseObject(parameters),
   _problem_type(getParam<std::string>("problem_type")),
-  _input_mesh(getParam<std::string>("input_mesh"))
+  _input_mesh(getParam<std::string>("input_mesh")),
+  _bcs(std::vector<BoundaryName>({"null"}))
 {
 }
 

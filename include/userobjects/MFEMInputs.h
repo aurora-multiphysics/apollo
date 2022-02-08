@@ -2,6 +2,7 @@
 
 #include "MooseObject.h"
 
+
 class MFEMInputs : public MooseObject
 {
 public:
@@ -12,6 +13,7 @@ public:
 
   std::string _problem_type;
   std::string _input_mesh;
+  std::vector<BoundaryName> _bcs;
 
 protected:
 
