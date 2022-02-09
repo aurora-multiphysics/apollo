@@ -23,6 +23,10 @@ class MFEMProblem : public ExternalProblem
                             const std::string & name,
                             InputParameters & parameters) override;
 
+  void addMaterial(const std::string & kernel_name,
+                   const std::string & name,
+                   InputParameters & parameters);
+
   MFEMInputs _mfem_inputs;
 
  protected:

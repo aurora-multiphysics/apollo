@@ -18,7 +18,8 @@ MFEMInputs::MFEMInputs(const InputParameters & parameters)
   : MooseObject(parameters),
   _problem_type(getParam<std::string>("problem_type")),
   _input_mesh(getParam<std::string>("input_mesh")),
-  _bcs(std::vector<BoundaryName>({"null"}))
+  _bcs(std::vector<std::vector<BoundaryName>>()),
+  _mats(std::vector<std::vector<SubdomainName>>())
 {
 }
 
