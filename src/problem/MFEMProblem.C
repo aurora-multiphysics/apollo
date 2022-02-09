@@ -19,30 +19,24 @@ InputParameters MFEMProblem::validParams()
 
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
-  _mfem_inputs(params)
+  _problem_type(getParam<std::string>("problem_type")),
+  _input_mesh(getParam<std::string>("input_mesh")),
+  _bc_maps()
 {
 }
 
 void MFEMProblem::externalSolve(){
-    std::string _problem_type = _mfem_inputs._problem_type;
-    std::string _input_mesh = _mfem_inputs._input_mesh;
 
     std::cout << "Launching MFEM solve\n\n" << std::endl;
     std::cout << "Proof: " << _input_mesh << std::endl;
-    std::cout << "BCs: " << _mfem_inputs._bcs[0][0] << std::endl;
 
     MeshBase &meshy = mesh().getMesh();
     std::cout << meshy.spatial_dimension() << std::endl;
 
 
-    std::vector<std::string> arguments = {"joule", "-m", _input_mesh, "-o", "2", "-p", _problem_type};
+    std::vector<std::string> arguments = {"joule", "-o", "2"};
 
-    std::vector<BCMap> bc_maps({
-        BCMap(std::string("curl_bc"), Array<int>({1,2,3})),
-        BCMap(std::string("thermal_bc"), Array<int>({1,2})),
-        BCMap(std::string("poisson_bc"), Array<int>({1,2})),
-    });
-    Inputs inputs(bc_maps);
+    Inputs inputs(_problem_type, _input_mesh, _bc_maps);
 
     std::vector<char*> argv;
     for (const auto& arg : arguments)
@@ -56,7 +50,15 @@ void MFEMProblem::externalSolve(){
                             const std::string & name,
                             InputParameters & parameters)
   {
-    _mfem_inputs._bcs.push_back(parameters.get<std::vector<BoundaryName>>("boundary"));
+    std::vector<BoundaryName> boundary = parameters.get<std::vector<BoundaryName>>("boundary");
+    mfem::Array<int> bdr_attr(boundary.size());
+
+    for (unsigned int i = 0; i < boundary.size(); ++i)
+    {
+      bdr_attr[i] = std::stoi(boundary[i]);
+    }
+    BCMap bc(name, bdr_attr);
+    _bc_maps.push_back(bc);
   }
 
 
@@ -64,5 +66,8 @@ void MFEMProblem::externalSolve(){
                    const std::string & name,
                    InputParameters & parameters)
   {
-    _mfem_inputs._mats.push_back(parameters.get<std::vector<SubdomainName>>("block"));
+
+    // _mfem_inputs._mats.push_back(parameters.get<std::vector<SubdomainName>>("block"));
+
+  // _ri_moose_object.parameters()
   }

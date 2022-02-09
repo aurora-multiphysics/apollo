@@ -9,11 +9,21 @@
 []
 
 [BCs]
-  [./bnd]
+  [./curl_bc]
     type = VectorTangentialPenaltyDirichletBC
-    boundary = 'left right top bottom front back'
     variable = H
+    boundary = '1 2 3'
   [../]
+  [./thermal_bc]
+    type = VectorTangentialPenaltyDirichletBC
+    variable = H
+    boundary = '1 2'
+  []
+  [./poisson_bc]
+    type = VectorTangentialPenaltyDirichletBC
+    variable = H
+    boundary = '1 2'
+  []
 []
 
 [Materials]
