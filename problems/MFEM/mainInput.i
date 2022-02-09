@@ -16,6 +16,13 @@
   [../]
 []
 
+[Materials]
+  [./Vacuum]
+    type = Conductor
+    block = '1'
+  [../]
+[]
+
 [Executioner]
   type = Steady
 []

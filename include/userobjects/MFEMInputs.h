@@ -13,7 +13,8 @@ public:
 
   std::string _problem_type;
   std::string _input_mesh;
-  std::vector<BoundaryName> _bcs;
+  std::vector<std::vector<BoundaryName>> _bcs;
+  std::vector<std::vector<SubdomainName>> _mats;
 
 protected:
 
