@@ -1,8 +1,8 @@
 # pragma once
 
 #include "ExternalProblem.h"
-#include "MFEMInputs.h"
 #include "boundary_conditions.hpp"
+#include "materials.hpp"
 
 #include<iostream>
 
@@ -28,11 +28,11 @@ class MFEMProblem : public ExternalProblem
                    const std::string & name,
                    InputParameters & parameters);
 
-  // MFEMInputs _mfem_inputs;
 
  protected:
  std::string _problem_type;
  std::string _input_mesh;
- std::vector<BCMap> _bc_maps;
+ hephaestus::BCMap _bc_maps;
+ hephaestus::MaterialMap _mat_map;
 
 };
