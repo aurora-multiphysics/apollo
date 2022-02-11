@@ -5,6 +5,7 @@
 [Problem]
   type = MFEMProblem
   input_mesh = ./coil.gen
+  order = 2
 []
 
 [BCs]
