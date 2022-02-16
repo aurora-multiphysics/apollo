@@ -5,24 +5,34 @@
 [Problem]
   type = MFEMProblem
   input_mesh = ./coil.gen
-  order = 2
+  order = 1
+[]
+
+[Functions]
+  [./p_bc]
+    type = ParsedFunction
+    value = (z/abs(z))*cos(2.0*pi*freq*t)
+    vars = 'freq'
+    vals = '0.01666667'
+  [../]
 []
 
 [BCs]
-  [./curl_bc]
+  [./electric_potential]
+    type = FunctionDirichletBC
+    variable = potential
+    boundary = '1 2 3'
+    function = p_bc
+  [../]
+  [./tangential_dEdt]
     type = VectorTangentialPenaltyDirichletBC
-    variable = H
+    variable = E
     boundary = '1 2 3 4'
   [../]
-  [./thermal_bc]
-    type = VectorTangentialPenaltyDirichletBC
-    variable = H
+  [./thermal_flux]
+    type = DirichletBC
+    variable = F
     boundary = '1 3'
-  []
-  [./poisson_bc]
-    type = VectorTangentialPenaltyDirichletBC
-    variable = H
-    boundary = '1 2 3'
   []
 []
 
