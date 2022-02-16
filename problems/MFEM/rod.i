@@ -8,20 +8,30 @@
   order = 2
 []
 
+[Functions]
+  [./p_bc]
+    type = ParsedFunction
+    value = (z/abs(z))*cos(2.0*pi*freq*t)
+    vars = 'freq'
+    vals = '0.01666667'
+  [../]
+[]
+
 [BCs]
-  [./curl_bc]
+  [./electric_potential]
+    type = FunctionDirichletBC
+    variable = potential
+    boundary = '1 2'
+    function = p_bc
+  [../]
+  [./tangential_dEdt]
     type = VectorTangentialPenaltyDirichletBC
-    variable = H
+    variable = E
     boundary = '1 2 3'
   [../]
-  [./thermal_bc]
+  [./thermal_flux]
     type = VectorTangentialPenaltyDirichletBC
-    variable = H
-    boundary = '1 2'
-  []
-  [./poisson_bc]
-    type = VectorTangentialPenaltyDirichletBC
-    variable = H
+    variable = T
     boundary = '1 2'
   []
 []

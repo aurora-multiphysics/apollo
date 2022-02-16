@@ -35,6 +35,12 @@ void MFEMProblem::externalSolve(){
 }
 
 
+libMesh::Point PointFromMFEMVector(const mfem::Vector &vec)
+{
+  return libMesh::Point(vec.Elem(0),vec.Elem(1),vec.Elem(2));
+}
+
+
 void MFEMProblem::addBoundaryCondition(const std::string & bc_name,
     const std::string & name,
     InputParameters & parameters)
@@ -46,7 +52,16 @@ void MFEMProblem::addBoundaryCondition(const std::string & bc_name,
   {
     bdr_attr[i] = std::stoi(boundary[i]);
   }
+
   hephaestus::BoundaryCondition bc(name, bdr_attr);
+
+  if (parameters.isParamValid("function"))
+  {
+    const FunctionName & function_name(parameters.get<FunctionName>("function"));
+    const Function & _func(getFunction(function_name));
+    bc.scalar_func = std::bind(&Function::value, &_func, std::placeholders::_2,  std::bind(PointFromMFEMVector, std::placeholders::_1));
+  }
+
   _bc_maps.setBC(name, bc);
 }
 

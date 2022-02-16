@@ -1,6 +1,8 @@
 # pragma once
 
 #include "ExternalProblem.h"
+#include "Function.h"
+#include "libmesh/point.h"
 #include "boundary_conditions.hpp"
 #include "materials.hpp"
 
