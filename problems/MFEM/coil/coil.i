@@ -1,10 +1,10 @@
 [Mesh]
-  file = mug.e
+  type = MFEMMesh
+  file = ./coil.gen
 []
 
 [Problem]
   type = MFEMProblem
-  input_mesh = ./coil.gen
   formulation = Joule
   order = 1
 []

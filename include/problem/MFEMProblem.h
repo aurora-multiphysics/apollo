@@ -1,6 +1,7 @@
 # pragma once
 
 #include "ExternalProblem.h"
+#include "MFEMMesh.h"
 #include "Function.h"
 #include "libmesh/point.h"
 #include "boundary_conditions.hpp"
