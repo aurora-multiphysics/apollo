@@ -19,7 +19,7 @@ InputParameters MFEMProblem::validParams()
 
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
-  _input_mesh(getParam<std::string>("input_mesh")),
+  _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
   _formulation(getParam<std::string>("formulation")),
   _order(getParam<int>("order")),
   _bc_maps(),

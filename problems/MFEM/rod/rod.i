@@ -1,10 +1,10 @@
 [Mesh]
-  file = mug.e
+  type = MFEMMesh
+  file = ./cylinder-hex-q2.gen
 []
 
 [Problem]
   type = MFEMProblem
-  input_mesh = ./cylinder-hex-q2.gen
   formulation = Joule
   order = 2
 []
