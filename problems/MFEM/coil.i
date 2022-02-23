@@ -5,6 +5,7 @@
 [Problem]
   type = MFEMProblem
   input_mesh = ./coil.gen
+  formulation = Joule
   order = 1
 []
 

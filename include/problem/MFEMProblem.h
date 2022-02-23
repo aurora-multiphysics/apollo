@@ -33,6 +33,7 @@ class MFEMProblem : public ExternalProblem
 
  protected:
  std::string _input_mesh;
+ std::string _formulation;
  int _order;
  hephaestus::BCMap _bc_maps;
  hephaestus::MaterialMap _mat_map;

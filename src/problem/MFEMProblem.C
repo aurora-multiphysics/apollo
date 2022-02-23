@@ -1,7 +1,7 @@
 #include "MFEMProblem.h"
 #include "SystemBase.h"
 
-#include "hephaestus_joule.hpp"
+#include "hephaestus.hpp"
 
 
 registerMooseObject("ApolloApp", MFEMProblem);
@@ -11,6 +11,7 @@ InputParameters MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
+  params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
   params.addParam<int>("order", "Order of the FE variables for MFEM.");
   return params;
 }
@@ -19,6 +20,7 @@ InputParameters MFEMProblem::validParams()
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
   _input_mesh(getParam<std::string>("input_mesh")),
+  _formulation(getParam<std::string>("formulation")),
   _order(getParam<int>("order")),
   _bc_maps(),
   _mat_map()
@@ -27,11 +29,11 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 
 
 void MFEMProblem::externalSolve(){
-    hephaestus::Inputs inputs(_input_mesh, _order, _bc_maps, _mat_map);
+    hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map);
 
     std::vector<char*> argv;
     std::cout << "Launching MFEM solve\n\n" << std::endl;
-    joule_solve(argv.size() - 1, argv.data(), inputs);
+    run_hephaestus(argv.size() - 1, argv.data(), inputs);
 }
 
 
