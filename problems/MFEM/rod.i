@@ -5,6 +5,7 @@
 [Problem]
   type = MFEMProblem
   input_mesh = ./cylinder-hex-q2.gen
+  formulation = Joule
   order = 2
 []
 
