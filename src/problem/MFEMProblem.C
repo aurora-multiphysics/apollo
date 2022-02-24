@@ -1,6 +1,6 @@
 #include "MFEMProblem.h"
 #include "SystemBase.h"
-
+#include "Transient.h"
 #include "hephaestus.hpp"
 
 
@@ -13,6 +13,9 @@ InputParameters MFEMProblem::validParams()
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
   params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
   params.addParam<int>("order", "Order of the FE variables for MFEM.");
+  params.addParam<double>("dt", "Time step");
+  params.addParam<double>("end_time", "Time at which to end transient simulation.");
+
   return params;
 }
 
@@ -23,13 +26,14 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
   _formulation(getParam<std::string>("formulation")),
   _order(getParam<int>("order")),
   _bc_maps(),
-  _mat_map()
+  _mat_map(),
+  _executioner(std::string("Transient"), getParam<double>("dt"), getParam<double>("end_time"))
 {
 }
 
 
 void MFEMProblem::externalSolve(){
-    hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map);
+    hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
 
     std::vector<char*> argv;
     std::cout << "Launching MFEM solve\n\n" << std::endl;

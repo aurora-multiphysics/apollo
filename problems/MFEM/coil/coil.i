@@ -7,6 +7,8 @@
   type = MFEMProblem
   formulation = Joule
   order = 1
+  dt = 0.5
+  end_time = 100.0
 []
 
 [Functions]
