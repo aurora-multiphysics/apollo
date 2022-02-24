@@ -6,6 +6,7 @@
 #include "libmesh/point.h"
 #include "boundary_conditions.hpp"
 #include "materials.hpp"
+#include "executioner.hpp"
 
 #include<iostream>
 
@@ -38,5 +39,5 @@ class MFEMProblem : public ExternalProblem
  int _order;
  hephaestus::BCMap _bc_maps;
  hephaestus::MaterialMap _mat_map;
-
+ hephaestus::Executioner _executioner;
 };
