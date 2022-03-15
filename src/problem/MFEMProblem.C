@@ -3,11 +3,10 @@
 #include "Transient.h"
 #include "hephaestus.hpp"
 
-
 registerMooseObject("ApolloApp", MFEMProblem);
 
-
-InputParameters MFEMProblem::validParams()
+InputParameters
+MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
@@ -19,44 +18,44 @@ InputParameters MFEMProblem::validParams()
   return params;
 }
 
-
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
-  _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
-  _formulation(getParam<std::string>("formulation")),
-  _order(getParam<int>("order")),
-  _bc_maps(),
-  _mat_map(),
-  _executioner(std::string("Transient"), getParam<double>("dt"), getParam<double>("end_time"))
+    _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
+    _formulation(getParam<std::string>("formulation")),
+    _order(getParam<int>("order")),
+    _bc_maps(),
+    _mat_map(),
+    _executioner(std::string("Transient"), getParam<double>("dt"), getParam<double>("end_time"))
 {
 }
 
+void
+MFEMProblem::externalSolve()
+{
+  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
 
-void MFEMProblem::externalSolve(){
-    hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
-
-    std::vector<char*> argv;
-    std::cout << "Launching MFEM solve\n\n" << std::endl;
-    run_hephaestus(argv.size() - 1, argv.data(), inputs);
+  std::vector<char *> argv;
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  run_hephaestus(argv.size() - 1, argv.data(), inputs);
 }
 
-
-libMesh::Point PointFromMFEMVector(const mfem::Vector &vec)
+libMesh::Point
+PointFromMFEMVector(const mfem::Vector & vec)
 {
-  return libMesh::Point(vec.Elem(0),vec.Elem(1),vec.Elem(2));
+  return libMesh::Point(vec.Elem(0), vec.Elem(1), vec.Elem(2));
 }
 
-
-void MFEMProblem::addBoundaryCondition(const std::string & bc_name,
-    const std::string & name,
-    InputParameters & parameters)
+void
+MFEMProblem::addBoundaryCondition(const std::string & bc_name,
+                                  const std::string & name,
+                                  InputParameters & parameters)
 {
-  std::vector<BoundaryName> boundary = parameters.get<std::vector<BoundaryName>>("boundary");
-  mfem::Array<int> bdr_attr(boundary.size());
+  std::vector<BoundaryName> boundaries = parameters.get<std::vector<BoundaryName>>("boundary");
+  mfem::Array<int> bdr_attr(boundaries.size());
 
-  for (unsigned int i = 0; i < boundary.size(); ++i)
+  for (unsigned int i = 0; i < boundaries.size(); ++i)
   {
-    bdr_attr[i] = std::stoi(boundary[i]);
+    bdr_attr[i] = std::stoi(boundaries[i]);
   }
 
   hephaestus::BoundaryCondition bc(name, bdr_attr);
@@ -65,16 +64,19 @@ void MFEMProblem::addBoundaryCondition(const std::string & bc_name,
   {
     const FunctionName & function_name(parameters.get<FunctionName>("function"));
     const Function & _func(getFunction(function_name));
-    bc.scalar_func = std::bind(&Function::value, &_func, std::placeholders::_2,  std::bind(PointFromMFEMVector, std::placeholders::_1));
+    bc.scalar_func = std::bind(&Function::value,
+                               &_func,
+                               std::placeholders::_2,
+                               std::bind(PointFromMFEMVector, std::placeholders::_1));
   }
 
   _bc_maps.setBC(name, bc);
 }
 
-
-void MFEMProblem::addMaterial(const std::string & kernel_name,
-                  const std::string & name,
-                  InputParameters & parameters)
+void
+MFEMProblem::addMaterial(const std::string & kernel_name,
+                         const std::string & name,
+                         InputParameters & parameters)
 {
 
   std::vector<SubdomainName> blocks = parameters.get<std::vector<SubdomainName>>("block");
@@ -91,5 +93,4 @@ void MFEMProblem::addMaterial(const std::string & kernel_name,
     }
     _mat_map.materials.push_back(mat);
   }
-
 }
