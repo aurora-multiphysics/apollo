@@ -21,6 +21,8 @@ RUN apt-get install libboost-all-dev -y
 RUN apt-get install libnetcdf-dev -y
 RUN apt-get install curl -y
 RUN apt install libssl-dev -y
+RUN apt install clang-format-9 -y
+
 #GLVis dependencies:
 RUN apt-get install -y xxd libfontconfig1-dev libfreetype6-dev libsdl2-dev libglew-dev libglm-dev libpng-dev ninja-build
 

@@ -1,4 +1,4 @@
-# pragma once
+#pragma once
 
 #include "ExternalProblem.h"
 #include "MFEMMesh.h"
@@ -8,21 +8,20 @@
 #include "materials.hpp"
 #include "executioner.hpp"
 
-#include<iostream>
-
+#include <iostream>
 
 class MFEMProblem : public ExternalProblem
 {
- public:
+public:
   static InputParameters validParams();
 
   MFEMProblem(const InputParameters & params);
 
-  virtual void externalSolve () override;
+  virtual void externalSolve() override;
 
-  virtual bool converged () override { return true; };
+  virtual bool converged() override { return true; };
 
-  virtual void syncSolutions(Direction direction) override {};
+  virtual void syncSolutions(Direction direction) override{};
 
   void addBoundaryCondition(const std::string & bc_name,
                             const std::string & name,
@@ -32,12 +31,11 @@ class MFEMProblem : public ExternalProblem
                    const std::string & name,
                    InputParameters & parameters);
 
-
- protected:
- std::string _input_mesh;
- std::string _formulation;
- int _order;
- hephaestus::BCMap _bc_maps;
- hephaestus::MaterialMap _mat_map;
- hephaestus::Executioner _executioner;
+protected:
+  std::string _input_mesh;
+  std::string _formulation;
+  int _order;
+  hephaestus::BCMap _bc_maps;
+  hephaestus::MaterialMap _mat_map;
+  hephaestus::Executioner _executioner;
 };
