@@ -3,9 +3,11 @@ on:
   push:
     branches:
        - master
+       - alexanderianblair/mfem-moose
   pull_request:
     branches:
        - master
+       - alexanderianblair/mfem-moose
 
 jobs:
   docker-build-test-ubuntu:
