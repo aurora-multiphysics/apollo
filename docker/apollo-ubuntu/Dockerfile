@@ -35,6 +35,7 @@ sed -i 's/(type.family == NEDELEC_ONE)/(type.family == NEDELEC_ONE||type.family 
 RUN cd /$WORKDIR && \
     git clone https://github.com/Kitware/CMake.git && \
     cd CMake/ && \
+    git checkout 78ae759 && \
     ./bootstrap && \
     make && \
     make install && \
