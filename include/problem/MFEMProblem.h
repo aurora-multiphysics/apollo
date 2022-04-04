@@ -69,10 +69,14 @@ protected:
 //   fespace getFeSpace(std::string& str);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   mfem::FiniteElementCollection* fecGet(std::string var_fam);
 =======
   mfem::FiniteElementCollection* fecMap(std::string var_fam);
 >>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
+=======
+  mfem::FiniteElementCollection* fecGet(std::string var_fam);
+>>>>>>> 2d70afa (Updated MFEMProblem to allow for variable creation and transfer of variable data)
 
  protected:
  //std::string _input_mesh;

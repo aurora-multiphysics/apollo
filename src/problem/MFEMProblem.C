@@ -191,7 +191,7 @@ void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryV
 }
 
 
-mfem::FiniteElementCollection* MFEMProblem::fecMap(std::string var_fam)
+mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam)
 {
   mfem::Mesh& mesh = getMFEMMesh().other_mesh;
   mfem::FiniteElementCollection* fecPtr;
