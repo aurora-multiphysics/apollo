@@ -148,7 +148,7 @@ void MFEMProblem::addAuxVariable(const std::string& var_type,
 
   //New code to create MFEM grid functions
   mfem::Mesh& mesh = getMFEMMesh().other_mesh;
-  mfem::FiniteElementCollection* fec = fecMap(var_family);
+  mfem::FiniteElementCollection* fec = fecGet(var_family);
   // mfem::H1_FECollection* fec = new mfem::H1_FECollection(_order, mesh.Dimension());
   // mfem::H1_FECollection fec(_order, mesh.Dimension());
   mfem::FiniteElementSpace fespace(&mesh, fec);
@@ -191,7 +191,7 @@ void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryV
 }
 
 
-mfem::FiniteElementCollection* MFEMProblem::fecMap(std::string var_fam)
+mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam)
 {
   mfem::Mesh& mesh = getMFEMMesh().other_mesh;
   mfem::FiniteElementCollection* fecPtr;

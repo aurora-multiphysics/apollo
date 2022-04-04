@@ -54,7 +54,7 @@ class MFEMProblem : public ExternalProblem
   
 //   fespace getFeSpace(std::string& str);
 
-  mfem::FiniteElementCollection* fecMap(std::string var_fam);
+  mfem::FiniteElementCollection* fecGet(std::string var_fam);
 
  protected:
  //std::string _input_mesh;
