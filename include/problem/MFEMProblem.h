@@ -42,7 +42,6 @@ class MFEMProblem : public ExternalProblem
                    const std::string & name,
                    InputParameters & parameters);
 
-
 protected:
   std::string _input_mesh;
   std::string _formulation;
