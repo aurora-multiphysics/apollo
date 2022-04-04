@@ -10,7 +10,10 @@
 #include "boundary_conditions.hpp"
 #include "materials.hpp"
 #include "executioner.hpp"
+<<<<<<< HEAD
 #include "outputs.hpp"
+=======
+>>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
 #include "auxiliary_variables.hpp"
 
 #include "libmesh/string_to_enum.h"
@@ -42,6 +45,10 @@ class MFEMProblem : public ExternalProblem
                    const std::string & name,
                    InputParameters & parameters);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
   void addAuxVariable(const std::string& var_type, 
                       const std::string& var_name,
                       InputParameters& parameters);
@@ -54,6 +61,7 @@ class MFEMProblem : public ExternalProblem
 
   MFEMMesh& getMFEMMesh();
 
+<<<<<<< HEAD
 
 protected:
   std::string _input_mesh;
@@ -69,3 +77,19 @@ protected:
 
   
   
+=======
+  
+//   fespace getFeSpace(std::string& str);
+
+  mfem::FiniteElementCollection* fecMap(std::string var_fam);
+
+ protected:
+ //std::string _input_mesh;
+ std::string _formulation;
+ int _order;
+ hephaestus::BCMap _bc_maps;
+ hephaestus::MaterialMap _mat_map;
+ hephaestus::Executioner _executioner;
+ hephaestus::AuxVarMap _var_map;
+};
+>>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
