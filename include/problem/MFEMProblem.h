@@ -52,3 +52,4 @@ protected:
   hephaestus::Executioner _executioner;
   hephaestus::Outputs _outputs;
 };
+
