@@ -3,10 +3,11 @@
 #include "Transient.h"
 #include "hephaestus.hpp"
 
+
 registerMooseObject("ApolloApp", MFEMProblem);
 
-InputParameters
-MFEMProblem::validParams()
+
+InputParameters MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
@@ -18,44 +19,71 @@ MFEMProblem::validParams()
   return params;
 }
 
+
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
-    _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
-    _formulation(getParam<std::string>("formulation")),
-    _order(getParam<int>("order")),
-    _bc_maps(),
-    _mat_map(),
-    _executioner(std::string("Transient"), getParam<double>("dt"), getParam<double>("end_time"))
+  //_input_mesh(_mesh.parameters().get<MeshFileName>("file")),
+  _formulation(getParam<std::string>("formulation")),
+  _order(getParam<int>("order")),
+  _bc_maps(),
+  _mat_map(),
+  _executioner(std::string("Transient"), getParam<double>("dt"), getParam<double>("end_time"))
 {
 }
 
-void
-MFEMProblem::externalSolve()
+void MFEMProblem::syncSolutions(Direction direction)
 {
-  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
-
-  std::vector<char *> argv;
-  std::cout << "Launching MFEM solve\n\n" << std::endl;
-  run_hephaestus(argv.size() - 1, argv.data(), inputs);
-}
-
-libMesh::Point
-PointFromMFEMVector(const mfem::Vector & vec)
-{
-  return libMesh::Point(vec.Elem(0), vec.Elem(1), vec.Elem(2));
-}
-
-void
-MFEMProblem::addBoundaryCondition(const std::string & bc_name,
-                                  const std::string & name,
-                                  InputParameters & parameters)
-{
-  std::vector<BoundaryName> boundaries = parameters.get<std::vector<BoundaryName>>("boundary");
-  mfem::Array<int> bdr_attr(boundaries.size());
-
-  for (unsigned int i = 0; i < boundaries.size(); ++i)
+  //If data is being sent back to master app
+  if(direction == Direction::FROM_EXTERNAL_APP)
   {
-    bdr_attr[i] = std::stoi(boundaries[i]);
+    for(auto name: getVariableNames())
+    {
+      setMOOSEVarData(_eq, _var_map[name]);
+    }
+  }
+
+  //If data is being sent from the master app
+  if(direction == Direction::TO_EXTERNAL_APP)
+  {
+    for(std::string name: getVariableNames())
+    {
+      setMFEMVarData(_eq, _var_map[name]);
+    }
+  }
+}
+
+
+MFEMMesh& MFEMProblem::getMFEMMesh()
+{
+  return (MFEMMesh&)_mesh;
+}
+
+
+void MFEMProblem::externalSolve(){
+    //On input stack, _input_mesh must now reference the actual mesh and not a string
+    // hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
+    std::vector<char*> argv;
+    std::cout << "Launching MFEM solve\n" << std::endl;
+    // run_hephaestus(argv.size() - 1, argv.data(), inputs);
+}
+
+
+libMesh::Point PointFromMFEMVector(const mfem::Vector &vec)
+{
+  return libMesh::Point(vec.Elem(0),vec.Elem(1),vec.Elem(2));
+}
+
+
+void MFEMProblem::addBoundaryCondition(const std::string & bc_name,
+    const std::string & name,
+    InputParameters & parameters)
+{
+  std::vector<BoundaryName> boundary = parameters.get<std::vector<BoundaryName>>("boundary");
+  mfem::Array<int> bdr_attr(boundary.size());
+
+  for (unsigned int i = 0; i < boundary.size(); ++i)
+  {
+    bdr_attr[i] = std::stoi(boundary[i]);
   }
 
   hephaestus::BoundaryCondition bc(name, bdr_attr);
@@ -64,19 +92,16 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
   {
     const FunctionName & function_name(parameters.get<FunctionName>("function"));
     const Function & _func(getFunction(function_name));
-    bc.scalar_func = std::bind(&Function::value,
-                               &_func,
-                               std::placeholders::_2,
-                               std::bind(PointFromMFEMVector, std::placeholders::_1));
+    bc.scalar_func = std::bind(&Function::value, &_func, std::placeholders::_2,  std::bind(PointFromMFEMVector, std::placeholders::_1));
   }
 
   _bc_maps.setBC(name, bc);
 }
 
-void
-MFEMProblem::addMaterial(const std::string & kernel_name,
-                         const std::string & name,
-                         InputParameters & parameters)
+
+void MFEMProblem::addMaterial(const std::string & kernel_name,
+                  const std::string & name,
+                  InputParameters & parameters)
 {
 
   std::vector<SubdomainName> blocks = parameters.get<std::vector<SubdomainName>>("block");
@@ -93,4 +118,105 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
     }
     _mat_map.materials.push_back(mat);
   }
+
 }
+
+
+void MFEMProblem::addAuxVariable(const std::string& var_type, 
+                                 const std::string& var_name,
+                                 InputParameters& parameters)
+{
+  //Standard Moose implementation
+  auto var_order = Utility::string_to_enum<Order>(parameters.get<MooseEnum>("order"));
+  std::string var_family = parameters.get<MooseEnum>("family");
+  auto fe_type = FEType(var_order, Utility::string_to_enum<FEFamily>(var_family));
+
+  if (duplicateVariableCheck(var_name, fe_type, /* is_aux = */ true))
+  {
+    return;
+  }
+    
+  parameters.set<FEProblemBase *>("_fe_problem_base") = this;
+  parameters.set<Moose::VarKindType>("_var_kind") = Moose::VarKindType::VAR_AUXILIARY;  
+  _aux->addVariable(var_type, var_name, parameters);
+
+  if (_displaced_problem)
+  {
+    _displaced_problem->addAuxVariable(var_type, var_name, parameters);
+  }
+  //End of standard implementation
+
+  //New code to create MFEM grid functions
+  mfem::Mesh& mesh = getMFEMMesh().other_mesh;
+  mfem::FiniteElementCollection* fec = fecMap(var_family);
+  // mfem::H1_FECollection* fec = new mfem::H1_FECollection(_order, mesh.Dimension());
+  // mfem::H1_FECollection fec(_order, mesh.Dimension());
+  mfem::FiniteElementSpace fespace(&mesh, fec);
+  hephaestus::AuxiliaryVariable* var = new hephaestus::AuxiliaryVariable(var_name, var_family, (int)var_order, fespace);
+  _var_map.insert(std::pair<std::string, hephaestus::AuxiliaryVariable*>(var_name, var));
+  // std::cout << "Add Aux Var " << var_name << " successful, family = " << var_family << std::endl;
+  
+}
+
+
+void MFEMProblem::setMFEMVarData(EquationSystems& esRef, hephaestus::AuxiliaryVariable* var)
+{
+  auto & mooseVarRef = getVariable(0, var->name);
+
+  NumericVector<Number>& tempSolutionVector = mooseVarRef.sys().solution();
+  for(int i = 0; i < mesh().getMesh().n_nodes() /*number of nodes*/; i++)
+  {
+    Node * nodePtr = mesh().getMesh().node_ptr(i);
+    dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
+    var->gf[i] = tempSolutionVector(dof);
+  }
+  mooseVarRef.sys().solution().close();
+  mooseVarRef.sys().update();
+}
+
+
+void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryVariable* var)
+{
+  auto & mooseVarRef = getVariable(
+      0, var->name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+
+  for(int i = 0; i < mesh().getMesh().n_nodes(); i++)
+  {
+    Node * nodePtr = mesh().getMesh().node_ptr(i);
+    dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
+    mooseVarRef.sys().solution().set(dof, var->gf[i]); /*Needs to be changed for tetra*/
+  }
+  mooseVarRef.sys().solution().close();
+  mooseVarRef.sys().update();
+}
+
+
+mfem::FiniteElementCollection* MFEMProblem::fecMap(std::string var_fam)
+{
+  mfem::Mesh& mesh = getMFEMMesh().other_mesh;
+  mfem::FiniteElementCollection* fecPtr;
+  std::cout << "Variable family = " << var_fam << std::endl;
+
+  if(var_fam == "LAGRANGE")
+  {
+    mfem::H1_FECollection* fec = new mfem::H1_FECollection(_order, mesh.Dimension());
+    fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
+  }
+
+  if(var_fam == "NEDELEC_ONE")
+  {
+    mfem::ND1_3DFECollection* fec = new mfem::ND1_3DFECollection();
+    fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
+  }
+  //More types need adding, I need to understand what types are analogous 
+
+  return fecPtr;
+}
+
+
+
+
+
+
+
+
