@@ -1,5 +1,6 @@
 #pragma once
 #include "MFEMMesh.h"
+#include "libmesh/face_quad4.h"
 
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMproblem
