@@ -42,6 +42,19 @@ class MFEMProblem : public ExternalProblem
                    const std::string & name,
                    InputParameters & parameters);
 
+  void addAuxVariable(const std::string& var_type, 
+                      const std::string& var_name,
+                      InputParameters& parameters);
+
+  void setMFEMVarData(EquationSystems& esRef, 
+                  hephaestus::AuxiliaryVariable* var);
+
+  void setMOOSEVarData(EquationSystems& esRef, 
+                  hephaestus::AuxiliaryVariable* var);                  
+
+  MFEMMesh& getMFEMMesh();
+
+
 protected:
   std::string _input_mesh;
   std::string _formulation;
@@ -49,6 +62,10 @@ protected:
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _mat_map;
   hephaestus::Executioner _executioner;
+  hephaestus::AuxVarMap _var_map;
   hephaestus::Outputs _outputs;
+
 };
 
+  
+  
