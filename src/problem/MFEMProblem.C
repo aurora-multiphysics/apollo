@@ -7,14 +7,8 @@
 
 registerMooseObject("ApolloApp", MFEMProblem);
 
-<<<<<<< HEAD
 InputParameters 
 MFEMProblem::validParams() {
-=======
-
-InputParameters MFEMProblem::validParams()
-{
->>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
   params.addParam<std::string>("formulation",
@@ -181,14 +175,6 @@ mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
   return fecPtr;
 }
 
-<<<<<<< HEAD
-=======
-
-void MFEMProblem::addMaterial(const std::string & kernel_name,
-                  const std::string & name,
-                  InputParameters & parameters)
-{
->>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
 
 void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryVariable* var)
 {
@@ -241,7 +227,7 @@ void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryV
 }
 
 
-mfem::FiniteElementCollection* MFEMProblem::fecMap(std::string var_fam)
+mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam)
 {
   mfem::Mesh& mesh = getMFEMMesh().other_mesh;
   mfem::FiniteElementCollection* fecPtr;
