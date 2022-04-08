@@ -4,12 +4,6 @@
 
 class Function;
 
-// Forward Declarations
-class ElementNedelecL2Error;
-
-template <>
-InputParameters validParams<ElementNedelecL2Error>();
-
 class ElementNedelecL2Error : public ElementIntegralPostprocessor
 {
 public:

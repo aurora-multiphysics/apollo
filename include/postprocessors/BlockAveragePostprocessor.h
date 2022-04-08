@@ -2,11 +2,6 @@
 
 #include "GeneralPostprocessor.h"
 #include "BlockAverageValue.h"
-// Forward Declarations
-class BlockAveragePostprocessor;
-
-template <>
-InputParameters validParams<BlockAveragePostprocessor>();
 
 /**
  *

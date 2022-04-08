@@ -3,8 +3,6 @@
 
 registerMooseObject("ApolloApp", ElementNedelecL2Error);
 
-defineLegacyParams(ElementNedelecL2Error);
-
 InputParameters
 ElementNedelecL2Error::validParams()
 {

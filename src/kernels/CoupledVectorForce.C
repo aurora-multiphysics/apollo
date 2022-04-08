@@ -4,8 +4,6 @@
 
 registerMooseObject("MooseApp", CoupledVectorForce);
 
-defineLegacyParams(CoupledVectorForce);
-
 InputParameters
 CoupledVectorForce::validParams()
 {
@@ -21,11 +19,15 @@ CoupledVectorForce::validParams()
 }
 
 CoupledVectorForce::CoupledVectorForce(const InputParameters & parameters)
-  : VectorKernel(parameters), _v_var(coupled("v")), _v(coupledVectorValue("v")), _coef(getParam<Real>("coef"))
+  : VectorKernel(parameters),
+    _v_var(coupled("v")),
+    _v(coupledVectorValue("v")),
+    _coef(getParam<Real>("coef"))
 {
   if (_var.number() == _v_var)
-    mooseError("Coupled variable 'v' needs to be different from 'variable' with CoupledVectorForce, "
-               "consider using Reaction or somethig similar");
+    mooseError(
+        "Coupled variable 'v' needs to be different from 'variable' with CoupledVectorForce, "
+        "consider using Reaction or somethig similar");
 }
 
 Real

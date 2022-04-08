@@ -11,11 +11,6 @@
 
 #include "GeneratedMesh.h"
 
-class MFEMMesh;
-
-template <>
-InputParameters validParams<MFEMMesh>();
-
 /**
  * MFEMMesh
  */
@@ -31,4 +26,3 @@ public:
   /// the file_name from whence this mesh came
   std::string file_name;
 };
-

@@ -12,11 +12,6 @@
 #include "TimeDerivative.h"
 #include "MaterialProperty.h"
 
-class MatTimeDerivative;
-
-template <>
-InputParameters validParams<MatTimeDerivative>();
-
 /**
  * Time derivative term multiplied by a material coefficient
  */
@@ -34,4 +29,3 @@ protected:
   /// The coefficient the time derivative is multiplied with
   const MaterialProperty<Real> & _sigma;
 };
-
