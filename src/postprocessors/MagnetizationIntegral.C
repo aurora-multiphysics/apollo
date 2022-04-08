@@ -4,8 +4,6 @@
 
 registerMooseObject("ApolloApp", MagnetizationIntegral);
 
-defineLegacyParams(MagnetizationIntegral);
-
 InputParameters
 MagnetizationIntegral::validParams()
 {

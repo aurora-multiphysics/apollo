@@ -11,8 +11,6 @@
 
 registerMooseObject("MooseApp", MFEMMesh);
 
-defineLegacyParams(MFEMMesh);
-
 InputParameters
 MFEMMesh::validParams()
 {
@@ -23,7 +21,6 @@ MFEMMesh::validParams()
 }
 
 MFEMMesh::MFEMMesh(const InputParameters & parameters)
-  : GeneratedMesh(parameters),
-    file_name(getParam<MeshFileName>("file"))
+  : GeneratedMesh(parameters), file_name(getParam<MeshFileName>("file"))
 {
 }

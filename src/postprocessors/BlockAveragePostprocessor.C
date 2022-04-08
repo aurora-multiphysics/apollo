@@ -8,8 +8,6 @@
 
 registerMooseObject("ApolloApp", BlockAveragePostprocessor);
 
-defineLegacyParams(BlockAveragePostprocessor);
-
 InputParameters
 BlockAveragePostprocessor::validParams()
 {

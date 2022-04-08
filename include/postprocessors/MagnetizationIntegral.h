@@ -2,12 +2,6 @@
 
 #include "ElementIntegralPostprocessor.h"
 
-// Forward Declarations
-class MagnetizationIntegral;
-
-template <>
-InputParameters validParams<MagnetizationIntegral>();
-
 /**
  * This postprocessor computes a volume integral of the specified variable.
  *
@@ -30,5 +24,4 @@ protected:
   const VectorVariableValue & _u;
   /// Holds the solution curl at the current quadrature points
   const VectorVariableCurl & _curl_u;
-
 };

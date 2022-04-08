@@ -2,12 +2,6 @@
 
 #include "VectorKernel.h"
 
-// Forward Declaration
-class CoupledVectorForce;
-
-template <>
-InputParameters validParams<CoupledVectorForce>();
-
 /**
  * Class to use a coupled auxvariable to apply a vector body force.
  */

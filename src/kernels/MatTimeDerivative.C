@@ -11,14 +11,12 @@
 
 registerMooseObject("ApolloApp", MatTimeDerivative);
 
-defineLegacyParams(MatTimeDerivative);
-
 InputParameters
 MatTimeDerivative::validParams()
 {
   InputParameters params = TimeDerivative::validParams();
-  params.addParam<MaterialPropertyName>("material_property",
-                                        "the name of the material property to multiply the time derivative by");
+  params.addParam<MaterialPropertyName>(
+      "material_property", "the name of the material property to multiply the time derivative by");
   return params;
 }
 
