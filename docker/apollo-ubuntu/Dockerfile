@@ -16,20 +16,25 @@ ARG build_git_sha="alexanderianblair/mfem-moose"
 ARG hypre_git_sha="562c29a"
 
 # Install apt dependencies
-RUN apt-get update
-RUN apt-get install libboost-all-dev -y
-RUN apt-get install libnetcdf-dev -y
-RUN apt-get install curl -y
-RUN apt install libssl-dev -y
-RUN apt install clang-format-9 -y
-
-#GLVis dependencies:
-RUN apt-get install -y xxd libfontconfig1-dev libfreetype6-dev libsdl2-dev libglew-dev libglm-dev libpng-dev ninja-build
+RUN apt-get update && apt-get install -y \
+    clang-format-9 \
+    curl \
+    libboost-all-dev \
+    libnetcdf-dev \
+    libssl-dev \
+    xxd \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libsdl2-dev \
+    libglew-dev \
+    libglm-dev \
+    libpng-dev \
+    ninja-build
 
 # Enable Nedelec element curl calculations in MOOSE
 RUN cd /$WORKDIR && \
-cd moose/framework/src/base && \
-sed -i 's/(type.family == NEDELEC_ONE)/(type.family == NEDELEC_ONE||type.family == LAGRANGE_VEC)/g' Assembly.C
+    cd moose/framework/src/base && \
+    sed -i 's/(type.family == NEDELEC_ONE)/(type.family == NEDELEC_ONE||type.family == LAGRANGE_VEC)/g' Assembly.C
 
 # Install CMake
 RUN cd /$WORKDIR && \
@@ -46,7 +51,7 @@ RUN cd /$WORKDIR && \
     git clone https://github.com/hypre-space/hypre.git && \
     mv hypre hypre-2.16.0 && \
     cd hypre-2.16.0 && \
-    git checkout 562c29a && \
+    git checkout "$hypre_git_sha" && \
     cd src/ && \
     ./configure --enable-debug --enable-shared --disable-fortran && \
     make -j && \
@@ -62,7 +67,6 @@ RUN cd /$WORKDIR && \
     make && \
     make install && \
     ln -s ../build/Linux-x86_64/libmetis/libmetis.so lib
-
 
 # Install MUMPS
 RUN cd /$WORKDIR && \
