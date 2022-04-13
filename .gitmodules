@@ -1,3 +1,3 @@
 [submodule "contrib/hephaestus"]
 	path = contrib/hephaestus
-	url = https://github.com/alexanderianblair/hephaestus.git
+	url = https://github.com/aurora-multiphysics/hephaestus
