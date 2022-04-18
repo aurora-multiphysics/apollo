@@ -64,10 +64,9 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
   {
     const FunctionName & function_name(parameters.get<FunctionName>("function"));
     const Function & _func(getFunction(function_name));
-    bc.scalar_func = std::bind(&Function::value,
-                               &_func,
-                               std::placeholders::_2,
-                               std::bind(PointFromMFEMVector, std::placeholders::_1));
+
+    bc.scalar_func = [&](const mfem::Vector & p, double t){return _func.value(t, PointFromMFEMVector(p));};
+
   }
 
   _bc_maps.setBC(name, bc);
