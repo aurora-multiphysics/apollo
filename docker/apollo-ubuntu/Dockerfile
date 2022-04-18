@@ -46,18 +46,6 @@ RUN cd /$WORKDIR && \
     make install && \
     alias cmake='/$WORKDIR/CMake/bin/cmake'
 
-# Install Hypre v2.16.0
-RUN cd /$WORKDIR && \
-    git clone https://github.com/hypre-space/hypre.git && \
-    mv hypre hypre-2.16.0 && \
-    cd hypre-2.16.0 && \
-    git checkout "$hypre_git_sha" && \
-    cd src/ && \
-    ./configure --enable-debug --enable-shared --disable-fortran && \
-    make -j && \
-    cd ../.. && \
-    ln -s hypre-2.16.0 hypre
-
 # Install METIS 5.1.0
 RUN cd /$WORKDIR && \
     curl -O http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz && \
@@ -87,7 +75,7 @@ RUN cd /$WORKDIR && \
     cd build && \
     cmake .. -DCMAKE_BUILD_TYPE=Debug -DMFEM_USE_MPI=YES -DMFEM_USE_METIS_5=YES -DMETIS_DIR=../../metis-5.1.0 \
     -DMFEM_USE_OPENMP=YES -DMFEM_THREAD_SAFE=NO -DMFEM_SHARED=YES -DCMAKE_CXX_FLAGS_DEBUG=-fPIC -DMFEM_USE_NETCDF=YES \
-    -DMFEM_USE_MUMPS=YES -DMUMPS_REQUIRED_PACKAGES="" -DCMAKE_POLICY_DEFAULT_CMP0057=NEW  &&\
+    -DCMAKE_POLICY_DEFAULT_CMP0057=NEW  &&\
     make && \
     cd miniapps/common && \
     make
