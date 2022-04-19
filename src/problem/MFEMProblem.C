@@ -58,18 +58,20 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
     bdr_attr[i] = std::stoi(boundaries[i]);
   }
 
-  hephaestus::BoundaryCondition bc(name, bdr_attr);
-
   if (parameters.isParamValid("function"))
   {
     const FunctionName & function_name(parameters.get<FunctionName>("function"));
     const Function & _func(getFunction(function_name));
 
-    bc.scalar_func = [&](const mfem::Vector & p, double t){return _func.value(t, PointFromMFEMVector(p));};
-
+    _bc_maps[name] = new hephaestus::FunctionDirichletBC(
+        name, bdr_attr, new mfem::FunctionCoefficient([&](const mfem::Vector & p, double t) {
+          return _func.value(t, PointFromMFEMVector(p));
+        }));
   }
-
-  _bc_maps.setBC(name, bc);
+  else
+  {
+    _bc_maps[name] = new hephaestus::BoundaryCondition(name, bdr_attr);
+  }
 }
 
 void
@@ -85,11 +87,11 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
   for (unsigned int bid = 0; bid < blocks.size(); ++bid)
   {
     int block = std::stoi(blocks[bid]);
-    hephaestus::Material mat(name, block);
+    hephaestus::Subdomain mat(name, block);
     for (unsigned int pid = 0; pid < property_names.size(); ++pid)
     {
-      mat.setMaterialProperty(property_names[pid], property_values[pid]);
+      mat.property_map[property_names[pid]] = new mfem::ConstantCoefficient(property_values[pid]);
     }
-    _mat_map.materials.push_back(mat);
+    _mat_map.subdomains.push_back(mat);
   }
 }
