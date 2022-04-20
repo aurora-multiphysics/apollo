@@ -79,19 +79,14 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
                          const std::string & name,
                          InputParameters & parameters)
 {
+  FEProblemBase::addUserObject(kernel_name, name, parameters);
+  const MFEMMaterial & mfem_material(getUserObject<MFEMMaterial>(name));
 
-  FEProblemBase::addUserObject(kernel_name,
-                               name,
-                               parameters);
-
-  const MFEMConductor & mfem_material(getUserObject<MFEMConductor>(name));
-  std::vector<SubdomainName> blocks = parameters.get<std::vector<SubdomainName>>("block");
-
-  for (unsigned int bid = 0; bid < blocks.size(); ++bid)
+  for (unsigned int bid = 0; bid < mfem_material.blocks.size(); ++bid)
   {
-    int block = std::stoi(blocks[bid]);
-    hephaestus::Subdomain mat(name, block);
-    mat.property_map = mfem_material.scalar_property_map;
-    _mat_map.subdomains.push_back(mat);
+    int block = std::stoi(mfem_material.blocks[bid]);
+    hephaestus::Subdomain mfem_subdomain(name, block);
+    mfem_subdomain.property_map = mfem_material.scalar_property_map;
+    _mat_map.subdomains.push_back(mfem_subdomain);
   }
 }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "GeneralUserObject.h"
+#include "MFEMMaterial.h"
 #include "materials.hpp"
 
-class MFEMConductor : public GeneralUserObject
+class MFEMConductor : public MFEMMaterial
 {
 public:
   static InputParameters validParams();
@@ -11,18 +11,11 @@ public:
   MFEMConductor(const InputParameters & parameters);
   virtual ~MFEMConductor();
 
-  virtual void execute() override {}
-  virtual void initialize() override {}
-  virtual void finalize() override {}
-
   /// EM constants
   static const Real _mu0;
   static const Real _epsilon0;
 
-  std::map<std::string, mfem::Coefficient *> scalar_property_map;
-
 protected:
-
   const Real & _input_electrical_conductivity;
   const Real & _input_rel_permittivity;
   const Real & _input_rel_permeability;

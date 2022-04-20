@@ -9,13 +9,8 @@ const Real MFEMConductor::_epsilon0 = 8.85418782e-12;
 InputParameters
 MFEMConductor::validParams()
 {
-  InputParameters params = GeneralUserObject::validParams();
+  InputParameters params = MFEMMaterial::validParams();
 
-  params.set<std::string>("_moose_base") = "MaterialBase";
-  params.addPrivateParam<bool>("_neighbor", false);
-  params.addPrivateParam<bool>("_interface", false);
-
-  // Parameter for radius of the spheres used to interpolate permeability.
   params.addParam<Real>(
       "electrical_conductivity",
       0.0,
@@ -32,13 +27,11 @@ MFEMConductor::validParams()
                         "The thermal conductivity ($\\k$) of the conductor. Defaults to 0.0");
   params.addParam<Real>(
       "heat_capacity", 0.0, "The heat capacity ($\\c$) of the conductor. Defaults to 0.0");
-  params.addParam<std::vector<SubdomainName>>(
-      "block", "The list of blocks (ids or names) that this object will be applied");
   return params;
 }
 
 MFEMConductor::MFEMConductor(const InputParameters & parameters)
-  : GeneralUserObject(parameters),
+  : MFEMMaterial(parameters),
     // Get the parameters from the input file
     _input_electrical_conductivity(getParam<Real>("electrical_conductivity")),
     _input_rel_permittivity(getParam<Real>("rel_permittivity")),
