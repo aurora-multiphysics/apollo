@@ -2,6 +2,7 @@
 
 #include "ExternalProblem.h"
 #include "MFEMMesh.h"
+#include "MFEMConductor.h"
 #include "Function.h"
 #include "libmesh/point.h"
 #include "boundary_conditions.hpp"
