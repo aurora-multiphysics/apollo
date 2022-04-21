@@ -45,12 +45,9 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
                                   const std::string & name,
                                   InputParameters & parameters)
 {
-  addObjectParamsHelper(parameters);
-
   FEProblemBase::addUserObject(bc_name, name, parameters);
-
-  _bc_maps[name] = (&getUserObject<MFEMBoundaryCondition>(name))->getBC();
-
+  MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
+  _bc_maps[name] = mfem_bc->getBC();
 }
 
 void

@@ -3,8 +3,7 @@
 #include "MFEMBoundaryCondition.h"
 #include "boundary_conditions.hpp"
 
-libMesh::Point
-PointFromMFEMVector(const mfem::Vector & vec);
+libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
 
 class MFEMFunctionDirichletBC : public MFEMBoundaryCondition
 {
@@ -19,7 +18,7 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
+protected:
   const Function & _func;
   mfem::FunctionCoefficient _function_coeff;
-
 };
