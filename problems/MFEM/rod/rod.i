@@ -21,22 +21,19 @@
 []
 
 [BCs]
-  [./electric_potential]
-    type = FunctionDirichletBC
-    variable = potential
-    boundary = '1 2'
-    function = p_bc
-  [../]
   [./tangential_dEdt]
-    type = VectorTangentialPenaltyDirichletBC
-    variable = E
+    type = MFEMBoundaryCondition
     boundary = '1 2 3'
   [../]
   [./thermal_flux]
-    type = VectorTangentialPenaltyDirichletBC
-    variable = T
+    type = MFEMBoundaryCondition
     boundary = '1 2'
   []
+  [./electric_potential]
+    type = MFEMFunctionDirichletBC
+    boundary = '1 2'
+    function = p_bc
+  [../]
 []
 
 [Materials]

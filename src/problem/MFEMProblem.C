@@ -1,6 +1,7 @@
 #include "MFEMProblem.h"
 #include "SystemBase.h"
 #include "Transient.h"
+#include "MFEMFunctionDirichletBC.h"
 #include "hephaestus.hpp"
 
 registerMooseObject("ApolloApp", MFEMProblem);
@@ -39,39 +40,17 @@ MFEMProblem::externalSolve()
   run_hephaestus(argv.size() - 1, argv.data(), inputs);
 }
 
-libMesh::Point
-PointFromMFEMVector(const mfem::Vector & vec)
-{
-  return libMesh::Point(vec.Elem(0), vec.Elem(1), vec.Elem(2));
-}
-
 void
 MFEMProblem::addBoundaryCondition(const std::string & bc_name,
                                   const std::string & name,
                                   InputParameters & parameters)
 {
-  std::vector<BoundaryName> boundaries = parameters.get<std::vector<BoundaryName>>("boundary");
-  mfem::Array<int> bdr_attr(boundaries.size());
+  addObjectParamsHelper(parameters);
 
-  for (unsigned int i = 0; i < boundaries.size(); ++i)
-  {
-    bdr_attr[i] = std::stoi(boundaries[i]);
-  }
+  FEProblemBase::addUserObject(bc_name, name, parameters);
 
-  if (parameters.isParamValid("function"))
-  {
-    const FunctionName & function_name(parameters.get<FunctionName>("function"));
-    const Function & _func(getFunction(function_name));
+  _bc_maps[name] = (&getUserObject<MFEMBoundaryCondition>(name))->getBC();
 
-    _bc_maps[name] = new hephaestus::FunctionDirichletBC(
-        name, bdr_attr, new mfem::FunctionCoefficient([&](const mfem::Vector & p, double t) {
-          return _func.value(t, PointFromMFEMVector(p));
-        }));
-  }
-  else
-  {
-    _bc_maps[name] = new hephaestus::BoundaryCondition(name, bdr_attr);
-  }
 }
 
 void
