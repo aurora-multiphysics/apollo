@@ -24,13 +24,14 @@ MFEMFunctionDirichletBC::MFEMFunctionDirichletBC(const InputParameters & paramet
     _function_coeff(
         [&](const mfem::Vector & p, double t) { return _func.value(t, PointFromMFEMVector(p)); })
 {
-    _boundary_condition = new hephaestus::FunctionDirichletBC(getParam<std::string>("_object_name"), bdr_attr, &_function_coeff);
+  _boundary_condition = new hephaestus::FunctionDirichletBC(
+      getParam<std::string>("_object_name"), bdr_attr, &_function_coeff);
 }
 
 hephaestus::BoundaryCondition *
 MFEMFunctionDirichletBC::getBC()
 {
-return _boundary_condition;
+  return _boundary_condition;
 }
 
 MFEMFunctionDirichletBC::~MFEMFunctionDirichletBC() {}

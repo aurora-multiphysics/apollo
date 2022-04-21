@@ -16,8 +16,8 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
+protected:
   std::vector<BoundaryName> _boundary_names;
   mfem::Array<int> bdr_attr;
   hephaestus::BoundaryCondition * _boundary_condition;
-
 };
