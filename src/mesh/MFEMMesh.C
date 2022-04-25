@@ -1,159 +1,99 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+#pragma once
+#include "InheritedMFEMMesh.h"
 
-#include "MFEMMesh.h"
-#include "libmesh/face_quad4.h"
-
-registerMooseObject("MooseApp", MFEMMesh);
-
-defineLegacyParams(MFEMMesh);
-
-InputParameters
-MFEMMesh::validParams()
+//Constructor to create an MFEM mesh from VTK data structures. These data structures are obtained by the 
+//methods found in MFEMproblem
+InheritedMFEMMesh::InheritedMFEMMesh(const mfem::Vector &points, const mfem::Array<int> &cell_data,
+    const mfem::Array<int> &cell_offsets,
+    const mfem::Array<int> &cell_types,
+    const mfem::Array<int> &cell_attributes,
+    int &curved, int &read_gf, bool &finalize_topo)
 {
-  InputParameters params = MooseMesh::validParams();
-  params.addRequiredParam<MeshFileName>("file", "The name of the mesh file to read");
-  params.addParam<bool>("CreateMOOSEMesh", true, "Allows the user to choose whether to create the corresponding MOOSE mesh, or create a dummy mesh instead");
-  params.set<MooseEnum>("dim") = 3;
-  return params;
-}
-
-MFEMMesh::MFEMMesh(const InputParameters & parameters)
-  : MooseMesh(parameters),
-    dim(getParam<MooseEnum>("dim")),
-    other_mesh((std::string)getParam<MeshFileName>("file")),
-    CreateMOOSEMesh(getParam<bool>("CreateMOOSEMesh"))
-    
-{
-  _console << "MFEM mesh created" << std::endl;
+    SetEmpty();
+    CreateVTKMesh(points, cell_data, cell_offsets, cell_types, cell_attributes, curved, read_gf, finalize_topo);
 }
 
 
-void MFEMMesh::buildMesh()
-{  
-  if(CreateMOOSEMesh)
-  {
-    _console << "Creating the MOOSE mesh" << std::endl;
-    buildRealMesh();
-  }
-  else
-  {
-    _console << "Not creating a corresponding MOOSE mesh, this is an MFEM only problem" << std::endl;
-    buildDummyMesh();  
-  }
-}
-
-
-void MFEMMesh::buildDummyMesh()
+//Constructor to create an MFEM mesh from a file, currently just used for testing purposes
+InheritedMFEMMesh::InheritedMFEMMesh(std::string afilename, int generate_edges, int refine, bool fix_orientation)
 {
-  int e = 1;
-  auto elem = new Quad4;
-  elem->set_id() = e;
-  elem->processor_id() = 0;
-  _mesh->add_elem(elem);
+    std::cout << afilename << std::endl;
+    const char* filename = afilename.c_str();
+    SetEmpty();
 
-  Point pt1(0.0, 0.0, 0.0);
-  Point pt2(1.0, 0.0, 0.0);
-  Point pt3(1.0, 1.0, 0.0);
-  Point pt4(0.0, 1.0, 0.0);
-
-  elem->set_node(0) = _mesh->add_point(pt1);
-  elem->set_node(1) = _mesh->add_point(pt2);
-  elem->set_node(2) = _mesh->add_point(pt3);
-  elem->set_node(3) = _mesh->add_point(pt4);
-
-  _mesh->prepare_for_use();
-}
-
-
-void MFEMMesh::buildRealMesh()
-{
-
-  other_mesh.get_connectivity_data();
-  other_mesh.get_mesh_nodes();
-  other_mesh.get_cell_type();
-
-  libmesh_assert_equal_to (_mesh->processor_id(), 0);
-
-  for(unsigned int i=0; i<(other_mesh.pointsVec.size()/3); i++)
-  {
-    double pnt[3];
-    pnt[0] = other_mesh.pointsVec[i*3];
-    pnt[1] = other_mesh.pointsVec[(i*3)+1];
-    pnt[2] = other_mesh.pointsVec[(i*3)+2];
-    Point xyz(pnt[0], pnt[1], pnt [2]);
-    
-    _mesh->add_point(xyz, i);
-  }
-
-  int vertCounter = 0;
-  for(unsigned int i = 0; i<other_mesh.cellTypeVec.size(); i++)
-  {
-    
-    ElemType libmesh_elem_type = (ElemType)map_elems_vtk_to_libmesh(other_mesh.cellTypeVec[i]);
-    Elem * elem = Elem::build(libmesh_elem_type).release();
-  
-    for(unsigned int j=0; j<other_mesh.verticesVec[i]; j++)
+    mfem::named_ifgzstream imesh(filename);
+    if (!imesh)
     {
-      elem->set_node(j) = _mesh->node_ptr(other_mesh.connectivityVec[vertCounter+j]);
- 
+        // Abort with an error message.
+        MFEM_ABORT("Mesh file not found: " << filename << '\n');
     }
-
-    vertCounter+=other_mesh.verticesVec[i];
-
-    std::vector<dof_id_type> conn;
-    elem->connectivity(0, VTK, conn);
-    
-    // Below comment from original libmesh implementation, not quite sure what it means right now, but it works ¯\_(ツ)_/¯.
-    //Needs further investigation
-    
-    // then reshuffle the nodes according to the connectivity, this
-    // two-time-assign would evade the definition of the vtk_mapping
-    for (unsigned int j=0,
-      n_conn = cast_int<unsigned int>(conn.size());
-      j != n_conn; ++j)
+    else
     {
-      elem->set_node(j) = _mesh->node_ptr(conn[j]);
+        Load(imesh, generate_edges, refine, fix_orientation);
     }
-      
-    elem->set_id(i);
-
-    _mesh->add_elem(elem);
-  }// end loop over VTK cells
-  _mesh->set_mesh_dimension(dim);
-  _mesh->prepare_for_use();
-
 }
 
 
-int MFEMMesh::map_elems_vtk_to_libmesh(int VTKElemType)
+
+void InheritedMFEMMesh::get_mesh_nodes()
 {
-  std::map<int, int> VTKtolibElemMap;
-  VTKtolibElemMap[1] = 0;
-  VTKtolibElemMap[21] = 1;
-  VTKtolibElemMap[5] = 3;
-  VTKtolibElemMap[22] = 4;
-  VTKtolibElemMap[9] = 5;
-  VTKtolibElemMap[23] = 6;
-  VTKtolibElemMap[10] = 8;
-  VTKtolibElemMap[24] = 9;
-  VTKtolibElemMap[12] = 10;
-  VTKtolibElemMap[25] = 11;
-  VTKtolibElemMap[29] = 12;
-  VTKtolibElemMap[13] = 13;
-  VTKtolibElemMap[26] = 14;
-  VTKtolibElemMap[32] = 15;
-  VTKtolibElemMap[14] = 16;
-  return VTKtolibElemMap[VTKElemType];
+    for (int i = 0; i < NumOfVertices; i++)
+    {
+        this->pointsVec.push_back(vertices[i](0));
+        int j;
+        for (j = 1; j < spaceDim; j++)
+        {
+        this->pointsVec.push_back(vertices[i](j));
+        }
+        for ( ; j < 3; j++)
+        {
+        this->pointsVec.push_back(0.0);
+        }
+    }
 }
 
-std::unique_ptr<MooseMesh>MFEMMesh::safeClone() const
+
+void InheritedMFEMMesh::get_connectivity_data()
 {
-  return std::make_unique<MFEMMesh>(*this);
+
+    mfem::RefinedGeometry *RefG;
+    int ref = 1;
+    int np = 0;
+
+    for (int i = 0; i < NumOfElements; i++)
+    {
+        const int *v = elements[i]->GetVertices();
+        const int nv = elements[i]->GetNVertices();
+        // std::cout << nv;
+        mfem::Geometry::Type geom = elements[i]->GetGeometryType();
+        const int *perm = mfem::VTKGeometry::VertexPermutation[geom];
+        this->verticesVec.push_back(nv);
+        for (int j = 0; j < nv; j++)
+        {
+            // std::cout << ' ' << v[perm ? perm[j] : j];
+            this->connectivityVec.push_back(v[perm ? perm[j] : j]);
+        }
+        
+    }
 }
+
+
+void InheritedMFEMMesh::get_cell_type()
+{
+    mfem::RefinedGeometry *RefG;
+    int ref = 1;
+    for (int i = 0; i < GetNE(); i++)
+    {
+        mfem::Geometry::Type geom = GetElementBaseGeometry(i);
+        int nv = mfem::Geometries.GetVertices(geom)->GetNPoints();
+        RefG = mfem::GlobGeometryRefiner.Refine(geom, ref, 1);
+        mfem::Array<int> &RG = RefG->RefGeoms;
+        int vtk_cell_type = mfem::VTKGeometry::Map[geom];
+
+        for (int j = 0; j < RG.Size(); j += nv)
+        {
+            this->cellTypeVec.push_back(vtk_cell_type);
+        }
+    }
+}
+
