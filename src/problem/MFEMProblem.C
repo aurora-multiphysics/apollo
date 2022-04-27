@@ -6,12 +6,8 @@
 
 registerMooseObject("ApolloApp", MFEMProblem);
 
-<<<<<<< HEAD
 InputParameters 
 MFEMProblem::validParams() {
-=======
-InputParameters MFEMProblem::validParams() {
->>>>>>> 18f68fb (Split CoupledMFEMMesh into two classes, ExclusiveMFEMMesh and CoupledMFEMMesh. CoupledMFEMMesh will build the corresponding MOOSE mesh automatically)
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
   params.addParam<std::string>("formulation",
@@ -212,6 +208,5 @@ mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
   // More types need adding, I need to understand what types are analogous
-
   return fecPtr;
 }
