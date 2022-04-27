@@ -4,7 +4,6 @@
 #include "Transient.h"
 #include "hephaestus.hpp"
 
-
 registerMooseObject("ApolloApp", MFEMProblem);
 
 InputParameters 
@@ -48,27 +47,6 @@ void MFEMProblem::syncSolutions(Direction direction)
   // If data is being sent from the master app
   if (direction == Direction::TO_EXTERNAL_APP) {
     for (std::string name : getVariableNames()) {
-      setMFEMVarData(_eq, _var_map[name]);
-    }
-  }
-}
-
-void MFEMProblem::syncSolutions(Direction direction)
-{
-  //If data is being sent back to master app
-  if(direction == Direction::FROM_EXTERNAL_APP)
-  {
-    for(auto name: getVariableNames())
-    {
-      setMOOSEVarData(_eq, _var_map[name]);
-    }
-  }
-
-  //If data is being sent from the master app
-  if(direction == Direction::TO_EXTERNAL_APP)
-  {
-    for(std::string name: getVariableNames())
-    {
       setMFEMVarData(_eq, _var_map[name]);
     }
   }
@@ -226,33 +204,22 @@ void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryV
   mooseVarRef.sys().update();
 }
 
-
-mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam)
-{
-  mfem::Mesh& mesh = getMFEMMesh().other_mesh;
+mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
+  mfem::Mesh& mesh = getMFEMMesh().mfemMesh;
   mfem::FiniteElementCollection* fecPtr;
   std::cout << "Variable family = " << var_fam << std::endl;
 
-  if(var_fam == "LAGRANGE")
-  {
-    mfem::H1_FECollection* fec = new mfem::H1_FECollection(_order, mesh.Dimension());
+  if (var_fam == "LAGRANGE") {
+    mfem::H1_FECollection* fec =
+        new mfem::H1_FECollection(_order, mesh.Dimension());
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
 
-  if(var_fam == "NEDELEC_ONE")
-  {
+  if (var_fam == "NEDELEC_ONE") {
     mfem::ND1_3DFECollection* fec = new mfem::ND1_3DFECollection();
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
-  //More types need adding, I need to understand what types are analogous 
+  // More types need adding, I need to understand what types are analogous
 
   return fecPtr;
 }
-
-
-
-
-
-
-
-
