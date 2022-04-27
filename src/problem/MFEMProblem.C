@@ -50,11 +50,11 @@ MFEMMesh& MFEMProblem::getMFEMMesh() { return (MFEMMesh&)_mesh; }
 void MFEMProblem::externalSolve() {
   // On input stack, _input_mesh must now reference the actual mesh and not a
   // string
-  //  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps,
-  //  _mat_map, _executioner);
+  hephaestus::Inputsa inputs(_input_mesh, _formulation, _order, _bc_maps,
+                             _mat_map, _executioner);
   std::vector<char*> argv;
   std::cout << "Launching MFEM solve\n" << std::endl;
-  // run_hephaestus(argv.size() - 1, argv.data(), inputs);
+  run_hephaestus(argv.size() - 1, argv.data(), inputs);
 }
 
 void MFEMProblem::addBoundaryCondition(const std::string& bc_name,
@@ -86,21 +86,8 @@ void MFEMProblem::addAuxVariable(const std::string& var_type,
   auto var_order =
       Utility::string_to_enum<Order>(parameters.get<MooseEnum>("order"));
   std::string var_family = parameters.get<MooseEnum>("family");
-  auto fe_type =
-      FEType(var_order, Utility::string_to_enum<FEFamily>(var_family));
 
-  if (duplicateVariableCheck(var_name, fe_type, /* is_aux = */ true)) {
-    return;
-  }
-
-  parameters.set<FEProblemBase*>("_fe_problem_base") = this;
-  parameters.set<Moose::VarKindType>("_var_kind") =
-      Moose::VarKindType::VAR_AUXILIARY;
-  _aux->addVariable(var_type, var_name, parameters);
-
-  if (_displaced_problem) {
-    _displaced_problem->addAuxVariable(var_type, var_name, parameters);
-  }
+  ExternalProblem::addAuxVariable(var_type, var_name, parameters);
   // End of standard implementation
 
   // New code to create MFEM grid functions
@@ -155,11 +142,11 @@ mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
 
-  if (var_fam == "NEDELEC_ONE") {
-    mfem::ND1_3DFECollection* fec = new mfem::ND1_3DFECollection();
+  if (var_fam == "MONOMIAL") {
+    mfem::L2_FECollection* fec =
+        new mfem::L2_FECollection(_order, mesh.Dimension());
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
   // More types need adding, I need to understand what types are analogous
-
   return fecPtr;
 }
