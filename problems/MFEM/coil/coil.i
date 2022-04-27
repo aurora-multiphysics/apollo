@@ -21,41 +21,41 @@
 []
 
 [BCs]
-  [./electric_potential]
-    type = FunctionDirichletBC
-    variable = potential
-    boundary = '1 2 3'
-    function = p_bc
-  [../]
   [./tangential_dEdt]
-    type = VectorTangentialPenaltyDirichletBC
-    variable = E
+    type = MFEMBoundaryCondition
     boundary = '1 2 3 4'
   [../]
   [./thermal_flux]
-    type = DirichletBC
-    variable = F
+    type = MFEMBoundaryCondition
     boundary = '1 3'
   []
+  [./electric_potential]
+    type = MFEMFunctionDirichletBC
+    boundary = '1 2 3'
+    function = p_bc
+  [../]
 []
 
 [Materials]
   [./coil]
-    type = GenericConstantMaterial
-    prop_names = 'electrical_conductivity thermal_conductivity heat_capacity'
-    prop_values = '62.83185 0.01 1.0'
+    type = MFEMConductor
+    electrical_conductivity = 62.83185
+    thermal_conductivity = 0.01
+    heat_capacity = 1.0
     block = 1
   [../]
   [./core]
-    type = GenericConstantMaterial
-    prop_names = 'electrical_conductivity thermal_conductivity heat_capacity'
-    prop_values = '62.83185e-6 1e4 1.0'
+    type = MFEMConductor
+    electrical_conductivity = 62.83185e-6
+    thermal_conductivity = 1e4
+    heat_capacity = 1.0
     block = 2
   [../]
   [./air]
-    type = GenericConstantMaterial
-    prop_names = 'electrical_conductivity thermal_conductivity heat_capacity'
-    prop_values = '62.83185e-6 1e4 1.0'
+    type = MFEMConductor
+    electrical_conductivity = 62.83185e-6
+    thermal_conductivity = 1e4
+    heat_capacity = 1.0
     block = 3
   [../]
 []
