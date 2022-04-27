@@ -25,12 +25,7 @@ InputParameters ExclusiveMFEMMesh::validParams() {
 ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),
       dim(getParam<MooseEnum>("dim")),
-<<<<<<< HEAD
       mfemMesh((std::string)getParam<MeshFileName>("file"))
-=======
-      mfemMesh((std::string)getParam<MeshFileName>("file")),
-      CreateMOOSEMesh(getParam<bool>("CreateMOOSEMesh"))
->>>>>>> 18f68fb (Split CoupledMFEMMesh into two classes, ExclusiveMFEMMesh and CoupledMFEMMesh. CoupledMFEMMesh will build the corresponding MOOSE mesh automatically)
 
 {
   _console << "MFEM mesh created" << std::endl;
