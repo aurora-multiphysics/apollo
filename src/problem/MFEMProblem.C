@@ -4,11 +4,14 @@
 #include "Transient.h"
 #include "hephaestus.hpp"
 
-
 registerMooseObject("ApolloApp", MFEMProblem);
 
+<<<<<<< HEAD
 InputParameters 
 MFEMProblem::validParams() {
+=======
+InputParameters MFEMProblem::validParams() {
+>>>>>>> 18f68fb (Split CoupledMFEMMesh into two classes, ExclusiveMFEMMesh and CoupledMFEMMesh. CoupledMFEMMesh will build the corresponding MOOSE mesh automatically)
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
   params.addParam<std::string>("formulation",
@@ -64,16 +67,15 @@ MFEMProblem::externalSolve()
     }
   }
 
-  //If data is being sent from the master app
-  if(direction == Direction::TO_EXTERNAL_APP)
-  {
-    for(std::string name: getVariableNames())
-    {
+  // If data is being sent from the master app
+  if (direction == Direction::TO_EXTERNAL_APP) {
+    for (std::string name : getVariableNames()) {
       setMFEMVarData(_eq, _var_map[name]);
     }
   }
 }
 
+MFEMMesh& MFEMProblem::getMFEMMesh() { return (MFEMMesh&)_mesh; }
 
 void 
 MFEMProblem::addBoundaryCondition(const std::string& bc_name,
@@ -190,33 +192,22 @@ void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryV
   mooseVarRef.sys().update();
 }
 
-
-mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam)
-{
-  mfem::Mesh& mesh = getMFEMMesh().other_mesh;
+mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
+  mfem::Mesh& mesh = getMFEMMesh().mfemMesh;
   mfem::FiniteElementCollection* fecPtr;
   std::cout << "Variable family = " << var_fam << std::endl;
 
-  if(var_fam == "LAGRANGE")
-  {
-    mfem::H1_FECollection* fec = new mfem::H1_FECollection(_order, mesh.Dimension());
+  if (var_fam == "LAGRANGE") {
+    mfem::H1_FECollection* fec =
+        new mfem::H1_FECollection(_order, mesh.Dimension());
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
 
-  if(var_fam == "NEDELEC_ONE")
-  {
+  if (var_fam == "NEDELEC_ONE") {
     mfem::ND1_3DFECollection* fec = new mfem::ND1_3DFECollection();
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
-  //More types need adding, I need to understand what types are analogous 
+  // More types need adding, I need to understand what types are analogous
 
   return fecPtr;
 }
-
-
-
-
-
-
-
-
