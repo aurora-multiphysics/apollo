@@ -16,10 +16,10 @@ MFEMMesh::MFEMMesh(const mfem::Vector &points,
 
 // Constructor to create an MFEM mesh from a file, currently just used for
 // testing purposes
-MFEMMesh::MFEMMesh(std::string afilename, int generate_edges, int refine,
+MFEMMesh::MFEMMesh(std::string cppfilename, int generate_edges, int refine,
                    bool fix_orientation) {
-  std::cout << afilename << std::endl;
-  const char *filename = afilename.c_str();
+  std::cout << cppfilename << std::endl;
+  const char *filename = cppfilename.c_str();
   SetEmpty();
 
   mfem::named_ifgzstream imesh(filename);
