@@ -6,7 +6,8 @@
 
 registerMooseObject("ApolloApp", MFEMProblem);
 
-InputParameters MFEMProblem::validParams() {
+InputParameters 
+MFEMProblem::validParams() {
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
   params.addParam<std::string>("formulation",
@@ -21,15 +22,17 @@ InputParameters MFEMProblem::validParams() {
 
 MFEMProblem::MFEMProblem(const InputParameters& params)
     : ExternalProblem(params),
-      //_input_mesh(_mesh.parameters().get<MeshFileName>("file")),
+      _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
       _formulation(getParam<std::string>("formulation")),
       _order(getParam<int>("order")),
       _bc_maps(),
       _mat_map(),
-      _executioner(std::string("Transient"), getParam<double>("dt"),
-                   getParam<double>("end_time")) {}
+      _executioner(std::string("Transient"), getParam<double>("dt"), getParam<double>("end_time")) 
+{ 
+}
 
-void MFEMProblem::syncSolutions(Direction direction) {
+void 
+MFEMProblem::syncSolutions(Direction direction) {
   // If data is being sent back to master app
   if (direction == Direction::FROM_EXTERNAL_APP) {
     for (auto name : getVariableNames()) {
@@ -45,7 +48,22 @@ void MFEMProblem::syncSolutions(Direction direction) {
   }
 }
 
-void MFEMProblem::addBoundaryCondition(const std::string& bc_name,
+MFEMMesh& 
+MFEMProblem::getMFEMMesh() { return (MFEMMesh&)_mesh; }
+
+void
+MFEMProblem::externalSolve()
+{
+  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
+
+  std::vector<char *> argv;
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  run_hephaestus(argv.size() - 1, argv.data(), inputs);
+}
+
+
+void 
+MFEMProblem::addBoundaryCondition(const std::string& bc_name,
                                        const std::string& name,
                                        InputParameters& parameters) {
   FEProblemBase::addUserObject(bc_name, name, parameters);
@@ -53,7 +71,8 @@ void MFEMProblem::addBoundaryCondition(const std::string& bc_name,
   _bc_maps[name] = mfem_bc->getBC();
 }
 
-void MFEMProblem::addMaterial(const std::string& kernel_name,
+void 
+MFEMProblem::addMaterial(const std::string& kernel_name,
                               const std::string& name,
                               InputParameters& parameters) {
   FEProblemBase::addUserObject(kernel_name, name, parameters);
@@ -66,19 +85,9 @@ void MFEMProblem::addMaterial(const std::string& kernel_name,
     _mat_map.subdomains.push_back(mfem_subdomain);
   }
 }
-MFEMMesh& MFEMProblem::getMFEMMesh() { return (MFEMMesh&)_mesh; }
 
-void MFEMProblem::externalSolve() {
-  // On input stack, _input_mesh must now reference the actual mesh and not a
-  // string
-  hephaestus::Inputsa inputs(_input_mesh, _formulation, _order, _bc_maps,
-                             _mat_map, _executioner);
-  std::vector<char*> argv;
-  std::cout << "Launching MFEM solve\n" << std::endl;
-  run_hephaestus(argv.size() - 1, argv.data(), inputs);
-}
-
-void MFEMProblem::addAuxVariable(const std::string& var_type,
+void 
+MFEMProblem::addAuxVariable(const std::string& var_type,
                                  const std::string& var_name,
                                  InputParameters& parameters) {
   // Standard Moose implementation
@@ -99,7 +108,8 @@ void MFEMProblem::addAuxVariable(const std::string& var_type,
       std::pair<std::string, hephaestus::AuxiliaryVariable*>(var_name, var));
 }
 
-void MFEMProblem::setMFEMVarData(EquationSystems& esRef,
+void 
+MFEMProblem::setMFEMVarData(EquationSystems& esRef,
                                  hephaestus::AuxiliaryVariable* var) {
   auto& mooseVarRef = getVariable(0, var->name);
 
@@ -114,7 +124,8 @@ void MFEMProblem::setMFEMVarData(EquationSystems& esRef,
   mooseVarRef.sys().update();
 }
 
-void MFEMProblem::setMOOSEVarData(hephaestus::AuxiliaryVariable* var,
+void 
+MFEMProblem::setMOOSEVarData(hephaestus::AuxiliaryVariable* var,
                                   EquationSystems& esRef) {
   auto& mooseVarRef = getVariable(0, var->name, Moose::VarKindType::VAR_ANY,
                                   Moose::VarFieldType::VAR_FIELD_STANDARD);
