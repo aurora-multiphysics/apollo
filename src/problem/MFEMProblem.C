@@ -1,7 +1,7 @@
+#include "MFEMFunctionDirichletBC.h"
 #include "MFEMProblem.h"
 #include "SystemBase.h"
 #include "Transient.h"
-#include "MFEMFunctionDirichletBC.h"
 #include "hephaestus.hpp"
 
 registerMooseObject("ApolloApp", MFEMProblem);
@@ -51,26 +51,21 @@ void MFEMProblem::syncSolutions(Direction direction)
   }
 }
 
-void
-MFEMProblem::addBoundaryCondition(const std::string & bc_name,
-                                  const std::string & name,
-                                  InputParameters & parameters)
-{
+void MFEMProblem::addBoundaryCondition(const std::string& bc_name,
+                                       const std::string& name,
+                                       InputParameters& parameters) {
   FEProblemBase::addUserObject(bc_name, name, parameters);
-  MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
+  MFEMBoundaryCondition* mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
   _bc_maps[name] = mfem_bc->getBC();
 }
 
-
-void MFEMProblem::addMaterial(const std::string & kernel_name,
-                  const std::string & name,
-                  InputParameters & parameters)
-{
+void MFEMProblem::addMaterial(const std::string& kernel_name,
+                              const std::string& name,
+                              InputParameters& parameters) {
   FEProblemBase::addUserObject(kernel_name, name, parameters);
-  const MFEMMaterial & mfem_material(getUserObject<MFEMMaterial>(name));
+  const MFEMMaterial& mfem_material(getUserObject<MFEMMaterial>(name));
 
-  for (unsigned int bid = 0; bid < mfem_material.blocks.size(); ++bid)
-  {
+  for (unsigned int bid = 0; bid < mfem_material.blocks.size(); ++bid) {
     int block = std::stoi(mfem_material.blocks[bid]);
     hephaestus::Subdomain mfem_subdomain(name, block);
     mfem_subdomain.property_map = mfem_material.scalar_property_map;
@@ -88,9 +83,6 @@ void MFEMProblem::externalSolve() {
   std::cout << "Launching MFEM solve\n" << std::endl;
   run_hephaestus(argv.size() - 1, argv.data(), inputs);
 }
-
-  
-
 
 void MFEMProblem::addAuxVariable(const std::string& var_type,
                                  const std::string& var_name,
