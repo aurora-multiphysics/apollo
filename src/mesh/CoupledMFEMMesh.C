@@ -18,6 +18,13 @@ InputParameters CoupledMFEMMesh::validParams() {
   InputParameters params = MooseMesh::validParams();
   params.addRequiredParam<MeshFileName>("file",
                                         "The name of the mesh file to read");
+<<<<<<< HEAD
+=======
+  params.addParam<bool>(
+      "CreateMOOSEMesh", true,
+      "Allows the user to choose whether to create the corresponding MOOSE "
+      "mesh, or create a dummy mesh instead");
+>>>>>>> 57f0f2774a00f8347794ec599c25d2ea8c35e050
   params.set<MooseEnum>("dim") = 3;
   return params;
 }
@@ -25,7 +32,12 @@ InputParameters CoupledMFEMMesh::validParams() {
 CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),
       dim(getParam<MooseEnum>("dim")),
+<<<<<<< HEAD
       mfem_mesh((std::string)getParam<MeshFileName>("file")),
+=======
+      other_mesh((std::string)getParam<MeshFileName>("file")),
+      CreateMOOSEMesh(getParam<bool>("CreateMOOSEMesh"))
+>>>>>>> 57f0f2774a00f8347794ec599c25d2ea8c35e050
 
 {
   _console << "MFEM mesh created" << std::endl;

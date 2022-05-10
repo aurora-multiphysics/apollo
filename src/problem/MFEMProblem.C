@@ -56,8 +56,13 @@ MFEMProblem::externalSolve()
 {
   hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
 
-  std::vector<char *> argv;
-  std::cout << "Launching MFEM solve\n\n" << std::endl;
+void MFEMProblem::externalSolve() {
+  // On input stack, _input_mesh must now reference the actual mesh and not a
+  // string
+  hephaestus::Inputsa inputs(_input_mesh, _formulation, _order, _bc_maps,
+                             _mat_map, _executioner);
+  std::vector<char*> argv;
+  std::cout << "Launching MFEM solve\n" << std::endl;
   run_hephaestus(argv.size() - 1, argv.data(), inputs);
 }
 
