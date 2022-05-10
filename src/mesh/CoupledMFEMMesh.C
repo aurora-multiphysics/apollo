@@ -25,7 +25,7 @@ InputParameters CoupledMFEMMesh::validParams() {
 CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),
       dim(getParam<MooseEnum>("dim")),
-      other_mesh((std::string)getParam<MeshFileName>("file")),
+      mfem_mesh((std::string)getParam<MeshFileName>("file")),
 
 {
   _console << "MFEM mesh created" << std::endl;
@@ -64,34 +64,34 @@ void CoupledMFEMMesh::buildDummyMesh() {
 }
 
 void CoupledMFEMMesh::buildRealMesh() {
-  other_mesh.get_connectivity_data();
-  other_mesh.get_mesh_nodes();
-  other_mesh.get_cell_type();
+  mfem_mesh.get_connectivity_data();
+  mfem_mesh.get_mesh_nodes();
+  mfem_mesh.get_cell_type();
 
   libmesh_assert_equal_to(_mesh->processor_id(), 0);
 
-  for (unsigned int i = 0; i < (other_mesh.pointsVec.size() / 3); i++) {
+  for (unsigned int i = 0; i < (mfem_mesh.pointsVec.size() / 3); i++) {
     double pnt[3];
-    pnt[0] = other_mesh.pointsVec[i * 3];
-    pnt[1] = other_mesh.pointsVec[(i * 3) + 1];
-    pnt[2] = other_mesh.pointsVec[(i * 3) + 2];
+    pnt[0] = mfem_mesh.pointsVec[i * 3];
+    pnt[1] = mfem_mesh.pointsVec[(i * 3) + 1];
+    pnt[2] = mfem_mesh.pointsVec[(i * 3) + 2];
     Point xyz(pnt[0], pnt[1], pnt[2]);
 
     _mesh->add_point(xyz, i);
   }
 
   int vertCounter = 0;
-  for (unsigned int i = 0; i < other_mesh.cellTypeVec.size(); i++) {
+  for (unsigned int i = 0; i < mfem_mesh.cellTypeVec.size(); i++) {
     ElemType libmesh_elem_type =
-        (ElemType)map_elems_vtk_to_libmesh(other_mesh.cellTypeVec[i]);
+        (ElemType)map_elems_vtk_to_libmesh(mfem_mesh.cellTypeVec[i]);
     Elem* elem = Elem::build(libmesh_elem_type).release();
 
-    for (unsigned int j = 0; j < other_mesh.verticesVec[i]; j++) {
+    for (unsigned int j = 0; j < mfem_mesh.verticesVec[i]; j++) {
       elem->set_node(j) =
-          _mesh->node_ptr(other_mesh.connectivityVec[vertCounter + j]);
+          _mesh->node_ptr(mfem_mesh.connectivityVec[vertCounter + j]);
     }
 
-    vertCounter += other_mesh.verticesVec[i];
+    vertCounter += mfem_mesh.verticesVec[i];
 
     std::vector<dof_id_type> conn;
     elem->connectivity(0, VTK, conn);

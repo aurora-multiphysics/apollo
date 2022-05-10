@@ -46,7 +46,7 @@ class CoupledMFEMMesh : public MooseMesh {
   int dim;
 
   // The object holding our MFEM mesh. Needs renaming as to avoid confusion
-  MFEMMesh other_mesh;
+  MFEMMesh mfem_mesh;
 
   // Boolean value determining whether the user wants the corresponding MOOSE
   // mesh built
