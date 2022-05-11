@@ -10,12 +10,10 @@ InputParameters
 MFEMProblem::validParams() {
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
-  params.addParam<std::string>("formulation",
-                               "Name of EM formulation to use in MFEM.");
+  params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
   params.addParam<int>("order", "Order of the FE variables for MFEM.");
   params.addParam<double>("dt", "Time step");
-  params.addParam<double>("end_time",
-                          "Time at which to end transient simulation.");
+  params.addParam<double>("end_time", "Time at which to end transient simulation.");
 
   return params;
 }
@@ -156,41 +154,6 @@ mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
   if (var_fam == "MONOMIAL") {
     mfem::L2_FECollection* fec =
         new mfem::L2_FECollection(_order, mesh.Dimension());
-    fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
-  }
-  // More types need adding, I need to understand what types are analogous
-  return fecPtr;
-}
-
-
-void MFEMProblem::setMOOSEVarData(EquationSystems& esRef, hephaestus::AuxiliaryVariable* var)
-{
-  auto & mooseVarRef = getVariable(
-      0, var->name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
-
-  for(int i = 0; i < mesh().getMesh().n_nodes(); i++)
-  {
-    Node * nodePtr = mesh().getMesh().node_ptr(i);
-    dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
-    mooseVarRef.sys().solution().set(dof, var->gf[i]); /*Needs to be changed for tetra*/
-  }
-  mooseVarRef.sys().solution().close();
-  mooseVarRef.sys().update();
-}
-
-mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
-  mfem::Mesh& mesh = getMFEMMesh().mfemMesh;
-  mfem::FiniteElementCollection* fecPtr;
-  std::cout << "Variable family = " << var_fam << std::endl;
-
-  if (var_fam == "LAGRANGE") {
-    mfem::H1_FECollection* fec =
-        new mfem::H1_FECollection(_order, mesh.Dimension());
-    fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
-  }
-
-  if (var_fam == "NEDELEC_ONE") {
-    mfem::ND1_3DFECollection* fec = new mfem::ND1_3DFECollection();
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
   // More types need adding, I need to understand what types are analogous
