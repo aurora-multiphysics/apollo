@@ -1,13 +1,17 @@
 # pragma once
 
+#include <iostream>
+
+#include "AuxiliarySystem.h"
+#include "DisplacedProblem.h"
 #include "ExternalProblem.h"
-#include "MFEMMesh.h"
-#include "MFEMMaterial.h"
-#include "MFEMBoundaryCondition.h"
 #include "Function.h"
-#include "libmesh/point.h"
+#include "MFEMBoundaryCondition.h"
+#include "MFEMMaterial.h"
+#include "MFEMMesh.h"
+#include "MooseEnum.h"
+#include "auxiliary_variables.hpp"
 #include "boundary_conditions.hpp"
-#include "materials.hpp"
 #include "executioner.hpp"
 #include "auxiliary_variables.hpp"
 
@@ -24,7 +28,7 @@ class MFEMProblem : public ExternalProblem
  public:
   static InputParameters validParams();
 
-  MFEMProblem(const InputParameters & params);
+  MFEMProblem(const InputParameters& params);
 
   virtual void externalSolve () override;
 
@@ -32,13 +36,12 @@ class MFEMProblem : public ExternalProblem
 
   virtual void syncSolutions(Direction direction) override;
 
-  void addBoundaryCondition(const std::string & bc_name,
-                            const std::string & name,
-                            InputParameters & parameters) override;
+  void addBoundaryCondition(const std::string& bc_name, const std::string& name,
+                            InputParameters& parameters) override;
 
-  void addMaterial(const std::string & kernel_name,
-                   const std::string & name,
-                   InputParameters & parameters);
+  void addMaterial(const std::string& kernel_name, const std::string& name,
+                   InputParameters& parameters);
+
 
   void addAuxVariable(const std::string& var_type, 
                       const std::string& var_name,
@@ -62,5 +65,4 @@ class MFEMProblem : public ExternalProblem
  hephaestus::DomainProperties _mat_map;
  hephaestus::Executioner _executioner;
  hephaestus::AuxVarMap _var_map;
-
-};
+}
