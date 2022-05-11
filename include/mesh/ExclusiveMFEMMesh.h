@@ -26,7 +26,7 @@
 /**
  * CoupledMFEMMesh
  */
-class CoupledMFEMMesh : public MooseMesh {
+class ExclusiveMFEMMesh : public MooseMesh {
  public:
   static InputParameters validParams();
 
