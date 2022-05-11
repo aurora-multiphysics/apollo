@@ -10,12 +10,10 @@ InputParameters
 MFEMProblem::validParams() {
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
-  params.addParam<std::string>("formulation",
-                               "Name of EM formulation to use in MFEM.");
+  params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
   params.addParam<int>("order", "Order of the FE variables for MFEM.");
   params.addParam<double>("dt", "Time step");
-  params.addParam<double>("end_time",
-                          "Time at which to end transient simulation.");
+  params.addParam<double>("end_time", "Time at which to end transient simulation.");
 
   return params;
 }
