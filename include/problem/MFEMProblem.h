@@ -1,5 +1,13 @@
-# pragma once
+#pragma once
 
+<<<<<<< HEAD
+=======
+#include <iostream>
+#include <iostream>
+
+#include "AuxiliarySystem.h"
+#include "DisplacedProblem.h"
+>>>>>>> f92df7e (Formatting in MFEMProblem.h)
 #include "ExternalProblem.h"
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
@@ -23,32 +31,33 @@ class MFEMProblem : public ExternalProblem
 
   MFEMProblem(const InputParameters & params);
 
-  virtual void externalSolve () override;
+  virtual void externalSolve() override;
 
-  virtual bool converged () override { return true; };
+  virtual bool converged() override { return true; };
 
   virtual void syncSolutions(Direction direction) override;
 
-  void addBoundaryCondition(const std::string & bc_name,
-                            const std::string & name,
-                            InputParameters & parameters) override;
+  void addBoundaryCondition(const std::string& bc_name, 
+                            const std::string& name,
+                            InputParameters& parameters) override;
 
-  void addMaterial(const std::string & kernel_name,
-                   const std::string & name,
-                   InputParameters & parameters);
+  void addMaterial(const std::string& kernel_name, 
+                   const std::string& name,
+                   InputParameters& parameters);
 
   void addAuxVariable(const std::string& var_type, 
                       const std::string& var_name,
                       InputParameters& parameters);
 
-  void setMFEMVarData(EquationSystems& esRef, 
-                  hephaestus::AuxiliaryVariable* var);
+  void setMFEMVarData(EquationSystems& esRef,
+                      hephaestus::AuxiliaryVariable* var);
 
-  void setMOOSEVarData(EquationSystems& esRef, 
-                  hephaestus::AuxiliaryVariable* var);                  
+  void setMOOSEVarData(EquationSystems& esRef,
+                       hephaestus::AuxiliaryVariable* var);
 
   MFEMMesh& getMFEMMesh();
 
+  mfem::FiniteElementCollection* fecGet(std::string var_fam);
 
 protected:
   std::string _input_mesh;
