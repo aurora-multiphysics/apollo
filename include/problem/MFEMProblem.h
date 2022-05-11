@@ -13,12 +13,8 @@
 #include "auxiliary_variables.hpp"
 #include "boundary_conditions.hpp"
 #include "executioner.hpp"
-#include "auxiliary_variables.hpp"
-
 #include "libmesh/string_to_enum.h"
-#include "MooseEnum.h"
-#include "AuxiliarySystem.h"
-#include "DisplacedProblem.h"
+
 
 #include<iostream>
 
