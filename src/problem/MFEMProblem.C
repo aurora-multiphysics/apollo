@@ -58,21 +58,11 @@ MFEMProblem::getMFEMMesh() { return (MFEMMesh&)_mesh; }
 void
 MFEMProblem::externalSolve()
 {
-  //If data is being sent back to master app
-  if(direction == Direction::FROM_EXTERNAL_APP)
-  {
-    for(auto name: getVariableNames())
-    {
-      setMOOSEVarData(_eq, _var_map[name]);
-    }
-  }
+  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
 
-  // If data is being sent from the master app
-  if (direction == Direction::TO_EXTERNAL_APP) {
-    for (std::string name : getVariableNames()) {
-      setMFEMVarData(_eq, _var_map[name]);
-    }
-  }
+  std::vector<char *> argv;
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  run_hephaestus(argv.size() - 1, argv.data(), inputs);
 }
 
 MFEMMesh& MFEMProblem::getMFEMMesh() { return (MFEMMesh&)_mesh; }
