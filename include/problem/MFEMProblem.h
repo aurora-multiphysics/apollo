@@ -40,19 +40,6 @@ class MFEMProblem : public ExternalProblem
                    const std::string & name,
                    InputParameters & parameters);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-protected:
-  std::string _input_mesh;
-  std::string _formulation;
-  int _order;
-  hephaestus::BCMap _bc_maps;
-  hephaestus::DomainProperties _mat_map;
-  hephaestus::Executioner _executioner;
-=======
-=======
->>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
-
   void addAuxVariable(const std::string& var_type, 
                       const std::string& var_name,
                       InputParameters& parameters);
@@ -65,29 +52,15 @@ protected:
 
   MFEMMesh& getMFEMMesh();
 
-  
-//   fespace getFeSpace(std::string& str);
-
-<<<<<<< HEAD
-<<<<<<< HEAD
   mfem::FiniteElementCollection* fecGet(std::string var_fam);
-=======
-  mfem::FiniteElementCollection* fecMap(std::string var_fam);
->>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
-=======
-  mfem::FiniteElementCollection* fecGet(std::string var_fam);
->>>>>>> 2d70afa (Updated MFEMProblem to allow for variable creation and transfer of variable data)
 
  protected:
  //std::string _input_mesh;
  std::string _formulation;
  int _order;
  hephaestus::BCMap _bc_maps;
- hephaestus::MaterialMap _mat_map;
+ hephaestus::DomainProperties _mat_map;
  hephaestus::Executioner _executioner;
  hephaestus::AuxVarMap _var_map;
-<<<<<<< HEAD
->>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
-=======
->>>>>>> b40ebb6 (Updated MFEMProblem to allow for variable creation and transfer of variable data)
+
 };
