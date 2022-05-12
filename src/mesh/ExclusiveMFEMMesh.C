@@ -12,15 +12,12 @@
 
 registerMooseObject("MooseApp", ExclusiveMFEMMesh);
 
-defineLegacyParams(ExclusiveMFEMMesh);
-
 InputParameters ExclusiveMFEMMesh::validParams() {
   InputParameters params = MooseMesh::validParams();
   params.addRequiredParam<MeshFileName>("file",
                                         "The name of the mesh file to read");
   params.set<MooseEnum>("dim") = 3;
-  return params;
-}
+  return params;efineLegacyParams(CoupledMFEMMesh);
 
 ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),

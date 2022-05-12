@@ -12,8 +12,6 @@
 
 registerMooseObject("MooseApp", CoupledMFEMMesh);
 
-defineLegacyParams(CoupledMFEMMesh);
-
 InputParameters CoupledMFEMMesh::validParams() {
   InputParameters params = MooseMesh::validParams();
   params.addRequiredParam<MeshFileName>("file",
