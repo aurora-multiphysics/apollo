@@ -46,7 +46,7 @@ class MFEMProblem : public ExternalProblem {
   void setMOOSEVarData(hephaestus::AuxiliaryVariable* var, 
                        EquationSystems& esRef);
 
-  MFEMMesh& getMFEMMesh();
+  CoupledMFEMMesh& getMFEMMesh();
 
   mfem::FiniteElementCollection* fecGet(std::string var_fam);
 
