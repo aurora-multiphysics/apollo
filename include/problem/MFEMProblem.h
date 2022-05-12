@@ -58,4 +58,4 @@ class MFEMProblem : public ExternalProblem {
   hephaestus::DomainProperties _mat_map;
   hephaestus::Executioner _executioner;
   hephaestus::AuxVarMap _var_map;
-}
+};
