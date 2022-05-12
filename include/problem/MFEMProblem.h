@@ -12,6 +12,8 @@
 #include "MFEMDataCollection.h"
 #include "Function.h"
 #include "libmesh/point.h"
+#include "MooseEnum.h"
+#include "auxiliary_variables.h"
 #include "boundary_conditions.hpp"
 #include "materials.hpp"
 #include "executioner.hpp"
