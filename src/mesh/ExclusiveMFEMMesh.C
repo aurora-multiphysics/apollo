@@ -17,7 +17,7 @@ InputParameters ExclusiveMFEMMesh::validParams() {
   params.addRequiredParam<MeshFileName>("file",
                                         "The name of the mesh file to read");
   params.set<MooseEnum>("dim") = 3;
-  return params;efineLegacyParams(CoupledMFEMMesh);
+  return params;
 
 ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),
