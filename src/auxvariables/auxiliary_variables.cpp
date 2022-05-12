@@ -17,5 +17,6 @@ AuxiliaryVariable::AuxiliaryVariable(const std::string& var_name,
     gf(&fespace)
 {
 }
+}
 
 
