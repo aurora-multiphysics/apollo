@@ -25,8 +25,7 @@ InputParameters CoupledMFEMMesh::validParams() {
 CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),
       dim(getParam<MooseEnum>("dim")),
-      mfem_mesh((std::string)getParam<MeshFileName>("file")),
-
+      mfem_mesh((std::string)getParam<MeshFileName>("file"))
 {
   _console << "MFEM mesh created" << std::endl;
 }
