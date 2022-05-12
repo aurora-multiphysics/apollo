@@ -1,4 +1,4 @@
-#include "auxiliary_variables.hpp"
+#include "auxiliary_variables.h"
 
 namespace hephaestus
 {

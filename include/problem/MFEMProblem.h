@@ -11,7 +11,7 @@
 #include "MFEMMaterial.h"
 #include "MFEMMesh.h"
 #include "MooseEnum.h"
-#include "auxiliary_variables.hpp"
+#include "auxiliary_variables.h"
 #include "boundary_conditions.hpp"
 #include "executioner.hpp"
 #include "libmesh/string_to_enum.h"
