@@ -15,6 +15,8 @@
 #include "boundary_conditions.hpp"
 #include "executioner.hpp"
 #include "libmesh/string_to_enum.h"
+#include "CoupledMFEMMesh.h"
+
 
 class MFEMProblem : public ExternalProblem {
  public:
