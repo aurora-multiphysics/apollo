@@ -30,7 +30,7 @@ class ExclusiveMFEMMesh : public MooseMesh {
  public:
   static InputParameters validParams();
 
-  CoupledMFEMMesh(const InputParameters& parameters);
+  ExclusiveMFEMMesh(const InputParameters& parameters);
 
   virtual void buildMesh() override;
 
