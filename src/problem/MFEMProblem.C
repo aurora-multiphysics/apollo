@@ -31,14 +31,12 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 {
 }
 
-void MFEMProblem::syncSolutions(Direction direction)
-{
-  //If data is being sent back to master app
-  if(direction == Direction::FROM_EXTERNAL_APP)
-  {
-    for(auto name: getVariableNames())
-    {
-      setMOOSEVarData(_eq, _var_map[name]);
+void 
+MFEMProblem::syncSolutions(Direction direction) {
+  // If data is being sent back to master app
+  if (direction == Direction::FROM_EXTERNAL_APP) {
+    for (auto name : getVariableNames()) {
+      setMOOSEVarData(_var_map[name], _eq);
     }
   }
 
@@ -50,7 +48,18 @@ void MFEMProblem::syncSolutions(Direction direction)
   }
 }
 
-MFEMMesh& MFEMProblem::getMFEMMesh() { return (MFEMMesh&)_mesh; }
+CoupledMFEMMesh& 
+MFEMProblem::getMFEMMesh() { return (CoupledMFEMMesh&)_mesh; }
+
+void
+MFEMProblem::externalSolve()
+{
+  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
+
+  std::vector<char *> argv;
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  run_hephaestus(argv.size() - 1, argv.data(), inputs);
+}
 
 void 
 MFEMProblem::addBoundaryCondition(const std::string& bc_name,
@@ -89,7 +98,7 @@ MFEMProblem::addAuxVariable(const std::string& var_type,
   // End of standard implementation
 
   // New code to create MFEM grid functions
-  mfem::Mesh& mesh = getMFEMMesh().mfemMesh;
+  mfem::Mesh& mesh = getMFEMMesh().mfem_mesh;
   mfem::FiniteElementCollection* fec = fecGet(var_family);
   mfem::FiniteElementSpace fespace(&mesh, fec);
   hephaestus::AuxiliaryVariable* var = new hephaestus::AuxiliaryVariable(
@@ -132,7 +141,7 @@ MFEMProblem::setMOOSEVarData(hephaestus::AuxiliaryVariable* var,
 }
 
 mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
-  mfem::Mesh& mesh = getMFEMMesh().mfemMesh;
+  mfem::Mesh& mesh = getMFEMMesh().mfem_mesh;
   mfem::FiniteElementCollection* fecPtr;
   std::cout << "Variable family = " << var_fam << std::endl;
 

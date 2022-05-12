@@ -1,13 +1,10 @@
 #pragma once
 
-<<<<<<< HEAD
-=======
 #include <iostream>
 #include <iostream>
 
 #include "AuxiliarySystem.h"
 #include "DisplacedProblem.h"
->>>>>>> f92df7e (Formatting in MFEMProblem.h)
 #include "ExternalProblem.h"
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
