@@ -18,6 +18,7 @@ InputParameters ExclusiveMFEMMesh::validParams() {
                                         "The name of the mesh file to read");
   params.set<MooseEnum>("dim") = 3;
   return params;
+}
 
 ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),
