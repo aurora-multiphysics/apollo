@@ -52,8 +52,14 @@ MFEMProblem::syncSolutions(Direction direction) {
   }
 }
 
-CoupledMFEMMesh& 
-MFEMProblem::getMFEMMesh() { return (CoupledMFEMMesh&)_mesh; }
+ExclusiveMFEMMesh& 
+MFEMProblem::mesh() { 
+  if(ExternalProblem::mesh().type() != "ExclusiveMFEMMesh" && ExternalProblem::mesh().type() != "CoupledMFEMMesh"){
+    std::cout << "Please choose a valid mesh type for an MFEMProblem\n(Either CoupledMFEMMesh or ExclusiveMFEMMesh)" << std::endl;
+    ExternalProblem::mesh().mooseError();
+  }
+  return (ExclusiveMFEMMesh&)_mesh; 
+}
 
 void
 MFEMProblem::externalSolve()

@@ -30,6 +30,8 @@ class MFEMProblem : public ExternalProblem {
 
   virtual void syncSolutions(Direction direction) override;
 
+  virtual ExclusiveMFEMMesh& mesh() override;
+
   virtual std::vector<VariableName> getAuxVariableNames();
 
   void addBoundaryCondition(const std::string& bc_name, 
@@ -50,7 +52,6 @@ class MFEMProblem : public ExternalProblem {
   void setMOOSEVarData(hephaestus::AuxiliaryVariable* var, 
                        EquationSystems& esRef);
 
-  CoupledMFEMMesh& getMFEMMesh();
 
   mfem::FiniteElementCollection* fecGet(std::string var_fam);
 
