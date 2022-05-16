@@ -8,8 +8,7 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #pragma once
-#include "MFEMMesh.h"
-#include "MooseMesh.h"
+#include "FileMesh.h"
 #include "libmesh/elem.h"
 #include "libmesh/enum_io_package.h"
 #include "libmesh/equation_systems.h"
@@ -26,29 +25,22 @@
 /**
  * CoupledMFEMMesh
  */
-class ExclusiveMFEMMesh : public MooseMesh {
+class ExclusiveMFEMMesh : public FileMesh {
  public:
   static InputParameters validParams();
 
   ExclusiveMFEMMesh(const InputParameters& parameters);
+  // ExclusiveMFEMMesh(const FileMesh & other_mesh);
+
+  virtual ~ExclusiveMFEMMesh();
+
+  virtual std::unique_ptr<MooseMesh> safeClone() const override;
 
   virtual void buildMesh() override;
 
   // Builds placeholder mesh when no MOOSE mesh is required
   void buildDummyMesh();
 
-  // Function that maps vtk element types to libmesh element types
-  int map_elems_vtk_to_libmesh(int VTKElemType);
-
-  // Mesh dimension
-  int dim;
-
   // The object holding our MFEM mesh. Needs renaming as to avoid confusion
-  MFEMMesh mfemMesh;
-
-  // Boolean value determining whether the user wants the corresponding MOOSE
-  // mesh built
-  bool CreateMOOSEMesh;
-
-  virtual std::unique_ptr<MooseMesh> safeClone() const override;
+  MFEMMesh* mfem_mesh;
 };
