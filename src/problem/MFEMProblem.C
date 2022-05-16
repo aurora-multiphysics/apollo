@@ -115,10 +115,10 @@ void
 MFEMProblem::setMFEMVarData(EquationSystems& esRef,
                                  hephaestus::AuxiliaryVariable* var) {
   auto& mooseVarRef = getVariable(0, var->name);
-
+  MeshBase& libmeshBase = mesh().getMesh();
   NumericVector<Number>& tempSolutionVector = mooseVarRef.sys().solution();
-  for (int i = 0; i < mesh().getMesh().n_nodes() /*number of nodes*/; i++) {
-    Node* nodePtr = mesh().getMesh().node_ptr(i);
+  for (int i = 0; i < libmeshBase.n_nodes() /*number of nodes*/; i++) {
+    Node* nodePtr = libmeshBase.node_ptr(i);
     dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(),
                                           mooseVarRef.number(), 0);
     var->gf[i] = tempSolutionVector(dof);
@@ -132,9 +132,9 @@ MFEMProblem::setMOOSEVarData(hephaestus::AuxiliaryVariable* var,
                                   EquationSystems& esRef) {
   auto& mooseVarRef = getVariable(0, var->name, Moose::VarKindType::VAR_ANY,
                                   Moose::VarFieldType::VAR_FIELD_STANDARD);
-
-  for (int i = 0; i < mesh().getMesh().n_nodes(); i++) {
-    Node* nodePtr = mesh().getMesh().node_ptr(i);
+  MeshBase& libmeshBase = mesh().getMesh();
+  for (int i = 0; i < libmeshBase.n_nodes(); i++) {
+    Node* nodePtr = libmeshBase.node_ptr(i);
     dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(),
                                           mooseVarRef.number(), 0);
     mooseVarRef.sys().solution().set(
