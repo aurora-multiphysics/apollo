@@ -10,22 +10,18 @@
 #include "CoupledMFEMMesh.h"
 #include "libmesh/face_quad4.h"
 
-registerMooseObject("MooseApp", CoupledMFEMMesh);
+registerMooseObject("ApolloApp", CoupledMFEMMesh);
 
 InputParameters CoupledMFEMMesh::validParams() {
-  InputParameters params = MooseMesh::validParams();
-  params.addRequiredParam<MeshFileName>("file",
-                                        "The name of the mesh file to read");
-  params.set<MooseEnum>("dim") = 3;
+  InputParameters params = ExclusiveMFEMMesh::validParams();
   return params;
 }
 
 CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters& parameters)
     : MooseMesh(parameters),
-      dim(getParam<MooseEnum>("dim")),
       mfem_mesh((std::string)getParam<MeshFileName>("file"))
 {
-  _console << "MFEM mesh created" << std::endl;
+  
 }
 
 void CoupledMFEMMesh::buildMesh() {
