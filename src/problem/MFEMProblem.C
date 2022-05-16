@@ -31,6 +31,11 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 {
 }
 
+std::vector<VariableName>
+MFEMProblem::getAuxVariableNames() {
+  return systemBaseAuxiliary().getVariableNames();
+}
+
 void 
 MFEMProblem::syncSolutions(Direction direction) {
   // If data is being sent back to master app

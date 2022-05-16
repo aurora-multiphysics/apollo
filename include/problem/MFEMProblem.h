@@ -37,6 +37,8 @@ class MFEMProblem : public ExternalProblem
 
   virtual void syncSolutions(Direction direction) override;
 
+  virtual std::vector<VariableName> getAuxVariableNames();
+
   void addBoundaryCondition(const std::string& bc_name, 
                             const std::string& name,
                             InputParameters& parameters) override;
