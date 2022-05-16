@@ -13,23 +13,23 @@
 registerMooseObject("MooseApp", ExclusiveMFEMMesh);
 
 InputParameters ExclusiveMFEMMesh::validParams() {
-  InputParameters params = MooseMesh::validParams();
-  params.addRequiredParam<MeshFileName>("file",
-                                        "The name of the mesh file to read");
-  params.set<MooseEnum>("dim") = 3;
+  InputParameters params = FileMesh::validParams();
   return params;
 }
 
 ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters& parameters)
-    : MooseMesh(parameters),
-      dim(getParam<MooseEnum>("dim")),
-      mfemMesh((std::string)getParam<MeshFileName>("file"))
-
+    : FileMesh(parameters)
 {
-  _console << "MFEM mesh created" << std::endl;
 }
 
-void ExclusiveMFEMMesh::buildMesh() { buildDummyMesh(); }
+ExclusiveMFEMMesh::~ExclusiveMFEMMesh()
+{ 
+}
+
+void ExclusiveMFEMMesh::buildMesh() { 
+  buildDummyMesh();
+  mfem_mesh = new MFEMMesh("_file_name");
+}
 
 void ExclusiveMFEMMesh::buildDummyMesh() {
   int e = 1;
@@ -48,7 +48,7 @@ void ExclusiveMFEMMesh::buildDummyMesh() {
   elem->set_node(2) = _mesh->add_point(pt3);
   elem->set_node(3) = _mesh->add_point(pt4);
 
-  _mesh->prepare_for_use();
+  _mesh->prepare_for_use();                         
 }
 
 std::unique_ptr<MooseMesh> ExclusiveMFEMMesh::safeClone() const {
