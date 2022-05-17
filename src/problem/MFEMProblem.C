@@ -110,9 +110,9 @@ MFEMProblem::addAuxVariable(const std::string& var_type,
   // End of standard implementation
 
   // New code to create MFEM grid functions
-  mfem::Mesh& mesh = getMFEMMesh().mfem_mesh;
+  mfem::Mesh* mfem_mesh = mesh().mfem_mesh;
   mfem::FiniteElementCollection* fec = fecGet(var_family);
-  mfem::FiniteElementSpace fespace(&mesh, fec);
+  mfem::FiniteElementSpace fespace(mfem_mesh, fec);
   hephaestus::AuxiliaryVariable* var = new hephaestus::AuxiliaryVariable(
       var_name, var_family, (int)var_order, fespace);
   _var_map.insert(
@@ -153,19 +153,19 @@ MFEMProblem::setMOOSEVarData(hephaestus::AuxiliaryVariable* var,
 }
 
 mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
-  mfem::Mesh& mesh = getMFEMMesh().mfem_mesh;
+  mfem::Mesh* mfem_mesh = mesh().mfem_mesh;
   mfem::FiniteElementCollection* fecPtr;
   std::cout << "Variable family = " << var_fam << std::endl;
 
   if (var_fam == "LAGRANGE") {
     mfem::H1_FECollection* fec =
-        new mfem::H1_FECollection(_order, mesh.Dimension());
+        new mfem::H1_FECollection(_order, mfem_mesh->Dimension());
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
 
   if (var_fam == "MONOMIAL") {
     mfem::L2_FECollection* fec =
-        new mfem::L2_FECollection(_order, mesh.Dimension());
+        new mfem::L2_FECollection(_order, mfem_mesh->Dimension());
     fecPtr = dynamic_cast<mfem::FiniteElementCollection*>(fec);
   }
   // More types need adding, I need to understand what types are analogous

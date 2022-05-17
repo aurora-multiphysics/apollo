@@ -20,8 +20,7 @@
 #include "outputs.hpp"
 #include "auxiliary_variables.hpp"
 #include "libmesh/string_to_enum.h"
-#include<iostream>
-#include "CoupledMFEMMesh.h"
+#include "ExclusiveMFEMMesh.h"
 
 
 class MFEMProblem : public ExternalProblem
