@@ -30,7 +30,6 @@ class ExclusiveMFEMMesh : public FileMesh {
   static InputParameters validParams();
 
   ExclusiveMFEMMesh(const InputParameters& parameters);
-  // ExclusiveMFEMMesh(const FileMesh & other_mesh);
 
   virtual ~ExclusiveMFEMMesh();
 
