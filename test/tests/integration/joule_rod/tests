@@ -1,0 +1,8 @@
+[Tests]
+  design = 'syntax/Variables/index.md'
+  [./JouleRod]
+    type = 'RunApp'
+    input = 'rod.i'
+    requirement = 'Apollo shall have the ability to run the rod example from the Joule miniapp.'
+  []
+[]

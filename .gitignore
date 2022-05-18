@@ -243,3 +243,6 @@ conf_vars.mk
 
 # Tarred Docker images
 *docker/**/*.tar.gz
+
+# MFEM Joule outputs
+*Joule_000*
