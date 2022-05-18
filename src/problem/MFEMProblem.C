@@ -33,7 +33,8 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 void
 MFEMProblem::externalSolve()
 {
-  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
+  mfem::Mesh mfem_mesh(_input_mesh.c_str(),1,1);
+  hephaestus::Inputs inputs(mfem_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
 
   std::vector<char *> argv;
   std::cout << "Launching MFEM solve\n\n" << std::endl;
