@@ -56,3 +56,10 @@
 [Executioner]
   type = Steady
 []
+
+[Outputs]
+  [datacollection]
+    type = MFEMVisItDataCollection
+    file_base = Joule
+  []
+[]
