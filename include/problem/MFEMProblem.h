@@ -4,6 +4,7 @@
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
 #include "MFEMBoundaryCondition.h"
+#include "MFEMDataCollection.h"
 #include "Function.h"
 #include "libmesh/point.h"
 #include "boundary_conditions.hpp"
@@ -40,4 +41,5 @@ protected:
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _mat_map;
   hephaestus::Executioner _executioner;
+  mfem::DataCollection* _data_collection;
 };
