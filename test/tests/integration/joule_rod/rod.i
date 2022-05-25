@@ -65,5 +65,7 @@
   [ParaViewDataCollection]
     type = MFEMParaViewDataCollection
     file_base = OutputData/JouleRodParaView
+    refinements = 1
+    high_order_output = true
   []
 []
