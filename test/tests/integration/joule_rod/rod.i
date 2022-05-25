@@ -58,8 +58,12 @@
 []
 
 [Outputs]
-  [datacollection]
+  [VisItDataCollection]
     type = MFEMVisItDataCollection
-    file_base = Joule
+    file_base = OutputData/JouleRodVisIt
+  []
+  [ParaViewDataCollection]
+    type = MFEMParaViewDataCollection
+    file_base = OutputData/JouleRodParaView
   []
 []
