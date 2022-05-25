@@ -27,7 +27,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _bc_maps(),
     _mat_map(),
     _executioner(std::string("Transient"), getParam<double>("dt"), getParam<double>("end_time")),
-    _data_collection(new mfem::VisItDataCollection("Joule"))
+    _outputs()
 {
 }
 
@@ -35,10 +35,13 @@ void
 MFEMProblem::externalSolve()
 {
   mfem::Mesh mfem_mesh(_input_mesh.c_str(),1,1);
-    // std::vector<Console *> objects = getOutputs<Console>();
-  std::vector<MFEMDataCollection *> data_collections = _app.getOutputWarehouse().getOutputs<MFEMDataCollection>();
-  // std::cout(data_collections);
-  hephaestus::Inputs inputs(mfem_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner, data_collections[0]->_data_collection);
+  std::vector<OutputName> mfem_data_collections = _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
+  for(const auto& name: mfem_data_collections) {
+    _outputs.data_collections[name] = _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
+  }
+
+  // _outputs.data_collections["dc_test"] = data_collections[0]->_data_collection;
+  hephaestus::Inputs inputs(mfem_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner, _outputs);
 
   std::vector<char *> argv;
   std::cout << "Launching MFEM solve\n\n" << std::endl;

@@ -10,6 +10,7 @@
 #include "boundary_conditions.hpp"
 #include "materials.hpp"
 #include "executioner.hpp"
+#include "outputs.hpp"
 
 #include <iostream>
 
@@ -41,5 +42,5 @@ protected:
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _mat_map;
   hephaestus::Executioner _executioner;
-  mfem::DataCollection* _data_collection;
+  hephaestus::Outputs _outputs;
 };
