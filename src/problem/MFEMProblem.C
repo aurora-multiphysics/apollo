@@ -40,7 +40,6 @@ MFEMProblem::externalSolve()
     _outputs.data_collections[name] = _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  // _outputs.data_collections["dc_test"] = data_collections[0]->_data_collection;
   hephaestus::Inputs inputs(mfem_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner, _outputs);
 
   std::vector<char *> argv;
