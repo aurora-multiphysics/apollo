@@ -16,5 +16,5 @@ protected:
   mfem::VisItDataCollection _visit_dc;
   bool _high_order_output;
   unsigned int _refinements;
-  virtual void output(const ExecFlagType & type) override {};
+  virtual void output(const ExecFlagType & type) override{};
 };

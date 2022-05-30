@@ -6,8 +6,7 @@ InputParameters
 MFEMVisItDataCollection::validParams()
 {
   InputParameters params = MFEMDataCollection::validParams();
-  params.addClassDescription(
-      "Output for controlling MFEMVisItDataCollection inherited data.");
+  params.addClassDescription("Output for controlling MFEMVisItDataCollection inherited data.");
   params.addParam<unsigned int>("refinements",
                                 0,
                                 "Number of uniform refinements for oversampling "
@@ -22,5 +21,5 @@ MFEMVisItDataCollection::MFEMVisItDataCollection(const InputParameters & paramet
     _refinements(getParam<unsigned int>("refinements"))
 {
   _visit_dc.SetLevelsOfDetail(_refinements + 1);
- _data_collection = &_visit_dc;
+  _data_collection = &_visit_dc;
 }

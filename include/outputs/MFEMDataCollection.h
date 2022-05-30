@@ -11,8 +11,8 @@ public:
   static InputParameters validParams();
 
   MFEMDataCollection(const InputParameters & parameters);
-  mfem::DataCollection* _data_collection;
+  mfem::DataCollection * _data_collection;
 
 protected:
-  virtual void output(const ExecFlagType & type) override {};
+  virtual void output(const ExecFlagType & type) override{};
 };
