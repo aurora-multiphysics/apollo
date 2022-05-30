@@ -34,13 +34,17 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 void
 MFEMProblem::externalSolve()
 {
-  mfem::Mesh mfem_mesh(_input_mesh.c_str(),1,1);
-  std::vector<OutputName> mfem_data_collections = _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
-  for(const auto& name: mfem_data_collections) {
-    _outputs.data_collections[name] = _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
+  mfem::Mesh mfem_mesh(_input_mesh.c_str(), 1, 1);
+  std::vector<OutputName> mfem_data_collections =
+      _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
+  for (const auto & name : mfem_data_collections)
+  {
+    _outputs.data_collections[name] =
+        _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  hephaestus::Inputs inputs(mfem_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner, _outputs);
+  hephaestus::Inputs inputs(
+      mfem_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner, _outputs);
 
   std::vector<char *> argv;
   std::cout << "Launching MFEM solve\n\n" << std::endl;
