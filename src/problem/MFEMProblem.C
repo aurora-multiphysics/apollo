@@ -153,6 +153,10 @@ mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
   return fecPtr;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9524144ed7f15837a4379f2cff61b684b1a7691e
 std::vector<VariableName>
 MFEMProblem::getAuxVariableNames() {
   return systemBaseAuxiliary().getVariableNames();
