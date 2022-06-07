@@ -31,37 +31,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 {
 }
 
-std::vector<VariableName>
-MFEMProblem::getAuxVariableNames() {
-  return systemBaseAuxiliary().getVariableNames();
-}
 
-void 
-MFEMProblem::syncSolutions(Direction direction) {
-  // If data is being sent from the master app
-  if (direction == Direction::TO_EXTERNAL_APP) {
-    for (std::string name : getAuxVariableNames()) {
-      setMFEMVarData(es(), _var_map[name]);
-      std::cout << name << std::endl;
-    }
-  }
-
-    // If data is being sent back to master app
-  if (direction == Direction::FROM_EXTERNAL_APP) {
-    for (std::string name : getAuxVariableNames()) {
-      setMOOSEVarData(_var_map[name], es());
-    }
-  }
-}
-
-ExclusiveMFEMMesh& 
-MFEMProblem::mesh() { 
-  if(ExternalProblem::mesh().type() != "ExclusiveMFEMMesh" && ExternalProblem::mesh().type() != "CoupledMFEMMesh"){
-    std::cout << "Please choose a valid mesh type for an MFEMProblem\n(Either CoupledMFEMMesh or ExclusiveMFEMMesh)" << std::endl;
-    ExternalProblem::mesh().mooseError();
-  }
-  return (ExclusiveMFEMMesh&)_mesh; 
-}
 
 void
 MFEMProblem::externalSolve()
@@ -82,6 +52,7 @@ MFEMProblem::addBoundaryCondition(const std::string& bc_name,
   _bc_maps[name] = mfem_bc->getBC();
 }
 
+
 void 
 MFEMProblem::addMaterial(const std::string& kernel_name,
                               const std::string& name,
@@ -96,6 +67,7 @@ MFEMProblem::addMaterial(const std::string& kernel_name,
     _mat_map.subdomains.push_back(mfem_subdomain);
   }
 }
+
 
 void 
 MFEMProblem::addAuxVariable(const std::string& var_type,
@@ -170,4 +142,37 @@ mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
   }
   // More types need adding, I need to understand what types are analogous
   return fecPtr;
+}
+
+
+std::vector<VariableName>
+MFEMProblem::getAuxVariableNames() {
+  return systemBaseAuxiliary().getVariableNames();
+}
+
+void 
+MFEMProblem::syncSolutions(Direction direction) {
+  // If data is being sent from the master app
+  if (direction == Direction::TO_EXTERNAL_APP) {
+    for (std::string name : getAuxVariableNames()) {
+      setMFEMVarData(es(), _var_map[name]);
+      std::cout << name << std::endl;
+    }
+  }
+
+    // If data is being sent back to master app
+  if (direction == Direction::FROM_EXTERNAL_APP) {
+    for (std::string name : getAuxVariableNames()) {
+      setMOOSEVarData(_var_map[name], es());
+    }
+  }
+}
+
+ExclusiveMFEMMesh& 
+MFEMProblem::mesh() { 
+  if(ExternalProblem::mesh().type() != "ExclusiveMFEMMesh" && ExternalProblem::mesh().type() != "CoupledMFEMMesh"){
+    std::cout << "Please choose a valid mesh type for an MFEMProblem\n(Either CoupledMFEMMesh or ExclusiveMFEMMesh)" << std::endl;
+    ExternalProblem::mesh().mooseError();
+  }
+  return (ExclusiveMFEMMesh&)_mesh; 
 }
