@@ -32,11 +32,20 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 }
 
 
-
 void
 MFEMProblem::externalSolve()
 {
-  hephaestus::Inputs inputs(_input_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner);
+  mfem::Mesh& mfem_mesh = *(mesh().mfem_mesh);
+  std::vector<OutputName> mfem_data_collections =
+      _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
+  for (const auto & name : mfem_data_collections)
+  {
+    _outputs.data_collections[name] =
+        _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
+  }
+
+  hephaestus::Inputs inputs(
+      mfem_mesh, _formulation, _order, _bc_maps, _mat_map, _executioner, _outputs);
 
   std::vector<char *> argv;
   std::cout << "Launching MFEM solve\n\n" << std::endl;
@@ -143,7 +152,6 @@ mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
   // More types need adding, I need to understand what types are analogous
   return fecPtr;
 }
-
 
 std::vector<VariableName>
 MFEMProblem::getAuxVariableNames() {
