@@ -1,26 +1,24 @@
 #pragma once
 
-#include <iostream>
-#include <iostream>
 
 #include "AuxiliarySystem.h"
 #include "DisplacedProblem.h"
 #include "ExternalProblem.h"
+#include "ExclusiveMFEMMesh.h"
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
 #include "MFEMBoundaryCondition.h"
 #include "MFEMDataCollection.h"
 #include "Function.h"
-#include "libmesh/point.h"
 #include "MooseEnum.h"
 #include "auxiliary_variables.h"
 #include "boundary_conditions.hpp"
 #include "materials.hpp"
 #include "executioner.hpp"
 #include "outputs.hpp"
-#include "auxiliary_variables.hpp"
 #include "libmesh/string_to_enum.h"
-#include "ExclusiveMFEMMesh.h"
+#include "libmesh/point.h"
+
 
 
 class MFEMProblem : public ExternalProblem
