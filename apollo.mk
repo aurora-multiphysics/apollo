@@ -1,7 +1,6 @@
 #
 # Check the existence of the contrib submodules and build accordingly
 #
-
 MFEM_DIR?=$(APPLICATION_DIR)/../mfem/build
 include $(MFEM_DIR)/config/config.mk
 
