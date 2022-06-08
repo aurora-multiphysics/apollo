@@ -9,6 +9,7 @@
 
 #pragma once
 #include "FileMesh.h"
+#include "MFEMMesh.h"
 #include "libmesh/elem.h"
 #include "libmesh/enum_io_package.h"
 #include "libmesh/equation_systems.h"
