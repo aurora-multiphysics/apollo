@@ -34,8 +34,15 @@ class MFEMProblem : public ExternalProblem
 
   virtual void syncSolutions(Direction direction) override;
 
+/**
+ * Overwritten mesh() method from base MooseMesh to retrieve the correct mesh type, in this case ExclusiveMFEMMesh.
+ */
   virtual ExclusiveMFEMMesh& mesh() override;
 
+/**
+ * Returns all the variable names from the auxiliary system base. This is helpful in the syncSolutions() method
+ * when transferring variable data.
+ */
   virtual std::vector<VariableName> getAuxVariableNames();
 
   void addBoundaryCondition(const std::string& bc_name, 
@@ -45,18 +52,32 @@ class MFEMProblem : public ExternalProblem
   void addMaterial(const std::string& kernel_name, 
                    const std::string& name,
                    InputParameters& parameters);
-
+/**
+ * Override of ExternalProblem::addAuxVariable. Uses ExternalProblem::addAuxVariable to set the Moose aux var, and contains 
+ * additional code to create a corresponding MFEM grid function to be used in the MFEM solve.
+ */
   void addAuxVariable(const std::string& var_type, 
                       const std::string& var_name,
                       InputParameters& parameters);
-
+/**
+ * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data from one of the variable types
+ * (either Moose AuxVar or MFEM grid function), and transfer it to the other. For example if you solve for temperature in MOOSE, you would
+ * use setMFEMVarData to get this temperature data into an MFEM grid function.
+ */
   void setMFEMVarData(EquationSystems& esRef,
                       hephaestus::AuxiliaryVariable* var);
-
+/**
+ * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data from one of the variable types
+ * (either Moose AuxVar or MFEM grid function), and transfer it to the other. For example if you solve for temperature in MOOSE, you would
+ * use setMFEMVarData to get this temperature data into an MFEM grid function.
+ */
   void setMOOSEVarData(hephaestus::AuxiliaryVariable* var, 
                        EquationSystems& esRef);
 
-
+/**
+ * Method used to get an mfem FEC depending on the variable family specified in the input file. This method
+ * is used in addAuxVariable to help create the MFEM grid function that corresponds to a given MOOSE aux-variable.
+ */
   mfem::FiniteElementCollection* fecGet(std::string var_fam);
 
 protected:
