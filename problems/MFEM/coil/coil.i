@@ -1,5 +1,5 @@
 [Mesh]
-  type = MFEMMesh
+  type = CoupledMFEMMesh
   file = ./coil.gen
 []
 
