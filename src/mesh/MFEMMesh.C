@@ -63,7 +63,8 @@ MFEMMesh::MFEMMesh(
     for (int i = 0; i < (int)num_el_in_blk[iblk]; i++) {
       for (int j = 0; j < num_element_linear_nodes; j++) {
         renumberedVertID[j] =
-            cubitToMFEMVertMap[(elem_blk[iblk][i * NumNodePerEl + j]) + 1];
+            cubitToMFEMVertMap[(elem_blk[iblk][i * NumNodePerEl + j]) + 1] - 1;
+        // std::cout << cubitToMFEMVertMap[1] << std::endl;
       }
 
       switch (libmesh_element_type) {
@@ -113,7 +114,7 @@ MFEMMesh::MFEMMesh(
     for (int i = 0; i < (int)num_side_in_ss[iss]; i++) {
       for (int j = 0; j < num_face_linear_nodes; j++) {
         renumberedVertID[j] =
-            cubitToMFEMVertMap[1 + ss_node_id[iss][i * num_face_nodes + j]];
+            cubitToMFEMVertMap[1 + ss_node_id[iss][i * num_face_nodes + j]] - 1;
       }
       switch (libmesh_face_type) {
         case (FACE_EDGE2):
@@ -208,8 +209,8 @@ MFEMMesh::MFEMMesh(
       }
     }
   }
-
-  std::ofstream mesh_ofs("hello.vtk");
+  this->Save("test.mesh");
+  std::ofstream mesh_ofs("test.vtk");
   mesh_ofs.precision(8);
   this->PrintVTK(mesh_ofs);
 }
