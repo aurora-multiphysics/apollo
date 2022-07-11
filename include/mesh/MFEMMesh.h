@@ -21,7 +21,7 @@ class MFEMMesh : public mfem::Mesh {
                     std::vector<int> num_side_in_ss, int **ss_node_id,
                     int *eb_prop, int *ss_prop, int dim_num, int* start_of_block);
 
-  MFEMMesh(std::string afilename, int generate_edges = 0,
+  MFEMMesh(std::string cpp_filename, int generate_edges = 0,
                     int refine = 1, bool fix_orientation = true);
 
   void get_mesh_nodes();
