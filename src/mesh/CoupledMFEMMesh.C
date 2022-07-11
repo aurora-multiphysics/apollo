@@ -354,10 +354,6 @@ void CoupledMFEMMesh::createMFEMMesh() {
       num_face_linear_nodes, num_side_sets, num_sides_in_ss, ss_node_id, ebprop,
       ssprop, 3, start_of_block);
 
-  for (auto const &pair: cubitToMFEMVertMap) {
-      std::cout << "{" << pair.first << ": " << pair.second << "}\n";
-  }
-
   delete[] elem_ss;
   delete[] side_ss;
   delete[] ss_node_id;
