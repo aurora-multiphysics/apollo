@@ -174,7 +174,6 @@ MFEMMesh::MFEMMesh(
         break;
       }
     }
-    std::cout << "Finalising Topology" << std::endl;
     FinalizeTopology();
     // Define quadratic FE space
     mfem::FiniteElementCollection *fec = new mfem::H1_FECollection(2,3);
@@ -200,7 +199,6 @@ MFEMMesh::MFEMMesh(
       for (int j = 0; j < dofs.Size(); j++)
       {
         int point_id = elem_blk[iblk][loc_ind*num_node_per_el + mymap[j] - 1];
-        std::cout << point_id << std::endl;
         (*Nodes)(vdofs[j]) = coordx[point_id];
         (*Nodes)(vdofs[j]+1) = coordy[point_id];
         if (Dim == 3)
@@ -216,10 +214,9 @@ MFEMMesh::MFEMMesh(
   this->PrintVTK(mesh_ofs);
 }
 
-MFEMMesh::MFEMMesh(std::string afilename, int generate_edges,
+MFEMMesh::MFEMMesh(std::string cpp_filename, int generate_edges,
                                      int refine, bool fix_orientation) {
-  std::cout << afilename << std::endl;
-  const char *filename = afilename.c_str();
+  const char *filename = cpp_filename.c_str();
   SetEmpty();
 
   mfem::named_ifgzstream imesh(filename);

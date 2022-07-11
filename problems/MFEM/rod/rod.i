@@ -1,6 +1,7 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = ./cylinder-hex-q2.gen
+  file = ./cylinder-hex-q2.e
+  dim = 3
 []
 
 [Problem]
