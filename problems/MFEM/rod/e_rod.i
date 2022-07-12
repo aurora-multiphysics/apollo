@@ -22,13 +22,20 @@
     type = ParsedFunction
     value = 0.0
   [../]
+  [./tangential_dEdt]
+    type = ParsedVectorFunction
+    value_x = 0.0
+    value_y = 0.0
+    value_z = 0.0
+  [../]
 []
 
 [BCs]
-  [./tangential_dEdt]
+  [./tangential_dEdt_bdr]
     type = MFEMVectorFunctionDirichletBC
     variable = electric_field
     boundary = '1 2 3'
+    function = tangential_dEdt
   [../]
   [./high_terminal]
     type = MFEMFunctionDirichletBC
