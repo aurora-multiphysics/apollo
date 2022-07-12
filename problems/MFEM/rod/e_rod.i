@@ -14,13 +14,15 @@
 [Functions]
   [./potential_high]
     type = ParsedFunction
-    value = (z/abs(z))*cos(2.0*pi*freq*t)
+    value = cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
   [../]
-  [./potential_ground]
+  [./potential_low]
     type = ParsedFunction
-    value = 0.0
+    value = -cos(2.0*pi*freq*t)
+    vars = 'freq'
+    vals = '0.01666667'
   [../]
   [./tangential_dEdt]
     type = ParsedVectorFunction
@@ -43,11 +45,11 @@
     boundary = '1'
     function = potential_high
   [../]
-  [./ground_terminal]
+  [./low_terminal]
     type = MFEMFunctionDirichletBC
     variable = electric_potential
     boundary = '2'
-    function = potential_ground
+    function = potential_low
   [../]
 []
 
