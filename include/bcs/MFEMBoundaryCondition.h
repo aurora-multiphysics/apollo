@@ -2,6 +2,9 @@
 
 #include "GeneralUserObject.h"
 #include "boundary_conditions.hpp"
+#include "materials.hpp"
+
+libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
 
 class MFEMBoundaryCondition : public GeneralUserObject
 {
@@ -15,6 +18,7 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
+  virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties) {}
 
 protected:
   std::vector<BoundaryName> _boundary_names;

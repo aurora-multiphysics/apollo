@@ -53,6 +53,7 @@ MFEMConductor::MFEMConductor(const InputParameters & parameters)
         mfem::ConstantCoefficient(1.0 / _input_thermal_conductivity))
 {
   scalar_property_map["electrical_conductivity"] = &_electrical_conductivity_coeff;
+  scalar_property_map["magnetic_permeability"] = &_permeability_coeff;
   scalar_property_map["thermal_conductivity"] = &_thermal_conductivity_coeff;
   scalar_property_map["inverse_thermal_conductivity"] = &_inverse_thermal_conductivity_coeff;
   scalar_property_map["heat_capacity"] = &_heat_capacity_coeff;
