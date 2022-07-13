@@ -1,5 +1,5 @@
 [Mesh]
-  type = CoupledMFEMMesh
+  type = ExclusiveMFEMMesh
   file = ./cylinder-hex-q2.gen
 []
 
@@ -24,7 +24,7 @@
     vars = 'freq'
     vals = '0.01666667'
   [../]
-  [./tangential_dEdt]
+  [./tangential_E]
     type = ParsedVectorFunction
     value_x = 0.0
     value_y = 0.0
@@ -33,11 +33,11 @@
 []
 
 [BCs]
-  [./tangential_dEdt_bdr]
+  [./tangential_E_bdr]
     type = MFEMVectorFunctionDirichletBC
     variable = electric_field
     boundary = '1 2 3'
-    function = tangential_dEdt
+    function = tangential_E
   [../]
   [./high_terminal]
     type = MFEMFunctionDirichletBC
@@ -56,12 +56,14 @@
 [Materials]
   [./copper]
     type = MFEMConductor
-    electrical_conductivity = 62.83185
+    electrical_conductivity = 5.96e7
+    magnetic_permeability = 1.25663706e-6
     block = 1
   [../]
   [./air]
     type = MFEMConductor
-    electrical_conductivity = 62.83185e-6
+    electrical_conductivity = 1
+    magnetic_permeability = 1.25663706e-6
     block = 2
   [../]
 []
