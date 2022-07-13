@@ -5,6 +5,12 @@
   boundary_id = '1 2 3'
 []
 
+[AuxVariables]
+  [mfemVar]
+  []
+[]
+
+
 [Problem]
   type = MFEMProblem
   formulation = Joule
