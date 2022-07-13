@@ -16,12 +16,12 @@ MFEMConductor::validParams()
       0.0,
       "The electrical_conductivity ($\\sigma$) of the conductor. Defaults to 0.0");
   params.addParam<Real>(
-      "rel_permittivity",
+      "electric_permittivity",
       1.0,
-      "The relative permittivity ($\\varepsilon$) of the conductor. Defaults to 1.0");
-  params.addParam<Real>("rel_permeability",
+      "The electric permittivity ($\\varepsilon$) of the conductor. Defaults to 1.0");
+  params.addParam<Real>("magnetic_permeability",
                         1.0,
-                        "The relative permeability ($\\mu$) of the conductor. Defaults to 1.0");
+                        "The magnetic permeability ($\\mu$) of the conductor. Defaults to 1.0");
   params.addParam<Real>("thermal_conductivity",
                         0.0,
                         "The thermal conductivity ($\\k$) of the conductor. Defaults to 0.0");
@@ -34,17 +34,17 @@ MFEMConductor::MFEMConductor(const InputParameters & parameters)
   : MFEMMaterial(parameters),
     // Get the parameters from the input file
     _input_electrical_conductivity(getParam<Real>("electrical_conductivity")),
-    _input_rel_permittivity(getParam<Real>("rel_permittivity")),
-    _input_rel_permeability(getParam<Real>("rel_permeability")),
+    _input_electric_permittivity(getParam<Real>("electric_permittivity")),
+    _input_magnetic_permeability(getParam<Real>("magnetic_permeability")),
     _input_thermal_conductivity(getParam<Real>("thermal_conductivity")),
     _input_heat_capacity(getParam<Real>("heat_capacity")),
 
     // Create mfem::Coefficients to represent materials
     _electrical_conductivity_coeff(mfem::ConstantCoefficient(_input_electrical_conductivity)),
-    _permittivity_coeff(mfem::ConstantCoefficient(_epsilon0 * _input_rel_permittivity)),
-    _permeability_coeff(mfem::ConstantCoefficient(_mu0 * _input_rel_permeability)),
+    _permittivity_coeff(mfem::ConstantCoefficient(_input_electric_permittivity)),
+    _permeability_coeff(mfem::ConstantCoefficient(_input_magnetic_permeability)),
     _resistivity_coeff(mfem::ConstantCoefficient(1.0 / _input_electrical_conductivity)),
-    _reluctivity_coeff(mfem::ConstantCoefficient(1.0 / (_mu0 * _input_rel_permeability))),
+    _reluctivity_coeff(mfem::ConstantCoefficient(1.0 / (_input_magnetic_permeability))),
 
     _heat_capacity_coeff(mfem::ConstantCoefficient(_input_heat_capacity)),
     _inverse_heat_capacity_coeff(mfem::ConstantCoefficient(1.0 / _input_heat_capacity)),

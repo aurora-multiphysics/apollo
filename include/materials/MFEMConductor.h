@@ -17,8 +17,8 @@ public:
 
 protected:
   const Real & _input_electrical_conductivity;
-  const Real & _input_rel_permittivity;
-  const Real & _input_rel_permeability;
+  const Real & _input_electric_permittivity;
+  const Real & _input_magnetic_permeability;
   const Real & _input_thermal_conductivity;
   const Real & _input_heat_capacity;
 
