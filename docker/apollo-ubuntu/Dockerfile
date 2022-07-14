@@ -48,7 +48,9 @@ RUN cd /$WORKDIR && \
 
 # Install METIS 5.1.0
 RUN cd /$WORKDIR && \
-    curl -O http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz && \
+    git clone https://github.com/mfem/tpls.git && \
+    mv tpls/metis-5.1.0.tar.gz ./ && \
+    rm -rf tpls/ && \
     tar -zxvf metis-* && \
     cd metis-5.1.0 && \
     make config shared=1 && \

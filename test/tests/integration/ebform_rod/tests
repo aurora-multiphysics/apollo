@@ -1,0 +1,8 @@
+[Tests]
+  design = 'syntax/Variables/index.md'
+  [./EBFormRod]
+    type = 'RunApp'
+    input = 'rod.i'
+    requirement = 'Apollo shall have the ability to run the EBForm rod example from Hephaestus.'
+  []
+[]
