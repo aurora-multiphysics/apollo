@@ -1,5 +1,5 @@
 [Mesh]
-  type = CoupledMFEMMesh
+  type = ExclusiveMFEMMesh
   file = ./cylinder-hex-q2.gen
 []
 
@@ -23,14 +23,17 @@
 [BCs]
   [./tangential_dEdt]
     type = MFEMBoundaryCondition
+    variable = tangential_dEdt
     boundary = '1 2 3'
   [../]
   [./thermal_flux]
     type = MFEMBoundaryCondition
+    variable = thermal_flux
     boundary = '1 2'
   []
   [./electric_potential]
     type = MFEMFunctionDirichletBC
+    variable = electric_potential
     boundary = '1 2'
     function = p_bc
   [../]

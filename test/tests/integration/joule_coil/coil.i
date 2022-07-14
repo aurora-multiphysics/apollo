@@ -1,5 +1,5 @@
 [Mesh]
-  type = CoupledMFEMMesh
+  type = ExclusiveMFEMMesh
   file = ./coil.gen
 []
 
@@ -23,14 +23,17 @@
 [BCs]
   [./tangential_dEdt]
     type = MFEMBoundaryCondition
+    variable = tangential_dEdt
     boundary = '1 2 3 4'
   [../]
   [./thermal_flux]
     type = MFEMBoundaryCondition
+    variable = thermal_flux
     boundary = '1 3'
   []
   [./electric_potential]
     type = MFEMFunctionDirichletBC
+    variable = electric_potential
     boundary = '1 2 3'
     function = p_bc
   [../]
@@ -65,8 +68,8 @@
 []
 
 [Outputs]
-  [datacollection]
+  [VisItDataCollection]
     type = MFEMVisItDataCollection
-    file_base = Joule
+    file_base = OutputData/JouleCoilVisIt
   []
 []
