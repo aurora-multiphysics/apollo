@@ -86,7 +86,7 @@ protected:
   int _order;
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _domain_properties;
-  hephaestus::Executioner _executioner;
+  hephaestus::InputParameters _exec_params;
   hephaestus::AuxVarMap _var_map;
   hephaestus::Outputs _outputs;
 };
