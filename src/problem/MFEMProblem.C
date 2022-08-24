@@ -26,10 +26,12 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _order(getParam<int>("order")),
     _bc_maps(),
     _domain_properties(),
-    _executioner(
-        std::string("Transient"), getParam<double>("dt"), 0.0, getParam<double>("end_time")),
+    _exec_params(),
     _outputs()
 {
+  _exec_params.SetParam("TimeStep", float(getParam<double>("dt")));
+  _exec_params.SetParam("StartTime", float(0.0));
+  _exec_params.SetParam("EndTime", float(getParam<double>("end_time")));
 }
 
 void
@@ -44,12 +46,26 @@ MFEMProblem::externalSolve()
         _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  hephaestus::Inputs inputs(
-      mfem_mesh, _formulation, _order, _bc_maps, _domain_properties, _executioner, _outputs);
+  hephaestus::Variables _variables;
+  hephaestus::AuxKernels _auxkernels;
+  hephaestus::Postprocessors _postprocessors;
+  hephaestus::TransientExecutioner * executioner =
+      new hephaestus::TransientExecutioner(_exec_params);
 
-  std::vector<char *> argv;
+  hephaestus::InputParameters params;
+  params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mfem_mesh));
+  params.SetParam("Executioner", executioner);
+  params.SetParam("Order", 2);
+  params.SetParam("BoundaryConditions", _bc_maps);
+  params.SetParam("DomainProperties", _domain_properties);
+  params.SetParam("Variables", _variables);
+  params.SetParam("AuxKernels", _auxkernels);
+  params.SetParam("Postprocessors", _postprocessors);
+  params.SetParam("Outputs", _outputs);
+  params.SetParam("FormulationName", _formulation);
+
   std::cout << "Launching MFEM solve\n\n" << std::endl;
-  run_hephaestus(argv.size() - 1, argv.data(), inputs);
+  executioner->Solve(params);
 }
 
 void
