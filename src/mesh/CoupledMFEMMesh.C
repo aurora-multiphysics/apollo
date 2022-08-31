@@ -190,6 +190,7 @@ void CoupledMFEMMesh::getElementInfo() {
 }
 
 void CoupledMFEMMesh::createMFEMMesh() {
+
   //These are all maps that enable us to get the vertices on 
   //one side of the mesh using the indexing system of [side number][node of that side]
   const int sideMapTri3[3][2] = {
@@ -245,18 +246,26 @@ void CoupledMFEMMesh::createMFEMMesh() {
   const int mfemToGenesisTri6[6] = {1, 2, 3, 4, 5, 6};
   const int mfemToGenesisQuad9[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
+
   buildBndElemList();
 
+  //Retrieve information about the elements used within the mesh
   getElementInfo();
 
+  //Elem_ss and side_ss store information about which elements are in each sideset, and which sides of those elements
+  //are contained within the sideset
   num_side_sets = getNumSidesets();
   int** elem_ss = new int*[num_side_sets];
   int** side_ss = new int*[num_side_sets];
 
+  //Populate the elem_ss and side_ss
   getBdrLists(elem_ss, side_ss);
 
+  //block_ids
   std::set<subdomain_id_type> block_ids;
   getMesh().subdomain_ids(block_ids);
+
+  //num_el_blk stores the number of blocks in the mesh
   int num_el_blk = (int)(getMesh().n_subdomains());
   std::map<subdomain_id_type, std::string> id_to_name_map =
       getMesh().get_subdomain_name_map();
@@ -304,7 +313,8 @@ void CoupledMFEMMesh::createMFEMMesh() {
       elem_count++;
     }
   }
-  
+
+  //
   start_of_block[0] = 0;
   for (int i = 1; i < (int)num_el_blk + 1; i++) {
     start_of_block[i] = start_of_block[i - 1] + num_el_in_blk[i - 1];
@@ -330,7 +340,6 @@ void CoupledMFEMMesh::createMFEMMesh() {
   // OK at this point uniqueVertexID contains a list of all the nodes that are
   // actually used by the mesh, 1-based, and sorted. We need to invert this
   // list, the inverse is a map
-
   std::map<int, int> cubitToMFEMVertMap;
   for (int i = 0; i < (int)uniqueVertexID.size(); i++) {
     cubitToMFEMVertMap[uniqueVertexID[i]] = i + 1;
@@ -340,6 +349,8 @@ void CoupledMFEMMesh::createMFEMMesh() {
   std::vector<double> coordy(nNodes(), 0);
   std::vector<double> coordz(nNodes(), 0);
   int node_counter = 0;
+
+  //This could be problematic if localNodesBegin and End don't access nodes in ascending node id
   for (auto i = localNodesBegin(); i != localNodesEnd(); i++) {
     coordx[node_counter] = (**i)(0);
     coordy[node_counter] = (**i)(1);
@@ -347,15 +358,16 @@ void CoupledMFEMMesh::createMFEMMesh() {
     node_counter++;
   }
   
+  //Create MFEM mesh
   int num_elem = nElem();
-  mfem_mesh = new MFEMMesh(num_elem, coordx, coordy, coordz, cubitToMFEMVertMap, uniqueVertexID,
+  mfem_mesh = std::make_shared<MFEMMesh>(num_elem, coordx, coordy, coordz, cubitToMFEMVertMap, uniqueVertexID,
       libmesh_element_type, libmesh_face_type, elem_blk, num_el_blk,
       num_node_per_el, num_el_in_blk, num_element_linear_nodes, num_face_nodes,
       num_face_linear_nodes, num_side_sets, num_sides_in_ss, ss_node_id, ebprop,
       ssprop, 3, start_of_block);
 
 
-  
+  //Clear up
   delete [] elem_ss;
   delete [] side_ss;
   delete [] num_el_in_blk;

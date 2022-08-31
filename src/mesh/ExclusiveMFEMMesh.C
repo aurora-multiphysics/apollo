@@ -28,7 +28,7 @@ ExclusiveMFEMMesh::~ExclusiveMFEMMesh()
 
 void ExclusiveMFEMMesh::buildMesh() { 
   buildDummyMesh();
-  mfem_mesh = new MFEMMesh(getFileName());
+  mfem_mesh = std::make_shared<MFEMMesh>(getFileName());
 }
 
 void ExclusiveMFEMMesh::buildDummyMesh() {

@@ -91,7 +91,7 @@ MFEMProblem::addAuxVariable(const std::string& var_type,
   // End of standard implementation
 
   // New code to create MFEM grid functions
-  mfem::Mesh* mfem_mesh = mesh().mfem_mesh;
+  mfem::Mesh* mfem_mesh = (mesh().mfem_mesh).get();
   mfem::FiniteElementCollection* fec = fecGet(var_family);
   mfem::FiniteElementSpace fespace(mfem_mesh, fec);
   hephaestus::AuxiliaryVariable* var = new hephaestus::AuxiliaryVariable(
@@ -134,7 +134,7 @@ MFEMProblem::setMOOSEVarData(hephaestus::AuxiliaryVariable* var,
 }
 
 mfem::FiniteElementCollection* MFEMProblem::fecGet(std::string var_fam) {
-  mfem::Mesh* mfem_mesh = mesh().mfem_mesh;
+  mfem::Mesh* mfem_mesh = (mesh().mfem_mesh).get();
   mfem::FiniteElementCollection* fecPtr;
   std::cout << "Variable family = " << var_fam << std::endl;
 
