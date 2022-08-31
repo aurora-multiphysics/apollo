@@ -354,9 +354,20 @@ void CoupledMFEMMesh::createMFEMMesh() {
       num_face_linear_nodes, num_side_sets, num_sides_in_ss, ss_node_id, ebprop,
       ssprop, 3, start_of_block);
 
-  delete[] elem_ss;
-  delete[] side_ss;
-  delete[] ss_node_id;
+
+  
+  delete [] elem_ss;
+  delete [] side_ss;
+  delete [] num_el_in_blk;
+  for (int i = 0; i < (int) num_side_sets; i++)
+  {
+      delete [] ss_node_id[i];
+  }
+  delete [] ss_node_id;
+  delete [] ebprop;
+  delete [] ssprop;
+  delete [] start_of_block;
+  
 }
 
 void CoupledMFEMMesh::create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id)
