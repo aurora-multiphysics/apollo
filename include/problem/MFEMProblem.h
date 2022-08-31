@@ -6,6 +6,7 @@
 #include "ExclusiveMFEMMesh.h"
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
+#include "MFEMVariable.h"
 #include "MFEMBoundaryCondition.h"
 #include "MFEMDataCollection.h"
 #include "Function.h"
@@ -64,14 +65,14 @@ public:
    * the other. For example if you solve for temperature in MOOSE, you would use setMFEMVarData to
    * get this temperature data into an MFEM grid function.
    */
-  void setMFEMVarData(EquationSystems & esRef, hephaestus::AuxiliaryVariable * var);
+  void setMFEMVarData(EquationSystems & esRef, std::string var_name);
   /**
    * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data
    * from one of the variable types (either Moose AuxVar or MFEM grid function), and transfer it to
    * the other. For example if you solve for temperature in MOOSE, you would use setMFEMVarData to
    * get this temperature data into an MFEM grid function.
    */
-  void setMOOSEVarData(hephaestus::AuxiliaryVariable * var, EquationSystems & esRef);
+  void setMOOSEVarData(std::string var_name, EquationSystems & esRef);
 
   /**
    * Method used to get an mfem FEC depending on the variable family specified in the input file.
@@ -86,7 +87,9 @@ protected:
   int _order;
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _domain_properties;
+  hephaestus::Variables _variables;
+  hephaestus::AuxKernels _auxkernels;
+  hephaestus::Postprocessors _postprocessors;
   hephaestus::InputParameters _exec_params;
-  hephaestus::AuxVarMap _var_map;
   hephaestus::Outputs _outputs;
 };

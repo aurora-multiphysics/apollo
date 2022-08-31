@@ -29,9 +29,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _exec_params(),
     _outputs()
 {
-  _exec_params.SetParam("TimeStep", float(getParam<double>("dt")));
-  _exec_params.SetParam("StartTime", float(0.0));
-  _exec_params.SetParam("EndTime", float(getParam<double>("end_time")));
 }
 
 void
@@ -46,40 +43,36 @@ MFEMProblem::externalSolve()
         _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  if (_formulation == "Joule")
-  {
-    // Legacy support for running Joule solver
-    hephaestus::Executioner _executioner(
-        std::string("Transient"), getParam<double>("dt"), 0.0, getParam<double>("end_time"));
-    hephaestus::Inputs inputs(
-        mfem_mesh, _formulation, _order, _bc_maps, _domain_properties, _executioner, _outputs);
-    std::vector<char *> argv;
-    std::cout << "Launching MFEM solve\n\n" << std::endl;
-    joule_solve(argv.size() - 1, argv.data(), inputs);
-  }
-  else
-  {
-    hephaestus::Variables _variables;
-    hephaestus::AuxKernels _auxkernels;
-    hephaestus::Postprocessors _postprocessors;
-    hephaestus::TransientExecutioner * executioner =
-        new hephaestus::TransientExecutioner(_exec_params);
+  hephaestus::Inputs inputs(
+      mfem_mesh, _formulation, _order, _bc_maps, _domain_properties, _executioner, _outputs);
 
-    hephaestus::InputParameters params;
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mfem_mesh));
-    params.SetParam("Executioner", executioner);
-    params.SetParam("Order", 2);
-    params.SetParam("BoundaryConditions", _bc_maps);
-    params.SetParam("DomainProperties", _domain_properties);
-    params.SetParam("Variables", _variables);
-    params.SetParam("AuxKernels", _auxkernels);
-    params.SetParam("Postprocessors", _postprocessors);
-    params.SetParam("Outputs", _outputs);
-    params.SetParam("FormulationName", _formulation);
+  std::vector<char *> argv;
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  joule_solve(argv.size() - 1, argv.data(), inputs);
+}
+else
+{
+  hephaestus::Variables _variables;
+  hephaestus::AuxKernels _auxkernels;
+  hephaestus::Postprocessors _postprocessors;
+  hephaestus::TransientExecutioner * executioner =
+      new hephaestus::TransientExecutioner(_exec_params);
 
-    std::cout << "Launching MFEM solve\n\n" << std::endl;
-    executioner->Solve(params);
-  }
+  hephaestus::InputParameters params;
+  params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mfem_mesh));
+  params.SetParam("Executioner", executioner);
+  params.SetParam("Order", 2);
+  params.SetParam("BoundaryConditions", _bc_maps);
+  params.SetParam("DomainProperties", _domain_properties);
+  params.SetParam("Variables", _variables);
+  params.SetParam("AuxKernels", _auxkernels);
+  params.SetParam("Postprocessors", _postprocessors);
+  params.SetParam("Outputs", _outputs);
+  params.SetParam("FormulationName", _formulation);
+
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  executioner->Solve(params);
+}
 }
 
 void
@@ -123,12 +116,21 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
   // End of standard implementation
 
   // New code to create MFEM grid functions
-  mfem::Mesh* mfem_mesh = (mesh().mfem_mesh).get();
-  mfem::FiniteElementCollection * fec = fecGet(var_family);
-  mfem::FiniteElementSpace fespace(mfem_mesh, fec);
-  hephaestus::AuxiliaryVariable * var =
-      new hephaestus::AuxiliaryVariable(var_name, var_family, (int)var_order, fespace);
-  _var_map.insert(std::pair<std::string, hephaestus::AuxiliaryVariable *>(var_name, var));
+  // mfem::Mesh* mfem_mesh = (mesh().mfem_mesh).get();
+  // mfem::FiniteElementCollection * fec = fecGet(var_family);
+  // mfem::FiniteElementSpace fespace(mfem_mesh, fec);
+
+  InputParameters params = _factory.getValidParams(var_type);
+
+  FEProblemBase::addUserObject(var_type, var_name, parameters);
+  MFEMVariable & var(getUserObject<MFEMVariable>(var_name));
+
+  var.mfem_params.SetParam("VariableName", var_name);
+  _variables.AddVariable(var.mfem_params);
+
+  // hephaestus::AuxiliaryVariable * var =
+  //     new hephaestus::AuxiliaryVariable(var_name, var_family, (int)var_order, fespace);
+  // _var_map.insert(std::pair<std::string, hephaestus::AuxiliaryVariable *>(var_name, var));
 }
 
 void
@@ -166,7 +168,7 @@ MFEMProblem::setMOOSEVarData(hephaestus::AuxiliaryVariable * var, EquationSystem
 mfem::FiniteElementCollection *
 MFEMProblem::fecGet(std::string var_fam)
 {
-  mfem::Mesh* mfem_mesh = (mesh().mfem_mesh).get();
+  mfem::Mesh * mfem_mesh = mesh().mfem_mesh;
   mfem::FiniteElementCollection * fecPtr;
   std::cout << "Variable family = " << var_fam << std::endl;
 
