@@ -209,6 +209,7 @@ MFEMMesh::MFEMMesh(
       }
     }
   }
+  //Finalize mesh method is needed to fully finish constructing the mesh
   FinalizeMesh();
   // this->Save("test.mesh");
   // std::ofstream mesh_ofs("test.vtk");

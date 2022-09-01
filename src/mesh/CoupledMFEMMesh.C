@@ -323,7 +323,8 @@ void CoupledMFEMMesh::createMFEMMesh() {
     start_of_block[i] = start_of_block[i - 1] + num_el_in_blk[i - 1];
   }
 
-  //ss_node_id
+  // ss_node_id stores all the id's of all the sides in a sideset
+  // for example, ss_node_id[0][0] would access the first node id in the first sideset
   int** ss_node_id = new int*[num_side_sets];
   create_ss_node_id(elem_ss, side_ss, ss_node_id);  
 
