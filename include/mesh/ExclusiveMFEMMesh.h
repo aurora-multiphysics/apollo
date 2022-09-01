@@ -10,6 +10,7 @@
 #pragma once
 #include "FileMesh.h"
 #include "MFEMMesh.h"
+#include "memory"
 #include "libmesh/elem.h"
 #include "libmesh/enum_io_package.h"
 #include "libmesh/equation_systems.h"
@@ -42,5 +43,5 @@ class ExclusiveMFEMMesh : public FileMesh {
   void buildDummyMesh();
 
   // The object holding our MFEM mesh. Needs renaming as to avoid confusion
-  MFEMMesh* mfem_mesh;
+  std::shared_ptr<MFEMMesh> mfem_mesh;
 };

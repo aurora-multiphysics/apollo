@@ -9,6 +9,8 @@
 
 #include "CoupledMFEMMesh.h"
 #include "libmesh/face_quad4.h"
+#include <chrono>
+#include <unistd.h>
 
 registerMooseObject("ApolloApp", CoupledMFEMMesh);
 
@@ -22,84 +24,398 @@ CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters& parameters)
 {
 }
 
+CoupledMFEMMesh::~CoupledMFEMMesh() {}
+
 void CoupledMFEMMesh::buildMesh() {
-  _console << "Creating the MOOSE mesh" << std::endl;
-  buildRealMesh();
-}
-
-void CoupledMFEMMesh::buildRealMesh() {
-  mfem_mesh = new MFEMMesh(getFileName());
-  mfem_mesh->get_connectivity_data();
-  mfem_mesh->get_mesh_nodes();
-  mfem_mesh->get_cell_type();
-
-  libmesh_assert_equal_to(_mesh->processor_id(), 0);
-
-  for (unsigned int i = 0; i < (mfem_mesh->pointsVec.size() / 3); i++) {
-    double pnt[3];
-    pnt[0] = mfem_mesh->pointsVec[i * 3];
-    pnt[1] = mfem_mesh->pointsVec[(i * 3) + 1];
-    pnt[2] = mfem_mesh->pointsVec[(i * 3) + 2];
-    Point xyz(pnt[0], pnt[1], pnt[2]);
-
-    _mesh->add_point(xyz, i);
-  }
-
-  int vertCounter = 0;
-  for (unsigned int i = 0; i < mfem_mesh->cellTypeVec.size(); i++) {
-    ElemType libmesh_elem_type =
-        (ElemType)map_elems_vtk_to_libmesh(mfem_mesh->cellTypeVec[i]);
-    Elem* elem = Elem::build(libmesh_elem_type).release();
-
-    for (unsigned int j = 0; j < mfem_mesh->verticesVec[i]; j++) {
-      elem->set_node(j) =
-          _mesh->node_ptr(mfem_mesh->connectivityVec[vertCounter + j]);
-    }
-
-    vertCounter += mfem_mesh->verticesVec[i];
-
-    std::vector<dof_id_type> conn;
-    elem->connectivity(0, VTK, conn);
-
-    // Below comment from original libmesh implementation, not quite sure what
-    // it means right now, but it works ¯\_(ツ)_/¯.
-    // Needs further investigation
-
-    // then reshuffle the nodes according to the connectivity, this
-    // two-time-assign would evade the definition of the vtk_mapping
-    for (unsigned int j = 0, n_conn = cast_int<unsigned int>(conn.size());
-         j != n_conn; ++j) {
-      elem->set_node(j) = _mesh->node_ptr(conn[j]);
-    }
-
-    elem->set_id(i);
-
-    _mesh->add_elem(elem);
-  }  // end loop over VTK cells
-  _mesh->set_mesh_dimension(_dim);
-  _mesh->prepare_for_use();
-}
-
-int CoupledMFEMMesh::map_elems_vtk_to_libmesh(int VTKElemType) {
-  std::map<int, int> VTKtolibElemMap;
-  VTKtolibElemMap[1] = 0;
-  VTKtolibElemMap[21] = 1;
-  VTKtolibElemMap[5] = 3;
-  VTKtolibElemMap[22] = 4;
-  VTKtolibElemMap[9] = 5;
-  VTKtolibElemMap[23] = 6;
-  VTKtolibElemMap[10] = 8;
-  VTKtolibElemMap[24] = 9;
-  VTKtolibElemMap[12] = 10;
-  VTKtolibElemMap[25] = 11;
-  VTKtolibElemMap[29] = 12;
-  VTKtolibElemMap[13] = 13;
-  VTKtolibElemMap[26] = 14;
-  VTKtolibElemMap[32] = 15;
-  VTKtolibElemMap[14] = 16;
-  return VTKtolibElemMap[VTKElemType];
+  //Use method from file mesh to build MOOSE mesh from exodus file
+  FileMesh::buildMesh();
+  //Create MFEM Mesh
+  std::cout << "Checkpoint 1: MOOSE mesh created" << std::endl;
+  
+  createMFEMMesh();
+  
 }
 
 std::unique_ptr<MooseMesh> CoupledMFEMMesh::safeClone() const {
   return std::make_unique<CoupledMFEMMesh>(*this);
+}
+
+int CoupledMFEMMesh::getNumSidesets() {
+  libMesh::BoundaryInfo& bdInf = getMesh().get_boundary_info();
+  const std::set<boundary_id_type>& ss = bdInf.get_side_boundary_ids();
+  return ss.size();
+}
+
+void CoupledMFEMMesh::getBdrLists(int** elem_ss, int** side_ss) {
+
+  bdrElems = _bnd_elems.size();
+  
+  std::vector<dof_id_type> element_id_list(bdrElems, 0);
+  std::vector<unsigned short int> side_list(bdrElems, 0);
+  std::vector<BoundaryID> bc_id_list(bdrElems, 0);
+  std::vector<int> sides_in_ss_holder(num_side_sets, 0);
+
+  for (int i = 0; i < _bnd_elems.size(); i++) {
+    element_id_list[i] = _bnd_elems[i]->_elem->id();
+    side_list[i] = _bnd_elems[i]->_side;
+    bc_id_list[i] = _bnd_elems[i]->_bnd_id;
+  }
+
+  for (int i = 0; i < bc_id_list.size(); i++) {
+    sides_in_ss_holder[bc_id_list[i] - 1]++;
+  }
+
+  num_sides_in_ss = sides_in_ss_holder;
+
+  for (int i = 0; i < num_side_sets; i++) {
+    elem_ss[i] = new int[num_sides_in_ss[i]];
+    side_ss[i] = new int[num_sides_in_ss[i]];
+  }
+
+  for (int bc_id = 0; bc_id <= num_side_sets; bc_id++) {
+    int counter = 0;
+    for (int side = 0; side < bdrElems; side++) {
+      if ((bc_id + 1) == bc_id_list[side]) {
+        elem_ss[bc_id][counter] = element_id_list[side];
+        side_ss[bc_id][counter] = side_list[side];
+        counter++;
+      }
+    }
+  }
+}
+
+void CoupledMFEMMesh::getElementInfo() {
+  const Elem* elementPtr = elemPtr(0);
+  num_node_per_el = elementPtr->n_nodes();
+
+  if (_dim == 2) {
+    switch (num_node_per_el) {
+      case (3): {
+        libmesh_element_type = ELEMENT_TRI3;
+        libmesh_face_type = FACE_EDGE2;
+        num_element_linear_nodes = 3;
+        break;
+      }
+      case (6): {
+        libmesh_element_type = ELEMENT_TRI6;
+        libmesh_face_type = FACE_EDGE3;
+        num_element_linear_nodes = 3;
+        break;
+      }
+      case (4): {
+        libmesh_element_type = ELEMENT_QUAD4;
+        libmesh_face_type = FACE_EDGE2;
+        num_element_linear_nodes = 4;
+        break;
+      }
+      case (9): {
+        libmesh_element_type = ELEMENT_QUAD9;
+        libmesh_face_type = FACE_EDGE3;
+        num_element_linear_nodes = 4;
+        break;
+      }
+      default: {
+        MFEM_ABORT("Don't know what to do with a " << num_node_per_el
+                                                   << " node 2D element\n");
+      }
+    }
+  } 
+  else if (_dim == 3) {
+    switch (num_node_per_el) {
+      case (4): {
+        libmesh_element_type = ELEMENT_TET4;
+        libmesh_face_type = FACE_TRI3;
+        num_element_linear_nodes = 4;
+        break;
+      }
+      case (10): {
+        libmesh_element_type = ELEMENT_TET10;
+        libmesh_face_type = FACE_TRI6;
+        num_element_linear_nodes = 4;
+        break;
+      }
+      case (8): {
+        libmesh_element_type = ELEMENT_HEX8;
+        libmesh_face_type = FACE_QUAD4;
+        num_element_linear_nodes = 8;
+        break;
+      }
+      case (27): {
+        libmesh_element_type = ELEMENT_HEX27;
+        libmesh_face_type = FACE_QUAD9;
+        num_element_linear_nodes = 8;
+        break;
+      }
+      default: {
+        MFEM_ABORT("Don't know what to do with a " << num_node_per_el
+                                                   << " node 3D element\n");
+      }
+    }
+  }
+
+  switch (libmesh_face_type) {
+    case (FACE_EDGE2): {
+      num_face_nodes = 2;
+      num_face_linear_nodes = 2;
+      break;
+    }
+    case (FACE_EDGE3): {
+      num_face_nodes = 3;
+      num_face_linear_nodes = 2;
+      break;
+    }
+    case (FACE_TRI3): {
+      num_face_nodes = 3;
+      num_face_linear_nodes = 3;
+      break;
+    }
+    case (FACE_TRI6): {
+      num_face_nodes = 6;
+      num_face_linear_nodes = 3;
+      break;
+    }
+    case (FACE_QUAD4): {
+      num_face_nodes = 4;
+      num_face_linear_nodes = 4;
+      break;
+    }
+    case (FACE_QUAD9): {
+      num_face_nodes = 9;
+      num_face_linear_nodes = 4;
+      break;
+    }
+  }
+}
+
+void CoupledMFEMMesh::createMFEMMesh() {
+
+
+  auto start = std::chrono::steady_clock::now();
+  //These are all maps that enable us to get the vertices on 
+  //one side of the mesh using the indexing system of [side number][node of that side]
+  const int sideMapTri3[3][2] = {
+      {1, 2},
+      {2, 3},
+      {3, 1},
+  };
+
+  const int sideMapQuad4[4][2] = {
+      {1, 2},
+      {2, 3},
+      {3, 4},
+      {4, 1},
+  };
+
+  const int sideMapTri6[3][3] = {
+      {1, 2, 4},
+      {2, 3, 5},
+      {3, 1, 6},
+  };
+
+  const int sideMapQuad9[4][3] = {
+      {1, 2, 5},
+      {2, 3, 6},
+      {3, 4, 7},
+      {4, 1, 8},
+  };
+
+  const int sideMapTet4[4][3] = {{1, 3, 2}, {1, 2, 4}, {2, 3, 4}, {1, 4, 3}};
+
+  const int sideMapTet10[4][6] = {{1, 2, 4, 5, 9, 8},
+                                  {2, 3, 4, 6, 10, 9},
+                                  {1, 4, 3, 8, 10, 7},
+                                  {1, 3, 2, 7, 6, 5}};
+
+  const int sideMapHex8[6][4] = {{1, 2, 6, 5}, {2, 3, 7, 6}, {4, 3, 7, 8},
+                                 {1, 4, 8, 5}, {1, 4, 3, 2}, {5, 8, 7, 6}};
+
+  const int sideMapHex27[6][9] = {
+      {1, 2, 6, 5, 9, 14, 17, 13, 26},  {2, 3, 7, 6, 10, 15, 18, 14, 25},
+      {4, 3, 7, 8, 11, 15, 19, 16, 27}, {1, 4, 8, 5, 12, 16, 20, 13, 24},
+      {1, 4, 3, 2, 12, 11, 10, 9, 22},  {5, 8, 7, 6, 20, 19, 18, 17, 23}};
+
+  const int mfemToGenesisTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+
+  //                                  1,2,3,4,5,6,7,8,9,10,11,
+  const int mfemToGenesisHex27[27] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                                      // 12,13,14,15,16,17,18,19
+                                      12, 17, 18, 19, 20, 13, 14, 15,
+                                      // 20,21,22,23,24,25,26,27
+                                      16, 22, 26, 25, 27, 24, 23, 21};
+
+  const int mfemToGenesisTri6[6] = {1, 2, 3, 4, 5, 6};
+  const int mfemToGenesisQuad9[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+
+  buildBndElemList();
+
+  //Retrieve information about the elements used within the mesh
+  getElementInfo();
+
+  //Elem_ss and side_ss store information about which elements are in each sideset, and which sides of those elements
+  //are contained within the sideset
+  num_side_sets = getNumSidesets();
+  int** elem_ss = new int*[num_side_sets];
+  int** side_ss = new int*[num_side_sets];
+
+  //Populate the elem_ss and side_ss
+  getBdrLists(elem_ss, side_ss);
+
+  //block_ids
+  std::set<subdomain_id_type> block_ids;
+  getMesh().subdomain_ids(block_ids);
+
+  //num_el_blk stores the number of blocks in the mesh
+  int num_el_blk = (int)(getMesh().n_subdomains());
+  std::map<subdomain_id_type, std::string> id_to_name_map =
+      getMesh().get_subdomain_name_map();
+
+  size_t* num_el_in_blk = new size_t[num_el_blk];
+  int* start_of_block = new int[num_el_blk + 1];
+
+  int* ebprop = new int[num_el_blk];
+  int* ssprop = new int[num_side_sets];
+
+  for (int i = 0; i < num_el_blk; i++) {
+    ebprop[i] = i + 1;
+  }
+  for (int i = 0; i < num_side_sets; i++) {
+    ssprop[i] = i + 1;
+  }
+  
+  //Loops to correctly set num_el_in_blk, which, as you might expect, stores the
+  // number of elements in each block
+  for (int block : block_ids) {
+    int num_el_in_block_counter = 1;
+    for (libMesh::MeshBase::element_iterator el_ptr =
+             getMesh().active_subdomain_elements_begin(block);
+         el_ptr != getMesh().active_subdomain_elements_end(block); el_ptr++) {
+      num_el_in_blk[block - 1] = num_el_in_block_counter++;
+      
+    }
+  }
+
+  // elem_blk is a 2D array that stores all the nodes of all the elements in all
+  // the blocks Indexing is done as so, elem_blk[block_id][node]
+  int** elem_blk = new int*[num_el_blk];
+  for (int i = 0; i < (int)num_el_blk; i++) {
+    elem_blk[i] = new int[num_el_in_blk[i] * num_node_per_el];
+  }
+
+  // Here we are setting all the values in elem_blk
+  for (int block : block_ids) {
+    int elem_count = 0;
+    for (libMesh::MeshBase::element_iterator el_ptr =
+             getMesh().active_subdomain_elements_begin(block);
+         el_ptr != getMesh().active_subdomain_elements_end(block); el_ptr++) {
+      for (int el_nodes = 0; el_nodes < num_node_per_el; el_nodes++) {
+        elem_blk[block - 1][(elem_count * num_node_per_el) + el_nodes] =
+            (*el_ptr)->node_id(el_nodes);
+      }
+      elem_count++;
+    }
+  }
+
+  //start_of_block is just an array of ints that represent what the first element id of
+  // each block is
+  start_of_block[0] = 0;
+  for (int i = 1; i < (int)num_el_blk + 1; i++) {
+    start_of_block[i] = start_of_block[i - 1] + num_el_in_blk[i - 1];
+  }
+
+  // ss_node_id stores all the id's of all the sides in a sideset
+  // for example, ss_node_id[0][0] would access the first node id in the first sideset
+  int** ss_node_id = new int*[num_side_sets];
+  create_ss_node_id(elem_ss, side_ss, ss_node_id);  
+
+  std::vector<int> uniqueVertexID;
+  for (int iblk = 0; iblk < (int)num_el_blk; iblk++) {
+    for (int i = 0; i < (int)num_el_in_blk[iblk]; i++) {
+      for (int j = 0; j < num_element_linear_nodes; j++) {
+        uniqueVertexID.push_back(1 + elem_blk[iblk][i * num_node_per_el + j]);
+      }
+    }
+  }
+
+  //Setting map 
+  std::sort(uniqueVertexID.begin(), uniqueVertexID.end());
+  std::vector<int>::iterator newEnd;
+  newEnd = std::unique(uniqueVertexID.begin(), uniqueVertexID.end());
+  uniqueVertexID.resize(std::distance(uniqueVertexID.begin(), newEnd));
+
+  // OK at this point uniqueVertexID contains a list of all the nodes that are
+  // actually used by the mesh, 1-based, and sorted. We need to invert this
+  // list, the inverse is a map
+  std::map<int, int> cubitToMFEMVertMap;
+  for (int i = 0; i < (int)uniqueVertexID.size(); i++) {
+    cubitToMFEMVertMap[uniqueVertexID[i]] = i;
+  }
+
+  // for (auto& [key, value] : cubitToMFEMVertMap) {
+  //   // value -= 1;
+  //   std::cout << '[' << key << "] = " << value << "; " << std::endl;
+  // }
+
+  
+
+  std::vector<double> coordx(nNodes(), 0);
+  std::vector<double> coordy(nNodes(), 0);
+  std::vector<double> coordz(nNodes(), 0);
+  int node_counter = 0;
+
+  // Populating coord data structures to hold all the node coorindates which are needed to create the MFEM mesh
+  //This could be problematic if localNodesBegin and End don't access nodes in ascending node id, but this never seems to happen
+  for (auto i = localNodesBegin(); i != localNodesEnd(); i++) {
+    coordx[node_counter] = (**i)(0);
+    coordy[node_counter] = (**i)(1);
+    coordz[node_counter] = (**i)(2);
+    node_counter++;
+  }
+  
+  //Number of elements in the mesh
+  int num_elem = nElem();
+
+  //Create MFEM mesh using this extremely long but necessary constructor 
+  mfem_mesh = std::make_shared<MFEMMesh>(num_elem, coordx, coordy, coordz, cubitToMFEMVertMap, uniqueVertexID,
+      libmesh_element_type, libmesh_face_type, elem_blk, num_el_blk,
+      num_node_per_el, num_el_in_blk, num_element_linear_nodes, num_face_nodes,
+      num_face_linear_nodes, num_side_sets, num_sides_in_ss, ss_node_id, ebprop,
+      ssprop, 3, start_of_block);
+
+
+  //Clear up, preventing memory leaks
+  delete [] elem_ss;
+  delete [] side_ss;
+  delete [] num_el_in_blk;
+  for (int i = 0; i < (int) num_side_sets; i++)
+  {
+      delete [] ss_node_id[i];
+  }
+  delete [] ss_node_id;
+  delete [] ebprop;
+  delete [] ssprop;
+  delete [] start_of_block;
+
+
+  auto end = std::chrono::steady_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  std::cout << "Time taken for MFEM mesh creation = " << elapsed << std::endl;
+  
+}
+
+void CoupledMFEMMesh::create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id)
+{
+  for (int i = 0; i < (int)num_side_sets; i++) { 
+    ss_node_id[i] = new int[num_sides_in_ss[i] * num_face_nodes];
+    for (int j = 0; j < (int)num_sides_in_ss[i]; j++) {
+      int glob_ind = elem_ss[i][j];
+      int side = side_ss[i][j];
+      Elem* elem = elemPtr(glob_ind);
+      std::vector<unsigned int> nodes = elem->nodes_on_side(side);
+      for(int k = 0; k<num_face_nodes; k++)
+      {
+        ss_node_id[i][j * num_face_nodes + k] = elem->node_id(nodes[k]);
+      }
+    }
+  }  
 }
