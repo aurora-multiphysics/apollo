@@ -1,0 +1,69 @@
+{
+  "dsets": {
+    "main": {
+      "cycle": 1,
+      "domains": 1,
+      "fields": {
+        "B": {
+          "path": "JouleRodVisIt_000001/B.%06d",
+          "tags": {
+            "assoc": "nodes",
+            "comps": "3",
+            "lod": "2"
+          }
+        },
+        "E": {
+          "path": "JouleRodVisIt_000001/E.%06d",
+          "tags": {
+            "assoc": "nodes",
+            "comps": "3",
+            "lod": "2"
+          }
+        },
+        "F": {
+          "path": "JouleRodVisIt_000001/F.%06d",
+          "tags": {
+            "assoc": "nodes",
+            "comps": "3",
+            "lod": "2"
+          }
+        },
+        "Phi": {
+          "path": "JouleRodVisIt_000001/Phi.%06d",
+          "tags": {
+            "assoc": "nodes",
+            "comps": "1",
+            "lod": "2"
+          }
+        },
+        "T": {
+          "path": "JouleRodVisIt_000001/T.%06d",
+          "tags": {
+            "assoc": "nodes",
+            "comps": "1",
+            "lod": "1"
+          }
+        },
+        "w": {
+          "path": "JouleRodVisIt_000001/w.%06d",
+          "tags": {
+            "assoc": "nodes",
+            "comps": "1",
+            "lod": "1"
+          }
+        }
+      },
+      "mesh": {
+        "format": "0",
+        "path": "JouleRodVisIt_000001/mesh.%06d",
+        "tags": {
+          "max_lods": "32",
+          "spatial_dim": "3",
+          "topo_dim": "3"
+        }
+      },
+      "time": 0.5,
+      "time_step": 0
+    }
+  }
+}
