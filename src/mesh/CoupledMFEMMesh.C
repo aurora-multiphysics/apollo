@@ -283,6 +283,8 @@ void CoupledMFEMMesh::createMFEMMesh() {
     ssprop[i] = i + 1;
   }
   
+  //Loops to correctly set num_el_in_blk, which, as you might expect, stores the
+  // number of elements in each block
   for (int block : block_ids) {
     int num_el_in_block_counter = 1;
     for (libMesh::MeshBase::element_iterator el_ptr =
@@ -314,12 +316,14 @@ void CoupledMFEMMesh::createMFEMMesh() {
     }
   }
 
-  //
+  //start_of_block is just an array of ints that represent what the first element id of
+  // each block is
   start_of_block[0] = 0;
   for (int i = 1; i < (int)num_el_blk + 1; i++) {
     start_of_block[i] = start_of_block[i - 1] + num_el_in_blk[i - 1];
   }
 
+  //ss_node_id
   int** ss_node_id = new int*[num_side_sets];
   create_ss_node_id(elem_ss, side_ss, ss_node_id);  
 
@@ -332,6 +336,7 @@ void CoupledMFEMMesh::createMFEMMesh() {
     }
   }
 
+  //Setting map 
   std::sort(uniqueVertexID.begin(), uniqueVertexID.end());
   std::vector<int>::iterator newEnd;
   newEnd = std::unique(uniqueVertexID.begin(), uniqueVertexID.end());
@@ -350,7 +355,8 @@ void CoupledMFEMMesh::createMFEMMesh() {
   std::vector<double> coordz(nNodes(), 0);
   int node_counter = 0;
 
-  //This could be problematic if localNodesBegin and End don't access nodes in ascending node id
+  // Populating coord data structures to hold all the node coorindates which are needed to create the MFEM mesh
+  //This could be problematic if localNodesBegin and End don't access nodes in ascending node id, but this never seems to happen
   for (auto i = localNodesBegin(); i != localNodesEnd(); i++) {
     coordx[node_counter] = (**i)(0);
     coordy[node_counter] = (**i)(1);
@@ -358,8 +364,10 @@ void CoupledMFEMMesh::createMFEMMesh() {
     node_counter++;
   }
   
-  //Create MFEM mesh
+  //Number of elements in the mesh
   int num_elem = nElem();
+
+  //Create MFEM mesh using this extremely long but necessary constructor 
   mfem_mesh = std::make_shared<MFEMMesh>(num_elem, coordx, coordy, coordz, cubitToMFEMVertMap, uniqueVertexID,
       libmesh_element_type, libmesh_face_type, elem_blk, num_el_blk,
       num_node_per_el, num_el_in_blk, num_element_linear_nodes, num_face_nodes,
@@ -367,7 +375,7 @@ void CoupledMFEMMesh::createMFEMMesh() {
       ssprop, 3, start_of_block);
 
 
-  //Clear up
+  //Clear up, preventing memory leaks
   delete [] elem_ss;
   delete [] side_ss;
   delete [] num_el_in_blk;
