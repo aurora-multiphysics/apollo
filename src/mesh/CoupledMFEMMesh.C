@@ -31,11 +31,9 @@ void CoupledMFEMMesh::buildMesh() {
   FileMesh::buildMesh();
   //Create MFEM Mesh
   std::cout << "Checkpoint 1: MOOSE mesh created" << std::endl;
-  auto start = std::chrono::steady_clock::now();
+  
   createMFEMMesh();
-  auto end = std::chrono::steady_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-  std::cout << "Time taken for MFEM mesh creation = " << elapsed << std::endl;
+  
 }
 
 std::unique_ptr<MooseMesh> CoupledMFEMMesh::safeClone() const {
@@ -191,6 +189,8 @@ void CoupledMFEMMesh::getElementInfo() {
 
 void CoupledMFEMMesh::createMFEMMesh() {
 
+
+  auto start = std::chrono::steady_clock::now();
   //These are all maps that enable us to get the vertices on 
   //one side of the mesh using the indexing system of [side number][node of that side]
   const int sideMapTri3[3][2] = {
@@ -348,8 +348,15 @@ void CoupledMFEMMesh::createMFEMMesh() {
   // list, the inverse is a map
   std::map<int, int> cubitToMFEMVertMap;
   for (int i = 0; i < (int)uniqueVertexID.size(); i++) {
-    cubitToMFEMVertMap[uniqueVertexID[i]] = i + 1;
+    cubitToMFEMVertMap[uniqueVertexID[i]] = i;
   }
+
+  // for (auto& [key, value] : cubitToMFEMVertMap) {
+  //   // value -= 1;
+  //   std::cout << '[' << key << "] = " << value << "; " << std::endl;
+  // }
+
+  
 
   std::vector<double> coordx(nNodes(), 0);
   std::vector<double> coordy(nNodes(), 0);
@@ -388,6 +395,11 @@ void CoupledMFEMMesh::createMFEMMesh() {
   delete [] ebprop;
   delete [] ssprop;
   delete [] start_of_block;
+
+
+  auto end = std::chrono::steady_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  std::cout << "Time taken for MFEM mesh creation = " << elapsed << std::endl;
   
 }
 

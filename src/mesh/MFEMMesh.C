@@ -63,7 +63,7 @@ MFEMMesh::MFEMMesh(
     for (int i = 0; i < (int)num_el_in_blk[iblk]; i++) {
       for (int j = 0; j < num_element_linear_nodes; j++) {
         renumberedVertID[j] =
-            cubitToMFEMVertMap[(elem_blk[iblk][i * NumNodePerEl + j]) + 1] - 1;
+            cubitToMFEMVertMap[(elem_blk[iblk][i * NumNodePerEl + j]) + 1];
         // std::cout << cubitToMFEMVertMap[1] << std::endl;
       }
 
@@ -102,19 +102,24 @@ MFEMMesh::MFEMMesh(
       elcount++;
     }
   }
+
+
   NumOfBdrElements = 0;
   for (int iss = 0; iss < (int)num_side_sets;
        iss++)  // For all the sidesets, add the number of sides to numbdrelems
   {
     NumOfBdrElements += num_side_in_ss[iss];
   }
+
+
   boundary.SetSize(NumOfBdrElements);
   int sidecount = 0;
   for (int iss = 0; iss < (int)num_side_sets; iss++) {
     for (int i = 0; i < (int)num_side_in_ss[iss]; i++) {
       for (int j = 0; j < num_face_linear_nodes; j++) {
         renumberedVertID[j] =
-            cubitToMFEMVertMap[1 + ss_node_id[iss][i * num_face_nodes + j]] - 1;
+            cubitToMFEMVertMap[1 + ss_node_id[iss][i * num_face_nodes + j]];
+        // std::cout << renumberedVertID[j] << std::endl;
       }
       switch (libmesh_face_type) {
         case (FACE_EDGE2):
@@ -211,10 +216,10 @@ MFEMMesh::MFEMMesh(
   }
   //Finalize mesh method is needed to fully finish constructing the mesh
   FinalizeMesh();
-  // this->Save("test.mesh");
-  // std::ofstream mesh_ofs("test.vtk");
-  // mesh_ofs.precision(8);
-  // this->PrintVTK(mesh_ofs);
+  this->Save("test.mesh");
+  std::ofstream mesh_ofs("test.vtk");
+  mesh_ofs.precision(8);
+  this->PrintVTK(mesh_ofs);
 }
 
 MFEMMesh::MFEMMesh(std::string cpp_filename, int generate_edges,
