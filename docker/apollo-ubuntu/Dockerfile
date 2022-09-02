@@ -59,12 +59,14 @@ RUN cd /$WORKDIR && \
     ln -s ../build/Linux-x86_64/libmetis/libmetis.so lib
 
 # Install MUMPS
+# Install MUMPS
+
 RUN cd /$WORKDIR && \
     git clone https://github.com/scivision/mumps && \
     cd mumps/ && \
     mkdir build && \
     cd build && \
-    cmake --preset=build -DBUILD_SHARED_LIBS=on -Dscotch=true -Dintsize64=false -Darith="s;d;c;z" -Dautobuild=true  \
+    cmake -DBUILD_SHARED_LIBS=on -Dscotch=true -Dintsize64=false -Darith="s;d;c;z"  \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ .. && \
     make && \
     make install
