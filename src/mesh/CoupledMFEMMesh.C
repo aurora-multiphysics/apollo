@@ -9,8 +9,6 @@
 
 #include "CoupledMFEMMesh.h"
 #include "libmesh/face_quad4.h"
-#include <chrono>
-#include <unistd.h>
 
 registerMooseObject("ApolloApp", CoupledMFEMMesh);
 
@@ -189,8 +187,6 @@ void CoupledMFEMMesh::getElementInfo() {
 
 void CoupledMFEMMesh::createMFEMMesh() {
 
-
-  auto start = std::chrono::steady_clock::now();
   //These are all maps that enable us to get the vertices on 
   //one side of the mesh using the indexing system of [side number][node of that side]
   const int sideMapTri3[3][2] = {
@@ -395,12 +391,6 @@ void CoupledMFEMMesh::createMFEMMesh() {
   delete [] ebprop;
   delete [] ssprop;
   delete [] start_of_block;
-
-
-  auto end = std::chrono::steady_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-  std::cout << "Time taken for MFEM mesh creation = " << elapsed << std::endl;
-  
 }
 
 void CoupledMFEMMesh::create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id)
