@@ -1,10 +1,4 @@
-# To make use of multiple cores during the compile stages of the docker build
-# docker build -t apollo-ubuntu --build-arg compile_cores=8 .
-
-# To compile a particular git sha use
-# docker build -t apollo-ubuntu --build-arg build_git_sha=${GITHUB_SHA} .
-
-# Get MOOSE image
+# Get base image
 FROM herter4171/ubuntu-moose:latest
 
 # By default one core is used to compile
@@ -12,11 +6,11 @@ ARG compile_cores=1
 
 # By default checkout mfem-moose branch
 ARG WORKDIR="opt"
-ARG build_git_sha="alexanderianblair/mfem-moose"
+ARG build_git_sha="master"
 ARG hypre_git_sha="562c29a"
 
 # Install apt dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
     clang-format-9 \
     curl \
     libboost-all-dev \
@@ -31,18 +25,13 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     ninja-build
 
-# Enable Nedelec element curl calculations in MOOSE
-RUN cd /$WORKDIR && \
-    cd moose/framework/src/base && \
-    sed -i 's/(type.family == NEDELEC_ONE)/(type.family == NEDELEC_ONE||type.family == LAGRANGE_VEC)/g' Assembly.C
-
 # Install CMake
 RUN cd /$WORKDIR && \
     git clone https://github.com/Kitware/CMake.git && \
     cd CMake/ && \
     git checkout 78ae759 && \
     ./bootstrap && \
-    make && \
+    make -j"$compile_cores" && \
     make install && \
     alias cmake='/$WORKDIR/CMake/bin/cmake'
 
@@ -59,8 +48,6 @@ RUN cd /$WORKDIR && \
     ln -s ../build/Linux-x86_64/libmetis/libmetis.so lib
 
 # Install MUMPS
-# Install MUMPS
-
 RUN cd /$WORKDIR && \
     git clone https://github.com/scivision/mumps && \
     cd mumps/ && \
@@ -68,7 +55,7 @@ RUN cd /$WORKDIR && \
     cd build && \
     cmake -DBUILD_SHARED_LIBS=on -Dscotch=true -Dintsize64=false -Darith="s;d;c;z"  \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ .. && \
-    make && \
+    make -j"$compile_cores" && \
     make install
 
 # Build MFEM and common miniapp
@@ -80,9 +67,9 @@ RUN cd /$WORKDIR && \
     cmake .. -DCMAKE_BUILD_TYPE=Debug -DMFEM_USE_MPI=YES -DMFEM_USE_METIS_5=YES -DMETIS_DIR=../../metis-5.1.0 \
     -DMFEM_USE_OPENMP=YES -DMFEM_THREAD_SAFE=NO -DMFEM_SHARED=YES -DCMAKE_CXX_FLAGS_DEBUG=-fPIC -DMFEM_USE_NETCDF=YES \
     -DCMAKE_POLICY_DEFAULT_CMP0057=NEW  &&\
-    make && \
+    make -j"$compile_cores" && \
     cd miniapps/common && \
-    make
+    make -j"$compile_cores"
 
 # Build GLVis
 RUN cd /$WORKDIR && \
@@ -103,6 +90,6 @@ RUN cd /$WORKDIR && \
     mkdir build && \
     cd build && \
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
-    make && \
+    make -j"$compile_cores" && \
     cd /$WORKDIR/apollo && \
     make -j"$compile_cores"
