@@ -248,4 +248,7 @@ conf_vars.mk
 *Joule_000*
 
 # Ignoring all of OutputData 
-*/OutputData/*
+*/OutputData/
+
+#Ignore output mfem meshes
+*.mesh
