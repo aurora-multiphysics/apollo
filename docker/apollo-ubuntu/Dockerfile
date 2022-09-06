@@ -77,7 +77,7 @@ RUN cd /$WORKDIR && \
     cd glvis/ && \
     mkdir build && \
     cd build/ && \
-    cmake -G Ninja -DMFEM_DIR=/opt/mfem/build .. && \
+    cmake -G Ninja -DMFEM_DIR=/$WORKDIR/mfem/build .. && \
     ninja
 
 # Build Apollo with Hephaestus
