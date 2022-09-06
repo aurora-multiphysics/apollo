@@ -30,7 +30,7 @@ RUN cd /$WORKDIR && \
     git clone https://github.com/Kitware/CMake.git && \
     cd CMake/ && \
     git checkout 78ae759 && \
-    ./bootstrap && \
+    ./bootstrap --parallel="$compile_cores" && \
     make -j"$compile_cores" && \
     make install && \
     alias cmake='/$WORKDIR/CMake/bin/cmake'
