@@ -26,6 +26,8 @@ public:
 
   MFEMProblem(const InputParameters & params);
 
+  virtual void init() override;
+
   virtual void externalSolve() override;
 
   virtual bool converged() override { return true; };
@@ -79,7 +81,7 @@ public:
    * This method is used in addAuxVariable to help create the MFEM grid function that corresponds to
    * a given MOOSE aux-variable.
    */
-  mfem::FiniteElementCollection * fecGet(std::string var_fam);
+  InputParameters getMFEMVarParamsFromMOOSEVarParams(InputParameters & moosevar_params);
 
 protected:
   std::string _input_mesh;
@@ -92,4 +94,5 @@ protected:
   hephaestus::Postprocessors _postprocessors;
   hephaestus::InputParameters _exec_params;
   hephaestus::Outputs _outputs;
+  hephaestus::TransientExecutioner * executioner;
 };

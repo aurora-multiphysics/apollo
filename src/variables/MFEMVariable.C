@@ -12,20 +12,21 @@ MFEMVariable::validParams()
   // Create user-facing 'boundary' input for restricting inheriting object to boundaries
 
   MooseEnum order(
-      "CONSTANT FIRST SECOND THIRD FOURTH FIFTH SIXTH SEVENTH EIGHTH NINTH TENTH ELEVENTH TWELFTH "
+      "CONSTANT FIRST SECOND THIRD FOURTH FIFTH SIXTH SEVENTH EIGHTH NINTH TENTH ELEVENTH TWELFTH"
       "THIRTEENTH FOURTEENTH FIFTEENTH SIXTEENTH SEVENTEENTH EIGHTTEENTH NINETEENTH TWENTIETH "
       "TWENTYFIRST TWENTYSECOND TWENTYTHIRD TWENTYFOURTH TWENTYFIFTH TWENTYSIXTH TWENTYSEVENTH "
       "TWENTYEIGHTH TWENTYNINTH THIRTIETH THIRTYFIRST THIRTYSECOND THIRTYTHIRD THIRTYFOURTH "
-      "THIRTYFIFTH THIRTYSIXTH THIRTYSEVENTH THIRTYEIGHTH THIRTYNINTH FORTIETH FORTYFIRST "
+      "THIRTYFIFTH THIRTYSIXTH THIRTYSEVENTH THIRTYEIGHTH THIRTYNINTH FORTIETH FORTYFIRST"
       "FORTYSECOND FORTYTHIRD",
       "FIRST",
       true);
   params.addParam<MooseEnum>("order",
                              order,
-                             "Order of the FE shape function to use for this variable (additional "
-                             "orders not listed here are allowed, depending on the family).");
+                             "Order of the FE shape function to use for this variable (additional"
+                             "orders not listed here are allowed,"
+                             "depending on the family.");
 
-  MooseEnum fespaces("H1 ND RT", "H1", true);
+  MooseEnum fespaces("H1 ND RT L2", "H1", true);
   params.addParam<MooseEnum>(
       "fespace",
       fespaces,
@@ -41,7 +42,8 @@ MFEMVariable::validParams()
   params.addParam<bool>("array",
                         false,
                         "True to make this variable a array variable regardless of number of "
-                        "components. If 'components' > 1, this will automatically be set to true.");
+                        "components. If 'components' > 1, this will automatically be set to"
+                        "true.");
   params.addParamNamesToGroup("scaling eigen", "Advanced");
 
   params.addParam<bool>("use_dual", false, "True to use dual basis for Lagrange multipliers");

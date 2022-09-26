@@ -1,6 +1,7 @@
 [Mesh]
-  type = ExclusiveMFEMMesh
-  file = ./cylinder-hex-q2.gen
+  type = CoupledMFEMMesh
+  file = ./cylinder-hex-q2.e
+  dim = 3
 []
 
 [Problem]
@@ -12,10 +13,14 @@
 []
 
 [AuxVariables]
-  [./temperature]
+  [./dummy_mfem]
     type = MFEMVariable
     fespace = H1
-    order = FIRST
+    order = SECOND
+  [../]
+  [./dummy_moose]
+    family = LAGRANGE
+    order = SECOND
   [../]
 [../]
 

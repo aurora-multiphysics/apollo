@@ -247,8 +247,8 @@ conf_vars.mk
 # MFEM Joule outputs
 *Joule_000*
 
-# Ignoring all of OutputData 
-*/OutputData/
+# Ignoring all of OutputData
+**/OutputData/
 
 #Ignore output mfem meshes
 *.mesh
