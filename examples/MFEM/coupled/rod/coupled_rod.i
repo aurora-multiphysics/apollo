@@ -15,7 +15,7 @@
 [AuxVariables]
   [./dummy_mfem]
     type = MFEMVariable
-    fespace = H1
+    fespace = ND
     order = SECOND
   [../]
   [./dummy_moose]
@@ -23,6 +23,14 @@
     order = SECOND
   [../]
 [../]
+
+[ICs]
+  [./dummy_moose_ic]
+    type = FunctionIC
+    variable = dummy_moose
+    function = 2-x
+  [../]
+[]
 
 [Functions]
   [./potential_high]
