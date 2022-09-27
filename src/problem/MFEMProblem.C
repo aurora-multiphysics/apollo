@@ -53,8 +53,7 @@ MFEMProblem::init()
 
   if (_formulation != "Joule")
   {
-    executioner =
-        new hephaestus::TransientExecutioner(_exec_params);
+    executioner = new hephaestus::TransientExecutioner(_exec_params);
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mfem_mesh));
@@ -78,7 +77,7 @@ MFEMProblem::externalSolve()
 {
   if (_formulation == "Joule")
   {
-      mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
+    mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
     // Legacy support for running Joule solver
     hephaestus::Executioner _executioner(
         std::string("Transient"), getParam<double>("dt"), 0.0, getParam<double>("end_time"));
