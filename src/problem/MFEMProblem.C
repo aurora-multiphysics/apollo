@@ -10,7 +10,6 @@ InputParameters
 MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
-  params.addParam<std::string>("input_mesh", "Input mesh for MFEM.");
   params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
   params.addParam<int>("order", "Order of the FE variables for MFEM.");
   params.addParam<double>("dt", "Time step");
@@ -32,9 +31,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _exec_params(),
     _outputs()
 {
-  _exec_params.SetParam("TimeStep", float(getParam<double>("dt")));
-  _exec_params.SetParam("StartTime", float(0.0));
-  _exec_params.SetParam("EndTime", float(getParam<double>("end_time")));
 }
 
 void
@@ -53,6 +49,15 @@ MFEMProblem::init()
 
   if (_formulation != "Joule")
   {
+    Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
+    if (_moose_executioner == NULL)
+    {
+      mooseError("Only Transient Executioners are currently supported by MFEMProblem");
+    }
+    _exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
+    _exec_params.SetParam("TimeStep", float(dt()));
+    _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
+
     executioner = new hephaestus::TransientExecutioner(_exec_params);
 
     hephaestus::InputParameters params;
@@ -89,7 +94,7 @@ MFEMProblem::externalSolve()
   }
   else
   {
-    executioner->Solve();
+    executioner->Step(dt(), timeStep());
   }
 }
 
@@ -146,35 +151,36 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
 void
 MFEMProblem::setMFEMVarData(EquationSystems & esRef, std::string var_name)
 {
-  auto & mooseVarRef = getVariable(0, var_name);
-  MeshBase & libmeshBase = mesh().getMesh();
-  NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
-  for (int i = 0; i < libmeshBase.n_nodes() /*number of nodes*/; i++)
-  {
-    Node * nodePtr = libmeshBase.node_ptr(i);
-    dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
-    executioner->variables->gfs.Get(var_name)[0][i] = tempSolutionVector(dof);
-  }
-  mooseVarRef.sys().solution().close();
+  // auto & mooseVarRef = getVariable(0, var_name);
+  // MeshBase & libmeshBase = mesh().getMesh();
+  // NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
+  // for (int i = 0; i < libmeshBase.n_nodes() /*number of nodes*/; i++)
+  // {
+  //   Node * nodePtr = libmeshBase.node_ptr(i);
+  //   dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
+  //   executioner->variables->gfs.Get(var_name)[0][i] = tempSolutionVector(dof);
+  // }
+  // mooseVarRef.sys().solution().close();
 
-  mooseVarRef.sys().update();
+  // mooseVarRef.sys().update();
 }
 
 void
 MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 {
-  auto & mooseVarRef = getVariable(
-      0, var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
-  MeshBase & libmeshBase = mesh().getMesh();
-  for (int i = 0; i < libmeshBase.n_nodes(); i++)
-  {
-    Node * nodePtr = libmeshBase.node_ptr(i);
-    dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
-    mooseVarRef.sys().solution().set(
-        dof, (executioner->variables->gfs.Get(var_name)[0])[i]); /*Needs to be changed for tetra*/
-  }
-  mooseVarRef.sys().solution().close();
-  mooseVarRef.sys().update();
+  // auto & mooseVarRef = getVariable(
+  //     0, var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+  // MeshBase & libmeshBase = mesh().getMesh();
+  // for (int i = 0; i < libmeshBase.n_nodes(); i++)
+  // {
+  //   Node * nodePtr = libmeshBase.node_ptr(i);
+  //   dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
+  //   mooseVarRef.sys().solution().set(
+  //       dof, (executioner->variables->gfs.Get(var_name)[0])[i]); /*Needs to be changed for
+  //       tetra*/
+  // }
+  // mooseVarRef.sys().solution().close();
+  // mooseVarRef.sys().update();
 }
 
 InputParameters

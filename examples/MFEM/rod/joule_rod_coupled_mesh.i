@@ -15,7 +15,7 @@
 [Functions]
   [./p_bc]
     type = ParsedFunction
-    value = (z/abs(z))*cos(2.0*pi*freq*t)
+    value = (z/abs(z+1e-50))*cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
   [../]

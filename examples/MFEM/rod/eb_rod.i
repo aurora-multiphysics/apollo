@@ -7,8 +7,6 @@
   type = MFEMProblem
   formulation = EBForm
   order = 2
-  dt = 0.5
-  end_time = 2.5
 []
 
 [Functions]
@@ -69,7 +67,10 @@
 []
 
 [Executioner]
-  type = Steady
+  type = Transient
+  dt = 0.5
+  start_time = 0.0
+  end_time = 2.5
 []
 
 [Outputs]
