@@ -20,7 +20,7 @@
   [../]
   [./dummy_moose]
     family = LAGRANGE
-    order = SECOND
+    order = FIRST
   [../]
 [../]
 
