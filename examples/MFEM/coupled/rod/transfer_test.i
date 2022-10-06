@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = ./cylinder_so.e
+  file = ./cylinder-hex-q2.e
   dim = 3
 []
 
@@ -33,7 +33,7 @@
   [./dummy_moose_ic]
     type = FunctionIC
     variable = dummy_moose
-    function = 2-x^2
+    function = (y^2)*(2-x^2)
   [../]
 []
 

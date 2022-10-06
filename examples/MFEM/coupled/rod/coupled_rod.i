@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = ./cylinder_so.e
+  file = ./cylinder-hex-q2.e
   dim = 3
 []
 
@@ -90,7 +90,7 @@
 []
 
 [Executioner]
-  type = Transient
+  type = Steady
 []
 
 [Outputs]
