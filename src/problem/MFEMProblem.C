@@ -252,15 +252,25 @@ MFEMProblem::getAuxVariableNames()
 void
 MFEMProblem::syncSolutions(Direction direction)
 {
-  // This need changing, as we won't always be using a coupledMFEMMesh!
-  auto& coupledMesh = dynamic_cast<CoupledMFEMMesh&>(mesh());
-  std::map<int, int>& libmeshToMFEMNodeRef = coupledMesh.libmeshToMFEMNode;
+  // Map for second order var transfer;
+  std::map<int, int>* libmeshToMFEMNodePtr;
+
+  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
+  {
+    auto& coupledMesh = dynamic_cast<CoupledMFEMMesh&>(mesh());
+    libmeshToMFEMNodePtr = &(coupledMesh.libmeshToMFEMNode);
+  }
+  else
+  {
+    (*libmeshToMFEMNodePtr)[0] = 0;
+  }
+  
   // If data is being sent from the master app
   if (direction == Direction::TO_EXTERNAL_APP)
   {
     for (std::string name : getAuxVariableNames())
     {
-      setMFEMVarData(es(), name, libmeshToMFEMNodeRef);
+      setMFEMVarData(es(), name, (*libmeshToMFEMNodePtr));
       std::cout << name << std::endl;
     }
   }
@@ -270,7 +280,7 @@ MFEMProblem::syncSolutions(Direction direction)
   {
     for (std::string name : getAuxVariableNames())
     {
-      setMOOSEVarData(name, es(), libmeshToMFEMNodeRef);
+      setMOOSEVarData(name, es(), (*libmeshToMFEMNodePtr));
     }
   }
 }

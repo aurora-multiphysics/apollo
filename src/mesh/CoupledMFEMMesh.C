@@ -28,8 +28,7 @@ void CoupledMFEMMesh::buildMesh() {
   //Use method from file mesh to build MOOSE mesh from exodus file
   FileMesh::buildMesh();
   //Create MFEM Mesh
-  std::cout << "Checkpoint 1: MOOSE mesh created" << std::endl;
-  
+  std::cout << "MOOSE mesh created" << "\n";
   createMFEMMesh();
   
 }
