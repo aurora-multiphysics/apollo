@@ -148,39 +148,80 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
   _variables.AddVariable(var.mfem_params);
 }
 
-void
-MFEMProblem::setMFEMVarData(EquationSystems & esRef, std::string var_name)
+void 
+MFEMProblem::translateResults(std::string direction)
 {
-  // auto & mooseVarRef = getVariable(0, var_name);
-  // MeshBase & libmeshBase = mesh().getMesh();
-  // NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
-  // for (int i = 0; i < libmeshBase.n_nodes() /*number of nodes*/; i++)
-  // {
-  //   Node * nodePtr = libmeshBase.node_ptr(i);
-  //   dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
-  //   executioner->variables->gfs.Get(var_name)[0][i] = tempSolutionVector(dof);
-  // }
-  // mooseVarRef.sys().solution().close();
+  // Get element type
+  // Using el type, choose correct map 
+  auto& elemtype = dynamic_cast<CoupledMFEMMesh&>(mesh());
+  std::cout << "Libmesh elem type " << elemtype.libmesh_element_type << "\n";
 
-  // mooseVarRef.sys().update();
+  if(direction == "MFEM")
+  {
+      
+
+  }
+
+  if(direction == "MOOSE")
+  {
+
+  }
 }
 
 void
-MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
+MFEMProblem::setMFEMVarData(EquationSystems & esRef, std::string var_name, std::map<int, int>libmeshToMFEMNode)
 {
-  // auto & mooseVarRef = getVariable(
-  //     0, var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
-  // MeshBase & libmeshBase = mesh().getMesh();
-  // for (int i = 0; i < libmeshBase.n_nodes(); i++)
-  // {
-  //   Node * nodePtr = libmeshBase.node_ptr(i);
-  //   dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
-  //   mooseVarRef.sys().solution().set(
-  //       dof, (executioner->variables->gfs.Get(var_name)[0])[i]); /*Needs to be changed for
-  //       tetra*/
-  // }
-  // mooseVarRef.sys().solution().close();
-  // mooseVarRef.sys().update();
+  
+  auto & mooseVarRef = getVariable(0, var_name);
+  MeshBase & libmeshBase = mesh().getMesh();
+  unsigned int order = (unsigned int)mooseVarRef.order();
+  NumericVector<Number>& tempSolutionVector = mooseVarRef.sys().solution();
+  for (int i = 0; i < libmeshBase.n_nodes() /*number of nodes*/; i++)
+  {
+    Node * nodePtr = libmeshBase.node_ptr(i);
+    dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
+
+    if(order == 1)
+    {
+      executioner->variables->gfs.Get(var_name)[0][i] = tempSolutionVector(dof);
+    }
+    if(order == 2)
+    {
+      executioner->variables->gfs.Get(var_name)[0][libmeshToMFEMNode[i]] = tempSolutionVector(dof);
+    }
+  }
+  mooseVarRef.sys().solution().close();
+  mooseVarRef.sys().update();
+}
+
+void
+MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef, std::map<int, int>libmeshToMFEMNode)
+{
+  auto& mooseVarRef = getVariable(
+      0, var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+  unsigned int order = (unsigned int)mooseVarRef.order();
+  MeshBase& libmeshBase = mesh().getMesh();
+  for (int i = 0; i < libmeshBase.n_nodes(); i++)
+  {
+    Node *nodePtr = libmeshBase.node_ptr(i);
+    dof_id_type dof = nodePtr->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), 0);
+    
+
+    if(order == 1)
+    {
+      mooseVarRef.sys().solution().set(
+        dof, (executioner->variables->gfs.Get(var_name)[0])[i]); /*Needs to be changed for
+        tetra*/
+    }
+    if(order == 2)
+    {
+      mooseVarRef.sys().solution().set(
+        dof, (executioner->variables->gfs.Get(var_name)[0])[libmeshToMFEMNode[i]]); /*Needs to be changed for
+        tetra*/
+    }
+  }
+  mooseVarRef.sys().solution().close();
+  mooseVarRef.sys().update();
 }
 
 InputParameters
@@ -211,12 +252,15 @@ MFEMProblem::getAuxVariableNames()
 void
 MFEMProblem::syncSolutions(Direction direction)
 {
+  // This need changing, as we won't always be using a coupledMFEMMesh!
+  auto& coupledMesh = dynamic_cast<CoupledMFEMMesh&>(mesh());
+  std::map<int, int>& libmeshToMFEMNodeRef = coupledMesh.libmeshToMFEMNode;
   // If data is being sent from the master app
   if (direction == Direction::TO_EXTERNAL_APP)
   {
     for (std::string name : getAuxVariableNames())
     {
-      setMFEMVarData(es(), name);
+      setMFEMVarData(es(), name, libmeshToMFEMNodeRef);
       std::cout << name << std::endl;
     }
   }
@@ -226,7 +270,7 @@ MFEMProblem::syncSolutions(Direction direction)
   {
     for (std::string name : getAuxVariableNames())
     {
-      setMOOSEVarData(name, es());
+      setMOOSEVarData(name, es(), libmeshToMFEMNodeRef);
     }
   }
 }

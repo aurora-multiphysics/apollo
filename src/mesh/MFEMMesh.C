@@ -11,21 +11,20 @@ MFEMMesh::MFEMMesh(
     size_t *num_el_in_blk, int num_element_linear_nodes, int num_face_nodes,
     int num_face_linear_nodes, int num_side_sets,
     std::vector<int> num_side_in_ss, int **ss_node_id, int *ebprop, int *ssprop,
-    int dim_num, int* start_of_block) {
+    int dim_num, int* start_of_block, std::map<int,int>& libmeshToMFEMNode) 
+{
 
-
-
-  const int mfemToGenesisTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+  const int mfemToLibmeshTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
   //                                  1,2,3,4,5,6,7,8,9,10,11,
-  const int mfemToGenesisHex27[27] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  const int mfemToLibmeshHex27[27] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
                                       // 12,13,14,15,16,17,18,19
                                       12, 17, 18, 19, 20, 13, 14, 15,
                                       // 20,21,22,23,24,25,26,27
                                       16, 21, 22, 23, 24, 25, 26, 27};
 
-  const int mfemToGenesisTri6[6] = {1, 2, 3, 4, 5, 6};
-  const int mfemToGenesisQuad9[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  const int mfemToLibmeshTri6[6] = {1, 2, 3, 4, 5, 6};
+  const int mfemToLibmeshQuad9[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
 
   int order = 0;
@@ -153,22 +152,22 @@ MFEMMesh::MFEMMesh(
     {
       case (ELEMENT_TRI6):
       {
-        mymap = (int *) mfemToGenesisTri6;
+        mymap = (int *) mfemToLibmeshTri6;
         break;
       }
       case (ELEMENT_QUAD9):
       {
-        mymap = (int *) mfemToGenesisQuad9;
+        mymap = (int *) mfemToLibmeshQuad9;
         break;
       }
       case (ELEMENT_TET10):
       {
-        mymap = (int *) mfemToGenesisTet10;
+        mymap = (int *) mfemToLibmeshTet10;
         break;
       }
       case (ELEMENT_HEX27):
       {
-        mymap = (int *) mfemToGenesisHex27;
+        mymap = (int *) mfemToLibmeshHex27;
         break;
       }
       case (ELEMENT_TRI3):
@@ -202,9 +201,14 @@ MFEMMesh::MFEMMesh(
       int loc_ind;
       while (iblk < (int) num_el_blk && i >= start_of_block[iblk+1]) { iblk++; }
       loc_ind = i - start_of_block[iblk];
+
       for (int j = 0; j < dofs.Size(); j++)
       {
         int point_id = elem_blk[iblk][loc_ind*num_node_per_el + mymap[j] - 1];
+        
+        // Map to help with second order variable transfer 
+        libmeshToMFEMNode[point_id] = vdofs[j]/3;
+
         (*Nodes)(vdofs[j]) = coordx[point_id];
         (*Nodes)(vdofs[j]+1) = coordy[point_id];
         if (Dim == 3)
@@ -212,6 +216,7 @@ MFEMMesh::MFEMMesh(
             (*Nodes)(vdofs[j]+2) = coordz[point_id];
         }
       }
+
     }
   }
   //Finalize mesh method is needed to fully finish constructing the mesh

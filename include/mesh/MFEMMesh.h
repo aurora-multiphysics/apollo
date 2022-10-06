@@ -19,7 +19,8 @@ class MFEMMesh : public mfem::Mesh {
                     int num_element_linear_nodes, int num_face_nodes,
                     int num_face_linear_nodes, int num_side_sets,
                     std::vector<int> num_side_in_ss, int **ss_node_id,
-                    int *eb_prop, int *ss_prop, int dim_num, int* start_of_block);
+                    int *eb_prop, int *ss_prop, int dim_num, int* start_of_block,
+                    std::map<int, int>& libmeshToMFEMNode);
 
   MFEMMesh(std::string cpp_filename, int generate_edges = 0,
                     int refine = 1, bool fix_orientation = true);

@@ -230,19 +230,6 @@ void CoupledMFEMMesh::createMFEMMesh() {
       {4, 3, 7, 8, 11, 15, 19, 16, 27}, {1, 4, 8, 5, 12, 16, 20, 13, 24},
       {1, 4, 3, 2, 12, 11, 10, 9, 22},  {5, 8, 7, 6, 20, 19, 18, 17, 23}};
 
-  const int mfemToGenesisTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
-
-  //                                  1,2,3,4,5,6,7,8,9,10,11,
-  const int mfemToGenesisHex27[27] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-                                      // 12,13,14,15,16,17,18,19
-                                      12, 17, 18, 19, 20, 13, 14, 15,
-                                      // 20,21,22,23,24,25,26,27
-                                      16, 22, 26, 25, 27, 24, 23, 21};
-
-  const int mfemToGenesisTri6[6] = {1, 2, 3, 4, 5, 6};
-  const int mfemToGenesisQuad9[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-
   buildBndElemList();
 
   //Retrieve information about the elements used within the mesh
@@ -351,9 +338,6 @@ void CoupledMFEMMesh::createMFEMMesh() {
   //   // value -= 1;
   //   std::cout << '[' << key << "] = " << value << "; " << std::endl;
   // }
-
-  
-
   std::vector<double> coordx(nNodes(), 0);
   std::vector<double> coordy(nNodes(), 0);
   std::vector<double> coordz(nNodes(), 0);
@@ -376,8 +360,7 @@ void CoupledMFEMMesh::createMFEMMesh() {
       libmesh_element_type, libmesh_face_type, elem_blk, num_el_blk,
       num_node_per_el, num_el_in_blk, num_element_linear_nodes, num_face_nodes,
       num_face_linear_nodes, num_side_sets, num_sides_in_ss, ss_node_id, ebprop,
-      ssprop, 3, start_of_block);
-
+      ssprop, 3, start_of_block, libmeshToMFEMNode);
 
   //Clear up, preventing memory leaks
   delete [] elem_ss;
@@ -396,16 +379,21 @@ void CoupledMFEMMesh::createMFEMMesh() {
 void CoupledMFEMMesh::create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id)
 {
   for (int i = 0; i < (int)num_side_sets; i++) { 
+
     ss_node_id[i] = new int[num_sides_in_ss[i] * num_face_nodes];
+
     for (int j = 0; j < (int)num_sides_in_ss[i]; j++) {
       int glob_ind = elem_ss[i][j];
       int side = side_ss[i][j];
       Elem* elem = elemPtr(glob_ind);
       std::vector<unsigned int> nodes = elem->nodes_on_side(side);
+
       for(int k = 0; k<num_face_nodes; k++)
       {
         ss_node_id[i][j * num_face_nodes + k] = elem->node_id(nodes[k]);
       }
+
     }
+    
   }  
 }
