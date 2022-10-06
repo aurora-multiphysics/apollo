@@ -78,12 +78,6 @@ public:
   void setMOOSEVarData(std::string var_name, EquationSystems & esRef, std::map<int, int>libmeshToMFEMNode);
 
   /**
-   * Method used when transferring variables, to account for the different element node
-   * orderings used in MFEM and MOOSE.
-   */
-  void translateResults(std::string direction);
-
-  /**
    * Method used to get an mfem FEC depending on the variable family specified in the input file.
    * This method is used in addAuxVariable to help create the MFEM grid function that corresponds to
    * a given MOOSE aux-variable.

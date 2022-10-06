@@ -148,26 +148,6 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
   _variables.AddVariable(var.mfem_params);
 }
 
-void 
-MFEMProblem::translateResults(std::string direction)
-{
-  // Get element type
-  // Using el type, choose correct map 
-  auto& elemtype = dynamic_cast<CoupledMFEMMesh&>(mesh());
-  std::cout << "Libmesh elem type " << elemtype.libmesh_element_type << "\n";
-
-  if(direction == "MFEM")
-  {
-      
-
-  }
-
-  if(direction == "MOOSE")
-  {
-
-  }
-}
-
 void
 MFEMProblem::setMFEMVarData(EquationSystems & esRef, std::string var_name, std::map<int, int>libmeshToMFEMNode)
 {
