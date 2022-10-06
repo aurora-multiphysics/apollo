@@ -8,7 +8,12 @@
   type = MFEMProblem
   formulation = EBForm
   order = 2
+[]
+
+[Executioner]
+  type = Transient
   dt = 0.5
+  start_time = 0.0
   end_time = 2.5
 []
 
@@ -20,7 +25,7 @@
   [../]
   [./dummy_moose]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   [../]
 [../]
 
@@ -28,7 +33,7 @@
   [./dummy_moose_ic]
     type = FunctionIC
     variable = dummy_moose
-    function = 2-x
+    function = 2-x^2
   [../]
 []
 
@@ -53,27 +58,6 @@
   [../]
 []
 
-[BCs]
-  [./tangential_E_bdr]
-    type = MFEMVectorFunctionDirichletBC
-    variable = electric_field
-    boundary = '1 2 3'
-    function = tangential_E
-  [../]
-  [./high_terminal]
-    type = MFEMFunctionDirichletBC
-    variable = electric_potential
-    boundary = '1'
-    function = potential_high
-  [../]
-  [./low_terminal]
-    type = MFEMFunctionDirichletBC
-    variable = electric_potential
-    boundary = '2'
-    function = potential_low
-  [../]
-[]
-
 [Materials]
   [./copper]
     type = MFEMConductor
@@ -81,16 +65,6 @@
     magnetic_permeability = 1.25663706e-6
     block = 1
   [../]
-  [./air]
-    type = MFEMConductor
-    electrical_conductivity = 1
-    magnetic_permeability = 1.25663706e-6
-    block = 2
-  [../]
-[]
-
-[Executioner]
-  type = Transient
 []
 
 [Outputs]
@@ -105,3 +79,4 @@
     high_order_output = true
   []
 []
+

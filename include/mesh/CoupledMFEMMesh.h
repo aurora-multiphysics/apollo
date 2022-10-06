@@ -35,11 +35,7 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
 
   void create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id);
 
- protected:
-
-  int curved = 0;
-  int read_gf = 0;
-  bool topo = false;
+  std::map<int, int> libmeshToMFEMNode;
 
   unsigned int num_node_per_el;
   int libmesh_element_type;
@@ -47,6 +43,14 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
   int num_element_linear_nodes;
   int num_face_nodes;
   int num_face_linear_nodes;
+
+ protected:
+
+  int curved = 0;
+  int read_gf = 0;
+  bool topo = false;
+
+
   int num_side_sets;
   int bdrElems;
   std::vector<int> num_sides_in_ss;
