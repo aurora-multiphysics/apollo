@@ -94,4 +94,7 @@ RUN cd /$WORKDIR && \
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
     make -j"$compile_cores" && \
     cd /$WORKDIR/apollo && \
-    make -j"$compile_cores"
+    make -j"$compile_cores" && \
+
+RUN cd /$WORKDIR/apollo && \
+    make test

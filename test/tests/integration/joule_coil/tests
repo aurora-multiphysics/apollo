@@ -1,9 +1,0 @@
-[Tests]
-  design = 'syntax/Variables/index.md'
-  [./JouleCoil]
-    type = 'RunApp'
-    input = 'coil.i'
-    max_time = 1000
-    requirement = 'Apollo shall have the ability to run the coil example from the Joule miniapp.'
-  []
-[]
