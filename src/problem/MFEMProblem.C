@@ -167,7 +167,7 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
     {
       executioner->variables->gfs.Get(var_name)[0][i] = tempSolutionVector(dof);
     }
-    if (order == 2)
+    else
     {
       executioner->variables->gfs.Get(var_name)[0][libmeshToMFEMNode[i]] = tempSolutionVector(dof);
     }
@@ -196,7 +196,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
                                        (executioner->variables->gfs.Get(var_name)[0])[i]); /*Needs
                                   to be changed for tetra*/
     }
-    if (order == 2)
+    else
     {
       mooseVarRef.sys().solution().set(
           dof, (executioner->variables->gfs.Get(var_name)[0])[libmeshToMFEMNode[i]]); /*Needs to be
