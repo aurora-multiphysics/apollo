@@ -159,25 +159,44 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
   unsigned int order = (unsigned int)mooseVarRef.order();
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
 
-  for (auto & node : libmeshBase.local_node_ptr_range())
+  if (mooseVarRef.isNodal())
   {
-    unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
-    unsigned int node_id = node->id();
-    for (unsigned int i = 0; i < n_comp; i++)
+    for (auto & node : libmeshBase.local_node_ptr_range())
     {
-      dof_id_type dof = node->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
+      unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+      unsigned int node_id = node->id();
+      for (unsigned int i = 0; i < n_comp; i++)
+      {
+        dof_id_type dof = node->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
 
-      if (order == 1)
-      {
-        executioner->variables->gfs.Get(var_name)[0][node_id] = tempSolutionVector(dof);
-      }
-      else
-      {
-        executioner->variables->gfs.Get(var_name)[0][libmeshToMFEMNode[node_id]] =
-            tempSolutionVector(dof);
+        if (order == 1)
+        {
+          executioner->variables->gfs.Get(var_name)[0][node_id] = tempSolutionVector(dof);
+        }
+        else
+        {
+          executioner->variables->gfs.Get(var_name)[0][libmeshToMFEMNode[node_id]] =
+              tempSolutionVector(dof);
+        }
       }
     }
   }
+  else
+  {
+    for (auto & elem :
+         as_range(libmeshBase.local_elements_begin(), libmeshBase.local_elements_end()))
+    {
+      unsigned int n_comp = elem->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+      unsigned int elem_id = elem->id();
+      for (unsigned int i = 0; i < n_comp; i++)
+      {
+        dof_id_type dof = elem->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
+
+        executioner->variables->gfs.Get(var_name)[0][elem_id] = tempSolutionVector(dof);
+      }
+    }
+  }
+
   mooseVarRef.sys().solution().close();
   mooseVarRef.sys().update();
 }
@@ -191,23 +210,40 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
       0, var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
   unsigned int order = (unsigned int)mooseVarRef.order();
   MeshBase & libmeshBase = mesh().getMesh();
-
-  for (auto & node : libmeshBase.local_node_ptr_range())
+  if (mooseVarRef.isNodal())
   {
-    unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
-    unsigned int node_id = node->id();
-    for (unsigned int i = 0; i < n_comp; i++)
+    for (auto & node : libmeshBase.local_node_ptr_range())
     {
-      dof_id_type dof = node->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
-      if (order == 1)
+      unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+      unsigned int node_id = node->id();
+      for (unsigned int i = 0; i < n_comp; i++)
       {
-        mooseVarRef.sys().solution().set(dof,
-                                         (executioner->variables->gfs.Get(var_name)[0])[node_id]);
+        dof_id_type dof = node->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
+        if (order == 1)
+        {
+          mooseVarRef.sys().solution().set(dof,
+                                           (executioner->variables->gfs.Get(var_name)[0])[node_id]);
+        }
+        else
+        {
+          mooseVarRef.sys().solution().set(
+              dof, (executioner->variables->gfs.Get(var_name)[0])[libmeshToMFEMNode[node_id]]);
+        }
       }
-      else
+    }
+  }
+  else
+  {
+    for (auto & elem :
+         as_range(libmeshBase.local_elements_begin(), libmeshBase.local_elements_end()))
+    {
+      unsigned int n_comp = elem->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+      unsigned int elem_id = elem->id();
+      for (unsigned int i = 0; i < n_comp; i++)
       {
-        mooseVarRef.sys().solution().set(
-            dof, (executioner->variables->gfs.Get(var_name)[0])[libmeshToMFEMNode[node_id]]);
+        dof_id_type dof = elem->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
+        mooseVarRef.sys().solution().set(dof,
+                                         (executioner->variables->gfs.Get(var_name)[0])[elem_id]);
       }
     }
   }

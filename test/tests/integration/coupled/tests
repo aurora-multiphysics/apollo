@@ -1,0 +1,13 @@
+[Tests]
+  design = 'syntax/Variables/index.md'
+  [./CoupledNodalMFEMVar]
+    type = 'RunApp'
+    input = 'nodal_var_coupled.i'
+    requirement = 'Apollo shall have the ability to couple MOOSE LAGRANGE variables to MFEM H1 conforming gridfunctions.'
+  []
+  [./CoupledElementalMFEMVar]
+    type = 'RunApp'
+    input = 'elemental_var_coupled.i'
+    requirement = 'Apollo shall have the ability to couple MOOSE MONOMIAL variables to MFEM L2 conforming gridfunctions.'
+  []  
+[]

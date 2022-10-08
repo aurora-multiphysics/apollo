@@ -1,8 +1,0 @@
-[Tests]
-  design = 'syntax/Variables/index.md'
-  [./CoupledRod]
-    type = 'RunApp'
-    input = 'coupled_rod.i'
-    requirement = 'Apollo shall have the ability to couple MOOSE LAGRANGE variables to MFEM H1 conforming gridfunctions.'
-  []
-[]
