@@ -333,21 +333,16 @@ void CoupledMFEMMesh::createMFEMMesh() {
     cubitToMFEMVertMap[uniqueVertexID[i]] = i;
   }
 
-  // for (auto& [key, value] : cubitToMFEMVertMap) {
-  //   // value -= 1;
-  //   std::cout << '[' << key << "] = " << value << "; " << std::endl;
-  // }
   std::vector<double> coordx(nNodes(), 0);
   std::vector<double> coordy(nNodes(), 0);
   std::vector<double> coordz(nNodes(), 0);
   int node_counter = 0;
 
   // Populating coord data structures to hold all the node coorindates which are needed to create the MFEM mesh
-  //This could be problematic if localNodesBegin and End don't access nodes in ascending node id, but this never seems to happen
-  for (auto i = localNodesBegin(); i != localNodesEnd(); i++) {
-    coordx[node_counter] = (**i)(0);
-    coordy[node_counter] = (**i)(1);
-    coordz[node_counter] = (**i)(2);
+  for (auto& i: getMesh().node_ptr_range()) {
+    coordx[node_counter] = (*i)(0);
+    coordy[node_counter] = (*i)(1);
+    coordz[node_counter] = (*i)(2);
     node_counter++;
   }
   
