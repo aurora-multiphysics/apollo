@@ -8,9 +8,15 @@
   type = MFEMProblem
   formulation = EBForm
   order = 2
-  dt = 0.5
-  end_time = 2.5
 []
+
+[Executioner]
+  type = Transient
+  dt = 0.5
+  start_time = 0.0
+  end_time = 0.5
+[]
+
 
 [AuxVariables]
   [./dummy_mfem]
@@ -20,7 +26,7 @@
   [../]
   [./dummy_moose]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   [../]
 [../]
 
@@ -87,10 +93,6 @@
     magnetic_permeability = 1.25663706e-6
     block = 2
   [../]
-[]
-
-[Executioner]
-  type = Steady
 []
 
 [Outputs]

@@ -32,6 +32,8 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
   int getNumSidesets();
   
   void createMFEMMesh();
+  
+  void buildMFEMParMesh();
 
   void create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id);
 
@@ -43,6 +45,7 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
   int num_element_linear_nodes;
   int num_face_nodes;
   int num_face_linear_nodes;
+  mfem::ParMesh* MFEMParMesh;
 
  protected:
 

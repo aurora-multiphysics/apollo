@@ -344,11 +344,11 @@ void CoupledMFEMMesh::createMFEMMesh() {
 
   // Populating coord data structures to hold all the node coorindates which are needed to create the MFEM mesh
   //This could be problematic if localNodesBegin and End don't access nodes in ascending node id, but this never seems to happen
-  for (auto i = localNodesBegin(); i != localNodesEnd(); i++) {
-    coordx[node_counter] = (**i)(0);
-    coordy[node_counter] = (**i)(1);
-    coordz[node_counter] = (**i)(2);
-    node_counter++;
+ for (auto node: getMesh().node_ptr_range()) {
+    unsigned int node_id = node->id();
+    coordx[node_id] = (*node)(0);
+    coordy[node_id] = (*node)(1);
+    coordz[node_id] = (*node)(2);
   }
   
   //Number of elements in the mesh
@@ -360,6 +360,8 @@ void CoupledMFEMMesh::createMFEMMesh() {
       num_node_per_el, num_el_in_blk, num_element_linear_nodes, num_face_nodes,
       num_face_linear_nodes, num_side_sets, num_sides_in_ss, ss_node_id, ebprop,
       ssprop, 3, start_of_block, libmeshToMFEMNode);
+  
+  buildMFEMParMesh();
 
   //Clear up, preventing memory leaks
   delete [] elem_ss;
@@ -374,6 +376,18 @@ void CoupledMFEMMesh::createMFEMMesh() {
   delete [] ssprop;
   delete [] start_of_block;
 }
+void CoupledMFEMMesh::buildMFEMParMesh(){
+  int* partitioning = new int[getMesh().n_nodes()];
+ for (auto node: getMesh().node_ptr_range()) {
+    unsigned int node_id = node->id();
+    partitioning[node_id] = node->processor_id();
+  }
+  mfem::Mesh & mfem_meshref = *(mfem_mesh);
+  MFEMParMesh = new mfem::ParMesh(MPI_COMM_WORLD, mfem_meshref);
+
+  // MFEMParMesh = new mfem::ParMesh(MPI_COMM_WORLD, *mfem_mesh, partitioning);
+}
+
 
 void CoupledMFEMMesh::create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id)
 {

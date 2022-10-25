@@ -11,7 +11,7 @@ MFEMMesh::MFEMMesh(
     size_t *num_el_in_blk, int num_element_linear_nodes, int num_face_nodes,
     int num_face_linear_nodes, int num_side_sets,
     std::vector<int> num_side_in_ss, int **ss_node_id, int *ebprop, int *ssprop,
-    int dim_num, int* start_of_block, std::map<int,int>& libmeshToMFEMNode) 
+    int dim_num, int* start_of_block, std::map<int,int>& libmeshToMFEMNode)
 {
 
   const int mfemToLibmeshTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
