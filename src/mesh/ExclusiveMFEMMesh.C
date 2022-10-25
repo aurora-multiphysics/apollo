@@ -29,6 +29,7 @@ ExclusiveMFEMMesh::~ExclusiveMFEMMesh()
 void ExclusiveMFEMMesh::buildMesh() { 
   buildDummyMesh();
   mfem_mesh = std::make_shared<MFEMMesh>(getFileName());
+  MFEMParMesh = new mfem::ParMesh(MPI_COMM_WORLD, *mfem_mesh);
 }
 
 void ExclusiveMFEMMesh::buildDummyMesh() {

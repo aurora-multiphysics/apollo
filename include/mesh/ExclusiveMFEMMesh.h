@@ -44,4 +44,5 @@ class ExclusiveMFEMMesh : public FileMesh {
 
   // The object holding our MFEM mesh. Needs renaming as to avoid confusion
   std::shared_ptr<MFEMMesh> mfem_mesh;
+  mfem::ParMesh * MFEMParMesh;
 };
