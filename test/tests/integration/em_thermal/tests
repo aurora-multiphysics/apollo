@@ -1,0 +1,8 @@
+[Tests]
+  design = 'syntax/Variables/index.md'
+  [./CoupledMFEMMOOSE]
+    type = 'RunApp'
+    input = 'eb_thermal_master.i'
+    requirement = 'Apollo shall have the ability to run a coupled MFEM/MOOSE simulation using MOOSE multiapp functionality'
+  []
+[]
