@@ -97,7 +97,6 @@ MFEMProblem::externalSolve()
     hephaestus::Inputs inputs(
         mfem_mesh, _formulation, _order, _bc_maps, _domain_properties, _executioner, _outputs);
     std::vector<char *> argv;
-    std::cout << "Launching MFEM solve\n\n" << std::endl;
     joule_solve(argv.size() - 1, argv.data(), inputs);
   }
   else
@@ -340,7 +339,6 @@ MFEMProblem::syncSolutions(Direction direction)
       for (std::string name : getAuxVariableNames())
       {
         setMFEMVarData(es(), name, (*libmeshToMFEMNodePtr));
-        std::cout << name << std::endl;
       }
     }
 
