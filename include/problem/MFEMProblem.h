@@ -9,6 +9,7 @@
 #include "MFEMMaterial.h"
 #include "MFEMVariable.h"
 #include "MFEMBoundaryCondition.h"
+#include "MFEMAuxKernel.h"
 #include "MFEMDataCollection.h"
 #include "Function.h"
 #include "MooseEnum.h"
@@ -62,20 +63,33 @@ public:
   void addAuxVariable(const std::string & var_type,
                       const std::string & var_name,
                       InputParameters & parameters);
+
+  /**
+   * Override of ExternalProblem::addAuxKernel. Uses ExternalProblem::addAuxKernel to create a
+   * GeneralUserObject representing the auxkernel in MOOSE, and creates corresponding MFEM auxkernel
+   * to be used in the MFEM solve.
+   */
+  void addAuxKernel(const std::string & kernel_name,
+                    const std::string & name,
+                    InputParameters & parameters);
+  /**
+   * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve
+   * data from one of the variable types (either Moose AuxVar or MFEM grid function), and
+   * transfer it to the other. For example if you solve for temperature in MOOSE, you would use
+   * setMFEMVarData to get this temperature data into an MFEM grid function.
+   */
+  void setMFEMVarData(EquationSystems & esRef,
+                      std::string var_name,
+                      std::map<int, int> libmeshToMFEMNode);
   /**
    * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data
    * from one of the variable types (either Moose AuxVar or MFEM grid function), and transfer it to
    * the other. For example if you solve for temperature in MOOSE, you would use setMFEMVarData to
    * get this temperature data into an MFEM grid function.
    */
-  void setMFEMVarData(EquationSystems & esRef, std::string var_name, std::map<int, int>libmeshToMFEMNode);
-  /**
-   * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data
-   * from one of the variable types (either Moose AuxVar or MFEM grid function), and transfer it to
-   * the other. For example if you solve for temperature in MOOSE, you would use setMFEMVarData to
-   * get this temperature data into an MFEM grid function.
-   */
-  void setMOOSEVarData(std::string var_name, EquationSystems & esRef, std::map<int, int>libmeshToMFEMNode);
+  void setMOOSEVarData(std::string var_name,
+                       EquationSystems & esRef,
+                       std::map<int, int> libmeshToMFEMNode);
 
   /**
    * Method used to get an mfem FEC depending on the variable family specified in the input file.

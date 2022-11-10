@@ -8,7 +8,7 @@
   [temperature]
     family = LAGRANGE
     order = FIRST
-    initial_condition = 300 # Start at room temperature
+    initial_condition = 300
   []
 []
 
@@ -60,6 +60,7 @@
     type = TransientMultiApp
     positions = '0 0 0'
     input_files = 'eb_thermal_coupled.i'
+    execute_on = timestep_begin
   []
 []
 
