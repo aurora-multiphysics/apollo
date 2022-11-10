@@ -60,14 +60,19 @@
   [./joule_heating]
     family = MONOMIAL
     order = CONSTANT
-    initial_condition = 50
+    initial_condition = 0.0
   [../]  
+[]
+
+[AuxKernels]
+  [joule_heating_aux]
+    type = MFEMJouleHeatingAux
+  []  
 []
 
 [Materials]
   [./copper]
     type = MFEMTemperatureDependentConductor
-    electrical_conductivity = 5.96e7
     magnetic_permeability = 1.25663706e-6
     block = 1
   [../]

@@ -18,6 +18,14 @@ public:
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> & variables,
             hephaestus::DomainProperties & domain_properties)
   {
+    // To ensure conductivity on subdomains is converted into global coefficient
+    // Hephaestus update for domain_properties initialisation could address this
+    if (domain_properties.scalar_property_map.count(conductivity_coef_name) == 0)
+    {
+      domain_properties.scalar_property_map[conductivity_coef_name] = new mfem::PWCoefficient(
+          domain_properties.getGlobalScalarProperty(std::string(conductivity_coef_name)));
+    }
+
     hephaestus::CoupledCoefficient::Init(variables, domain_properties);
     std::cout << "Intialising JouleHeating";
     sigma = domain_properties.scalar_property_map[conductivity_coef_name];
