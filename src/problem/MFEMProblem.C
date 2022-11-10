@@ -39,12 +39,12 @@ MFEMProblem::init()
   FEProblemBase::init();
 
   mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
-  int* partitioning = new int[mesh().getMesh().n_elem()];
-  for (auto elem :
-        mesh().getMesh().element_ptr_range()){
+  int * partitioning = new int[mesh().getMesh().n_elem()];
+  for (auto elem : mesh().getMesh().element_ptr_range())
+  {
     unsigned int elem_id = elem->id();
-    partitioning[elem_id] = elem->processor_id();        
-        }
+    partitioning[elem_id] = elem->processor_id();
+  }
 
   mfem::ParMesh mfem_parmesh = mfem::ParMesh(MPI_COMM_WORLD, mfem_mesh, partitioning);
 
@@ -66,7 +66,6 @@ MFEMProblem::init()
     _exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
     _exec_params.SetParam("TimeStep", float(dt()));
     _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
-
     executioner = new hephaestus::TransientExecutioner(_exec_params);
 
     hephaestus::InputParameters params;
@@ -131,6 +130,20 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
     int block = std::stoi(mfem_material.blocks[bid]);
     hephaestus::Subdomain mfem_subdomain(name, block);
     mfem_subdomain.property_map = mfem_material.scalar_property_map;
+
+    // Hotfix to ensure coupled coeffs get properly initialised in Hephaestus.
+    // To replaced by addAuxkernels?
+    for (auto coef = mfem_subdomain.property_map.begin(); coef != mfem_subdomain.property_map.end();
+         ++coef)
+    {
+      hephaestus::CoupledCoefficient * _coupled_coef =
+          dynamic_cast<hephaestus::CoupledCoefficient *>(coef->second);
+      if (_coupled_coef != NULL)
+      {
+        _auxkernels.Register(coef->first, _coupled_coef, false);
+      }
+    }
+
     _domain_properties.subdomains.push_back(mfem_subdomain);
   }
 }
@@ -158,6 +171,18 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
 }
 
 void
+MFEMProblem::addAuxKernel(const std::string & kernel_name,
+                          const std::string & name,
+                          InputParameters & parameters)
+{
+  FEProblemBase::addUserObject(kernel_name, name, parameters);
+  MFEMAuxKernel * mfem_auxkernel(&getUserObject<MFEMAuxKernel>(name));
+
+  _auxkernels.Register(name, mfem_auxkernel->getAuxKernel(), true);
+  mfem_auxkernel->storeCoefficients(_domain_properties);
+}
+
+void
 MFEMProblem::setMFEMVarData(EquationSystems & esRef,
                             std::string var_name,
                             std::map<int, int> libmeshToMFEMNode)
@@ -169,7 +194,7 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
   auto & pgf = *(executioner->variables->gfs.Get(var_name));
   mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
-  mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());  
+  mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());
   unsigned int count = 0;
   if (mooseVarRef.isNodal())
   {
@@ -230,7 +255,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
   if (mooseVarRef.isNodal())
   {
     mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
-    mfem_local_nodes = *(pgf.GetTrueDofs());    
+    mfem_local_nodes = *(pgf.GetTrueDofs());
     for (auto & node : libmeshBase.local_node_ptr_range())
     {
       unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
@@ -254,7 +279,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
   else
   {
     mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());
-    mfem_local_elems = *(pgf.GetTrueDofs());    
+    mfem_local_elems = *(pgf.GetTrueDofs());
     for (auto & elem :
          as_range(libmeshBase.local_elements_begin(), libmeshBase.local_elements_end()))
     {
