@@ -7,7 +7,7 @@
 [Problem]
   type = MFEMProblem
   formulation = EBForm
-  order = 1
+  order = 2
 []
 
 [Functions]

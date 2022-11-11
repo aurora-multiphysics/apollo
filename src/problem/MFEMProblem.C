@@ -192,31 +192,72 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
   unsigned int order = (unsigned int)mooseVarRef.order();
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
   auto & pgf = *(executioner->variables->gfs.Get(var_name));
+  // std::cout << "var_name: " << mooseVarRef.sys().n_local_dofs() << " ";
   mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
   mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());
+  std::cout << var_name << " ";
+
+  std::cout << "pgf size: " << pgf.Size() << " \n";
+  std::cout << " \n";
+
   unsigned int count = 0;
   if (mooseVarRef.isNodal())
   {
     for (auto & node : as_range(libmeshBase.local_nodes_begin(), libmeshBase.local_nodes_end()))
     {
-      unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
-      unsigned int node_id = node->id();
+      if (node->n_dofs(mooseVarRef.sys().number(), mooseVarRef.number()) >
+          0) // If this variable has dofs at this node
+      {
+        unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+        unsigned int node_id = node->id();
+        for (unsigned int i = 0; i < n_comp; i++)
+        {
+          count++;
+        }
+      }
+    }
+  }
+  else
+  {
+    for (auto & elem :
+         as_range(libmeshBase.local_elements_begin(), libmeshBase.local_elements_end()))
+    {
+      unsigned int n_comp = elem->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+      unsigned int elem_id = elem->id();
       for (unsigned int i = 0; i < n_comp; i++)
       {
-        dof_id_type dof = node->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
-
-        if (order == 1)
-        {
-          mfem_local_nodes[count] = tempSolutionVector(dof);
-        }
-        else
-        {
-          // mfem_local_nodes[libmeshToMFEMNode[node_id]] = tempSolutionVector(dof);
-        }
         count++;
       }
     }
-    pgf.SetFromTrueDofs(mfem_local_nodes);
+  }
+  mfem::Vector mfem_local_dofs(count);
+  count = 0;
+  if (mooseVarRef.isNodal())
+  {
+    for (auto & node : as_range(libmeshBase.local_nodes_begin(), libmeshBase.local_nodes_end()))
+    {
+      if (node->n_dofs(mooseVarRef.sys().number(), mooseVarRef.number()) >
+          0) // If this variable has dofs at this node
+      {
+        unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+        unsigned int node_id = node->id();
+        for (unsigned int i = 0; i < n_comp; i++)
+        {
+          dof_id_type dof = node->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
+
+          if (order == 1)
+          {
+            mfem_local_dofs[count] = tempSolutionVector(dof);
+          }
+          else
+          {
+            // mfem_local_nodes[libmeshToMFEMNode[node_id]] = tempSolutionVector(dof);
+          }
+          count++;
+        }
+      }
+    }
+    pgf.SetFromTrueDofs(mfem_local_dofs);
   }
   else
   {
@@ -228,11 +269,11 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
       for (unsigned int i = 0; i < n_comp; i++)
       {
         dof_id_type dof = elem->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
-        mfem_local_elems[count] = tempSolutionVector(dof);
+        mfem_local_dofs[count] = tempSolutionVector(dof);
         count++;
       }
     }
-    pgf.SetFromTrueDofs(mfem_local_elems);
+    pgf.SetFromTrueDofs(mfem_local_dofs);
   }
   mooseVarRef.sys().solution().close();
   mooseVarRef.sys().update();
