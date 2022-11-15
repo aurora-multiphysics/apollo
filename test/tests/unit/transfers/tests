@@ -1,0 +1,21 @@
+[Tests]
+  design = 'syntax/Problem/index.md'
+  [./CoupledFONodalMFEMVar]
+    type = 'Exodiff'
+    input = 'fo_nodal_var_coupled.i'
+    exodiff = 'fo_nodal_var_coupled_out.e'
+    requirement = 'Apollo shall have the ability to couple first order MOOSE LAGRANGE variables to MFEM H1 conforming gridfunctions.'
+  []  
+  [./CoupledElementalMFEMVar]
+    type = 'Exodiff'
+    input = 'elemental_var_coupled.i'
+    exodiff = 'elemental_var_coupled_out.e'  
+    requirement = 'Apollo shall have the ability to couple MOOSE MONOMIAL variables to MFEM L2 conforming gridfunctions.'
+  []  
+  # [./CoupledNodalMFEMVar]
+  #   type = 'Exodiff'
+  #   input = 'nodal_var_coupled.i'
+  #   exodiff = 'nodal_var_coupled_out.e' 
+  #   requirement = 'Apollo shall have the ability to couple second order MOOSE LAGRANGE variables to MFEM H1 conforming gridfunctions.'
+  # []  
+[]

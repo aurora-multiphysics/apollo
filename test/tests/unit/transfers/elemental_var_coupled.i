@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = ./cylinder-hex-q2.e
+  file = ./gold/cylinder-hex-q2.e
   dim = 3
 []
 
@@ -16,17 +16,17 @@
     fespace = ND
     order = SECOND
   [../]
-  [./dummy_moose_nodal]
-    family = LAGRANGE
-    order = SECOND
+  [./dummy_moose_elemental]
+    family = MONOMIAL
+    order = CONSTANT
   [../]  
 [../]
 
 [ICs]
-  [./dummy_moose_nodal_ic]
+  [./dummy_moose_elem_ic]
     type = FunctionIC
-    variable = dummy_moose_nodal
-    function = 2-x*x
+    variable = dummy_moose_elemental
+    function = 2-x
   [../]  
 []
 
@@ -53,8 +53,9 @@
 []
 
 [Outputs]
+  exodus=true
   [VisItDataCollection]
     type = MFEMVisItDataCollection
-    file_base = OutputData/NodalCoupledMFEMVarTest
+    file_base = OutputData/ElementalCoupledMFEMVarTest
   []
 []
