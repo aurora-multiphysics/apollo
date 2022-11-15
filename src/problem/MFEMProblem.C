@@ -39,6 +39,7 @@ MFEMProblem::init()
   FEProblemBase::init();
 
   mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
+  mfem_mesh.EnsureNCMesh();
   // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
   int * partitioning = NULL;
   if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
