@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = ./cylinder_fo.e
+  file = ./gold/cylinder_fo.e
   dim = 3
 []
 
@@ -47,6 +47,7 @@
 []
 
 [Outputs]
+  exodus=true
   [VisItDataCollection]
     type = MFEMVisItDataCollection
     file_base = OutputData/NodalCoupledMFEMVarTest

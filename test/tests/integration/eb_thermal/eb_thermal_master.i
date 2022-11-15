@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = ./cylinder-hex-q2.e
+  file = ./gold/cylinder-hex-q2.e
   dim = 3
 []
 

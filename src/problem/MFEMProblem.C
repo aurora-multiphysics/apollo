@@ -39,13 +39,17 @@ MFEMProblem::init()
   FEProblemBase::init();
 
   mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
-  int * partitioning = new int[mesh().getMesh().n_elem()];
-  for (auto elem : mesh().getMesh().element_ptr_range())
+  // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
+  int * partitioning = NULL;
+  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
   {
-    unsigned int elem_id = elem->id();
-    partitioning[elem_id] = elem->processor_id();
+    partitioning = new int[mesh().getMesh().n_elem()];
+    for (auto elem : mesh().getMesh().element_ptr_range())
+    {
+      unsigned int elem_id = elem->id();
+      partitioning[elem_id] = elem->processor_id();
+    }
   }
-
   mfem::ParMesh mfem_parmesh = mfem::ParMesh(MPI_COMM_WORLD, mfem_mesh, partitioning);
 
   std::vector<OutputName> mfem_data_collections =
@@ -192,14 +196,8 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
   unsigned int order = (unsigned int)mooseVarRef.order();
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
   auto & pgf = *(executioner->variables->gfs.Get(var_name));
-  // std::cout << "var_name: " << mooseVarRef.sys().n_local_dofs() << " ";
   mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
   mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());
-  std::cout << var_name << " ";
-
-  std::cout << "pgf size: " << pgf.Size() << " \n";
-  std::cout << " \n";
-
   unsigned int count = 0;
   if (mooseVarRef.isNodal())
   {
@@ -231,6 +229,7 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
     }
   }
   mfem::Vector mfem_local_dofs(count);
+
   count = 0;
   if (mooseVarRef.isNodal())
   {
