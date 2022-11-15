@@ -66,7 +66,7 @@
 
 [Transfers]
   [push_temperature]
-    type = MultiAppShapeEvaluationTransfer
+    type = MultiAppNearestNodeTransfer
 
     # Transfer to the sub-app from this app
     to_multi_app = sub_app
@@ -78,7 +78,7 @@
     variable = temperature
   []
   [pull_joule_heating]
-    type = MultiAppShapeEvaluationTransfer
+    type = MultiAppNearestNodeTransfer
 
     # Transfer from the sub-app to this app
     from_multi_app = sub_app
