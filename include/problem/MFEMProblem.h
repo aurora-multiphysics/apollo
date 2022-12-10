@@ -10,6 +10,7 @@
 #include "MFEMVariable.h"
 #include "MFEMBoundaryCondition.h"
 #include "MFEMAuxKernel.h"
+#include "MFEMSource.h"
 #include "MFEMDataCollection.h"
 #include "Function.h"
 #include "MooseEnum.h"
@@ -55,6 +56,15 @@ public:
   void addMaterial(const std::string & kernel_name,
                    const std::string & name,
                    InputParameters & parameters);
+
+  /**
+   * Override of ExternalProblem::addUserObject. Uses ExternalProblem::addUserObject to set the
+   * Moose user objects, and contains additional code to create MFEM specific user objects.
+   */
+  void addUserObject(const std::string & user_object_name,
+                     const std::string & name,
+                     InputParameters & parameters);
+
   /**
    * Override of ExternalProblem::addAuxVariable. Uses ExternalProblem::addAuxVariable to set the
    * Moose aux var, and contains additional code to create a corresponding MFEM grid function to be
@@ -107,6 +117,7 @@ protected:
   hephaestus::Variables _variables;
   hephaestus::AuxKernels _auxkernels;
   hephaestus::Postprocessors _postprocessors;
+  hephaestus::Sources _sources;  
   hephaestus::InputParameters _exec_params;
   hephaestus::Outputs _outputs;
   hephaestus::TransientExecutioner * executioner;
