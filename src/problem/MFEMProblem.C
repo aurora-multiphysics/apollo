@@ -28,6 +28,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _variables(),
     _auxkernels(),
     _postprocessors(),
+    _sources(),
     _exec_params(),
     _outputs()
 {
@@ -82,6 +83,7 @@ MFEMProblem::init()
     params.SetParam("Variables", _variables);
     params.SetParam("AuxKernels", _auxkernels);
     params.SetParam("Postprocessors", _postprocessors);
+    params.SetParam("Sources", _sources);
     params.SetParam("Outputs", _outputs);
     params.SetParam("FormulationName", _formulation);
 
@@ -149,6 +151,21 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
     }
 
     _domain_properties.subdomains.push_back(mfem_subdomain);
+  }
+}
+
+void
+MFEMProblem::addUserObject(const std::string & user_object_name,
+                           const std::string & name,
+                           InputParameters & parameters)
+{
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+
+  MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
+  if (mfem_source != NULL)
+  {
+    _sources.Register(name, mfem_source->getSource(), true);
+    mfem_source->storeCoefficients(_domain_properties);
   }
 }
 
