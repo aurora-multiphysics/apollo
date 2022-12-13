@@ -11,7 +11,7 @@
 
 [UserObjects]
   [./SourceCoil]
-    type = MFEMSource
+    type = MFEMDivFreeVolumetricSource
     function = RacetrackCoilCurrentFunction
     block = '3 4 5 6'
   [../]

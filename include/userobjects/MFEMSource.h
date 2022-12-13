@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GeneralUserObject.h"
+#include "Function.h"
 #include "sources.hpp"
 
 libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
@@ -22,12 +23,5 @@ public:
 
 protected:
   std::vector<SubdomainID> blocks;
-  const Function & _func;
-  mfem::VectorFunctionCoefficient _vec_function_coef;
-  mfem::Array<mfem::VectorCoefficient *> sourcecoefs;
-  mfem::Array<int> coilsegments;
-
-  mfem::PWVectorCoefficient * _restricted_coef;
-
   hephaestus::Source * _source;  
 };
