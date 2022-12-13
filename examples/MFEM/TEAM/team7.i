@@ -12,27 +12,20 @@
 [UserObjects]
   [./SourceCoil]
     type = MFEMSource
+    function = RacetrackCoilCurrentFunction
+    block = '3 4 5 6'
   [../]
 []
 
 [Functions]
-  [./potential_high]
-    type = ParsedFunction
-    value = cos(2.0*pi*freq*t)
-    vars = 'freq'
-    vals = '0.01666667'
-  [../]
-  [./potential_low]
-    type = ParsedFunction
-    value = -cos(2.0*pi*freq*t)
-    vars = 'freq'
-    vals = '0.01666667'
-  [../]
-  [./tangential_E]
-    type = ParsedVectorFunction
-    value_x = 0.0
-    value_y = 0.0
-    value_z = 0.0
+  [./RacetrackCoilCurrentFunction]
+    type = RacetrackCoilCurrentDensity
+    coil_axis_x = 194e-3 
+    coil_axis_y = 100e-3
+    coil_thickness = 50e-3
+    coil_current_magnitude = 2742.0
+    coil_xsection_area = 2.5e-3
+    frequency = 200.0
   [../]
 []
 
@@ -61,11 +54,11 @@
 [Outputs]
   [VisItDataCollection]
     type = MFEMVisItDataCollection
-    file_base = OutputData/EBFormRodVisIt
+    file_base = OutputData/TEAM7VisIt
   []
   [ParaViewDataCollection]
     type = MFEMParaViewDataCollection
-    file_base = OutputData/EBFormRodParaView
+    file_base = OutputData/TEAM7ParaView
     refinements = 1
     high_order_output = true
   []
