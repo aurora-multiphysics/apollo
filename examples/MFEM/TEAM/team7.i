@@ -48,7 +48,7 @@
   type = Transient
   dt = 0.001
   start_time = 0.0
-  end_time = 0.002
+  end_time = 0.02
 []
 
 [Outputs]
