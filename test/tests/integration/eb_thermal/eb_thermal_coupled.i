@@ -76,6 +76,21 @@
     magnetic_permeability = 1.25663706e-6
     block = 1
   [../]
+  [./copper]
+    type = MFEMParsedMaterial
+    value = -cos(2.0*pi*freq*t)
+    vars = 'freq'
+    vals = '0.01666667'
+  [../]
+  [./copper_electrical_conductivity]
+    type = MFEMParsedMaterial
+    f_name = 'copper_electrical_conductivity'
+    mfem_gridfunction_names = 'T'
+    mfem_coefficient_names = 'T'
+    constant_names        = 'sigma0  alpha0   T0' #describe units
+    constant_expressions  = '5.96e7  4.29e-6  273'
+    function = 'sigma0 / (1 + alpha0 * (T - T0))' #
+  [../]  
   [./air]
     type = MFEMConductor
     electrical_conductivity = 1
