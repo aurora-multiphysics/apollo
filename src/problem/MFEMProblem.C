@@ -313,7 +313,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
   {
     mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
     mfem_local_nodes = *(pgf.GetTrueDofs());
-    for (auto & node : libmeshBase.local_node_ptr_range())
+    for (auto & node : as_range(libmeshBase.local_nodes_begin(), libmeshBase.local_nodes_end()))
     {
       unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
       unsigned int node_id = node->id();
@@ -329,8 +329,8 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
           // mooseVarRef.sys().solution().set(
           //     dof, (executioner->variables->gfs.Get(var_name)[0])[libmeshToMFEMNode[node_id]]);
         }
+        count++;
       }
-      count++;
     }
   }
   else
