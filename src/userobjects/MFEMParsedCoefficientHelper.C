@@ -7,12 +7,12 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "MFEMParsedMaterialHelper.h"
+#include "MFEMParsedCoefficientHelper.h"
 
 #include "libmesh/quadrature.h"
 
 InputParameters
-MFEMParsedMaterialHelper::validParams()
+MFEMParsedCoefficientHelper::validParams()
 {
   InputParameters params = MFEMCoefficient::validParams();
   params += FunctionParserUtils<false>::validParams();
@@ -24,8 +24,8 @@ MFEMParsedMaterialHelper::validParams()
   return params;
 }
 
-MFEMParsedMaterialHelper::MFEMParsedMaterialHelper(const InputParameters & parameters,
-                                                   VariableNameMappingMode map_mode)
+MFEMParsedCoefficientHelper::MFEMParsedCoefficientHelper(const InputParameters & parameters,
+                                                         VariableNameMappingMode map_mode)
   : MFEMCoefficient(parameters),
     hephaestus::CoupledCoefficient(hephaestus::InputParameters(
         std::map<std::string, std::any>({{"CoupledVariableName", std::string("dummy_variable")}}))),
@@ -39,16 +39,16 @@ MFEMParsedMaterialHelper::MFEMParsedMaterialHelper(const InputParameters & param
 }
 
 void
-MFEMParsedMaterialHelper::functionParse(const std::string & function_expression)
+MFEMParsedCoefficientHelper::functionParse(const std::string & function_expression)
 {
   const std::vector<std::string> empty_string_vector;
   functionParse(function_expression, empty_string_vector, empty_string_vector);
 }
 
 void
-MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
-                                        const std::vector<std::string> & constant_names,
-                                        const std::vector<std::string> & constant_expressions)
+MFEMParsedCoefficientHelper::functionParse(const std::string & function_expression,
+                                           const std::vector<std::string> & constant_names,
+                                           const std::vector<std::string> & constant_expressions)
 {
   const std::vector<std::string> empty_string_vector;
   const std::vector<Real> empty_real_vector;
@@ -61,12 +61,12 @@ MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
 }
 
 void
-MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
-                                        const std::vector<std::string> & constant_names,
-                                        const std::vector<std::string> & constant_expressions,
-                                        const std::vector<std::string> & mfem_coefficient_names,
-                                        const std::vector<std::string> & tol_names,
-                                        const std::vector<Real> & tol_values)
+MFEMParsedCoefficientHelper::functionParse(const std::string & function_expression,
+                                           const std::vector<std::string> & constant_names,
+                                           const std::vector<std::string> & constant_expressions,
+                                           const std::vector<std::string> & mfem_coefficient_names,
+                                           const std::vector<std::string> & tol_names,
+                                           const std::vector<Real> & tol_values)
 {
   const std::vector<std::string> empty_string_vector;
   functionParse(function_expression,
@@ -79,13 +79,13 @@ MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
 }
 
 void
-MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
-                                        const std::vector<std::string> & constant_names,
-                                        const std::vector<std::string> & constant_expressions,
-                                        const std::vector<std::string> & mfem_coefficient_names,
-                                        const std::vector<std::string> & mfem_gridfunction_names,
-                                        const std::vector<std::string> & tol_names,
-                                        const std::vector<Real> & tol_values)
+MFEMParsedCoefficientHelper::functionParse(const std::string & function_expression,
+                                           const std::vector<std::string> & constant_names,
+                                           const std::vector<std::string> & constant_expressions,
+                                           const std::vector<std::string> & mfem_coefficient_names,
+                                           const std::vector<std::string> & mfem_gridfunction_names,
+                                           const std::vector<std::string> & tol_names,
+                                           const std::vector<Real> & tol_values)
 {
   // build base function object
   _func_F = std::make_shared<SymFunction>();
@@ -123,7 +123,7 @@ MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
                function_expression,
                '\n',
                variables,
-               "\nin MFEMParsedMaterialHelper.\n",
+               "\nin MFEMParsedCoefficientHelper.\n",
                _func_F->ErrorMsg());
 
   // create parameter passing buffer
@@ -134,7 +134,7 @@ MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
 }
 
 void
-MFEMParsedMaterialHelper::functionsOptimize()
+MFEMParsedCoefficientHelper::functionsOptimize()
 {
   // base function
   if (!_disable_fpoptimizer)
@@ -144,8 +144,8 @@ MFEMParsedMaterialHelper::functionsOptimize()
 }
 
 void
-MFEMParsedMaterialHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> & variables,
-                               hephaestus::DomainProperties & domain_properties)
+MFEMParsedCoefficientHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> & variables,
+                                  hephaestus::DomainProperties & domain_properties)
 {
   auto nmfem_gfs = _gridfunction_names.size();
   for (MooseIndex(_gridfunction_names) i = 0; i < nmfem_gfs; ++i)
@@ -168,8 +168,8 @@ MFEMParsedMaterialHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFunction>
 }
 
 double
-MFEMParsedMaterialHelper::Eval(mfem::ElementTransformation & trans,
-                               const mfem::IntegrationPoint & ip)
+MFEMParsedCoefficientHelper::Eval(mfem::ElementTransformation & trans,
+                                  const mfem::IntegrationPoint & ip)
 {
   // insert material property values
   auto nmfem_coefs = _coefficient_names.size();
