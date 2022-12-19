@@ -10,6 +10,7 @@
 #pragma once
 
 #include "FunctionParserUtils.h"
+#include "MFEMCoefficient.h"
 #include "auxkernels.hpp"
 
 #include "libmesh/fparser_ad.hh"
@@ -32,7 +33,7 @@
  * Helper class to perform the parsing and optimization of the
  * function expression.
  */
-class MFEMParsedMaterialHelper : public MFEMMaterial,
+class MFEMParsedMaterialHelper : public MFEMCoefficient,
                                  public hephaestus::CoupledCoefficient,
                                  public FunctionParserUtils<false>
 {
