@@ -72,30 +72,70 @@
 
 [Materials]
   [./copper]
-    type = MFEMTemperatureDependentConductor
-    magnetic_permeability = 1.25663706e-6
+    type = MFEMConductor
+    electrical_conductivity_coeff = CopperEConductivity
+    electric_permittivity_coeff = CopperPermittivity
+    magnetic_permeability_coeff = CopperPermeability
+    thermal_conductivity_coeff = CopperTConductivity
+    heat_capacity_coeff = CopperHeatCapacity
     block = 1
   [../]
-  [./copper]
-    type = MFEMParsedMaterial
-    value = -cos(2.0*pi*freq*t)
-    vars = 'freq'
-    vals = '0.01666667'
-  [../]
-  [./copper_electrical_conductivity]
-    type = MFEMParsedMaterial
-    f_name = 'copper_electrical_conductivity'
-    mfem_gridfunction_names = 'T'
-    mfem_coefficient_names = 'T'
-    constant_names        = 'sigma0  alpha0   T0' #describe units
-    constant_expressions  = '5.96e7  4.29e-6  273'
-    function = 'sigma0 / (1 + alpha0 * (T - T0))' #
-  [../]  
   [./air]
     type = MFEMConductor
-    electrical_conductivity = 1
-    magnetic_permeability = 1.25663706e-6
+    electrical_conductivity_coeff = AirEConductivity
+    electric_permittivity_coeff = AirPermittivity
+    magnetic_permeability_coeff = AirPermeability
+    thermal_conductivity_coeff = AirTConductivity
+    heat_capacity_coeff = AirHeatCapacity
     block = 2
+  [../]
+[]
+
+[UserObjects]
+  [./CopperEConductivity]
+    type = MFEMParsedMaterial
+    mfem_gridfunction_names = 'temperature'
+    mfem_coefficient_names = ''
+    constant_names        = 'sigma0  alpha0   T0'
+    constant_expressions  = '5.96e7  4.29e-6  273'
+    function = 'sigma0 / (1 + alpha0 * (temperature - T0))' #
+  [../]
+  [./CopperPermeability]
+    type = MFEMConstantCoefficient
+    value = 1.25663706e-6
+  [../]
+  [./CopperPermittivity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./CopperTConductivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+  [./CopperHeatCapacity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+
+  [./AirEConductivity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./AirPermeability]
+    type = MFEMConstantCoefficient
+    value = 1.25663706e-6
+  [../]
+  [./AirPermittivity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./AirTConductivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+  [./AirHeatCapacity]
+    type = MFEMConstantCoefficient
+    value = 0.0
   [../]
 []
 

@@ -14,7 +14,7 @@
 InputParameters
 MFEMParsedMaterialHelper::validParams()
 {
-  InputParameters params = MFEMMaterial::validParams();
+  InputParameters params = MFEMCoefficient::validParams();
   params += FunctionParserUtils<false>::validParams();
   params.addClassDescription("Parsed Function Material.");
   params.addParam<bool>("error_on_missing_material_properties",
@@ -26,9 +26,9 @@ MFEMParsedMaterialHelper::validParams()
 
 MFEMParsedMaterialHelper::MFEMParsedMaterialHelper(const InputParameters & parameters,
                                                    VariableNameMappingMode map_mode)
-  : MFEMMaterial(parameters),
+  : MFEMCoefficient(parameters),
     hephaestus::CoupledCoefficient(hephaestus::InputParameters(
-        std::map<std::string, std::any>({{"CoupledVariableName", std::string("temperature")}}))),
+        std::map<std::string, std::any>({{"CoupledVariableName", std::string("dummy_variable")}}))),
     FunctionParserUtils<false>(parameters),
     _symbol_names(0),
     _coefficient_names(0),
@@ -96,12 +96,6 @@ MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
   // initialize constants
   addFParserConstants(_func_F, constant_names, constant_expressions);
 
-  // // add further constants coming from default value coupling
-  // if (_map_mode == VariableNameMappingMode::USE_PARAM_NAMES)
-  //   for (const auto & acd : _arg_constant_defaults)
-  //     if (!_func_F->AddConstant(acd, _pars.defaultCoupledValue(acd)))
-  //       mooseError("Invalid constant name in parsed function object");
-
   // get all coupled postprocessors
   unsigned int nmfem_gfs = mfem_gridfunction_names.size();
   _gridfunctions.resize(nmfem_gfs);
@@ -119,15 +113,6 @@ MFEMParsedMaterialHelper::functionParse(const std::string & function_expression,
     _coefficient_names.push_back(coefname);
     _symbol_names.push_back(coefname);
   }
-  // for (unsigned int i = 0; i < nmfem_coefs; ++i)
-  // {
-  //   // parse the material property parameter entry into a FunctionMaterialPropertyDescriptor
-  //   // _coefficient_names[i] = FunctionMaterialPropertyDescriptor<is_ad>(
-  //   //     mfem_coefficient_names[i], this, _error_on_missing_material_properties);
-
-  //   // get the fparser symbol name for the new material property
-  //   _symbol_names.push_back(_coefficient_names[i]);
-  // }
 
   // build 'variables' argument for fparser
   std::string variables = Moose::stringify(_symbol_names);
@@ -170,8 +155,8 @@ MFEMParsedMaterialHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFunction>
     }
     else
     {
-      const std::string error_message = coupled_var_name + " not found in variables when "
-                                                           "creating CoupledCoefficient\n";
+      const std::string error_message = _gridfunction_names[i] + " not found in variables when "
+                                                                 "creating CoupledCoefficient\n";
       mfem::mfem_error(error_message.c_str());
     }
 
@@ -186,9 +171,6 @@ double
 MFEMParsedMaterialHelper::Eval(mfem::ElementTransformation & trans,
                                const mfem::IntegrationPoint & ip)
 {
-  // double T = gf->GetValue(trans, ip);
-  // fill the parameter vector, apply tolerances
-
   // insert material property values
   auto nmfem_coefs = _coefficient_names.size();
   for (MooseIndex(_coefficient_names) i = 0; i < nmfem_coefs; ++i)
