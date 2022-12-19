@@ -9,24 +9,17 @@
 
 #pragma once
 
-#include "ParsedMaterialHelper.h"
-#include "FunctionMaterialBase.h"
+#include "MFEMParsedMaterialHelper.h"
 #include "MFEMParsedMaterialBase.h"
 
 /**
- * FunctionMaterialBase child class to evaluate a parsed function. The function
+ * MFEMMAterial child class to evaluate a parsed function. The function
  * can access non-linear and aux variables (unlike MooseParsedFunction).
  */
-template <bool is_ad>
-class ParsedMaterialTempl : public ParsedMaterialHelper<is_ad>, public MFEMParsedMaterialBase
+class MFEMParsedMaterial : public MFEMParsedMaterialHelper, public MFEMParsedMaterialBase
 {
 public:
   static InputParameters validParams();
 
-  ParsedMaterialTempl(const InputParameters & parameters);
-
-  usingParsedMaterialHelperMembers(is_ad);
+  MFEMParsedMaterial(const InputParameters & parameters);
 };
-
-typedef ParsedMaterialTempl<false> ParsedMaterial;
-typedef ParsedMaterialTempl<true> ADParsedMaterial;
