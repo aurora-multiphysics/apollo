@@ -11,31 +11,25 @@
 
 registerMooseObject("MooseApp", MFEMParsedMaterial);
 
-template <bool is_ad>
 InputParameters
-ParsedMaterialTempl<is_ad>::validParams()
+MFEMParsedMaterial::validParams()
 {
-  InputParameters params = ParsedMaterialHelper<is_ad>::validParams();
+  InputParameters params = MFEMParsedMaterialHelper::validParams();
   params += MFEMParsedMaterialBase::validParams();
-  params.addClassDescription("Parsed Function Material.");
+  params.addClassDescription("MFEM Parsed Function Material.");
   return params;
 }
 
-template <bool is_ad>
-ParsedMaterialTempl<is_ad>::ParsedMaterialTempl(const InputParameters & parameters)
-  : ParsedMaterialHelper<is_ad>(parameters, VariableNameMappingMode::USE_MOOSE_NAMES),
+MFEMParsedMaterial::MFEMParsedMaterial(const InputParameters & parameters)
+  : MFEMParsedMaterialHelper(parameters, VariableNameMappingMode::USE_MOOSE_NAMES),
     MFEMParsedMaterialBase(parameters)
 {
   // Build function and optimize
   functionParse(_function,
                 _constant_names,
                 _constant_expressions,
-                this->template getParam<std::vector<std::string>>("material_property_names"),
-                this->template getParam<std::vector<PostprocessorName>>("postprocessor_names"),
+                getParam<std::vector<std::string>>("mfem_coefficient_names"),
+                getParam<std::vector<std::string>>("mfem_gridfunction_names"),
                 _tol_names,
                 _tol_values);
 }
-
-// explicit instantiation
-template class ParsedMaterialTempl<false>;
-template class ParsedMaterialTempl<true>;
