@@ -129,13 +129,13 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
                          InputParameters & parameters)
 {
   FEProblemBase::addUserObject(kernel_name, name, parameters);
-  const MFEMMaterial & mfem_material(getUserObject<MFEMMaterial>(name));
+  MFEMMaterial & mfem_material(getUserObject<MFEMMaterial>(name));
 
   for (unsigned int bid = 0; bid < mfem_material.blocks.size(); ++bid)
   {
     int block = std::stoi(mfem_material.blocks[bid]);
     hephaestus::Subdomain mfem_subdomain(name, block);
-    mfem_subdomain.property_map = mfem_material.scalar_property_map;
+    mfem_material.storeCoefficients(mfem_subdomain);
 
     // Hotfix to ensure coupled coeffs get properly initialised in Hephaestus.
     // To replaced by addAuxkernels?

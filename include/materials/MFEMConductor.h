@@ -15,6 +15,8 @@ public:
   static const Real _mu0;
   static const Real _epsilon0;
 
+  void storeCoefficients(hephaestus::Subdomain & subdomain) override;
+
 protected:
   const Real & _input_electrical_conductivity;
   const Real & _input_electric_permittivity;

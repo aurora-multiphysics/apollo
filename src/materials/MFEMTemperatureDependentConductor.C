@@ -55,12 +55,17 @@ MFEMTemperatureDependentConductor::MFEMTemperatureDependentConductor(
     _inverse_thermal_conductivity_coeff(
         mfem::ConstantCoefficient(1.0 / _input_thermal_conductivity))
 {
-  scalar_property_map["electrical_conductivity"] = &_electrical_conductivity_coeff;
-  scalar_property_map["magnetic_permeability"] = &_permeability_coeff;
-  scalar_property_map["thermal_conductivity"] = &_thermal_conductivity_coeff;
-  scalar_property_map["inverse_thermal_conductivity"] = &_inverse_thermal_conductivity_coeff;
-  scalar_property_map["heat_capacity"] = &_heat_capacity_coeff;
-  scalar_property_map["inverse_heat_capacity"] = &_inverse_heat_capacity_coeff;
+}
+
+void
+MFEMTemperatureDependentConductor::storeCoefficients(hephaestus::Subdomain & subdomain)
+{
+  subdomain.property_map["electrical_conductivity"] = &_electrical_conductivity_coeff;
+  subdomain.property_map["magnetic_permeability"] = &_permeability_coeff;
+  subdomain.property_map["thermal_conductivity"] = &_thermal_conductivity_coeff;
+  subdomain.property_map["inverse_thermal_conductivity"] = &_inverse_thermal_conductivity_coeff;
+  subdomain.property_map["heat_capacity"] = &_heat_capacity_coeff;
+  subdomain.property_map["inverse_heat_capacity"] = &_inverse_heat_capacity_coeff;
 }
 
 MFEMTemperatureDependentConductor::~MFEMTemperatureDependentConductor() {}
