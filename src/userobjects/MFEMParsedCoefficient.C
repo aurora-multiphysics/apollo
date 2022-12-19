@@ -7,22 +7,22 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "MFEMParsedMaterial.h"
+#include "MFEMParsedCoefficient.h"
 
-registerMooseObject("MooseApp", MFEMParsedMaterial);
+registerMooseObject("MooseApp", MFEMParsedCoefficient);
 
 InputParameters
-MFEMParsedMaterial::validParams()
+MFEMParsedCoefficient::validParams()
 {
-  InputParameters params = MFEMParsedMaterialHelper::validParams();
-  params += MFEMParsedMaterialBase::validParams();
-  params.addClassDescription("MFEM Parsed Function Material.");
+  InputParameters params = MFEMParsedCoefficientHelper::validParams();
+  params += MFEMParsedCoefficientBase::validParams();
+  params.addClassDescription("MFEM Parsed Function Coefficient.");
   return params;
 }
 
-MFEMParsedMaterial::MFEMParsedMaterial(const InputParameters & parameters)
-  : MFEMParsedMaterialHelper(parameters, VariableNameMappingMode::USE_MOOSE_NAMES),
-    MFEMParsedMaterialBase(parameters)
+MFEMParsedCoefficient::MFEMParsedCoefficient(const InputParameters & parameters)
+  : MFEMParsedCoefficientHelper(parameters, VariableNameMappingMode::USE_MOOSE_NAMES),
+    MFEMParsedCoefficientBase(parameters)
 {
   // Build function and optimize
   functionParse(_function,

@@ -12,15 +12,15 @@
 #include "InputParameters.h"
 
 /**
- * Helper class for MFEMParsedMaterial
+ * Helper class for MFEMParsedCoefficient
  * to declare and read the input parameters.
  */
-class MFEMParsedMaterialBase
+class MFEMParsedCoefficientBase
 {
 public:
   static InputParameters validParams();
 
-  MFEMParsedMaterialBase(const InputParameters & parameters);
+  MFEMParsedCoefficientBase(const InputParameters & parameters);
 
 protected:
   /// function expression

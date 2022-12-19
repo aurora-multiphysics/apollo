@@ -9,17 +9,17 @@
 
 #pragma once
 
-#include "MFEMParsedMaterialHelper.h"
-#include "MFEMParsedMaterialBase.h"
+#include "MFEMParsedCoefficientHelper.h"
+#include "MFEMParsedCoefficientBase.h"
 
 /**
  * MFEMMAterial child class to evaluate a parsed function. The function
  * can access non-linear and aux variables (unlike MooseParsedFunction).
  */
-class MFEMParsedMaterial : public MFEMParsedMaterialHelper, public MFEMParsedMaterialBase
+class MFEMParsedCoefficient : public MFEMParsedCoefficientHelper, public MFEMParsedCoefficientBase
 {
 public:
   static InputParameters validParams();
 
-  MFEMParsedMaterial(const InputParameters & parameters);
+  MFEMParsedCoefficient(const InputParameters & parameters);
 };

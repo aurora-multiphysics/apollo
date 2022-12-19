@@ -93,7 +93,7 @@
 
 [UserObjects]
   [./CopperEConductivity]
-    type = MFEMParsedMaterial
+    type = MFEMParsedCoefficient
     mfem_gridfunction_names = 'temperature'
     mfem_coefficient_names = ''
     constant_names        = 'sigma0  alpha0   T0'

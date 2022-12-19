@@ -7,10 +7,10 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "MFEMParsedMaterialBase.h"
+#include "MFEMParsedCoefficientBase.h"
 
 InputParameters
-MFEMParsedMaterialBase::validParams()
+MFEMParsedCoefficientBase::validParams()
 {
   InputParameters params = emptyInputParameters();
   params.addCoupledVar("args", "Arguments of F() - use vector coupling");
@@ -54,7 +54,7 @@ MFEMParsedMaterialBase::validParams()
   return params;
 }
 
-MFEMParsedMaterialBase::MFEMParsedMaterialBase(const InputParameters & parameters)
+MFEMParsedCoefficientBase::MFEMParsedCoefficientBase(const InputParameters & parameters)
 {
   // get function expression
   _function = parameters.get<std::string>("function");

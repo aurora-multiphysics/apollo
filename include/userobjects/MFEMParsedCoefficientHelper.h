@@ -15,27 +15,27 @@
 
 #include "libmesh/fparser_ad.hh"
 
-#define usingMFEMParsedMaterialHelperMembers()                                                     \
+#define usingMFEMParsedCoefficientHelperMembers()                                                  \
   usingFunctionParserUtilsMembers();                                                               \
-  using typename MFEMParsedMaterialHelper::VariableNameMappingMode;                                \
-  using typename MFEMParsedMaterialHelper::MatPropDescriptorList;                                  \
-  using MFEMParsedMaterialHelper::functionParse;                                                   \
-  using MFEMParsedMaterialHelper::functionsPostParse;                                              \
-  using MFEMParsedMaterialHelper::functionsOptimize;                                               \
-  using MFEMParsedMaterialHelper::_func_F;                                                         \
-  using MFEMParsedMaterialHelper::_symbol_names;                                                   \
-  using MFEMParsedMaterialHelper::_gridfunction_names;                                             \
-  using MFEMParsedMaterialHelper::_tol;                                                            \
-  using MFEMParsedMaterialHelper::_coefficient_names;                                              \
-  using MFEMParsedMaterialHelper::_map_mode
+  using typename MFEMParsedCoefficientHelper::VariableNameMappingMode;                             \
+  using typename MFEMParsedCoefficientHelper::MatPropDescriptorList;                               \
+  using MFEMParsedCoefficientHelper::functionParse;                                                \
+  using MFEMParsedCoefficientHelper::functionsPostParse;                                           \
+  using MFEMParsedCoefficientHelper::functionsOptimize;                                            \
+  using MFEMParsedCoefficientHelper::_func_F;                                                      \
+  using MFEMParsedCoefficientHelper::_symbol_names;                                                \
+  using MFEMParsedCoefficientHelper::_gridfunction_names;                                          \
+  using MFEMParsedCoefficientHelper::_tol;                                                         \
+  using MFEMParsedCoefficientHelper::_coefficient_names;                                           \
+  using MFEMParsedCoefficientHelper::_map_mode
 
 /**
  * Helper class to perform the parsing and optimization of the
  * function expression.
  */
-class MFEMParsedMaterialHelper : public MFEMCoefficient,
-                                 public hephaestus::CoupledCoefficient,
-                                 public FunctionParserUtils<false>
+class MFEMParsedCoefficientHelper : public MFEMCoefficient,
+                                    public hephaestus::CoupledCoefficient,
+                                    public FunctionParserUtils<false>
 {
 public:
   enum class VariableNameMappingMode
@@ -44,7 +44,7 @@ public:
     USE_PARAM_NAMES
   };
 
-  MFEMParsedMaterialHelper(const InputParameters & parameters, VariableNameMappingMode map_mode);
+  MFEMParsedCoefficientHelper(const InputParameters & parameters, VariableNameMappingMode map_mode);
 
   static InputParameters validParams();
 
