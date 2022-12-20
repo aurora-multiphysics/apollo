@@ -1,12 +1,3 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
 #pragma once
 
 #include "FunctionParserUtils.h"
@@ -25,7 +16,6 @@
   using MFEMParsedCoefficientHelper::_func_F;                                                      \
   using MFEMParsedCoefficientHelper::_symbol_names;                                                \
   using MFEMParsedCoefficientHelper::_gridfunction_names;                                          \
-  using MFEMParsedCoefficientHelper::_tol;                                                         \
   using MFEMParsedCoefficientHelper::_coefficient_names;                                           \
   using MFEMParsedCoefficientHelper::_map_mode
 
@@ -55,16 +45,12 @@ public:
   void functionParse(const std::string & function_expression,
                      const std::vector<std::string> & constant_names,
                      const std::vector<std::string> & constant_expressions,
-                     const std::vector<std::string> & _mfem_coefficient_names,
-                     const std::vector<std::string> & tol_names,
-                     const std::vector<Real> & tol_values);
+                     const std::vector<std::string> & _mfem_coefficient_names);
   void functionParse(const std::string & function_expression,
                      const std::vector<std::string> & constant_names,
                      const std::vector<std::string> & constant_expressions,
                      const std::vector<std::string> & _mfem_coefficient_names,
-                     const std::vector<std::string> & _mfem_gridfunction_names,
-                     const std::vector<std::string> & tol_names,
-                     const std::vector<Real> & tol_values);
+                     const std::vector<std::string> & _mfem_gridfunction_names);
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> & variables,
             hephaestus::DomainProperties & domain_properties) override;
 
@@ -72,8 +58,6 @@ public:
 
 protected:
   usingFunctionParserUtilsMembers(false);
-
-  void computeQpProperties();
 
   // run FPOptimizer on the parsed function
   virtual void functionsOptimize();
@@ -93,18 +77,4 @@ protected:
 
   std::vector<std::string> _coefficient_names;
   std::vector<mfem::Coefficient *> _coefficients;
-
-  /// Tolerance values for all arguments (to protect from log(0)).
-  std::vector<Real> _tol;
-
-  /**
-   * Flag to indicate if MOOSE nonlinear variable names should be used as FParser variable names.
-   * This should be USE_MOOSE_NAMES only for DerivativeParsedMaterial. If set to USE_PARAM_NAMES,
-   * this class looks up the input parameter name for each coupled variable and uses it as the
-   * FParser parameter name when parsing the FParser expression.
-   */
-  const VariableNameMappingMode _map_mode;
-
-  /// This is true by default, but can be disabled to make non-existing properties default to zero
-  const bool _error_on_missing_material_properties;
 };

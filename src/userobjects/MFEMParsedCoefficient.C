@@ -1,12 +1,3 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
 #include "MFEMParsedCoefficient.h"
 
 registerMooseObject("MooseApp", MFEMParsedCoefficient);
@@ -29,7 +20,5 @@ MFEMParsedCoefficient::MFEMParsedCoefficient(const InputParameters & parameters)
                 _constant_names,
                 _constant_expressions,
                 getParam<std::vector<std::string>>("mfem_coefficient_names"),
-                getParam<std::vector<std::string>>("mfem_gridfunction_names"),
-                _tol_names,
-                _tol_values);
+                getParam<std::vector<std::string>>("mfem_gridfunction_names"));
 }
