@@ -33,15 +33,45 @@
 [Materials]
   [./copper]
     type = MFEMConductor
-    electrical_conductivity = 5.96e7
-    magnetic_permeability = 1.25663706e-6
+    electrical_conductivity_coeff = CopperEConductivity
+    electric_permittivity_coeff = CopperPermittivity
+    magnetic_permeability_coeff = CopperPermeability
     block = 1
   [../]
   [./air]
     type = MFEMConductor
-    electrical_conductivity = 1
-    magnetic_permeability = 1.25663706e-6
+    electrical_conductivity_coeff = AirEConductivity
+    electric_permittivity_coeff = AirPermittivity
+    magnetic_permeability_coeff = AirPermeability
     block = 2
+  [../]
+[]
+
+[UserObjects]
+  [./CopperEConductivity]
+    type = MFEMConstantCoefficient
+    value = 5.96e7
+  [../]
+  [./CopperPermeability]
+    type = MFEMConstantCoefficient
+    value = 1.25663706e-6
+  [../]  
+  [./CopperPermittivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+
+  [./AirEConductivity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./AirPermeability]
+    type = MFEMConstantCoefficient
+    value = 1.25663706e-6
+  [../]
+  [./AirPermittivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
   [../]
 []
 

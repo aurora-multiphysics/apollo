@@ -6,7 +6,7 @@ InputParameters
 MFEMConstantCoefficient::validParams()
 {
   InputParameters params = MFEMCoefficient::validParams();
-  params.addParam<double>("value", "Value for the ConstantCoefficient");
+  params.addRequiredParam<double>("value", "Value for the ConstantCoefficient");
   return params;
 }
 
