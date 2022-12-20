@@ -32,16 +32,46 @@
 [Materials]
   [./air]
     type = MFEMConductor
-    electrical_conductivity = 1.0
-    magnetic_permeability = 12.5663706144e-7
+    electrical_conductivity_coeff = AirEConductivity
+    electric_permittivity_coeff = AirPermittivity
+    magnetic_permeability_coeff = AirPermeability
     block = '1 3 4 5 6'
   [../]
   [./plate]
     type = MFEMConductor
-    electrical_conductivity = 3.526e7
-    magnetic_permeability = 12.5663706144e-7
+    electrical_conductivity_coeff = PlateEConductivity
+    electric_permittivity_coeff = PlatePermittivity
+    magnetic_permeability_coeff = PlatePermeability
     block = 2
   [../]
+[]
+
+[UserObjects]
+  [./AirEConductivity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./AirPermeability]
+    type = MFEMConstantCoefficient
+    value = 1.25663706e-6
+  [../]
+  [./AirPermittivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+  [./PlateEConductivity]
+    type = MFEMConstantCoefficient
+    value = 3.526e7
+  [../]
+  [./PlatePermeability]
+    type = MFEMConstantCoefficient
+    value = 1.25663706e-6
+  [../]
+  [./PlatePermittivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+
 []
 
 [Executioner]

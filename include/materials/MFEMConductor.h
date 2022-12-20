@@ -21,6 +21,4 @@ protected:
   const mfem::Coefficient & _electrical_conductivity_coeff;
   const mfem::Coefficient & _permittivity_coeff;
   const mfem::Coefficient & _permeability_coeff;
-  const mfem::Coefficient & _heat_capacity_coeff;
-  const mfem::Coefficient & _thermal_conductivity_coeff;
 };

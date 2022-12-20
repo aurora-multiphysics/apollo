@@ -76,8 +76,6 @@
     electrical_conductivity_coeff = CopperEConductivity
     electric_permittivity_coeff = CopperPermittivity
     magnetic_permeability_coeff = CopperPermeability
-    thermal_conductivity_coeff = CopperTConductivity
-    heat_capacity_coeff = CopperHeatCapacity
     block = 1
   [../]
   [./air]
@@ -85,8 +83,6 @@
     electrical_conductivity_coeff = AirEConductivity
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
-    thermal_conductivity_coeff = AirTConductivity
-    heat_capacity_coeff = AirHeatCapacity
     block = 2
   [../]
 []
@@ -106,14 +102,6 @@
   [../]
   [./CopperPermittivity]
     type = MFEMConstantCoefficient
-    value = 1.0
-  [../]
-  [./CopperTConductivity]
-    type = MFEMConstantCoefficient
-    value = 0.0
-  [../]
-  [./CopperHeatCapacity]
-    type = MFEMConstantCoefficient
     value = 0.0
   [../]
 
@@ -126,14 +114,6 @@
     value = 1.25663706e-6
   [../]
   [./AirPermittivity]
-    type = MFEMConstantCoefficient
-    value = 1.0
-  [../]
-  [./AirTConductivity]
-    type = MFEMConstantCoefficient
-    value = 0.0
-  [../]
-  [./AirHeatCapacity]
     type = MFEMConstantCoefficient
     value = 0.0
   [../]

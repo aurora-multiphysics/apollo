@@ -42,26 +42,111 @@
 [Materials]
   [./coil]
     type = MFEMConductor
-    electrical_conductivity = 62.83185
-    thermal_conductivity = 0.01
-    heat_capacity = 1.0
+    electrical_conductivity_coeff = CoilEConductivity
+    electric_permittivity_coeff = CoilPermittivity
+    magnetic_permeability_coeff = CoilPermeability
     block = 1
   [../]
+  [./coil_th]
+    type = MFEMThermalMaterial
+    thermal_conductivity_coeff = CoilTConductivity
+    heat_capacity_coeff = CoilHeatCapacity
+    block = 1
+  [../] 
   [./core]
     type = MFEMConductor
-    electrical_conductivity = 62.83185e-6
-    thermal_conductivity = 1e4
-    heat_capacity = 1.0
+    electrical_conductivity_coeff = CoreEConductivity
+    electric_permittivity_coeff = CorePermittivity
+    magnetic_permeability_coeff = CorePermeability
     block = 2
   [../]
+  [./core_th]
+    type = MFEMThermalMaterial
+    thermal_conductivity_coeff = CoreTConductivity
+    heat_capacity_coeff = CoreHeatCapacity
+    block = 2
+  [../]  
   [./air]
     type = MFEMConductor
-    electrical_conductivity = 62.83185e-6
-    thermal_conductivity = 1e4
-    heat_capacity = 1.0
+    electrical_conductivity_coeff = AirEConductivity
+    electric_permittivity_coeff = AirPermittivity
+    magnetic_permeability_coeff = AirPermeability
     block = 3
   [../]
+  [./air_th]
+    type = MFEMThermalMaterial
+    thermal_conductivity_coeff = AirTConductivity
+    heat_capacity_coeff = AirHeatCapacity
+    block = 3
+  [../]  
 []
+
+[UserObjects]
+  [./CoilEConductivity]
+    type = MFEMConstantCoefficient
+    value = 62.83185
+  [../]
+  [./CoilPermeability]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./CoilPermittivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+  [./CoilTConductivity]
+    type = MFEMConstantCoefficient
+    value = 0.01
+  [../]
+  [./CoilHeatCapacity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+
+  [./CoreEConductivity]
+    type = MFEMConstantCoefficient
+    value = 62.83185e-6
+  [../]
+  [./CorePermeability]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./CorePermittivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+  [./CoreTConductivity]
+    type = MFEMConstantCoefficient
+    value = 1e4
+  [../]
+  [./CoreHeatCapacity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+
+
+  [./AirEConductivity]
+    type = MFEMConstantCoefficient
+    value = 62.83185e-6
+  [../]
+  [./AirPermeability]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+  [./AirPermittivity]
+    type = MFEMConstantCoefficient
+    value = 0.0
+  [../]
+  [./AirTConductivity]
+    type = MFEMConstantCoefficient
+    value = 1e4
+  [../]
+  [./AirHeatCapacity]
+    type = MFEMConstantCoefficient
+    value = 1.0
+  [../]
+[]
+
 
 [Executioner]
   type = Steady
