@@ -1,12 +1,3 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
 #include "MFEMParsedCoefficientBase.h"
 
 InputParameters
@@ -24,16 +15,6 @@ MFEMParsedCoefficientBase::validParams()
       "constant_expressions",
       std::vector<std::string>(),
       "Vector of values for the constants in constant_names (can be an FParser expression)");
-
-  // Variables with applied tolerances and their tolerance values
-  params.addParam<std::vector<std::string>>("tol_names",
-                                            std::vector<std::string>(),
-                                            "Vector of variable names to be protected from "
-                                            "being 0 or 1 within a tolerance (needed for log(c) "
-                                            "and log(1-c) terms)");
-  params.addParam<std::vector<Real>>("tol_values",
-                                     std::vector<Real>(),
-                                     "Vector of tolerance values for the variables in tol_names");
 
   // Material properties
   params.addParam<std::vector<std::string>>(
@@ -63,11 +44,7 @@ MFEMParsedCoefficientBase::MFEMParsedCoefficientBase(const InputParameters & par
   _constant_names = parameters.get<std::vector<std::string>>("constant_names");
   _constant_expressions = parameters.get<std::vector<std::string>>("constant_expressions");
 
-  // get mfem bject names vectors
+  // get mfem object names
   _mfem_coefficient_names = parameters.get<std::vector<std::string>>("mfem_coefficient_names");
   _mfem_gridfunction_names = parameters.get<std::vector<std::string>>("mfem_gridfunction_names");
-
-  // get tolerance vectors
-  _tol_names = parameters.get<std::vector<std::string>>("tol_names");
-  _tol_values = parameters.get<std::vector<Real>>("tol_values");
 }

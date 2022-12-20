@@ -1,12 +1,3 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
 #include "MFEMParsedCoefficientHelper.h"
 
 #include "libmesh/quadrature.h"
@@ -16,11 +7,8 @@ MFEMParsedCoefficientHelper::validParams()
 {
   InputParameters params = MFEMCoefficient::validParams();
   params += FunctionParserUtils<false>::validParams();
-  params.addClassDescription("Parsed Function Material.");
-  params.addParam<bool>("error_on_missing_material_properties",
-                        true,
-                        "Throw an error if any explicitly requested material property does not "
-                        "exist. Otherwise assume it to be zero.");
+  params.addClassDescription(
+      "Class to create mfem::Coefficients which evaluate to a provided parsed function.");
   return params;
 }
 
@@ -31,10 +19,7 @@ MFEMParsedCoefficientHelper::MFEMParsedCoefficientHelper(const InputParameters &
         std::map<std::string, std::any>({{"CoupledVariableName", std::string("dummy_variable")}}))),
     FunctionParserUtils<false>(parameters),
     _symbol_names(0),
-    _coefficient_names(0),
-    _tol(0),
-    _map_mode(map_mode),
-    _error_on_missing_material_properties(getParam<bool>("error_on_missing_material_properties"))
+    _coefficient_names(0)
 {
 }
 
@@ -52,30 +37,21 @@ MFEMParsedCoefficientHelper::functionParse(const std::string & function_expressi
 {
   const std::vector<std::string> empty_string_vector;
   const std::vector<Real> empty_real_vector;
-  functionParse(function_expression,
-                constant_names,
-                constant_expressions,
-                empty_string_vector,
-                empty_string_vector,
-                empty_real_vector);
+  functionParse(function_expression, constant_names, constant_expressions, empty_string_vector);
 }
 
 void
 MFEMParsedCoefficientHelper::functionParse(const std::string & function_expression,
                                            const std::vector<std::string> & constant_names,
                                            const std::vector<std::string> & constant_expressions,
-                                           const std::vector<std::string> & mfem_coefficient_names,
-                                           const std::vector<std::string> & tol_names,
-                                           const std::vector<Real> & tol_values)
+                                           const std::vector<std::string> & mfem_coefficient_names)
 {
   const std::vector<std::string> empty_string_vector;
   functionParse(function_expression,
                 constant_names,
                 constant_expressions,
                 mfem_coefficient_names,
-                empty_string_vector,
-                tol_names,
-                tol_values);
+                empty_string_vector);
 }
 
 void
@@ -83,9 +59,7 @@ MFEMParsedCoefficientHelper::functionParse(const std::string & function_expressi
                                            const std::vector<std::string> & constant_names,
                                            const std::vector<std::string> & constant_expressions,
                                            const std::vector<std::string> & mfem_coefficient_names,
-                                           const std::vector<std::string> & mfem_gridfunction_names,
-                                           const std::vector<std::string> & tol_names,
-                                           const std::vector<Real> & tol_values)
+                                           const std::vector<std::string> & mfem_gridfunction_names)
 {
   // build base function object
   _func_F = std::make_shared<SymFunction>();
@@ -96,7 +70,7 @@ MFEMParsedCoefficientHelper::functionParse(const std::string & function_expressi
   // initialize constants
   addFParserConstants(_func_F, constant_names, constant_expressions);
 
-  // get all coupled postprocessors
+  // Store all MFEM gridfunction names
   unsigned int nmfem_gfs = mfem_gridfunction_names.size();
   _gridfunctions.resize(nmfem_gfs);
   for (const auto & gfname : mfem_gridfunction_names)
@@ -105,7 +79,7 @@ MFEMParsedCoefficientHelper::functionParse(const std::string & function_expressi
     _symbol_names.push_back(gfname);
   }
 
-  // // get all MFEM coefficient names
+  // Store all MFEM coefficient names
   unsigned int nmfem_coefs = mfem_coefficient_names.size();
   _coefficients.resize(nmfem_coefs);
   for (const auto & coefname : mfem_coefficient_names)
@@ -129,7 +103,7 @@ MFEMParsedCoefficientHelper::functionParse(const std::string & function_expressi
   // create parameter passing buffer
   _func_params.resize(nmfem_coefs + nmfem_gfs);
 
-  // perform next steps (either optimize or take derivatives and then optimize)
+  // optimise function
   functionsOptimize();
 }
 
@@ -155,9 +129,12 @@ MFEMParsedCoefficientHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFuncti
     }
     else
     {
-      const std::string error_message = _gridfunction_names[i] + " not found in variables when "
-                                                                 "creating CoupledCoefficient\n";
-      mfem::mfem_error(error_message.c_str());
+      mooseError("Invalid gridfunction\n",
+                 _gridfunction_names[i],
+                 "\n",
+                 "not found in variables when\n"
+                 "creating MFEMParsedCoefficient\n",
+                 "in MFEMParsedCoefficientHelper.\n");
     }
 
   auto nmfem_coefs = _coefficient_names.size();
@@ -171,12 +148,12 @@ double
 MFEMParsedCoefficientHelper::Eval(mfem::ElementTransformation & trans,
                                   const mfem::IntegrationPoint & ip)
 {
-  // insert material property values
+  // insert coefficient values
   auto nmfem_coefs = _coefficient_names.size();
   for (MooseIndex(_coefficient_names) i = 0; i < nmfem_coefs; ++i)
     _func_params[i] = _coefficients[i]->Eval(trans, ip);
 
-  // insert material property values
+  // insert gridfunction values
   auto nmfem_gfs = _gridfunction_names.size();
   for (MooseIndex(_gridfunction_names) i = 0; i < nmfem_gfs; ++i)
     _func_params[i + nmfem_coefs] = _gridfunctions[i]->GetValue(trans, ip);
