@@ -14,6 +14,12 @@ MFEMProblem::validParams()
   params.addParam<int>("order", "Order of the FE variables for MFEM.");
   params.addParam<double>("dt", "Time step");
   params.addParam<double>("end_time", "Time at which to end transient simulation.");
+  params.addParam<int>(
+      "vis_steps",
+      1,
+      "Number of timesteps between successive write outs of data collections to file.");
+  params.addParam<bool>(
+      "use_glvis", false, "Attempt to open GLVis ports to display variables during simulation");
 
   return params;
 }
@@ -72,6 +78,8 @@ MFEMProblem::init()
     _exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
     _exec_params.SetParam("TimeStep", float(dt()));
     _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
+    _exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
+    _exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
     executioner = new hephaestus::TransientExecutioner(_exec_params);
 
     EquationSystems & es = FEProblemBase::es();
@@ -79,7 +87,7 @@ MFEMProblem::init()
                              float(es.parameters.get<Real>("linear solver tolerance")));
     _solver_options.SetParam("MaxIter",
                              es.parameters.get<unsigned int>("linear solver maximum iterations"));
-    _solver_options.SetParam("PrintLevel", 0);
+    _solver_options.SetParam("PrintLevel", -1);
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem_parmesh);

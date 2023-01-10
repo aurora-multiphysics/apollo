@@ -8,6 +8,13 @@ MFEMDivFreeVolumetricSource::validParams()
   InputParameters params = MFEMSource::validParams();
   params.addParam<FunctionName>(
       "function", "The vector function providing the source, to be divergence cleaned.");
+  params.addParam<float>("solver_l_tol",
+                         "Tolerance for the linear solver used when performing divergence "
+                         "cleaning. Defaults to the same value used by the Executioner.");
+  params.addParam<unsigned int>(
+      "solver_max_its",
+      "Maximum number of iterations allowed for the linear solver used when performing divergence "
+      "cleaning. Defaults to the same value used by the Executioner.");
   return params;
 }
 
@@ -35,10 +42,16 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
 
   hephaestus::InputParameters _solver_options;
   EquationSystems & es = getParam<FEProblemBase *>("_fe_problem_base")->es();
-  _solver_options.SetParam("Tolerance", float(es.parameters.get<Real>("linear solver tolerance")));
-  _solver_options.SetParam("MaxIter",
-                           es.parameters.get<unsigned int>("linear solver maximum iterations"));
-  _solver_options.SetParam("PrintLevel", 0);
+  _solver_options.SetParam("Tolerance",
+                           parameters.isParamSetByUser("solver_l_tol")
+                               ? getParam<float>("solver_l_tol")
+                               : float(es.parameters.get<Real>("linear solver tolerance")));
+  _solver_options.SetParam(
+      "MaxIter",
+      parameters.isParamSetByUser("solver_max_its")
+          ? getParam<unsigned int>("solver_max_its")
+          : es.parameters.get<unsigned int>("linear solver maximum iterations"));
+  _solver_options.SetParam("PrintLevel", -1);
 
   hephaestus::InputParameters div_free_source_params;
   div_free_source_params.SetParam("SourceName", source_coef_name);
