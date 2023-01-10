@@ -33,10 +33,19 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
   }
   _restricted_coef = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
 
+  hephaestus::InputParameters _solver_options;
+  EquationSystems & es = getParam<FEProblemBase *>("_fe_problem_base")->es();
+  _solver_options.SetParam("Tolerance", float(es.parameters.get<Real>("linear solver tolerance")));
+  _solver_options.SetParam("MaxIter",
+                           es.parameters.get<unsigned int>("linear solver maximum iterations"));
+  _solver_options.SetParam("PrintLevel", 0);
+
   hephaestus::InputParameters div_free_source_params;
   div_free_source_params.SetParam("SourceName", source_coef_name);
   div_free_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
   div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+  div_free_source_params.SetParam("SolverOptions", _solver_options);
+
   _source = new hephaestus::DivFreeVolumetricSource(div_free_source_params);
 }
 

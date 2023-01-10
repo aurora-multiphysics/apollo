@@ -60,6 +60,9 @@
   dt = 0.5
   start_time = 0.0
   end_time = 0.5
+
+  l_tol = 1e-16
+  l_max_its = 1000  
 []
 
 [Outputs]
