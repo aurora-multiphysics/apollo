@@ -117,8 +117,9 @@ protected:
   hephaestus::Variables _variables;
   hephaestus::AuxKernels _auxkernels;
   hephaestus::Postprocessors _postprocessors;
-  hephaestus::Sources _sources;  
+  hephaestus::Sources _sources;
   hephaestus::InputParameters _exec_params;
+  hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
   hephaestus::TransientExecutioner * executioner;
 };

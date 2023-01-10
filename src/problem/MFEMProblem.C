@@ -74,6 +74,13 @@ MFEMProblem::init()
     _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
     executioner = new hephaestus::TransientExecutioner(_exec_params);
 
+    EquationSystems & es = FEProblemBase::es();
+    _solver_options.SetParam("Tolerance",
+                             float(es.parameters.get<Real>("linear solver tolerance")));
+    _solver_options.SetParam("MaxIter",
+                             es.parameters.get<unsigned int>("linear solver maximum iterations"));
+    _solver_options.SetParam("PrintLevel", 0);
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem_parmesh);
     params.SetParam("Executioner", executioner);
@@ -86,6 +93,7 @@ MFEMProblem::init()
     params.SetParam("Sources", _sources);
     params.SetParam("Outputs", _outputs);
     params.SetParam("FormulationName", _formulation);
+    params.SetParam("SolverOptions", _solver_options);
 
     std::cout << "Launching MFEM solve\n\n" << std::endl;
     executioner->Init(params);
