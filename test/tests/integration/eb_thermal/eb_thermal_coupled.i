@@ -52,6 +52,14 @@
   [../]
 []
 
+[UserObjects]
+  [./SourcePotential]
+    type = MFEMScalarPotentialSource
+    potential = electric_potential
+    conductivity = electrical_conductivity
+  [../]
+[]
+
 [AuxVariables]
   [temperature]
     family = LAGRANGE
