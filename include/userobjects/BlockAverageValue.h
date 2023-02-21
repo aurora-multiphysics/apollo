@@ -7,15 +7,13 @@
 // Forward Declarations
 class BlockAverageValue;
 
-template <>
-InputParameters validParams<BlockAverageValue>();
-
 /**
  * Computes the average value of a variable on each block
  */
 class BlockAverageValue : public ElementIntegralVariablePostprocessor
 {
 public:
+  static InputParameters validParams();
   BlockAverageValue(const InputParameters & parameters);
 
   /**
