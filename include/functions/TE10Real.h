@@ -2,11 +2,6 @@
 
 #include "Function.h"
 
-class TE10Real;
-
-template <>
-InputParameters validParams<Function>();
-
 /**
  * Class that represents constant function
  */
