@@ -8,7 +8,10 @@
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
 #include "MFEMVariable.h"
+#include "MFEMConstantCoefficient.h"
 #include "MFEMBoundaryCondition.h"
+#include "MFEMBilinearFormKernel.h"
+#include "MFEMLinearFormKernel.h"
 #include "MFEMAuxKernel.h"
 #include "MFEMSource.h"
 #include "MFEMDataCollection.h"
@@ -75,6 +78,14 @@ public:
                       InputParameters & parameters);
 
   /**
+   * Override of ExternalProblem::addKernel. Uses ExternalProblem::addKernel to create a
+   * GeneralUserObject representing the kernel in MOOSE, and creates corresponding MFEM kernel
+   * to be used in the MFEM solve.
+   */
+  void addKernel(const std::string & kernel_name,
+                 const std::string & name,
+                 InputParameters & parameters);
+  /**
    * Override of ExternalProblem::addAuxKernel. Uses ExternalProblem::addAuxKernel to create a
    * GeneralUserObject representing the auxkernel in MOOSE, and creates corresponding MFEM auxkernel
    * to be used in the MFEM solve.
@@ -110,16 +121,18 @@ public:
 
 protected:
   std::string _input_mesh;
-  std::string _formulation;
+  std::string _formulation_name;
   int _order;
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _domain_properties;
-  hephaestus::Variables _variables;
+  hephaestus::FESpaces _fespaces;
+  hephaestus::GridFunctions _gridfunctions;
   hephaestus::AuxKernels _auxkernels;
   hephaestus::Postprocessors _postprocessors;
   hephaestus::Sources _sources;
   hephaestus::InputParameters _exec_params;
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
+  hephaestus::TransientFormulation * _formulation;
   hephaestus::TransientExecutioner * executioner;
 };
