@@ -27,17 +27,19 @@ MFEMProblem::validParams()
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
     _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
-    _formulation(getParam<std::string>("formulation")),
+    _formulation_name(getParam<std::string>("formulation")),
     _order(getParam<int>("order")),
     _bc_maps(),
     _domain_properties(),
-    _variables(),
+    _fespaces(),
+    _gridfunctions(),
     _auxkernels(),
     _postprocessors(),
     _sources(),
     _exec_params(),
     _outputs()
 {
+  _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
 }
 
 void
@@ -68,7 +70,7 @@ MFEMProblem::init()
         _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  if (_formulation != "Joule")
+  if (_formulation_name != "Joule")
   {
     Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
     if (_moose_executioner == NULL)
@@ -95,12 +97,13 @@ MFEMProblem::init()
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", _bc_maps);
     params.SetParam("DomainProperties", _domain_properties);
-    params.SetParam("Variables", _variables);
+    params.SetParam("FESpaces", _fespaces);
+    params.SetParam("GridFunctions", _gridfunctions);
     params.SetParam("AuxKernels", _auxkernels);
     params.SetParam("Postprocessors", _postprocessors);
     params.SetParam("Sources", _sources);
     params.SetParam("Outputs", _outputs);
-    params.SetParam("FormulationName", _formulation);
+    params.SetParam("Formulation", _formulation);
     params.SetParam("SolverOptions", _solver_options);
 
     std::cout << "Launching MFEM solve\n\n" << std::endl;
@@ -111,14 +114,14 @@ MFEMProblem::init()
 void
 MFEMProblem::externalSolve()
 {
-  if (_formulation == "Joule")
+  if (_formulation_name == "Joule")
   {
     mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
     // Legacy support for running Joule solver
     hephaestus::Executioner _executioner(
         std::string("Transient"), getParam<double>("dt"), 0.0, getParam<double>("end_time"));
     hephaestus::Inputs inputs(
-        mfem_mesh, _formulation, _order, _bc_maps, _domain_properties, _executioner, _outputs);
+        mfem_mesh, _formulation_name, _order, _bc_maps, _domain_properties, _executioner, _outputs);
     std::vector<char *> argv;
     joule_solve(argv.size() - 1, argv.data(), inputs);
   }
@@ -186,6 +189,11 @@ MFEMProblem::addUserObject(const std::string & user_object_name,
     _sources.Register(name, mfem_source->getSource(), true);
     mfem_source->storeCoefficients(_domain_properties);
   }
+  else if (dynamic_cast<const MFEMConstantCoefficient *>(uo) != nullptr)
+  {
+    MFEMConstantCoefficient * mfem_coef(&getUserObject<MFEMConstantCoefficient>(name));
+    _domain_properties.scalar_property_map[name] = mfem_coef;
+  }
 }
 
 void
@@ -207,7 +215,42 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
 
   MFEMVariable & var(getUserObject<MFEMVariable>(var_name));
   var.mfem_params.SetParam("VariableName", var_name);
-  _variables.AddVariable(var.mfem_params);
+  _fespaces.StoreInput(var.mfem_params);
+  _gridfunctions.StoreInput(var.mfem_params);
+}
+
+void
+MFEMProblem::addKernel(const std::string & kernel_name,
+                       const std::string & name,
+                       InputParameters & parameters)
+{
+  FEProblemBase::addUserObject(kernel_name, name, parameters);
+
+  const UserObject * kernel = &(getUserObjectBase(name));
+
+  if (dynamic_cast<const MFEMLinearFormKernel *>(kernel) != nullptr)
+  {
+    MFEMLinearFormKernel * lf_kernel(&getUserObject<MFEMLinearFormKernel>(name));
+    _formulation->equation_system->addKernel(parameters.get<std::string>("variable"),
+                                             lf_kernel->getKernel());
+  }
+  else if (dynamic_cast<const MFEMBilinearFormKernel *>(kernel) != nullptr)
+  {
+    MFEMBilinearFormKernel * blf_kernel(&getUserObject<MFEMBilinearFormKernel>(name));
+    _formulation->equation_system->addKernel(parameters.get<std::string>("variable"),
+                                             blf_kernel->getKernel());
+  }
+  // else if (dynamic_cast<const MFEMBilinearFormKernel *>(kernel) != nullptr)
+  // {
+  //   MFEMBilinearFormKernel * blf_kernel(&getUserObject<MFEMBilinearFormKernel>(name));
+  //   executioner->formulation->equation_system->addKernel(test_var_name, blf_kernel);
+  // }
+  // else if (dynamic_cast<const MFEMMixedBilinearFormKernel *>(kernel) != nullptr)
+  // {
+  //   MFEMMixedBilinearFormKernel * mblf_kernel(&getUserObject<MFEMMixedBilinearFormKernel>(name));
+  //   executioner->formulation->equation_system->addKernel(
+  //       trial_var_name, test_var_name, mblf_kernel);
+  // }
 }
 
 void
@@ -232,7 +275,7 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
   MeshBase & libmeshBase = mesh().getMesh();
   unsigned int order = (unsigned int)mooseVarRef.order();
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
-  auto & pgf = *(executioner->variables->gfs.Get(var_name));
+  auto & pgf = *(executioner->gridfunctions->Get(var_name));
   mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
   mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());
   unsigned int count = 0;
@@ -324,7 +367,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
   MeshBase & libmeshBase = mesh().getMesh();
   unsigned int order = (unsigned int)mooseVarRef.order();
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
-  auto & pgf = *(executioner->variables->gfs.Get(var_name));
+  auto & pgf = *(executioner->gridfunctions->Get(var_name));
 
   unsigned int count = 0;
 
