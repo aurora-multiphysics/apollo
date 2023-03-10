@@ -7,6 +7,7 @@
   type = MFEMProblem
   formulation = EBForm
   order = 2
+  use_glvis = true
 []
 
 [Functions]
@@ -33,7 +34,7 @@
 [BCs]
   [./tangential_E_bdr]
     type = MFEMVectorFunctionDirichletBC
-    variable = electric_field
+    variable = delectric_field_dt
     boundary = '1 2 3'
     function = tangential_E
   [../]
@@ -48,6 +49,14 @@
     variable = electric_potential
     boundary = '2'
     function = potential_low
+  [../]
+[]
+
+[UserObjects]
+  [./SourcePotential]
+    type = MFEMScalarPotentialSource
+    potential = electric_potential
+    conductivity = electrical_conductivity
   [../]
 []
 
