@@ -36,12 +36,20 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _auxkernels(),
     _postprocessors(),
     _sources(),
-    _exec_params(),
-    _outputs()
+    _outputs(),
+    _exec_params()
 {
   _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
+  _formulation->CreateEquationSystem();
 }
+void
+MFEMProblem::initialSetup()
+{
+  FEProblemBase::initialSetup();
 
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  executioner->Init();
+}
 void
 MFEMProblem::init()
 {
@@ -82,7 +90,6 @@ MFEMProblem::init()
     _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
     _exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
     _exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
-    executioner = new hephaestus::TransientExecutioner(_exec_params);
 
     EquationSystems & es = FEProblemBase::es();
     _solver_options.SetParam("Tolerance",
@@ -91,23 +98,19 @@ MFEMProblem::init()
                              es.parameters.get<unsigned int>("linear solver maximum iterations"));
     _solver_options.SetParam("PrintLevel", -1);
 
-    hephaestus::InputParameters params;
-    params.SetParam("Mesh", mfem_parmesh);
-    params.SetParam("Executioner", executioner);
-    params.SetParam("Order", 2);
-    params.SetParam("BoundaryConditions", _bc_maps);
-    params.SetParam("DomainProperties", _domain_properties);
-    params.SetParam("FESpaces", _fespaces);
-    params.SetParam("GridFunctions", _gridfunctions);
-    params.SetParam("AuxKernels", _auxkernels);
-    params.SetParam("Postprocessors", _postprocessors);
-    params.SetParam("Sources", _sources);
-    params.SetParam("Outputs", _outputs);
-    params.SetParam("Formulation", _formulation);
-    params.SetParam("SolverOptions", _solver_options);
-
-    std::cout << "Launching MFEM solve\n\n" << std::endl;
-    executioner->Init(params);
+    _exec_params.SetParam("Mesh", mfem_parmesh);
+    _exec_params.SetParam("Order", 2);
+    _exec_params.SetParam("BoundaryConditions", _bc_maps);
+    _exec_params.SetParam("DomainProperties", _domain_properties);
+    _exec_params.SetParam("FESpaces", _fespaces);
+    _exec_params.SetParam("GridFunctions", _gridfunctions);
+    _exec_params.SetParam("AuxKernels", _auxkernels);
+    _exec_params.SetParam("Postprocessors", _postprocessors);
+    _exec_params.SetParam("Sources", _sources);
+    _exec_params.SetParam("Outputs", _outputs);
+    _exec_params.SetParam("Formulation", _formulation);
+    _exec_params.SetParam("SolverOptions", _solver_options);
+    executioner = new hephaestus::TransientExecutioner(_exec_params);
   }
 }
 
@@ -225,32 +228,24 @@ MFEMProblem::addKernel(const std::string & kernel_name,
                        InputParameters & parameters)
 {
   FEProblemBase::addUserObject(kernel_name, name, parameters);
-
   const UserObject * kernel = &(getUserObjectBase(name));
 
   if (dynamic_cast<const MFEMLinearFormKernel *>(kernel) != nullptr)
   {
     MFEMLinearFormKernel * lf_kernel(&getUserObject<MFEMLinearFormKernel>(name));
+    _formulation->equation_system->addVariableNameIfMissing(
+        parameters.get<std::string>("variable"));
     _formulation->equation_system->addKernel(parameters.get<std::string>("variable"),
                                              lf_kernel->getKernel());
   }
   else if (dynamic_cast<const MFEMBilinearFormKernel *>(kernel) != nullptr)
   {
     MFEMBilinearFormKernel * blf_kernel(&getUserObject<MFEMBilinearFormKernel>(name));
+    _formulation->equation_system->addVariableNameIfMissing(
+        parameters.get<std::string>("variable"));
     _formulation->equation_system->addKernel(parameters.get<std::string>("variable"),
                                              blf_kernel->getKernel());
   }
-  // else if (dynamic_cast<const MFEMBilinearFormKernel *>(kernel) != nullptr)
-  // {
-  //   MFEMBilinearFormKernel * blf_kernel(&getUserObject<MFEMBilinearFormKernel>(name));
-  //   executioner->formulation->equation_system->addKernel(test_var_name, blf_kernel);
-  // }
-  // else if (dynamic_cast<const MFEMMixedBilinearFormKernel *>(kernel) != nullptr)
-  // {
-  //   MFEMMixedBilinearFormKernel * mblf_kernel(&getUserObject<MFEMMixedBilinearFormKernel>(name));
-  //   executioner->formulation->equation_system->addKernel(
-  //       trial_var_name, test_var_name, mblf_kernel);
-  // }
 }
 
 void

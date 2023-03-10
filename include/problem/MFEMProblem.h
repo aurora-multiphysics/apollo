@@ -33,6 +33,7 @@ public:
   MFEMProblem(const InputParameters & params);
 
   virtual void init() override;
+  virtual void initialSetup() override;
 
   virtual void externalSolve() override;
 
@@ -130,9 +131,9 @@ protected:
   hephaestus::AuxKernels _auxkernels;
   hephaestus::Postprocessors _postprocessors;
   hephaestus::Sources _sources;
-  hephaestus::InputParameters _exec_params;
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
+  hephaestus::InputParameters _exec_params;
   hephaestus::TransientFormulation * _formulation;
   hephaestus::TransientExecutioner * executioner;
 };

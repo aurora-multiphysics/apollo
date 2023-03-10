@@ -8,6 +8,7 @@
   type = MFEMProblem
   formulation = Custom
   order = 2
+  use_glvis=true
 []
 
 [AuxVariables]
@@ -16,19 +17,34 @@
     fespace = H1
     order = SECOND
   [../]
-  [./dummy_moose_nodal]
-    family = LAGRANGE
-    order = FIRST
-  [../]  
-[../]
-
-[ICs]
-  [./dummy_moose_nodal_ic]
-    type = FunctionIC
-    variable = dummy_moose_nodal
-    function = 2-x*x
-  [../]  
 []
+
+[Functions]
+  [./value_bottom]
+    type = ParsedFunction
+    value = 1.0
+  [../]
+  [./value_top]
+    type = ParsedFunction
+    value = 0.0
+  [../]
+[]
+
+[BCs]
+  [./bottom]
+    type = MFEMFunctionDirichletBC
+    variable = diffused
+    boundary = '1'
+    function = value_bottom
+  [../]
+  [./low_terminal]
+    type = MFEMFunctionDirichletBC
+    variable = diffused
+    boundary = '2'
+    function = value_top
+  [../]
+[]
+
 [UserObjects]
   [./one]
     type = MFEMConstantCoefficient
