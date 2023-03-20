@@ -13,7 +13,8 @@
 [AuxVariables]
   [./dummy_mfem]
     type = MFEMVariable
-    fespace = ND
+    fespace_name = HCurl
+    fespace_type = ND
     order = SECOND
   [../]
   [./dummy_moose_nodal]

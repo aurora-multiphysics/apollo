@@ -12,27 +12,28 @@
 
 registerMooseObject("MooseApp", ExclusiveMFEMMesh);
 
-InputParameters ExclusiveMFEMMesh::validParams() {
+InputParameters
+ExclusiveMFEMMesh::validParams()
+{
   InputParameters params = FileMesh::validParams();
   return params;
 }
 
-ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters& parameters)
-    : FileMesh(parameters)
+ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters & parameters) : FileMesh(parameters) {}
+
+ExclusiveMFEMMesh::~ExclusiveMFEMMesh() {}
+
+void
+ExclusiveMFEMMesh::buildMesh()
 {
-}
-
-ExclusiveMFEMMesh::~ExclusiveMFEMMesh()
-{ 
-}
-
-void ExclusiveMFEMMesh::buildMesh() { 
   buildDummyMesh();
   mfem_mesh = std::make_shared<MFEMMesh>(getFileName());
   MFEMParMesh = new mfem::ParMesh(MPI_COMM_WORLD, *mfem_mesh);
 }
 
-void ExclusiveMFEMMesh::buildDummyMesh() {
+void
+ExclusiveMFEMMesh::buildDummyMesh()
+{
   int e = 1;
   auto elem = new Quad4;
   elem->set_id() = e;
@@ -49,9 +50,11 @@ void ExclusiveMFEMMesh::buildDummyMesh() {
   elem->set_node(2) = _mesh->add_point(pt3);
   elem->set_node(3) = _mesh->add_point(pt4);
 
-  _mesh->prepare_for_use();                         
+  _mesh->prepare_for_use();
 }
 
-std::unique_ptr<MooseMesh> ExclusiveMFEMMesh::safeClone() const {
+std::unique_ptr<MooseMesh>
+ExclusiveMFEMMesh::safeClone() const
+{
   return std::make_unique<ExclusiveMFEMMesh>(*this);
 }

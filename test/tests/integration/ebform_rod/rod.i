@@ -10,6 +10,15 @@
   use_glvis = true
 []
 
+[AuxVariables]
+  [./electric_potential]
+    type = MFEMVariable
+    fespace_name = _H1FESpace
+    fespace_type = H1
+    order = SECOND
+  [../]
+[]
+
 [Functions]
   [./potential_high]
     type = ParsedFunction
@@ -34,7 +43,7 @@
 [BCs]
   [./tangential_E_bdr]
     type = MFEMVectorFunctionDirichletBC
-    variable = delectric_field_dt
+    variable = electric_field
     boundary = '1 2 3'
     function = tangential_E
   [../]
@@ -57,6 +66,7 @@
     type = MFEMScalarPotentialSource
     potential = electric_potential
     conductivity = electrical_conductivity
+    block = '1 2'
   [../]
 []
 

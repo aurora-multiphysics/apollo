@@ -39,16 +39,31 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-  _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
-  _formulation->CreateEquationSystem();
+  if (_formulation_name != "Joule")
+  {
+    _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
+    _formulation->CreateEquationSystem();
+  }
 }
+
+MFEMProblem::~MFEMProblem()
+{
+  if (executioner != NULL)
+  {
+    delete executioner;
+  }
+}
+
 void
 MFEMProblem::initialSetup()
 {
   FEProblemBase::initialSetup();
 
   std::cout << "Launching MFEM solve\n\n" << std::endl;
-  executioner->Init();
+  if (_formulation_name != "Joule")
+  {
+    executioner->Init();
+  }
 }
 void
 MFEMProblem::init()
@@ -420,11 +435,13 @@ MFEMProblem::getMFEMVarParamsFromMOOSEVarParams(InputParameters & moosevar_param
   mfemvar_params.setParameters<MooseEnum>("order", moosevar_params.get<MooseEnum>("order"));
   if (var_family == "LAGRANGE")
   {
-    mfemvar_params.set<MooseEnum>("fespace") = std::string("H1");
+    mfemvar_params.set<MooseEnum>("fespace_type") = std::string("H1");
+    mfemvar_params.set<std::string>("fespace_name") = std::string("_H1FESpace");
   }
   if (var_family == "MONOMIAL")
   {
-    mfemvar_params.set<MooseEnum>("fespace") = std::string("L2");
+    mfemvar_params.set<MooseEnum>("fespace_type") = std::string("L2");
+    mfemvar_params.set<std::string>("fespace_name") = std::string("_L2FESpace");
   }
 
   return mfemvar_params;

@@ -43,4 +43,4 @@ MFEMBoundaryCondition::getBC()
   return _boundary_condition;
 }
 
-MFEMBoundaryCondition::~MFEMBoundaryCondition() {}
+MFEMBoundaryCondition::~MFEMBoundaryCondition() { delete _boundary_condition; }

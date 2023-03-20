@@ -13,22 +13,19 @@
 [AuxVariables]
   [./dummy_mfem]
     type = MFEMVariable
-    fespace = ND
+    fespace_name = HCurlFESpace
+    fespace_type = ND
     order = SECOND
   [../]
   [./dummy_moose_elemental]
     family = MONOMIAL
     order = CONSTANT
+    [./InitialCondition]
+      type = FunctionIC
+      function = 2-x
+    [../]    
   [../]  
 [../]
-
-[ICs]
-  [./dummy_moose_elem_ic]
-    type = FunctionIC
-    variable = dummy_moose_elemental
-    function = 2-x
-  [../]  
-[]
 
 [Materials]
   [./copper]

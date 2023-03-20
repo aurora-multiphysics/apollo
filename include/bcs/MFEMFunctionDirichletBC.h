@@ -9,7 +9,6 @@ public:
   static InputParameters validParams();
 
   MFEMFunctionDirichletBC(const InputParameters & parameters);
-  virtual ~MFEMFunctionDirichletBC();
 
   virtual hephaestus::BoundaryCondition * getBC() override;
   virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties) override;

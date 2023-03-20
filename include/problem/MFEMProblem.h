@@ -31,6 +31,7 @@ public:
   static InputParameters validParams();
 
   MFEMProblem(const InputParameters & params);
+  virtual ~MFEMProblem();
 
   virtual void init() override;
   virtual void initialSetup() override;
