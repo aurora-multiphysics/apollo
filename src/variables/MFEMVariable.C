@@ -26,10 +26,13 @@ MFEMVariable::validParams()
                              "orders not listed here are allowed,"
                              "depending on the family.");
 
-  MooseEnum fespaces("H1 ND RT L2", "H1", true);
+  params.addRequiredParam<std::string>("fespace_name",
+                                       "Specifies name of the FE space to use for this variable.");
+
+  MooseEnum fespace_types("H1 ND RT L2", "H1", true);
   params.addParam<MooseEnum>(
-      "fespace",
-      fespaces,
+      "fespace_type",
+      fespace_types,
       "Specifies the family of FE shape functions (FE space) to use for this variable.");
 
   params.addRangeCheckedParam<unsigned int>(
@@ -54,8 +57,8 @@ MFEMVariable::validParams()
 MFEMVariable::MFEMVariable(const InputParameters & parameters)
   : GeneralUserObject(parameters),
     mfem_params(),
-    fespace_name(std::string(parameters.get<MooseEnum>("fespace")) + std::string("_space")),
-    fespace_type(parameters.get<MooseEnum>("fespace")),
+    fespace_name(parameters.get<std::string>("fespace_name")),
+    fespace_type(parameters.get<MooseEnum>("fespace_type")),
     order(parameters.get<MooseEnum>("order")),
     components(parameters.get<unsigned int>("components"))
 {
