@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = mug.e
+  file = gold/mug.e
   dim = 3
 []
 
@@ -12,10 +12,9 @@
 []
 
 [AuxVariables]
-  [./diffused]
-    type = MFEMVariable
-    fespace = H1
-    order = SECOND
+  [./mfem_diffused]
+    family = LAGRANGE
+    order = FIRST
   [../]
 []
 
@@ -33,13 +32,13 @@
 [BCs]
   [./bottom]
     type = MFEMFunctionDirichletBC
-    variable = diffused
+    variable = mfem_diffused
     boundary = '1'
     function = value_bottom
   [../]
   [./low_terminal]
     type = MFEMFunctionDirichletBC
-    variable = diffused
+    variable = mfem_diffused
     boundary = '2'
     function = value_top
   [../]
@@ -55,7 +54,7 @@
 [Kernels]
   [diff]
     type = MFEMDiffusionKernel
-    variable = diffused
+    variable = mfem_diffused
     coefficient = one
   []
 []
@@ -65,7 +64,7 @@
   dt = 1.0
   start_time = 0.0
   end_time = 1.0
-
+  
   l_tol = 1e-16
   l_max_its = 1000  
 []
