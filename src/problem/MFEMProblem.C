@@ -11,9 +11,6 @@ MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
   params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
-  params.addParam<int>("order", "Order of the FE variables for MFEM.");
-  params.addParam<double>("dt", "Time step");
-  params.addParam<double>("end_time", "Time at which to end transient simulation.");
   params.addParam<int>(
       "vis_steps",
       1,
@@ -28,7 +25,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
     _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
     _formulation_name(getParam<std::string>("formulation")),
-    _order(getParam<int>("order")),
     _bc_maps(),
     _domain_properties(),
     _fespaces(),
@@ -39,11 +35,8 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-  if (_formulation_name != "Joule")
-  {
-    _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
-    _formulation->CreateEquationSystem();
-  }
+  _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
+  _formulation->CreateEquationSystem();
 }
 
 MFEMProblem::~MFEMProblem()
@@ -60,10 +53,7 @@ MFEMProblem::initialSetup()
   FEProblemBase::initialSetup();
 
   std::cout << "Launching MFEM solve\n\n" << std::endl;
-  if (_formulation_name != "Joule")
-  {
-    executioner->Init();
-  }
+  executioner->Init();
 }
 void
 MFEMProblem::init()
@@ -93,60 +83,41 @@ MFEMProblem::init()
         _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  if (_formulation_name != "Joule")
+  Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
+  if (_moose_executioner == NULL)
   {
-    Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
-    if (_moose_executioner == NULL)
-    {
-      mooseError("Only Transient Executioners are currently supported by MFEMProblem");
-    }
-    _exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
-    _exec_params.SetParam("TimeStep", float(dt()));
-    _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
-    _exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
-    _exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
-
-    EquationSystems & es = FEProblemBase::es();
-    _solver_options.SetParam("Tolerance",
-                             float(es.parameters.get<Real>("linear solver tolerance")));
-    _solver_options.SetParam("MaxIter",
-                             es.parameters.get<unsigned int>("linear solver maximum iterations"));
-    _solver_options.SetParam("PrintLevel", -1);
-
-    _exec_params.SetParam("Mesh", mfem_parmesh);
-    _exec_params.SetParam("Order", 2);
-    _exec_params.SetParam("BoundaryConditions", _bc_maps);
-    _exec_params.SetParam("DomainProperties", _domain_properties);
-    _exec_params.SetParam("FESpaces", _fespaces);
-    _exec_params.SetParam("GridFunctions", _gridfunctions);
-    _exec_params.SetParam("AuxKernels", _auxkernels);
-    _exec_params.SetParam("Postprocessors", _postprocessors);
-    _exec_params.SetParam("Sources", _sources);
-    _exec_params.SetParam("Outputs", _outputs);
-    _exec_params.SetParam("Formulation", _formulation);
-    _exec_params.SetParam("SolverOptions", _solver_options);
-    executioner = new hephaestus::TransientExecutioner(_exec_params);
+    mooseError("Only Transient Executioners are currently supported by MFEMProblem");
   }
+  _exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
+  _exec_params.SetParam("TimeStep", float(dt()));
+  _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
+  _exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
+  _exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
+
+  EquationSystems & es = FEProblemBase::es();
+  _solver_options.SetParam("Tolerance", float(es.parameters.get<Real>("linear solver tolerance")));
+  _solver_options.SetParam("MaxIter",
+                           es.parameters.get<unsigned int>("linear solver maximum iterations"));
+  _solver_options.SetParam("PrintLevel", -1);
+
+  _exec_params.SetParam("Mesh", mfem_parmesh);
+  _exec_params.SetParam("BoundaryConditions", _bc_maps);
+  _exec_params.SetParam("DomainProperties", _domain_properties);
+  _exec_params.SetParam("FESpaces", _fespaces);
+  _exec_params.SetParam("GridFunctions", _gridfunctions);
+  _exec_params.SetParam("AuxKernels", _auxkernels);
+  _exec_params.SetParam("Postprocessors", _postprocessors);
+  _exec_params.SetParam("Sources", _sources);
+  _exec_params.SetParam("Outputs", _outputs);
+  _exec_params.SetParam("Formulation", _formulation);
+  _exec_params.SetParam("SolverOptions", _solver_options);
+  executioner = new hephaestus::TransientExecutioner(_exec_params);
 }
 
 void
 MFEMProblem::externalSolve()
 {
-  if (_formulation_name == "Joule")
-  {
-    mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
-    // Legacy support for running Joule solver
-    hephaestus::Executioner _executioner(
-        std::string("Transient"), getParam<double>("dt"), 0.0, getParam<double>("end_time"));
-    hephaestus::Inputs inputs(
-        mfem_mesh, _formulation_name, _order, _bc_maps, _domain_properties, _executioner, _outputs);
-    std::vector<char *> argv;
-    joule_solve(argv.size() - 1, argv.data(), inputs);
-  }
-  else
-  {
-    executioner->Step(dt(), timeStep());
-  }
+  executioner->Step(dt(), timeStep());
 }
 
 void
