@@ -156,7 +156,7 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
 {
   FEProblemBase::addUserObject(bc_name, name, parameters);
   MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
-  _bc_maps[name] = mfem_bc->getBC();
+  _bc_maps.Register(name, mfem_bc->getBC(), false);
   mfem_bc->storeCoefficients(_domain_properties);
 }
 

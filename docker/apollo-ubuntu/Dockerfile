@@ -63,12 +63,14 @@ RUN cd /$WORKDIR && \
 RUN cd /$WORKDIR && \
     git clone https://github.com/mfem/mfem.git && \
     cd mfem && \
+    git checkout sjg/superlu-solver-dev && \
+    git checkout origin/irrot-bc-dev -- miniapps/common/pfem_extras.cpp && \
     sed -i "s|list|# list|g" /opt/mfem/config/cmake/modules/FindNetCDF.cmake && \
     mkdir build && \
     cd build && \
     cmake .. -DCMAKE_BUILD_TYPE=Debug -DMFEM_USE_MPI=YES -DMFEM_USE_METIS_5=YES -DMETIS_DIR=../../metis-5.1.0 \
     -DMFEM_USE_OPENMP=YES -DMFEM_THREAD_SAFE=NO -DMFEM_SHARED=YES -DCMAKE_CXX_FLAGS_DEBUG=-fPIC -DMFEM_USE_NETCDF=YES -DHDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich/ \
-    -DCMAKE_POLICY_DEFAULT_CMP0057=NEW  &&\
+    -DCMAKE_POLICY_DEFAULT_CMP0057=NEW -DMFEM_USE_SUPERLU=YES &&\
     make -j"$compile_cores" && \
     cd miniapps/common && \
     make -j"$compile_cores"
