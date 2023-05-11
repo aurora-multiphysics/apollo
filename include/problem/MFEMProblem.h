@@ -8,6 +8,7 @@
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
 #include "MFEMVariable.h"
+#include "MFEMFunctionDirichletBC.h"
 #include "MFEMConstantCoefficient.h"
 #include "MFEMBoundaryCondition.h"
 #include "MFEMBilinearFormKernel.h"
@@ -19,6 +20,9 @@
 #include "MooseEnum.h"
 #include "auxiliary_variables.h"
 #include "boundary_conditions.hpp"
+#include "SystemBase.h"
+#include "Transient.h"
+#include "hephaestus.hpp"
 #include "materials.hpp"
 #include "executioner.hpp"
 #include "outputs.hpp"
@@ -136,5 +140,5 @@ protected:
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _exec_params;
   hephaestus::TransientFormulation * _formulation;
-  hephaestus::TransientExecutioner * executioner;
+  hephaestus::Executioner * executioner;
 };
