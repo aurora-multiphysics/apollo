@@ -1,8 +1,4 @@
-#include "MFEMFunctionDirichletBC.h"
 #include "MFEMProblem.h"
-#include "SystemBase.h"
-#include "Transient.h"
-#include "hephaestus.hpp"
 
 registerMooseObject("ApolloApp", MFEMProblem);
 
@@ -117,7 +113,14 @@ MFEMProblem::init()
 void
 MFEMProblem::externalSolve()
 {
-  executioner->Step(dt(), timeStep());
+  hephaestus::TransientExecutioner * transient_mfem_exec =
+      dynamic_cast<hephaestus::TransientExecutioner *>(executioner);
+  if (transient_mfem_exec != NULL)
+  {
+    transient_mfem_exec->t_step = dt();
+  }
+
+  executioner->Solve();
 }
 
 void
