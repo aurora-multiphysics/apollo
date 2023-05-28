@@ -32,30 +32,14 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _exec_params()
 {
   _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
-  _formulation->CreateEquationSystem();
-}
-
-MFEMProblem::~MFEMProblem()
-{
-  if (executioner != NULL)
-  {
-    delete executioner;
-  }
-}
-
-void
-MFEMProblem::initialSetup()
-{
-  FEProblemBase::initialSetup();
-
-  std::cout << "Launching MFEM solve\n\n" << std::endl;
-  executioner->Init();
-}
-void
-MFEMProblem::init()
-{
-  FEProblemBase::init();
-
+  // td_equation_system = formulation->CreateTimeDependentEquationSystem();
+  // // _formulation->CreateEquationSystem();
+  // hephaestus::TransientFormulation * transient_form =
+  //     dynamic_cast<hephaestus::TransientFormulation *>(_formulation);
+  // if (transient_form != NULL)
+  // {
+  //   // transient_form->CreateTimeDependentEquationSystem();
+  // }
   mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
   mfem_mesh.EnsureNCMesh();
   // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
@@ -79,23 +63,6 @@ MFEMProblem::init()
         _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
-  if (_moose_executioner == NULL)
-  {
-    mooseError("Only Transient Executioners are currently supported by MFEMProblem");
-  }
-  _exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
-  _exec_params.SetParam("TimeStep", float(dt()));
-  _exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
-  _exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
-  _exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
-
-  EquationSystems & es = FEProblemBase::es();
-  _solver_options.SetParam("Tolerance", float(es.parameters.get<Real>("linear solver tolerance")));
-  _solver_options.SetParam("MaxIter",
-                           es.parameters.get<unsigned int>("linear solver maximum iterations"));
-  _solver_options.SetParam("PrintLevel", -1);
-
   _exec_params.SetParam("Mesh", mfem_parmesh);
   _exec_params.SetParam("BoundaryConditions", _bc_maps);
   _exec_params.SetParam("DomainProperties", _domain_properties);
@@ -107,7 +74,77 @@ MFEMProblem::init()
   _exec_params.SetParam("Outputs", _outputs);
   _exec_params.SetParam("Formulation", _formulation);
   _exec_params.SetParam("SolverOptions", _solver_options);
-  executioner = new hephaestus::TransientExecutioner(_exec_params);
+
+  mfem_problem_builder = new hephaestus::TransientProblemBuilder(_exec_params);
+
+  mfem_problem_builder->ConstructEquationSystem();
+  std::cout << "Problem initialised\n\n" << std::endl;
+}
+
+MFEMProblem::~MFEMProblem()
+{
+  if (executioner != NULL)
+  {
+    delete executioner;
+  }
+}
+
+void
+MFEMProblem::initialSetup()
+{
+  FEProblemBase::initialSetup();
+
+  EquationSystems & es = FEProblemBase::es();
+  _solver_options.SetParam("Tolerance", float(es.parameters.get<Real>("linear solver tolerance")));
+  _solver_options.SetParam("MaxIter",
+                           es.parameters.get<unsigned int>("linear solver maximum iterations"));
+  _solver_options.SetParam("PrintLevel", -1);
+
+  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  mfem_problem_builder->SetFESpaces(_fespaces);
+  mfem_problem_builder->SetGridFunctions(_gridfunctions);
+  mfem_problem_builder->SetBoundaryConditions(_bc_maps);
+  mfem_problem_builder->SetAuxKernels(_auxkernels);
+  mfem_problem_builder->SetCoefficients(_domain_properties);
+  mfem_problem_builder->SetPostprocessors(_postprocessors);
+  mfem_problem_builder->SetSources(_sources);
+  mfem_problem_builder->SetSolverOptions(_solver_options);
+
+  mfem_problem_builder->RegisterFESpaces();
+  mfem_problem_builder->RegisterGridFunctions();
+  mfem_problem_builder->RegisterAuxKernels();
+  mfem_problem_builder->RegisterCoefficients();
+
+  mfem_problem_builder->InitializeKernels();
+  mfem_problem_builder->ConstructOperator();
+  mfem_problem_builder->ConstructState();
+  mfem_problem_builder->ConstructSolver();
+  mfem_problem_builder->InitializePostprocessors();
+
+  // hephaestus::ProblemBuildSequencer sequencer(mfem_problem_builder);
+  // sequencer.ConstructEquationSystemProblem();
+  mfem_problem = this->mfem_problem_builder->GetProblem();
+
+  Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
+  if (_moose_executioner == NULL)
+  {
+    mooseError("Only Transient Executioners are currently supported by MFEMProblem");
+  }
+
+  hephaestus::InputParameters exec_params;
+  exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
+  exec_params.SetParam("TimeStep", float(dt()));
+  exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
+  exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
+  exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
+  exec_params.SetParam("Problem", mfem_problem.get());
+  executioner = new hephaestus::TransientExecutioner(exec_params);
+  executioner->Init();
+}
+void
+MFEMProblem::init()
+{
+  FEProblemBase::init();
 }
 
 void
@@ -222,18 +259,14 @@ MFEMProblem::addKernel(const std::string & kernel_name,
   if (dynamic_cast<const MFEMLinearFormKernel *>(kernel) != nullptr)
   {
     MFEMLinearFormKernel * lf_kernel(&getUserObject<MFEMLinearFormKernel>(name));
-    _formulation->equation_system->addVariableNameIfMissing(
-        parameters.get<std::string>("variable"));
-    _formulation->equation_system->addKernel(parameters.get<std::string>("variable"),
-                                             lf_kernel->getKernel());
+    mfem_problem_builder->AddKernel(parameters.get<std::string>("variable"),
+                                    lf_kernel->getKernel());
   }
   else if (dynamic_cast<const MFEMBilinearFormKernel *>(kernel) != nullptr)
   {
     MFEMBilinearFormKernel * blf_kernel(&getUserObject<MFEMBilinearFormKernel>(name));
-    _formulation->equation_system->addVariableNameIfMissing(
-        parameters.get<std::string>("variable"));
-    _formulation->equation_system->addKernel(parameters.get<std::string>("variable"),
-                                             blf_kernel->getKernel());
+    mfem_problem_builder->AddKernel(parameters.get<std::string>("variable"),
+                                    blf_kernel->getKernel());
   }
 }
 
@@ -259,7 +292,7 @@ MFEMProblem::setMFEMVarData(EquationSystems & esRef,
   MeshBase & libmeshBase = mesh().getMesh();
   unsigned int order = (unsigned int)mooseVarRef.order();
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
-  auto & pgf = *(executioner->gridfunctions->Get(var_name));
+  auto & pgf = *(mfem_problem->gridfunctions.Get(var_name));
   mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
   mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());
   unsigned int count = 0;
@@ -351,7 +384,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name,
   MeshBase & libmeshBase = mesh().getMesh();
   unsigned int order = (unsigned int)mooseVarRef.order();
   NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
-  auto & pgf = *(executioner->gridfunctions->Get(var_name));
+  auto & pgf = *(mfem_problem->gridfunctions.Get(var_name));
 
   unsigned int count = 0;
 

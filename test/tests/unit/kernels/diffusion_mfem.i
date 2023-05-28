@@ -7,7 +7,6 @@
 [Problem]
   type = MFEMProblem
   formulation = Custom
-  order = 2
   use_glvis=true
 []
 
