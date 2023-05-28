@@ -129,6 +129,8 @@ protected:
   std::string _input_mesh;
   std::string _formulation_name;
   int _order;
+  hephaestus::TransientProblemBuilder * mfem_problem_builder;
+  std::unique_ptr<hephaestus::TransientProblem> mfem_problem;
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _domain_properties;
   hephaestus::FESpaces _fespaces;

@@ -7,7 +7,6 @@
 [Problem]
   type = MFEMProblem
   formulation = EBForm
-  order = 2
   use_glvis=true
 []
 
