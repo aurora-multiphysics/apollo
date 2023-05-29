@@ -32,14 +32,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _exec_params()
 {
   _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
-  // td_equation_system = formulation->CreateTimeDependentEquationSystem();
-  // // _formulation->CreateEquationSystem();
-  // hephaestus::TransientFormulation * transient_form =
-  //     dynamic_cast<hephaestus::TransientFormulation *>(_formulation);
-  // if (transient_form != NULL)
-  // {
-  //   // transient_form->CreateTimeDependentEquationSystem();
-  // }
+
   mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
   mfem_mesh.EnsureNCMesh();
   // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
@@ -76,7 +69,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
   _exec_params.SetParam("SolverOptions", _solver_options);
 
   mfem_problem_builder = new hephaestus::TransientProblemBuilder(_exec_params);
-
+  mfem_problem_builder->SetFormulation(_formulation);
   mfem_problem_builder->ConstructEquationSystem();
   std::cout << "Problem initialised\n\n" << std::endl;
 }
@@ -123,7 +116,7 @@ MFEMProblem::initialSetup()
 
   // hephaestus::ProblemBuildSequencer sequencer(mfem_problem_builder);
   // sequencer.ConstructEquationSystemProblem();
-  mfem_problem = this->mfem_problem_builder->GetProblem();
+  mfem_problem = this->mfem_problem_builder->ReturnProblem();
 
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
   if (_moose_executioner == NULL)

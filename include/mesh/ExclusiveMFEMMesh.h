@@ -27,11 +27,12 @@
 /**
  * CoupledMFEMMesh
  */
-class ExclusiveMFEMMesh : public FileMesh {
- public:
+class ExclusiveMFEMMesh : public FileMesh
+{
+public:
   static InputParameters validParams();
 
-  ExclusiveMFEMMesh(const InputParameters& parameters);
+  ExclusiveMFEMMesh(const InputParameters & parameters);
 
   virtual ~ExclusiveMFEMMesh();
 
