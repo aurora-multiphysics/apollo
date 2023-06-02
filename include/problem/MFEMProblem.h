@@ -20,8 +20,10 @@
 #include "MooseEnum.h"
 #include "auxiliary_variables.h"
 #include "boundary_conditions.hpp"
+#include "problem_builder.hpp"
 #include "SystemBase.h"
 #include "Transient.h"
+#include "Steady.h"
 #include "hephaestus.hpp"
 #include "materials.hpp"
 #include "executioner.hpp"
@@ -129,8 +131,8 @@ protected:
   std::string _input_mesh;
   std::string _formulation_name;
   int _order;
-  hephaestus::TransientProblemBuilder * mfem_problem_builder;
-  std::unique_ptr<hephaestus::TransientProblem> mfem_problem;
+  hephaestus::ProblemBuilder * mfem_problem_builder;
+  std::unique_ptr<hephaestus::Problem> mfem_problem;
   hephaestus::BCMap _bc_maps;
   hephaestus::DomainProperties _domain_properties;
   hephaestus::FESpaces _fespaces;
@@ -141,6 +143,6 @@ protected:
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _exec_params;
-  hephaestus::TransientFormulation * _formulation;
+  hephaestus::Formulation * _formulation;
   hephaestus::Executioner * executioner;
 };
