@@ -31,8 +31,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-  _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
-
   mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
   mfem_mesh.EnsureNCMesh();
   // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
@@ -46,7 +44,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
       partitioning[elem_id] = elem->processor_id();
     }
   }
-  mfem::ParMesh mfem_parmesh = mfem::ParMesh(MPI_COMM_WORLD, mfem_mesh, partitioning);
 
   std::vector<OutputName> mfem_data_collections =
       _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
@@ -56,21 +53,25 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
         _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
   }
 
-  _exec_params.SetParam("Mesh", mfem_parmesh);
-  _exec_params.SetParam("BoundaryConditions", _bc_maps);
-  _exec_params.SetParam("DomainProperties", _domain_properties);
-  _exec_params.SetParam("FESpaces", _fespaces);
-  _exec_params.SetParam("GridFunctions", _gridfunctions);
-  _exec_params.SetParam("AuxKernels", _auxkernels);
-  _exec_params.SetParam("Postprocessors", _postprocessors);
-  _exec_params.SetParam("Sources", _sources);
-  _exec_params.SetParam("Outputs", _outputs);
-  _exec_params.SetParam("Formulation", _formulation);
-  _exec_params.SetParam("SolverOptions", _solver_options);
+  // _exec_params.SetParam("Mesh", mfem_parmesh);
+  // _exec_params.SetParam("BoundaryConditions", _bc_maps);
+  // _exec_params.SetParam("DomainProperties", _domain_properties);
+  // _exec_params.SetParam("FESpaces", _fespaces);
+  // _exec_params.SetParam("GridFunctions", _gridfunctions);
+  // _exec_params.SetParam("AuxKernels", _auxkernels);
+  // _exec_params.SetParam("Postprocessors", _postprocessors);
+  // _exec_params.SetParam("Sources", _sources);
+  // _exec_params.SetParam("Outputs", _outputs);
+  // _exec_params.SetParam("Formulation", _formulation);
+  // _exec_params.SetParam("SolverOptions", _solver_options);
 
-  mfem_problem_builder = new hephaestus::TransientProblemBuilder(_exec_params);
-  mfem_problem_builder->SetFormulation(_formulation);
+  mfem_problem_builder = hephaestus::createProblemBuilder(_formulation_name);
+  // _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
+  // mfem_problem_builder = new hephaestus::TransientProblemBuilder(_exec_params);
+  // mfem_problem_builder->SetFormulation(_formulation);
   mfem_problem_builder->ConstructEquationSystem();
+  mfem_problem_builder->SetMesh(
+      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
   std::cout << "Problem initialised\n\n" << std::endl;
 }
 
@@ -101,6 +102,7 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->SetCoefficients(_domain_properties);
   mfem_problem_builder->SetPostprocessors(_postprocessors);
   mfem_problem_builder->SetSources(_sources);
+  mfem_problem_builder->SetOutputs(_outputs);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
   mfem_problem_builder->RegisterFESpaces();
@@ -116,22 +118,34 @@ MFEMProblem::initialSetup()
 
   // hephaestus::ProblemBuildSequencer sequencer(mfem_problem_builder);
   // sequencer.ConstructEquationSystemProblem();
-  mfem_problem = this->mfem_problem_builder->ReturnProblem();
+  hephaestus::InputParameters exec_params;
 
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
-  if (_moose_executioner == NULL)
+  if (_moose_executioner != NULL)
   {
-    mooseError("Only Transient Executioners are currently supported by MFEMProblem");
-  }
+    mfem_problem =
+        dynamic_cast<hephaestus::TransientProblemBuilder *>(mfem_problem_builder)->ReturnProblem();
 
-  hephaestus::InputParameters exec_params;
-  exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
-  exec_params.SetParam("TimeStep", float(dt()));
-  exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
-  exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
-  exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
-  exec_params.SetParam("Problem", mfem_problem.get());
-  executioner = new hephaestus::TransientExecutioner(exec_params);
+    exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
+    exec_params.SetParam("TimeStep", float(dt()));
+    exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
+    exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
+    exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
+    exec_params.SetParam("Problem",
+                         dynamic_cast<hephaestus::TransientProblem *>(mfem_problem.get()));
+    executioner = new hephaestus::TransientExecutioner(exec_params);
+  }
+  else if (dynamic_cast<Steady *>(_app.getExecutioner()))
+  {
+    exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
+    exec_params.SetParam("Problem",
+                         dynamic_cast<hephaestus::FrequencyDomainProblem *>(mfem_problem.get()));
+    executioner = new hephaestus::SteadyExecutioner(exec_params);
+  }
+  else
+  {
+    mooseError("Executioner used that is not currently supported by MFEMProblem");
+  }
   executioner->Init();
 }
 void
