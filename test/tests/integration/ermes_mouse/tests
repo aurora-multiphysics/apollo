@@ -1,0 +1,8 @@
+[Tests]
+  design = 'syntax/Variables/index.md'
+  [./ERMESMouse]
+    type = 'RunApp'
+    input = 'mouse.i'
+    requirement = 'Apollo shall have the ability to reproduce a coarse version of the ERMES example of a ellipsoidal mouse in a waveguide.'
+  []
+[]
