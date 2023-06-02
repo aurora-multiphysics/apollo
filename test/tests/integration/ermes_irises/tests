@@ -1,0 +1,8 @@
+[Tests]
+  design = 'syntax/Variables/index.md'
+  [./ERMESIrises]
+    type = 'RunApp'
+    input = 'irises.i'
+    requirement = 'Apollo shall have the ability to run the ERMES waveguide with irises example from Hephaestus.'
+  []
+[]

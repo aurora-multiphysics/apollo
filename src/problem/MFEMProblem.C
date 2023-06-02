@@ -137,6 +137,9 @@ MFEMProblem::initialSetup()
   }
   else if (dynamic_cast<Steady *>(_app.getExecutioner()))
   {
+    mfem_problem = dynamic_cast<hephaestus::FrequencyDomainProblemBuilder *>(mfem_problem_builder)
+                       ->ReturnProblem();
+
     exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::FrequencyDomainProblem *>(mfem_problem.get()));
