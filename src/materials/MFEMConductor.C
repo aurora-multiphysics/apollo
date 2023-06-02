@@ -43,7 +43,7 @@ MFEMConductor::storeCoefficients(hephaestus::Subdomain & subdomain)
       const_cast<mfem::Coefficient *>(&_electrical_conductivity_coeff);
   subdomain.property_map["magnetic_permeability"] =
       const_cast<mfem::Coefficient *>(&_permeability_coeff);
-  subdomain.property_map["electric_permittivity"] =
+  subdomain.property_map["dielectric_permittivity"] =
       const_cast<mfem::Coefficient *>(&_permittivity_coeff);
 }
 
