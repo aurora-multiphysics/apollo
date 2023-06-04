@@ -95,8 +95,8 @@ MFEMProblem::initialSetup()
   _solver_options.SetParam("PrintLevel", -1);
 
   std::cout << "Launching MFEM solve\n\n" << std::endl;
-  mfem_problem_builder->SetFESpaces(_fespaces);
-  mfem_problem_builder->SetGridFunctions(_gridfunctions);
+  // mfem_problem_builder->SetFESpaces(_fespaces);
+  // mfem_problem_builder->SetGridFunctions(_gridfunctions);
   mfem_problem_builder->SetBoundaryConditions(_bc_maps);
   mfem_problem_builder->SetAuxKernels(_auxkernels);
   mfem_problem_builder->SetCoefficients(_domain_properties);
@@ -254,8 +254,15 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
 
   MFEMVariable & var(getUserObject<MFEMVariable>(var_name));
   var.mfem_params.SetParam("VariableName", var_name);
-  _fespaces.StoreInput(var.mfem_params);
-  _gridfunctions.StoreInput(var.mfem_params);
+  std::string fespace_name = var.mfem_params.GetParam<std::string>("FESpaceName");
+
+  std::stringstream fec_name_stream;
+  fec_name_stream << var.mfem_params.GetParam<std::string>("FESpaceType") << "_3D_P"
+                  << var.mfem_params.GetParam<int>("order");
+  std::string fec_name = fec_name_stream.str();
+
+  mfem_problem_builder->AddFESpace(fespace_name, fec_name);
+  mfem_problem_builder->AddGridFunction(var_name, fespace_name);
 }
 
 void
