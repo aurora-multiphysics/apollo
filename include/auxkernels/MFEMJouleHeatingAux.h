@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MFEMAuxKernel.h"
+#include "MFEMAuxSolver.h"
 
 class JouleHeatingCoefficient : public hephaestus::CoupledCoefficient
 {
@@ -49,7 +49,7 @@ public:
   }
 };
 
-class MFEMJouleHeatingAux : public MFEMAuxKernel
+class MFEMJouleHeatingAux : public MFEMAuxSolver
 {
 public:
   static InputParameters validParams();
@@ -61,7 +61,7 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual hephaestus::AuxKernel * getAuxKernel() override;
+  virtual hephaestus::AuxSolver * getAuxSolver() override;
   virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties) override;
 
 protected:

@@ -13,7 +13,7 @@
 #include "MFEMBoundaryCondition.h"
 #include "MFEMBilinearFormKernel.h"
 #include "MFEMLinearFormKernel.h"
-#include "MFEMAuxKernel.h"
+#include "MFEMAuxSolver.h"
 #include "MFEMSource.h"
 #include "MFEMDataCollection.h"
 #include "Function.h"
@@ -95,7 +95,7 @@ public:
                  InputParameters & parameters);
   /**
    * Override of ExternalProblem::addAuxKernel. Uses ExternalProblem::addAuxKernel to create a
-   * GeneralUserObject representing the auxkernel in MOOSE, and creates corresponding MFEM auxkernel
+   * GeneralUserObject representing the auxkernel in MOOSE, and creates corresponding MFEM auxsolver
    * to be used in the MFEM solve.
    */
   void addAuxKernel(const std::string & kernel_name,
@@ -137,8 +137,8 @@ protected:
   hephaestus::DomainProperties _domain_properties;
   hephaestus::FESpaces _fespaces;
   hephaestus::GridFunctions _gridfunctions;
-  hephaestus::AuxKernels _auxkernels;
-  hephaestus::Postprocessors _postprocessors;
+  hephaestus::AuxSolvers _preprocessors;
+  hephaestus::AuxSolvers _postprocessors;
   hephaestus::Sources _sources;
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;

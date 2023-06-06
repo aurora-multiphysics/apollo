@@ -25,7 +25,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _domain_properties(),
     _fespaces(),
     _gridfunctions(),
-    _auxkernels(),
+    _preprocessors(),
     _postprocessors(),
     _sources(),
     _outputs(),
@@ -58,7 +58,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
   // _exec_params.SetParam("DomainProperties", _domain_properties);
   // _exec_params.SetParam("FESpaces", _fespaces);
   // _exec_params.SetParam("GridFunctions", _gridfunctions);
-  // _exec_params.SetParam("AuxKernels", _auxkernels);
+  // _exec_params.SetParam("AuxKernels", _preprocessors);
   // _exec_params.SetParam("Postprocessors", _postprocessors);
   // _exec_params.SetParam("Sources", _sources);
   // _exec_params.SetParam("Outputs", _outputs);
@@ -98,7 +98,7 @@ MFEMProblem::initialSetup()
   // mfem_problem_builder->SetFESpaces(_fespaces);
   // mfem_problem_builder->SetGridFunctions(_gridfunctions);
   mfem_problem_builder->SetBoundaryConditions(_bc_maps);
-  mfem_problem_builder->SetAuxKernels(_auxkernels);
+  mfem_problem_builder->SetAuxSolvers(_preprocessors);
   mfem_problem_builder->SetCoefficients(_domain_properties);
   mfem_problem_builder->SetPostprocessors(_postprocessors);
   mfem_problem_builder->SetSources(_sources);
@@ -107,14 +107,14 @@ MFEMProblem::initialSetup()
 
   mfem_problem_builder->RegisterFESpaces();
   mfem_problem_builder->RegisterGridFunctions();
-  mfem_problem_builder->RegisterAuxKernels();
+  mfem_problem_builder->RegisterAuxSolvers();
   mfem_problem_builder->RegisterCoefficients();
 
+  mfem_problem_builder->InitializePostprocessors();
   mfem_problem_builder->InitializeKernels();
   mfem_problem_builder->ConstructOperator();
   mfem_problem_builder->ConstructState();
   mfem_problem_builder->ConstructSolver();
-  mfem_problem_builder->InitializePostprocessors();
 
   // hephaestus::ProblemBuildSequencer sequencer(mfem_problem_builder);
   // sequencer.ConstructEquationSystemProblem();
@@ -204,7 +204,7 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
           dynamic_cast<hephaestus::CoupledCoefficient *>(coef->second);
       if (_coupled_coef != NULL)
       {
-        _auxkernels.Register(coef->first, _coupled_coef, false);
+        _preprocessors.Register(coef->first, _coupled_coef, false);
       }
     }
 
@@ -293,10 +293,10 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
                           InputParameters & parameters)
 {
   FEProblemBase::addUserObject(kernel_name, name, parameters);
-  MFEMAuxKernel * mfem_auxkernel(&getUserObject<MFEMAuxKernel>(name));
+  MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
 
-  _auxkernels.Register(name, mfem_auxkernel->getAuxKernel(), true);
-  mfem_auxkernel->storeCoefficients(_domain_properties);
+  _postprocessors.Register(name, mfem_auxsolver->getAuxSolver(), true);
+  mfem_auxsolver->storeCoefficients(_domain_properties);
 }
 
 void
