@@ -2,7 +2,7 @@
 
 #include "FunctionParserUtils.h"
 #include "MFEMCoefficient.h"
-#include "auxkernels.hpp"
+#include "auxsolvers.hpp"
 
 #include "libmesh/fparser_ad.hh"
 

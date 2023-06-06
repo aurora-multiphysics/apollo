@@ -6,13 +6,13 @@ registerMooseObject("ApolloApp", MFEMJouleHeatingAux);
 InputParameters
 MFEMJouleHeatingAux::validParams()
 {
-  InputParameters params = MFEMAuxKernel::validParams();
+  InputParameters params = MFEMAuxSolver::validParams();
 
   return params;
 }
 
 MFEMJouleHeatingAux::MFEMJouleHeatingAux(const InputParameters & parameters)
-  : MFEMAuxKernel(parameters),
+  : MFEMAuxSolver(parameters),
     joule_heating_params({{"CoupledVariableName", std::string("electric_field")},
                           {"ConductivityCoefName", std::string("electrical_conductivity")},
                           {"JouleHeatingVarName", std::string("joule_heating")}}),
@@ -20,8 +20,8 @@ MFEMJouleHeatingAux::MFEMJouleHeatingAux(const InputParameters & parameters)
 {
 }
 
-hephaestus::AuxKernel *
-MFEMJouleHeatingAux::getAuxKernel()
+hephaestus::AuxSolver *
+MFEMJouleHeatingAux::getAuxSolver()
 {
   return &joule_heating_aux;
 }
