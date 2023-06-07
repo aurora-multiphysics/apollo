@@ -18,7 +18,6 @@
 #include "MFEMDataCollection.h"
 #include "Function.h"
 #include "MooseEnum.h"
-#include "auxiliary_variables.h"
 #include "boundary_conditions.hpp"
 #include "problem_builder.hpp"
 #include "SystemBase.h"
