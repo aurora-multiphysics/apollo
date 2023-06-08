@@ -45,30 +45,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     }
   }
 
-  std::vector<OutputName> mfem_data_collections =
-      _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
-  for (const auto & name : mfem_data_collections)
-  {
-    _outputs.data_collections[name] =
-        _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
-  }
-
-  // _exec_params.SetParam("Mesh", mfem_parmesh);
-  // _exec_params.SetParam("BoundaryConditions", _bc_maps);
-  // _exec_params.SetParam("DomainProperties", _domain_properties);
-  // _exec_params.SetParam("FESpaces", _fespaces);
-  // _exec_params.SetParam("GridFunctions", _gridfunctions);
-  // _exec_params.SetParam("AuxKernels", _preprocessors);
-  // _exec_params.SetParam("Postprocessors", _postprocessors);
-  // _exec_params.SetParam("Sources", _sources);
-  // _exec_params.SetParam("Outputs", _outputs);
-  // _exec_params.SetParam("Formulation", _formulation);
-  // _exec_params.SetParam("SolverOptions", _solver_options);
-
   mfem_problem_builder = hephaestus::createProblemBuilder(_formulation_name);
-  // _formulation = hephaestus::Factory::createTransientFormulation(_formulation_name);
-  // mfem_problem_builder = new hephaestus::TransientProblemBuilder(_exec_params);
-  // mfem_problem_builder->SetFormulation(_formulation);
   mfem_problem_builder->ConstructEquationSystem();
   mfem_problem_builder->SetMesh(
       std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
@@ -87,6 +64,14 @@ void
 MFEMProblem::initialSetup()
 {
   FEProblemBase::initialSetup();
+
+  std::vector<OutputName> mfem_data_collections =
+      _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
+  for (const auto & name : mfem_data_collections)
+  {
+    _outputs.data_collections[name] =
+        _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
+  }
 
   EquationSystems & es = FEProblemBase::es();
   _solver_options.SetParam("Tolerance", float(es.parameters.get<Real>("linear solver tolerance")));
