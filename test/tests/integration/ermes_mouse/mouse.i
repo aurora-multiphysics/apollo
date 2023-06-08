@@ -9,15 +9,6 @@
   use_glvis = true
 []
 
-[AuxVariables]
-  [./electric_potential]
-    type = MFEMVariable
-    fespace_name = _H1FESpace
-    fespace_type = H1
-    order = first
-  [../]
-[]
-
 [Functions]
   [./tangential_E]
     type = ParsedVectorFunction
