@@ -1,12 +1,33 @@
 [Mesh]
   type = ExclusiveMFEMMesh
-  file = ./team7_small.g
+  file = ./team7.g
 []
 
 [Problem]
   type = MFEMProblem
   formulation = AForm
-  order = 2
+  use_glvis = true
+[]
+
+[AuxVariables]
+  [./magnetic_vector_potential]
+    type = MFEMVariable
+    fespace_name = _HCurlFESpace
+    fespace_type = ND
+    order = first
+  [../]
+  [./magnetic_flux_density]
+    type = MFEMVariable
+    fespace_name = _HDivFESpace
+    fespace_type = RT
+    order = first
+  [../]
+  [./electric_potential]
+    type = MFEMVariable
+    fespace_name = _H1FESpace
+    fespace_type = H1
+    order = second
+  [../]
 []
 
 [UserObjects]
@@ -71,7 +92,6 @@
     type = MFEMConstantCoefficient
     value = 0.0
   [../]
-
 []
 
 [Executioner]
