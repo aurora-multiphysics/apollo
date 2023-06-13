@@ -15,7 +15,7 @@ RacetrackCoilCurrentDensity::validParams()
                                 "The magnitude of the coil current in Ampere-turns");
   params.addRequiredParam<Real>("coil_xsection_area",
                                 "Coil cross sectional area, in square metres.");
-  params.addRequiredParam<Real>("frequency", "Frequency of AC current in coil in Hz");
+  params.addParam<Real>("frequency", 0.0, "Frequency of AC current in coil in Hz");
   return params;
 }
 
@@ -38,8 +38,14 @@ RacetrackCoilCurrentDensity::vectorValue(Real t, const Point & p) const
   double y = p(1);
 
   Real Jmag; // Current density magnitude
-  Jmag = (I0 / S) * sin(2 * M_PI * freq * t);
-
+  if (freq * t > 1e-15)
+  {
+    Jmag = (I0 / S) * sin(2 * M_PI * freq * t);
+  }
+  else
+  {
+    Jmag = (I0 / S);
+  }
   // Calculate x component of current density unit vector
   if (abs(x - x0) < a)
   {
