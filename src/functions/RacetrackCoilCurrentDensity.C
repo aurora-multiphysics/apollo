@@ -38,7 +38,7 @@ RacetrackCoilCurrentDensity::vectorValue(Real t, const Point & p) const
   double y = p(1);
 
   Real Jmag; // Current density magnitude
-  if (freq * t > 1e-15)
+  if (freq > 1e-15)
   {
     Jmag = (I0 / S) * sin(2 * M_PI * freq * t);
   }
