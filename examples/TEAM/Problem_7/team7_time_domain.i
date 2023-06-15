@@ -41,12 +41,12 @@
 [Functions]
   [./RacetrackCoilCurrentFunction]
     type = RacetrackCoilCurrentDensity
-    coil_axis_x = 194e-3 
-    coil_axis_y = 100e-3
-    coil_thickness = 50e-3
-    coil_current_magnitude = 2742.0
-    coil_xsection_area = 2.5e-3
-    frequency = 200.0
+    coil_axis_x = 194e-3 # m
+    coil_axis_y = 100e-3 # m
+    coil_thickness = 50e-3  # m
+    coil_current_magnitude = 2742.0 # Ampere-turns
+    coil_xsection_area = 2.5e-3  # m^2 
+    frequency = 200.0 # Hz
   [../]
 []
 
@@ -70,49 +70,44 @@
 [UserObjects]
   [./AirEConductivity]
     type = MFEMConstantCoefficient
-    value = 1.0
+    value = 1.0 # S/m
   [../]
   [./AirPermeability]
     type = MFEMConstantCoefficient
-    value = 1.25663706e-6
+    value = 1.25663706e-6 # T m/A
   [../]
   [./AirPermittivity]
     type = MFEMConstantCoefficient
-    value = 0.0
+    value = 0.0 # (dummy value for A form)
   [../]
   [./PlateEConductivity]
     type = MFEMConstantCoefficient
-    value = 3.526e7
+    value = 3.526e7 # S/m
   [../]
   [./PlatePermeability]
     type = MFEMConstantCoefficient
-    value = 1.25663706e-6
+    value = 1.25663706e-6 # T m/A
   [../]
   [./PlatePermittivity]
     type = MFEMConstantCoefficient
-    value = 0.0
+    value = 0.0 # (dummy value for A form)
   [../]
 []
 
 [Executioner]
   type = Transient
-  dt = 0.001
-  start_time = 0.0
-  end_time = 0.02
+  dt = 0.001       # s
+  start_time = 0.0 # s 
+  end_time = 0.02  # s
 
   l_tol = 1e-16
   l_max_its = 1000
 []
 
 [Outputs]
-  [VisItDataCollection]
-    type = MFEMVisItDataCollection
-    file_base = OutputData/TEAM7VisIt
-  []
   [ParaViewDataCollection]
     type = MFEMParaViewDataCollection
     file_base = OutputData/TEAM7ParaView
-    refinements = 1
     high_order_output = true
   []
 []
