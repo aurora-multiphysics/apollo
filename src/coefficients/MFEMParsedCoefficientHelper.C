@@ -140,7 +140,7 @@ MFEMParsedCoefficientHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFuncti
   auto nmfem_coefs = _coefficient_names.size();
   for (MooseIndex(_coefficient_names) i = 0; i < nmfem_coefs; ++i)
   {
-    _coefficients[i] = domain_properties.scalar_property_map[_coefficient_names[i]];
+    _coefficients[i] = domain_properties.scalar_property_map.Get(_coefficient_names[i]);
   }
 }
 

@@ -29,9 +29,10 @@ MFEMThermalMaterial::MFEMThermalMaterial(const InputParameters & parameters)
 void
 MFEMThermalMaterial::storeCoefficients(hephaestus::Subdomain & subdomain)
 {
-  subdomain.property_map["thermal_conductivity"] =
-      const_cast<mfem::Coefficient *>(&_thermal_conductivity_coeff);
-  subdomain.property_map["heat_capacity"] = const_cast<mfem::Coefficient *>(&_heat_capacity_coeff);
+  subdomain.property_map.Register(
+      "thermal_conductivity", const_cast<mfem::Coefficient *>(&_thermal_conductivity_coeff), true);
+  subdomain.property_map.Register(
+      "heat_capacity", const_cast<mfem::Coefficient *>(&_heat_capacity_coeff), true);
 }
 
 MFEMThermalMaterial::~MFEMThermalMaterial() {}

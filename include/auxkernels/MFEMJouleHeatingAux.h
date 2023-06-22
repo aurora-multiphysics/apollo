@@ -20,15 +20,18 @@ public:
   {
     // To ensure conductivity on subdomains is converted into global coefficient
     // Hephaestus update for domain_properties initialisation could address this
-    if (domain_properties.scalar_property_map.count(conductivity_coef_name) == 0)
+    if (!domain_properties.scalar_property_map.Has(conductivity_coef_name))
     {
-      domain_properties.scalar_property_map[conductivity_coef_name] = new mfem::PWCoefficient(
-          domain_properties.getGlobalScalarProperty(std::string(conductivity_coef_name)));
+      domain_properties.scalar_property_map.Register(
+          conductivity_coef_name,
+          new mfem::PWCoefficient(
+              domain_properties.getGlobalScalarProperty(std::string(conductivity_coef_name))),
+          true);
     }
 
     hephaestus::CoupledCoefficient::Init(variables, domain_properties);
     std::cout << "Intialising JouleHeating";
-    sigma = domain_properties.scalar_property_map[conductivity_coef_name];
+    sigma = domain_properties.scalar_property_map.Get(conductivity_coef_name);
 
     joule_heating_gf = variables.Get("joule_heating");
   }

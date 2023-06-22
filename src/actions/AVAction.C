@@ -29,46 +29,65 @@ AVAction::validParams()
   MooseEnum families(AddVariableAction::getNonlinearVariableFamilies());
   MooseEnum orders(AddVariableAction::getNonlinearVariableOrders());
   params.addParam<MooseEnum>(
-      "scalar_family", families, "Specifies the family of FE shape functions to use for vector variables");
+      "scalar_family",
+      families,
+      "Specifies the family of FE shape functions to use for vector variables");
   params.addParam<MooseEnum>("scalar_order",
                              orders,
                              "Specifies the order of the FE shape function to use "
                              "for vector variables (additional orders not listed are "
                              "allowed)");
   params.addParam<MooseEnum>(
-      "vector_family", families, "Specifies the family of FE shape functions to use for vector variables");
+      "vector_family",
+      families,
+      "Specifies the family of FE shape functions to use for vector variables");
   params.addParam<MooseEnum>("vector_order",
                              orders,
                              "Specifies the order of the FE shape function to use "
                              "for vector variables (additional orders not listed are "
                              "allowed)");
   params.addParam<std::vector<BoundaryName>>(
-      "tangent_h_boundaries", std::vector<BoundaryName>(), "Boundaries through which the tangential H field is constrained passes"
+      "tangent_h_boundaries",
+      std::vector<BoundaryName>(),
+      "Boundaries through which the tangential H field is constrained passes"
       "(H×n=H_ext×n)");
   params.addParam<Real>(
       "tangent_h_penalty", 0, "Penalty coefficient for tangent h boundary conditions");
   params.addParam<std::vector<FunctionName>>(
-      "surface_h_fields", std::vector<FunctionName>(), "Vector functions representing H fields on tangent_h_boundaries.");
-  params.addParam<std::vector<BoundaryName>>(
-      "zero_flux_boundaries", std::vector<BoundaryName>(), "Boundaries through which zero magnetic flux passes"
-      "(B·n = 0)");
+      "surface_h_fields",
+      std::vector<FunctionName>(),
+      "Vector functions representing H fields on tangent_h_boundaries.");
+  params.addParam<std::vector<BoundaryName>>("zero_flux_boundaries",
+                                             std::vector<BoundaryName>(),
+                                             "Boundaries through which zero magnetic flux passes"
+                                             "(B·n = 0)");
   params.addParam<Real>(
       "zero_flux_penalty", 0, "Penalty coefficient for zero flux boundary conditions");
   params.addParam<std::vector<BoundaryName>>(
-      "electric_potential_boundaries", std::vector<BoundaryName>(), "Boundaries on which the electric potential is defined."
+      "electric_potential_boundaries",
+      std::vector<BoundaryName>(),
+      "Boundaries on which the electric potential is defined."
       "(V=V_ext)");
   params.addParam<std::vector<Real>>(
-      "surface_electric_potentials", std::vector<Real>(), "Scalar functions representing potentials on electric potential boundaries.");
+      "surface_electric_potentials",
+      std::vector<Real>(),
+      "Scalar functions representing potentials on electric potential boundaries.");
   params.addParam<std::vector<BoundaryName>>(
-      "electric_current_boundaries", std::vector<BoundaryName>(), "Boundaries on which electric current flows into or out of the system."
+      "electric_current_boundaries",
+      std::vector<BoundaryName>(),
+      "Boundaries on which electric current flows into or out of the system."
       "(J_ext=J·n)");
   params.addParam<std::vector<FunctionName>>(
-      "surface_electric_currents", std::vector<FunctionName>(), "Real values representing current density flowing across the surface in the direction of the surface normal");
-  params.addParamNamesToGroup("tangent_h_boundaries surface_h_fields zero_flux_boundaries zero_flux_penalty "
-                              "electric_potential_boundaries surface_electric_potentials electric_current_boundaries surface_electric_currents",
-                        "BoundaryCondition");
+      "surface_electric_currents",
+      std::vector<FunctionName>(),
+      "Real values representing current density flowing across the surface in the direction of the "
+      "surface normal");
   params.addParamNamesToGroup(
-      "scalar_family scalar_order vector_family vector_order", "Variable");
+      "tangent_h_boundaries surface_h_fields zero_flux_boundaries zero_flux_penalty "
+      "electric_potential_boundaries surface_electric_potentials electric_current_boundaries "
+      "surface_electric_currents",
+      "BoundaryCondition");
+  params.addParamNamesToGroup("scalar_family scalar_order vector_family vector_order", "Variable");
   return params;
 }
 
@@ -78,15 +97,17 @@ AVAction::AVAction(InputParameters parameters)
                     Utility::string_to_enum<FEFamily>(getParam<MooseEnum>("vector_family"))),
     _scalar_fe_type(Utility::string_to_enum<Order>(getParam<MooseEnum>("scalar_order")),
                     Utility::string_to_enum<FEFamily>(getParam<MooseEnum>("scalar_family"))),
-  _tangent_h_boundaries(getParam<std::vector<BoundaryName>>("tangent_h_boundaries")),
-  _tangent_h_penalty(getParam<Real>("tangent_h_penalty")),
-  _surface_h_fields(getParam<std::vector<FunctionName>>("surface_h_fields")),
-  _zero_flux_boundaries(getParam<std::vector<BoundaryName>>("zero_flux_boundaries")),
-  _zero_flux_penalty(getParam<Real>("zero_flux_penalty")),
-  _electric_potential_boundaries(getParam<std::vector<BoundaryName>>("electric_potential_boundaries")),
-  _surface_electric_potentials(getParam<std::vector<Real>>("surface_electric_potentials")),
-  _electric_current_boundaries(getParam<std::vector<BoundaryName>>("electric_current_boundaries")),
-  _surface_electric_currents(getParam<std::vector<FunctionName>>("surface_electric_currents"))
+    _tangent_h_boundaries(getParam<std::vector<BoundaryName>>("tangent_h_boundaries")),
+    _tangent_h_penalty(getParam<Real>("tangent_h_penalty")),
+    _surface_h_fields(getParam<std::vector<FunctionName>>("surface_h_fields")),
+    _zero_flux_boundaries(getParam<std::vector<BoundaryName>>("zero_flux_boundaries")),
+    _zero_flux_penalty(getParam<Real>("zero_flux_penalty")),
+    _electric_potential_boundaries(
+        getParam<std::vector<BoundaryName>>("electric_potential_boundaries")),
+    _surface_electric_potentials(getParam<std::vector<Real>>("surface_electric_potentials")),
+    _electric_current_boundaries(
+        getParam<std::vector<BoundaryName>>("electric_current_boundaries")),
+    _surface_electric_currents(getParam<std::vector<FunctionName>>("surface_electric_currents"))
 {
 }
 
@@ -103,7 +124,7 @@ AVAction::act()
     _vector_params.set<MooseEnum>("order") = _vector_fe_type.order.get_order();
     _problem->addVariable(_vector_var_type, Maxwell::magnetic_vector_potential, _vector_params);
 
-    auto _scalar_var_type  = AddVariableAction::determineType(_scalar_fe_type, 1);
+    auto _scalar_var_type = AddVariableAction::determineType(_scalar_fe_type, 1);
     auto _scalar_base_params = _factory.getValidParams(_scalar_var_type);
     _scalar_base_params.set<MooseEnum>("family") = Moose::stringify(_scalar_fe_type.family);
     _scalar_base_params.set<MooseEnum>("order") = _scalar_fe_type.order.get_order();
@@ -143,13 +164,15 @@ AVAction::addTangentialHBC()
     tngt_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
     tngt_params.set<FunctionName>("curl_value") = _surface_h_fields[i];
     tngt_params.set<std::vector<BoundaryName>>("boundary") = {_tangent_h_boundaries[i]};
-    _problem->addBoundaryCondition(tngt_bc_type, "tangent_H_field_" + _tangent_h_boundaries[i], tngt_params);
+    _problem->addBoundaryCondition(
+        tngt_bc_type, "tangent_H_field_" + _tangent_h_boundaries[i], tngt_params);
 
     InputParameters norm_params = _factory.getValidParams(norm_bc_type);
     norm_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
     norm_params.set<Real>("penalty") = _tangent_h_penalty;
     norm_params.set<std::vector<BoundaryName>>("boundary") = {_tangent_h_boundaries[i]};
-    _problem->addBoundaryCondition(norm_bc_type, "tangent_H_gauging_" + _tangent_h_boundaries[i], norm_params);
+    _problem->addBoundaryCondition(
+        norm_bc_type, "tangent_H_gauging_" + _tangent_h_boundaries[i], norm_params);
   }
 }
 
@@ -164,8 +187,9 @@ AVAction::addZeroFluxBC()
     InputParameters tngt_params = _factory.getValidParams(tngt_bc_type);
     tngt_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
     tngt_params.set<Real>("penalty") = _zero_flux_penalty;
-    tngt_params.set<std::vector<BoundaryName>>("boundary") = { _zero_flux_boundaries[i]};
-    _problem->addBoundaryCondition(tngt_bc_type, "zero_flux_" + _zero_flux_boundaries[i], tngt_params);
+    tngt_params.set<std::vector<BoundaryName>>("boundary") = {_zero_flux_boundaries[i]};
+    _problem->addBoundaryCondition(
+        tngt_bc_type, "zero_flux_" + _zero_flux_boundaries[i], tngt_params);
   }
 }
 
@@ -180,14 +204,15 @@ AVAction::addElectricPotentialBC()
     params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
     params.set<Real>("value") = _surface_electric_potentials[i];
     params.set<std::vector<BoundaryName>>("boundary") = {_electric_potential_boundaries[i]};
-    _problem->addBoundaryCondition(bc_type, "electric_potential_bc_" + _electric_potential_boundaries[i], params);
+    _problem->addBoundaryCondition(
+        bc_type, "electric_potential_bc_" + _electric_potential_boundaries[i], params);
   }
 }
 
 void
 AVAction::addElectricCurrentBC()
 {
-  //Neumann BC for the scalar potential V that fixes the integrated
+  // Neumann BC for the scalar potential V that fixes the integrated
   // current density over a surface on an external boundary in the direction of the surface normal.
   std::string bc_type = "FunctionFluxBC";
   // std::string bc_type = "FunctionNeumannBC";
@@ -197,9 +222,9 @@ AVAction::addElectricCurrentBC()
     params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
     params.set<FunctionName>("function") = _surface_electric_currents[i];
     params.set<std::vector<BoundaryName>>("boundary") = {_electric_current_boundaries[i]};
-    _problem->addBoundaryCondition(bc_type, "electric_current_bc_" + _electric_current_boundaries[i], params);
+    _problem->addBoundaryCondition(
+        bc_type, "electric_current_bc_" + _electric_current_boundaries[i], params);
   }
-
 }
 
 void
@@ -208,7 +233,8 @@ AVAction::addAVKernels()
   std::string vector_kernel_type = "EddyAVFaraday";
   InputParameters vector_params = _factory.getValidParams(vector_kernel_type);
   vector_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
-  vector_params.set<std::vector<VariableName>>("scalar_potential") = {Maxwell::electric_scalar_potential};
+  vector_params.set<std::vector<VariableName>>("scalar_potential") = {
+      Maxwell::electric_scalar_potential};
   vector_params.set<bool>("gauge_penalty") = true;
   vector_params.set<bool>("quasistationary") = true;
   _problem->addKernel(vector_kernel_type, "EddyAVFaraday", vector_params);
@@ -216,6 +242,7 @@ AVAction::addAVKernels()
   std::string scalar_kernel_type = "EddyAVGauss";
   InputParameters scalar_params = _factory.getValidParams(scalar_kernel_type);
   scalar_params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
-  scalar_params.set<std::vector<VariableName>>("vector_potential") = {Maxwell::magnetic_vector_potential};
+  scalar_params.set<std::vector<VariableName>>("vector_potential") = {
+      Maxwell::magnetic_vector_potential};
   _problem->addKernel(scalar_kernel_type, "EddyAVGauss", scalar_params);
 }

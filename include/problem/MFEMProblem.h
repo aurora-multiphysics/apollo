@@ -18,15 +18,10 @@
 #include "MFEMDataCollection.h"
 #include "Function.h"
 #include "MooseEnum.h"
-#include "boundary_conditions.hpp"
-#include "problem_builder.hpp"
 #include "SystemBase.h"
 #include "Transient.h"
 #include "Steady.h"
 #include "hephaestus.hpp"
-#include "materials.hpp"
-#include "executioner.hpp"
-#include "outputs.hpp"
 #include "libmesh/string_to_enum.h"
 #include "libmesh/point.h"
 
@@ -142,6 +137,5 @@ protected:
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _exec_params;
-  hephaestus::Formulation * _formulation;
   hephaestus::Executioner * executioner;
 };
