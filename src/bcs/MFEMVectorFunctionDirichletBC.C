@@ -36,7 +36,7 @@ void
 MFEMVectorFunctionDirichletBC::storeCoefficients(hephaestus::DomainProperties & domain_properties)
 {
   std::string vec_coef_name = std::string("bc_vec_coef_") + getParam<std::string>("_object_name");
-  domain_properties.vector_property_map[vec_coef_name] = &_vec_function_coef;
+  domain_properties.vector_property_map.Register(vec_coef_name, &_vec_function_coef, true);
 }
 
 MFEMVectorFunctionDirichletBC::~MFEMVectorFunctionDirichletBC() {}

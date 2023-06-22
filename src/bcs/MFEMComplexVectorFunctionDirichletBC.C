@@ -53,10 +53,10 @@ MFEMComplexVectorFunctionDirichletBC::storeCoefficients(
 {
   std::string vec_coef_name_re =
       std::string("bc_vec_coef_re_") + getParam<std::string>("_object_name");
-  domain_properties.vector_property_map[vec_coef_name_re] = &_vec_function_coef_re;
+  domain_properties.vector_property_map.Register(vec_coef_name_re, &_vec_function_coef_re, true);
   std::string vec_coef_name_im =
       std::string("bc_vec_coef_im_") + getParam<std::string>("_object_name");
-  domain_properties.vector_property_map[vec_coef_name_im] = &_vec_function_coef_im;
+  domain_properties.vector_property_map.Register(vec_coef_name_im, &_vec_function_coef_im, true);
 }
 
 MFEMComplexVectorFunctionDirichletBC::~MFEMComplexVectorFunctionDirichletBC() {}

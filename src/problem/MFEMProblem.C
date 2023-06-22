@@ -45,7 +45,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     }
   }
 
-  mfem_problem_builder = hephaestus::createProblemBuilder(_formulation_name);
+  mfem_problem_builder = hephaestus::Factory::createProblemBuilder(_formulation_name);
   mfem_problem_builder->ConstructEquationSystem();
   mfem_problem_builder->SetMesh(
       std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
@@ -109,7 +109,7 @@ MFEMProblem::initialSetup()
   if (_moose_executioner != NULL)
   {
     mfem_problem =
-        dynamic_cast<hephaestus::TransientProblemBuilder *>(mfem_problem_builder)->ReturnProblem();
+        dynamic_cast<hephaestus::TimeDomainProblemBuilder *>(mfem_problem_builder)->ReturnProblem();
 
     exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
     exec_params.SetParam("TimeStep", float(dt()));
@@ -117,7 +117,7 @@ MFEMProblem::initialSetup()
     exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
     exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
     exec_params.SetParam("Problem",
-                         dynamic_cast<hephaestus::TransientProblem *>(mfem_problem.get()));
+                         dynamic_cast<hephaestus::TimeDomainProblem *>(mfem_problem.get()));
     executioner = new hephaestus::TransientExecutioner(exec_params);
   }
   else if (dynamic_cast<Steady *>(_app.getExecutioner()))
@@ -216,7 +216,7 @@ MFEMProblem::addUserObject(const std::string & user_object_name,
   else if (dynamic_cast<const MFEMConstantCoefficient *>(uo) != nullptr)
   {
     MFEMConstantCoefficient * mfem_coef(&getUserObject<MFEMConstantCoefficient>(name));
-    _domain_properties.scalar_property_map[name] = mfem_coef;
+    _domain_properties.scalar_property_map.Register(name, mfem_coef, true);
   }
 }
 
@@ -261,14 +261,14 @@ MFEMProblem::addKernel(const std::string & kernel_name,
   if (dynamic_cast<const MFEMLinearFormKernel *>(kernel) != nullptr)
   {
     MFEMLinearFormKernel * lf_kernel(&getUserObject<MFEMLinearFormKernel>(name));
-    mfem_problem_builder->AddKernel(parameters.get<std::string>("variable"),
-                                    lf_kernel->getKernel());
+    mfem_problem_builder->AddKernel<mfem::ParLinearForm>(parameters.get<std::string>("variable"),
+                                                         lf_kernel->getKernel());
   }
   else if (dynamic_cast<const MFEMBilinearFormKernel *>(kernel) != nullptr)
   {
     MFEMBilinearFormKernel * blf_kernel(&getUserObject<MFEMBilinearFormKernel>(name));
-    mfem_problem_builder->AddKernel(parameters.get<std::string>("variable"),
-                                    blf_kernel->getKernel());
+    mfem_problem_builder->AddKernel<mfem::ParBilinearForm>(parameters.get<std::string>("variable"),
+                                                           blf_kernel->getKernel());
   }
 }
 
