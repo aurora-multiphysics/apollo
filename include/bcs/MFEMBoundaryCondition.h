@@ -2,7 +2,8 @@
 
 #include "GeneralUserObject.h"
 #include "boundary_conditions.hpp"
-#include "materials.hpp"
+#include "gridfunctions.hpp"
+#include "coefficients.hpp"
 
 libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
 
@@ -18,7 +19,7 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties) {}
+  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) {}
 
 protected:
   std::vector<BoundaryName> _boundary_names;

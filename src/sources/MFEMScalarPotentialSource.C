@@ -61,9 +61,9 @@ MFEMScalarPotentialSource::getSource()
 }
 
 void
-MFEMScalarPotentialSource::storeCoefficients(hephaestus::DomainProperties & domain_properties)
+MFEMScalarPotentialSource::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
-  // domain_properties.vector_property_map[source_coef_name] = _restricted_coef;
+  // coefficients.vectors[source_coef_name] = _restricted_coef;
 }
 
 MFEMScalarPotentialSource::~MFEMScalarPotentialSource() {}

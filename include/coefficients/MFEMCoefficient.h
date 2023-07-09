@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GeneralUserObject.h"
-#include "materials.hpp"
+#include "coefficients.hpp"
 
 class MFEMCoefficient : public GeneralUserObject
 {

@@ -27,10 +27,10 @@ MFEMJouleHeatingAux::getAuxSolver()
 }
 
 void
-MFEMJouleHeatingAux::storeCoefficients(hephaestus::DomainProperties & domain_properties)
+MFEMJouleHeatingAux::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
   std::string coef_name = std::string("JouleHeating");
-  domain_properties.scalar_property_map.Register(coef_name, &joule_heating_aux, true);
+  coefficients.scalars.Register(coef_name, &joule_heating_aux, true);
 }
 
 MFEMJouleHeatingAux::~MFEMJouleHeatingAux() {}

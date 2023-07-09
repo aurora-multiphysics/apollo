@@ -36,10 +36,10 @@ MFEMVectorNormalIntegratedBC::getBC()
 }
 
 void
-MFEMVectorNormalIntegratedBC::storeCoefficients(hephaestus::DomainProperties & domain_properties)
+MFEMVectorNormalIntegratedBC::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
   std::string vec_coef_name = std::string("bc_vec_coef_") + getParam<std::string>("_object_name");
-  domain_properties.vector_property_map.Register(vec_coef_name, &_vec_function_coef, true);
+  coefficients.vectors.Register(vec_coef_name, &_vec_function_coef, true);
 }
 
 MFEMVectorNormalIntegratedBC::~MFEMVectorNormalIntegratedBC() {}

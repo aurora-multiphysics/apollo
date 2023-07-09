@@ -2,7 +2,7 @@
 
 #include "GeneralUserObject.h"
 #include "MFEMCoefficient.h"
-#include "materials.hpp"
+#include "coefficients.hpp"
 
 class MFEMMaterial : public GeneralUserObject
 {

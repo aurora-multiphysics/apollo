@@ -128,7 +128,7 @@ protected:
   hephaestus::ProblemBuilder * mfem_problem_builder;
   std::unique_ptr<hephaestus::Problem> mfem_problem;
   hephaestus::BCMap _bc_maps;
-  hephaestus::DomainProperties _domain_properties;
+  hephaestus::Coefficients _coefficients;
   hephaestus::FESpaces _fespaces;
   hephaestus::GridFunctions _gridfunctions;
   hephaestus::AuxSolvers _preprocessors;

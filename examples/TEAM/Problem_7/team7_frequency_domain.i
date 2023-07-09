@@ -10,6 +10,30 @@
 []
 
 [AuxVariables]
+  [./magnetic_vector_potential_real]
+    type = MFEMVariable
+    fespace_name = _HCurlFESpace
+    fespace_type = ND
+    order = second
+  [../]
+  [./magnetic_vector_potential_imag]
+    type = MFEMVariable
+    fespace_name = _HCurlFESpace
+    fespace_type = ND
+    order = second
+  [../]
+  [./magnetic_flux_density_real]
+    type = MFEMVariable
+    fespace_name = _HDivFESpace
+    fespace_type = RT
+    order = second
+  [../]
+  [./magnetic_flux_density_imag]
+    type = MFEMVariable
+    fespace_name = _HDivFESpace
+    fespace_type = RT
+    order = second
+  [../]
   [./electric_potential]
     type = MFEMVariable
     fespace_name = _H1FESpace

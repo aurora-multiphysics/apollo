@@ -19,9 +19,9 @@ public:
   virtual void finalize() override {}
 
   virtual hephaestus::Source * getSource();
-  virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties);
+  virtual void storeCoefficients(hephaestus::Coefficients & coefficients);
 
 protected:
   std::vector<SubdomainID> blocks;
-  hephaestus::Source * _source;  
+  hephaestus::Source * _source;
 };

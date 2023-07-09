@@ -2,7 +2,7 @@
 
 #include "GeneralUserObject.h"
 #include "auxsolvers.hpp"
-#include "materials.hpp"
+#include "gridfunctions.hpp"
 
 class MFEMAuxSolver : public GeneralUserObject
 {
@@ -18,7 +18,7 @@ public:
 
   virtual hephaestus::AuxSolver * getAuxSolver();
 
-  virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties) {}
+  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) {}
 
 protected:
   hephaestus::AuxSolver * _auxsolver;

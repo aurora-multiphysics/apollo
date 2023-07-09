@@ -22,7 +22,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
     _formulation_name(getParam<std::string>("formulation")),
     _bc_maps(),
-    _domain_properties(),
+    _coefficients(),
     _fespaces(),
     _gridfunctions(),
     _preprocessors(),
@@ -82,9 +82,10 @@ MFEMProblem::initialSetup()
   std::cout << "Launching MFEM solve\n\n" << std::endl;
   // mfem_problem_builder->SetFESpaces(_fespaces);
   // mfem_problem_builder->SetGridFunctions(_gridfunctions);
+  _coefficients.AddGlobalCoefficientsFromSubdomains();
   mfem_problem_builder->SetBoundaryConditions(_bc_maps);
   mfem_problem_builder->SetAuxSolvers(_preprocessors);
-  mfem_problem_builder->SetCoefficients(_domain_properties);
+  mfem_problem_builder->SetCoefficients(_coefficients);
   mfem_problem_builder->SetPostprocessors(_postprocessors);
   mfem_problem_builder->SetSources(_sources);
   mfem_problem_builder->SetOutputs(_outputs);
@@ -163,7 +164,7 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
   FEProblemBase::addUserObject(bc_name, name, parameters);
   MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
   _bc_maps.Register(name, mfem_bc->getBC(), false);
-  mfem_bc->storeCoefficients(_domain_properties);
+  mfem_bc->storeCoefficients(_coefficients);
 }
 
 void
@@ -182,7 +183,8 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
 
     // Hotfix to ensure coupled coeffs get properly initialised in Hephaestus.
     // To replaced by addAuxkernels?
-    for (auto coef = mfem_subdomain.property_map.begin(); coef != mfem_subdomain.property_map.end();
+    for (auto coef = mfem_subdomain.scalar_coefficients.begin();
+         coef != mfem_subdomain.scalar_coefficients.end();
          ++coef)
     {
       hephaestus::CoupledCoefficient * _coupled_coef =
@@ -193,7 +195,7 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
       }
     }
 
-    _domain_properties.subdomains.push_back(mfem_subdomain);
+    _coefficients.subdomains.push_back(mfem_subdomain);
   }
 }
 
@@ -211,12 +213,12 @@ MFEMProblem::addUserObject(const std::string & user_object_name,
   {
     MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
     _sources.Register(name, mfem_source->getSource(), true);
-    mfem_source->storeCoefficients(_domain_properties);
+    mfem_source->storeCoefficients(_coefficients);
   }
   else if (dynamic_cast<const MFEMConstantCoefficient *>(uo) != nullptr)
   {
     MFEMConstantCoefficient * mfem_coef(&getUserObject<MFEMConstantCoefficient>(name));
-    _domain_properties.scalar_property_map.Register(name, mfem_coef, true);
+    _coefficients.scalars.Register(name, mfem_coef, true);
   }
 }
 
@@ -281,7 +283,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
   MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
 
   _postprocessors.Register(name, mfem_auxsolver->getAuxSolver(), true);
-  mfem_auxsolver->storeCoefficients(_domain_properties);
+  mfem_auxsolver->storeCoefficients(_coefficients);
 }
 
 void

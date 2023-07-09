@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MFEMMaterial.h"
-#include "materials.hpp"
+#include "coefficients.hpp"
 
 class MFEMThermalMaterial : public MFEMMaterial
 {

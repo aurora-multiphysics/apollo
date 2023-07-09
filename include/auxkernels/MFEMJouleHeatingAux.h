@@ -15,23 +15,22 @@ public:
     : hephaestus::CoupledCoefficient(params),
       conductivity_coef_name(params.GetParam<std::string>("ConductivityCoefName")){};
 
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> & variables,
-            hephaestus::DomainProperties & domain_properties)
+  void Init(const hephaestus::GridFunctions & variables, hephaestus::Coefficients & coefficients)
   {
     // To ensure conductivity on subdomains is converted into global coefficient
-    // Hephaestus update for domain_properties initialisation could address this
-    if (!domain_properties.scalar_property_map.Has(conductivity_coef_name))
-    {
-      domain_properties.scalar_property_map.Register(
-          conductivity_coef_name,
-          new mfem::PWCoefficient(
-              domain_properties.getGlobalScalarProperty(std::string(conductivity_coef_name))),
-          true);
-    }
+    // Hephaestus update for coefficients initialisation could address this
+    // if (!coefficients.scalars.Has(conductivity_coef_name))
+    // {
+    //   coefficients.scalars.Register(
+    //       conductivity_coef_name,
+    //       new mfem::PWCoefficient(
+    //           coefficients.getGlobalScalarProperty(std::string(conductivity_coef_name))),
+    //       true);
+    // }
 
-    hephaestus::CoupledCoefficient::Init(variables, domain_properties);
+    hephaestus::CoupledCoefficient::Init(variables, coefficients);
     std::cout << "Intialising JouleHeating";
-    sigma = domain_properties.scalar_property_map.Get(conductivity_coef_name);
+    sigma = coefficients.scalars.Get(conductivity_coef_name);
 
     joule_heating_gf = variables.Get("joule_heating");
   }
@@ -65,7 +64,7 @@ public:
   virtual void finalize() override {}
 
   virtual hephaestus::AuxSolver * getAuxSolver() override;
-  virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties) override;
+  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:
   hephaestus::InputParameters joule_heating_params;
