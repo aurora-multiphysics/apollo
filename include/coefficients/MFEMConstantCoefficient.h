@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MFEMCoefficient.h"
-#include "materials.hpp"
+#include "gridfunctions.hpp"
 
 class MFEMConstantCoefficient : public MFEMCoefficient, public mfem::ConstantCoefficient
 {

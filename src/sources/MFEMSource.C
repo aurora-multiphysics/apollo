@@ -23,7 +23,7 @@ MFEMSource::getSource()
 }
 
 void
-MFEMSource::storeCoefficients(hephaestus::DomainProperties & domain_properties)
+MFEMSource::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
 }
 

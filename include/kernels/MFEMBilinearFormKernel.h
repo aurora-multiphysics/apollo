@@ -2,7 +2,7 @@
 
 #include "GeneralUserObject.h"
 #include "kernels.hpp"
-#include "materials.hpp"
+#include "gridfunctions.hpp"
 
 class MFEMBilinearFormKernel : public GeneralUserObject
 {

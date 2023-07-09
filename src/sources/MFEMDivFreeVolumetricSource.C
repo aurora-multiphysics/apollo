@@ -69,9 +69,9 @@ MFEMDivFreeVolumetricSource::getSource()
 }
 
 void
-MFEMDivFreeVolumetricSource::storeCoefficients(hephaestus::DomainProperties & domain_properties)
+MFEMDivFreeVolumetricSource::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
-  domain_properties.vector_property_map.Register(source_coef_name, _restricted_coef, true);
+  coefficients.vectors.Register(source_coef_name, _restricted_coef, true);
 }
 
 MFEMDivFreeVolumetricSource::~MFEMDivFreeVolumetricSource() {}

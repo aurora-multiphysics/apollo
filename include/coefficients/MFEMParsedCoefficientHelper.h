@@ -51,8 +51,8 @@ public:
                      const std::vector<std::string> & constant_expressions,
                      const std::vector<std::string> & _mfem_coefficient_names,
                      const std::vector<std::string> & _mfem_gridfunction_names);
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> & variables,
-            hephaestus::DomainProperties & domain_properties) override;
+  void Init(const hephaestus::GridFunctions & variables,
+            hephaestus::Coefficients & coefficients) override;
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 

@@ -14,7 +14,7 @@ public:
   virtual void finalize() override {}
 
   virtual hephaestus::Source * getSource() override;
-  virtual void storeCoefficients(hephaestus::DomainProperties & domain_properties) override;
+  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:
   std::string source_coef_name;

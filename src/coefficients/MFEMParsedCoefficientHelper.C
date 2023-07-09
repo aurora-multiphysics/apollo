@@ -118,8 +118,8 @@ MFEMParsedCoefficientHelper::functionsOptimize()
 }
 
 void
-MFEMParsedCoefficientHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> & variables,
-                                  hephaestus::DomainProperties & domain_properties)
+MFEMParsedCoefficientHelper::Init(const hephaestus::GridFunctions & variables,
+                                  hephaestus::Coefficients & coefficients)
 {
   auto nmfem_gfs = _gridfunction_names.size();
   for (MooseIndex(_gridfunction_names) i = 0; i < nmfem_gfs; ++i)
@@ -140,7 +140,7 @@ MFEMParsedCoefficientHelper::Init(const mfem::NamedFieldsMap<mfem::ParGridFuncti
   auto nmfem_coefs = _coefficient_names.size();
   for (MooseIndex(_coefficient_names) i = 0; i < nmfem_coefs; ++i)
   {
-    _coefficients[i] = domain_properties.scalar_property_map.Get(_coefficient_names[i]);
+    _coefficients[i] = coefficients.scalars.Get(_coefficient_names[i]);
   }
 }
 

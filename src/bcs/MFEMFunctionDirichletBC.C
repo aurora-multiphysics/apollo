@@ -29,8 +29,8 @@ MFEMFunctionDirichletBC::getBC()
 }
 
 void
-MFEMFunctionDirichletBC::storeCoefficients(hephaestus::DomainProperties & domain_properties)
+MFEMFunctionDirichletBC::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
   std::string coef_name = std::string("bc_coef_") + getParam<std::string>("_object_name");
-  domain_properties.scalar_property_map.Register(coef_name, &_function_coeff, true);
+  coefficients.scalars.Register(coef_name, &_function_coeff, true);
 }

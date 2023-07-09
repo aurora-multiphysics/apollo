@@ -2,7 +2,8 @@
 
 #include "GeneralUserObject.h"
 #include "Function.h"
-#include "variables.hpp"
+#include "inputs.hpp"
+#include "gridfunctions.hpp"
 
 class MFEMVariable : public GeneralUserObject
 {
