@@ -40,7 +40,7 @@
     variable = electric_field
     boundary = '2'
     port_length_vector = '0 22.86e-3 0'
-    port_width_vector = '0 0 10.16e-3'    
+    port_width_vector = '0 0 10.16e-3'
     frequency = 9.3e9
     input_port = true
   [../]
@@ -49,7 +49,7 @@
     variable = electric_field
     boundary = '3'
     port_length_vector = '0 22.86e-3 0'
-    port_width_vector = '0 0 10.16e-3'    
+    port_width_vector = '0 0 10.16e-3'
     frequency = 9.3e9
     input_port = false
   [../]
@@ -65,7 +65,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./AirEConductivity]
     type = MFEMConstantCoefficient
     value = 0.0
@@ -81,7 +81,7 @@
   [./frequency]
     type = MFEMConstantCoefficient
     value = 9.3e9
-  [../]  
+  [../]
 []
 
 [Executioner]

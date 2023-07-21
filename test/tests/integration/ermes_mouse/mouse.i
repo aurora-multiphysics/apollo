@@ -31,7 +31,7 @@
     variable = electric_field
     boundary = '5'
     port_length_vector = '24.76e-2 0 0'
-    port_width_vector = '0 12.38e-2 0'    
+    port_width_vector = '0 12.38e-2 0'
     frequency = 900e6
     input_port = true
   [../]
@@ -40,7 +40,7 @@
     variable = electric_field
     boundary = '6'
     port_length_vector = '24.76e-2 0 0'
-    port_width_vector = '0 12.38e-2 0'    
+    port_width_vector = '0 12.38e-2 0'
     frequency = 900e6
     input_port = false
   [../]
@@ -60,14 +60,14 @@
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
     block = 2
-  [../]  
+  [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./frequency]
     type = MFEMConstantCoefficient
     value = 900e6
-  [../]  
+  [../]
   [./MouseEConductivity]
     type = MFEMConstantCoefficient
     value = 0.97

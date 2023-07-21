@@ -86,7 +86,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./CopperEConductivity]
     type = MFEMConstantCoefficient
     value = 62.83185
@@ -121,7 +121,7 @@
   end_time = 2.5
 
   l_tol = 1e-16
-  l_max_its = 1000  
+  l_max_its = 1000
 []
 
 [Outputs]

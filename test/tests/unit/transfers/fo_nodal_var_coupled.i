@@ -19,7 +19,7 @@
   [./dummy_moose_nodal]
     family = LAGRANGE
     order = FIRST
-  [../]  
+  [../]
 [../]
 
 [ICs]
@@ -27,7 +27,7 @@
     type = FunctionIC
     variable = dummy_moose_nodal
     function = 2-x*x
-  [../]  
+  [../]
 []
 
 [Materials]
@@ -40,7 +40,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./CopperEConductivity]
     type = MFEMConstantCoefficient
     value = 5.96e7
@@ -48,7 +48,7 @@
   [./CopperPermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]  
+  [../]
   [./CopperPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
@@ -62,7 +62,7 @@
   end_time = 0.5
 
   l_tol = 1e-16
-  l_max_its = 1000  
+  l_max_its = 1000
 []
 
 [Outputs]
