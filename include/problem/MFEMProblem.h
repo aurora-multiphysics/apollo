@@ -13,6 +13,7 @@
 #include "MFEMBoundaryCondition.h"
 #include "MFEMBilinearFormKernel.h"
 #include "MFEMLinearFormKernel.h"
+#include "MFEMFormulation.h"
 #include "MFEMAuxSolver.h"
 #include "MFEMSource.h"
 #include "MFEMDataCollection.h"
@@ -75,6 +76,14 @@ public:
    * Moose user objects, and contains additional code to create MFEM specific user objects.
    */
   void addCoefficient(const std::string & user_object_name,
+                      const std::string & name,
+                      InputParameters & parameters);
+
+  /**
+   * Override of ExternalProblem::addUserObject. Uses ExternalProblem::addUserObject to set the
+   * Moose user objects, and contains additional code to create MFEM specific user objects.
+   */
+  void setFormulation(const std::string & user_object_name,
                       const std::string & name,
                       InputParameters & parameters);
 

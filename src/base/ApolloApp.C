@@ -31,6 +31,15 @@ associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
   registerSyntax("AVAction", "Modules/AVFormulation");
 
   // add coefficients
+  registerMooseObjectTask("add_mfem_formulation", MFEMFormulation, true);
+  registerSyntaxTask("AddFormulationAction", "Formulation", "add_mfem_formulation");
+  addTaskDependency("add_mfem_formulation", "init_mesh");
+  addTaskDependency("add_variable", "add_mfem_formulation");
+  addTaskDependency("add_aux_variable", "add_mfem_formulation");
+  addTaskDependency("add_elemental_field_variable", "add_mfem_formulation");
+  addTaskDependency("add_kernel", "add_mfem_formulation");
+
+  // add coefficients
   registerMooseObjectTask("add_mfem_coefficients", MFEMCoefficient, false);
   registerSyntaxTask("AddCoefficientAction", "Coefficients/*", "add_mfem_coefficients");
   addTaskDependency("add_material", "add_mfem_coefficients");

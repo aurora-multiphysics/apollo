@@ -6,8 +6,12 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = Custom
   use_glvis=true
+[]
+
+[Formulation]
+  type = MFEMFormulation
+  formulation_name = Custom
 []
 
 [AuxVariables]

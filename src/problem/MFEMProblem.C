@@ -6,7 +6,6 @@ InputParameters
 MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
-  params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
   params.addParam<int>(
       "vis_steps",
       1,
@@ -20,7 +19,6 @@ MFEMProblem::validParams()
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
     _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
-    _formulation_name(getParam<std::string>("formulation")),
     _bc_maps(),
     _coefficients(),
     _fespaces(),
@@ -31,24 +29,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-  mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
-  mfem_mesh.EnsureNCMesh();
-  // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
-  int * partitioning = NULL;
-  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
-  {
-    partitioning = new int[mesh().getMesh().n_elem()];
-    for (auto elem : mesh().getMesh().element_ptr_range())
-    {
-      unsigned int elem_id = elem->id();
-      partitioning[elem_id] = elem->processor_id();
-    }
-  }
 
-  mfem_problem_builder = hephaestus::Factory::createProblemBuilder(_formulation_name);
-  mfem_problem_builder->ConstructEquationSystem();
-  mfem_problem_builder->SetMesh(
-      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
   std::cout << "Problem initialised\n\n" << std::endl;
 }
 
@@ -157,6 +138,35 @@ MFEMProblem::externalSolve()
 }
 
 void
+MFEMProblem::setFormulation(const std::string & user_object_name,
+                            const std::string & name,
+                            InputParameters & parameters)
+{
+  mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
+  mfem_mesh.EnsureNCMesh();
+  // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
+  int * partitioning = NULL;
+  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
+  {
+    partitioning = new int[mesh().getMesh().n_elem()];
+    for (auto elem : mesh().getMesh().element_ptr_range())
+    {
+      unsigned int elem_id = elem->id();
+      partitioning[elem_id] = elem->processor_id();
+    }
+  }
+
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+  MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
+  mfem_problem_builder = mfem_formulation->problem_builder;
+  // mfem_problem_builder = hephaestus::Factory::createProblemBuilder(_formulation_name);
+  // mfem_problem_builder = hephaestus::Factory::createProblemBuilder(name);
+  mfem_problem_builder->ConstructEquationSystem();
+  mfem_problem_builder->SetMesh(
+      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
+}
+
+void
 MFEMProblem::addBoundaryCondition(const std::string & bc_name,
                                   const std::string & name,
                                   InputParameters & parameters)
@@ -215,11 +225,6 @@ MFEMProblem::addUserObject(const std::string & user_object_name,
     _sources.Register(name, mfem_source->getSource(), true);
     mfem_source->storeCoefficients(_coefficients);
   }
-  // else if (dynamic_cast<const MFEMConstantCoefficient *>(uo) != nullptr)
-  // {
-  //   MFEMConstantCoefficient * mfem_coef(&getUserObject<MFEMConstantCoefficient>(name));
-  //   _coefficients.scalars.Register(name, mfem_coef, true);
-  // }
 }
 
 void

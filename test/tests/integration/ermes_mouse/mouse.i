@@ -5,8 +5,12 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = ComplexEForm
   use_glvis = true
+[]
+
+[Formulation]
+  type = MFEMFormulation
+  formulation_name = ComplexEForm
 []
 
 [Functions]

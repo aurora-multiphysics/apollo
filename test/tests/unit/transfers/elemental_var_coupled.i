@@ -6,7 +6,11 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = EBForm
+[]
+
+[Formulation]
+  type = MFEMFormulation
+  formulation_name = EBForm
 []
 
 [AuxVariables]

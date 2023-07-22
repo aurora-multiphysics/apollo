@@ -5,8 +5,12 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = EBForm
   use_glvis = true
+[]
+
+[Formulation]
+  type = MFEMFormulation
+  formulation_name = EBForm
 []
 
 [AuxVariables]
