@@ -6,6 +6,7 @@ InputParameters
 MFEMCoefficient::validParams()
 {
   InputParameters params = GeneralUserObject::validParams();
+  params.registerBase("MFEMCoefficient");
   return params;
 }
 

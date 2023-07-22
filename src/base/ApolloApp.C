@@ -30,6 +30,11 @@ associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
   registerSyntax("CMAction", "Modules/ComplexMaxwell");
   registerSyntax("AVAction", "Modules/AVFormulation");
 
+  // add coefficients
+  registerMooseObjectTask("add_mfem_coefficients", MFEMCoefficient, false);
+  registerSyntaxTask("AddCoefficientAction", "Coefficients/*", "add_mfem_coefficients");
+  addTaskDependency("add_material", "add_mfem_coefficients");
+
   // add variables action
   registerTask("add_maxwell_variables", /*is_required=*/false);
   addTaskDependency("add_maxwell_variables", "add_variable");

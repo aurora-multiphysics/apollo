@@ -215,9 +215,25 @@ MFEMProblem::addUserObject(const std::string & user_object_name,
     _sources.Register(name, mfem_source->getSource(), true);
     mfem_source->storeCoefficients(_coefficients);
   }
-  else if (dynamic_cast<const MFEMConstantCoefficient *>(uo) != nullptr)
+  // else if (dynamic_cast<const MFEMConstantCoefficient *>(uo) != nullptr)
+  // {
+  //   MFEMConstantCoefficient * mfem_coef(&getUserObject<MFEMConstantCoefficient>(name));
+  //   _coefficients.scalars.Register(name, mfem_coef, true);
+  // }
+}
+
+void
+MFEMProblem::addCoefficient(const std::string & user_object_name,
+                            const std::string & name,
+                            InputParameters & parameters)
+{
+
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+
+  const UserObject * uo = &(getUserObjectBase(name));
+  if (dynamic_cast<const mfem::Coefficient *>(uo) != nullptr)
   {
-    MFEMConstantCoefficient * mfem_coef(&getUserObject<MFEMConstantCoefficient>(name));
+    mfem::Coefficient * mfem_coef(&getUserObject<mfem::Coefficient>(name));
     _coefficients.scalars.Register(name, mfem_coef, true);
   }
 }
