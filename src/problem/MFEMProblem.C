@@ -158,7 +158,7 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
 
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
-  mfem_problem_builder = mfem_formulation->problem_builder;
+  mfem_problem_builder = mfem_formulation->getProblemBuilder();
   // mfem_problem_builder = hephaestus::Factory::createProblemBuilder(_formulation_name);
   // mfem_problem_builder = hephaestus::Factory::createProblemBuilder(name);
   mfem_problem_builder->ConstructEquationSystem();
@@ -210,32 +210,11 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
 }
 
 void
-MFEMProblem::addUserObject(const std::string & user_object_name,
-                           const std::string & name,
-                           InputParameters & parameters)
-{
-
-  FEProblemBase::addUserObject(user_object_name, name, parameters);
-
-  const UserObject * uo = &(getUserObjectBase(name));
-
-  if (dynamic_cast<const MFEMSource *>(uo) != nullptr)
-  {
-    MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
-    _sources.Register(name, mfem_source->getSource(), true);
-    mfem_source->storeCoefficients(_coefficients);
-  }
-}
-
-void
 MFEMProblem::addSource(const std::string & user_object_name,
                        const std::string & name,
                        InputParameters & parameters)
 {
-
   FEProblemBase::addUserObject(user_object_name, name, parameters);
-
-  const UserObject * uo = &(getUserObjectBase(name));
   MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
   _sources.Register(name, mfem_source->getSource(), true);
   mfem_source->storeCoefficients(_coefficients);
@@ -248,13 +227,8 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
 {
 
   FEProblemBase::addUserObject(user_object_name, name, parameters);
-
-  const UserObject * uo = &(getUserObjectBase(name));
-  if (dynamic_cast<const mfem::Coefficient *>(uo) != nullptr)
-  {
-    mfem::Coefficient * mfem_coef(&getUserObject<mfem::Coefficient>(name));
-    _coefficients.scalars.Register(name, mfem_coef, true);
-  }
+  mfem::Coefficient * mfem_coef(&getUserObject<mfem::Coefficient>(name));
+  _coefficients.scalars.Register(name, mfem_coef, true);
 }
 
 void

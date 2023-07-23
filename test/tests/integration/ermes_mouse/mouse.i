@@ -9,8 +9,12 @@
 []
 
 [Formulation]
-  type = MFEMFormulation
-  formulation_name = ComplexEForm
+  type = ComplexEFormulation
+  e_field_re_name = electric_field_re
+  e_field_im_name = electric_field_im
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
+  dielectric_permittivity_name = dielectric_permittivity
 []
 
 [Functions]
