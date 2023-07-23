@@ -228,6 +228,20 @@ MFEMProblem::addUserObject(const std::string & user_object_name,
 }
 
 void
+MFEMProblem::addSource(const std::string & user_object_name,
+                       const std::string & name,
+                       InputParameters & parameters)
+{
+
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+
+  const UserObject * uo = &(getUserObjectBase(name));
+  MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
+  _sources.Register(name, mfem_source->getSource(), true);
+  mfem_source->storeCoefficients(_coefficients);
+}
+
+void
 MFEMProblem::addCoefficient(const std::string & user_object_name,
                             const std::string & name,
                             InputParameters & parameters)

@@ -44,6 +44,13 @@ associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
   registerSyntaxTask("AddCoefficientAction", "Coefficients/*", "add_mfem_coefficients");
   addTaskDependency("add_material", "add_mfem_coefficients");
 
+  // add sources
+  registerMooseObjectTask("add_mfem_sources", MFEMSource, false);
+  registerSyntaxTask("AddSourceAction", "Sources/*", "add_mfem_sources");
+  addTaskDependency("add_mfem_sources", "add_material");
+  addTaskDependency("add_mfem_sources", "add_variable");
+  addTaskDependency("add_mfem_sources", "add_aux_variable");
+
   // add variables action
   registerTask("add_maxwell_variables", /*is_required=*/false);
   addTaskDependency("add_maxwell_variables", "add_variable");

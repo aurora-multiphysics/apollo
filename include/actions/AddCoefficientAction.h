@@ -4,10 +4,9 @@
 #include "MFEMProblem.h"
 /**
  * This class allows us to have a section of the input file like the
- * following which automatically adds variables, kernels, aux kernels, bcs
- * for setting up the full wave complex Maxwell equations.
+ * following to add MFEM coefficients to the problem.
  *
- * [ComplexMaxwell]
+ * [Coefficients]
  * []
  */
 class AddCoefficientAction : public MooseObjectAction

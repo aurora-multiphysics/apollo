@@ -4,17 +4,17 @@
 #include "MFEMProblem.h"
 /**
  * This class allows us to have a section of the input file like the
- * following to specify the EM formulation to build.
+ * following to add MFEM sources to the problem.
  *
- * [Formulation]
+ * [Source]
  * []
  */
-class AddFormulationAction : public MooseObjectAction
+class AddSourceAction : public MooseObjectAction
 {
 public:
   static InputParameters validParams();
 
-  AddFormulationAction(const InputParameters & parameters);
+  AddSourceAction(const InputParameters & parameters);
 
   virtual void act() override;
 };

@@ -56,7 +56,7 @@
   [../]
 []
 
-[UserObjects]
+[Sources]
   [./SourcePotential]
     type = MFEMScalarPotentialSource
     potential = electric_potential

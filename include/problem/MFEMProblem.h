@@ -75,6 +75,14 @@ public:
    * Override of ExternalProblem::addUserObject. Uses ExternalProblem::addUserObject to set the
    * Moose user objects, and contains additional code to create MFEM specific user objects.
    */
+  void addSource(const std::string & user_object_name,
+                 const std::string & name,
+                 InputParameters & parameters);
+
+  /**
+   * Override of ExternalProblem::addUserObject. Uses ExternalProblem::addUserObject to set the
+   * Moose user objects, and contains additional code to create MFEM specific user objects.
+   */
   void addCoefficient(const std::string & user_object_name,
                       const std::string & name,
                       InputParameters & parameters);
