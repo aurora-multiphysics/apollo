@@ -51,9 +51,9 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
 
  protected:
 
-  int curved = 0;
+  int curved  = 0;
   int read_gf = 0;
-  bool topo = false;
+  bool topo   = false;
 
 
   int num_side_sets;
