@@ -101,8 +101,8 @@ public:
    * transfer it to the other. For example if you solve for temperature in MOOSE, you would use
    * setMFEMVarData to get this temperature data into an MFEM grid function.
    */
-  void setMFEMVarData(EquationSystems & esRef,
-                      std::string var_name,
+  void setMFEMVarData(std::string var_name,
+                      EquationSystems & esRef,
                       std::map<int, int> libmeshToMFEMNode);
   /**
    * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data
