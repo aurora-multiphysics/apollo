@@ -146,6 +146,7 @@ MFEMProblem::initialSetup()
   }
   executioner->Init();
 }
+
 void
 MFEMProblem::init()
 {
