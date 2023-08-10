@@ -296,8 +296,8 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 }
 
 void
-MFEMProblem::setMFEMVarData(EquationSystems & esRef,
-                            std::string var_name,
+MFEMProblem::setMFEMVarData(std::string var_name,
+                            EquationSystems & esRef,
                             std::map<int, int> libmeshToMFEMNode)
 {
 
@@ -476,32 +476,39 @@ MFEMProblem::getAuxVariableNames()
 void
 MFEMProblem::syncSolutions(Direction direction)
 {
-  // Only sync solutions if MOOSE and MFEM meshes are coupled
-  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
+  // Only sync solutions if MOOSE and MFEM meshes are coupled.
+  if (ExternalProblem::mesh().type() != "CoupledMFEMMesh") return;
+
+  // Map for second order var transfer;
+  std::map<int, int> * libmeshToMFEMNodePtr;
+
+  auto & coupledMesh = dynamic_cast<CoupledMFEMMesh &>(mesh());
+  libmeshToMFEMNodePtr = &(coupledMesh.libmeshToMFEMNode);
+
+  void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &, std::map<int, int>);
+
+  switch (direction)
   {
-    // Map for second order var transfer;
-    std::map<int, int> * libmeshToMFEMNodePtr;
+    case Direction::TO_EXTERNAL_APP:
+      setVarDataFuncPtr = &MFEMProblem::setMFEMVarData;   // If data is being sent from the master app.
+      break;
+    case Direction::FROM_EXTERNAL_APP:
+      setVarDataFuncPtr = &MFEMProblem::setMOOSEVarData;  // If data is being sent back to the master app.
+      break;
+    default:
+      setVarDataFuncPtr = nullptr;
+      break;
+  }
 
-    auto & coupledMesh = dynamic_cast<CoupledMFEMMesh &>(mesh());
-    libmeshToMFEMNodePtr = &(coupledMesh.libmeshToMFEMNode);
+  if (!setVarDataFuncPtr) 
+  {
+    std::cerr << "Error: invalid syncSolutions direction specified!" << std::endl;
+    return;
+  }
 
-    // If data is being sent from the master app
-    if (direction == Direction::TO_EXTERNAL_APP)
-    {
-      for (std::string name : getAuxVariableNames())
-      {
-        setMFEMVarData(es(), name, (*libmeshToMFEMNodePtr));
-      }
-    }
-
-    // If data is being sent back to master app
-    if (direction == Direction::FROM_EXTERNAL_APP)
-    {
-      for (std::string name : getAuxVariableNames())
-      {
-        setMOOSEVarData(name, es(), (*libmeshToMFEMNodePtr));
-      }
-    }
+  for (std::string name : getAuxVariableNames())
+  {
+    (this->*setVarDataFuncPtr)(name, es(), (*libmeshToMFEMNodePtr));
   }
 }
 
