@@ -33,15 +33,17 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 {
   mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
   mfem_mesh.EnsureNCMesh();
-  // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
-  int * partitioning = NULL;
+
+  int *partitioning = nullptr;
+
   if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
   {
-    partitioning = new int[mesh().getMesh().n_elem()];
-    for (auto elem : mesh().getMesh().element_ptr_range())
+    MooseMesh &mooseMesh = ExternalProblem::mesh();
+
+    CoupledMFEMMesh *coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
+    if (coupledMFEMMesh)
     {
-      unsigned int elem_id = elem->id();
-      partitioning[elem_id] = elem->processor_id();
+      partitioning = coupledMFEMMesh->getMeshPartitioning();
     }
   }
 
@@ -49,6 +51,13 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
   mfem_problem_builder->ConstructEquationSystem();
   mfem_problem_builder->SetMesh(
       std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
+
+  if (partitioning)   // Cleanup to avoid memory leaks.
+  {
+    delete[] partitioning;
+    partitioning = nullptr;
+  }
+
   std::cout << "Problem initialised\n\n" << std::endl;
 }
 

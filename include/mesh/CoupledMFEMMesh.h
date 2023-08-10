@@ -35,6 +35,8 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
   
   void buildMFEMParMesh();
 
+  int *getMeshPartitioning();
+
   void create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id);
 
   std::map<int, int> libmeshToMFEMNode;

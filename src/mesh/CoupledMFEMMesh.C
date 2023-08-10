@@ -446,15 +446,42 @@ CoupledMFEMMesh::createMFEMMesh()
   delete[] ssprop;
   delete[] start_of_block;
 }
+
+
+/**
+ * Returns the libMesh partitioning.
+ * 
+ * \note The returned partitioning array should be deleted after use to avoid memory leaks! 
+*/
+int *CoupledMFEMMesh::getMeshPartitioning()
+{
+  const MeshBase &libMesh = getMesh();
+
+  const int numElements = libMesh.n_elem();
+  if (numElements < 1) return nullptr;
+
+  int *meshPartitioning = new int[numElements];
+
+  for (auto element : libMesh.element_ptr_range())
+  {
+    int elementID = element->id();
+
+    meshPartitioning[elementID] = element->processor_id();
+  }
+
+  return meshPartitioning;
+}
+
+
 void
 CoupledMFEMMesh::buildMFEMParMesh()
 {
-  int * partitioning = new int[getMesh().n_nodes()];
-  for (auto node : getMesh().node_ptr_range())
-  {
-    unsigned int node_id = node->id();
-    partitioning[node_id] = node->processor_id();
-  }
+  // int * partitioning = new int[getMesh().n_nodes()];
+  // for (auto node : getMesh().node_ptr_range())
+  // {
+  //   unsigned int node_id = node->id();
+  //   partitioning[node_id] = node->processor_id();
+  // }
   mfem::Mesh & mfem_meshref = *(mfem_mesh);
   MFEMParMesh = new mfem::ParMesh(MPI_COMM_WORLD, mfem_meshref);
 
