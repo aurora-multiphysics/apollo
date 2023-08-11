@@ -84,13 +84,11 @@ CMAction::act()
     _problem->addVariable(var_type, Maxwell::e_field_re, params);
     _problem->addVariable(var_type, Maxwell::e_field_im, params);
   }
-
-  if (_current_task == "add_maxwell_kernels")
+  else if (_current_task == "add_maxwell_kernels")
   {
     addCMKernels();
   }
-
-  if (_current_task == "add_maxwell_bcs")
+  else if (_current_task == "add_maxwell_bcs")
   {
     if (_pec_boundaries.size() > 0)
       addCMPECBC();
@@ -104,7 +102,7 @@ CMAction::addCMPECBC()
 {
   /// Set perfect electric conductor boundary conditions, at which E x n = 0.
   std::string bc_type;
-  for (unsigned int i = 0; i < _pec_boundaries.size(); ++i)
+  for (size_t i = 0; i < _pec_boundaries.size(); ++i)
   {
     bc_type = "VectorTangentialPenaltyDirichletRealBC";
     InputParameters re_params = _factory.getValidParams(bc_type);
@@ -128,7 +126,7 @@ void
 CMAction::addCMWaveguidePortsBC()
 {
   std::string bc_type;
-  for (unsigned int i = 0; i < _wg_input_ports.size(); ++i)
+  for (size_t i = 0; i < _wg_input_ports.size(); ++i)
   {
     bc_type = "RobinTE10RealBC";
     InputParameters re_params = _factory.getValidParams(bc_type);
@@ -151,7 +149,7 @@ CMAction::addCMWaveguidePortsBC()
     _problem->addBoundaryCondition(bc_type, "RWTE10_in_imag_" + _wg_input_ports[i], im_params);
   }
 
-  for (unsigned int i = 0; i < _wg_output_ports.size(); ++i)
+  for (size_t i = 0; i < _wg_output_ports.size(); ++i)
   {
     bc_type = "RobinTE10RealBC";
     InputParameters re_params = _factory.getValidParams(bc_type);

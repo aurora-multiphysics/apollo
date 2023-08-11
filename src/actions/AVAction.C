@@ -132,13 +132,11 @@ AVAction::act()
     _scalar_params.set<MooseEnum>("order") = _scalar_fe_type.order.get_order();
     _problem->addVariable(_scalar_var_type, Maxwell::electric_scalar_potential, _scalar_params);
   }
-
-  if (_current_task == "add_maxwell_kernels")
+  else if (_current_task == "add_maxwell_kernels")
   {
     addAVKernels();
   }
-
-  if (_current_task == "add_maxwell_bcs")
+  else if (_current_task == "add_maxwell_bcs")
   {
     if (_tangent_h_boundaries.size() > 0)
       addTangentialHBC();
@@ -154,11 +152,17 @@ AVAction::act()
 void
 AVAction::addTangentialHBC()
 {
+    // Safety check: avoid out-of-bound condition in for-loop.
+  if (_surface_h_fields.size() != _tangent_h_boundaries.size())
+  {
+    mooseError("Vector lengths do not match.");
+  }
+
   // Set H×n at boundary: ν∇×A×n (Neumann) with gauge constraint A·n=0 (Dirichlet)
   std::string tngt_bc_type = "VectorCurlBC";
   std::string norm_bc_type = "VectorNormalPenaltyDirichletBC";
 
-  for (unsigned int i = 0; i < _tangent_h_boundaries.size(); ++i)
+  for (size_t i = 0; i < _tangent_h_boundaries.size(); ++i)
   {
     InputParameters tngt_params = _factory.getValidParams(tngt_bc_type);
     tngt_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
@@ -182,7 +186,7 @@ AVAction::addZeroFluxBC()
   // Set B·n=0 at boundary: A×n=0 (Dirichlet) with gauge imposed by ν∇·A=0 (Neumann)
   // Coulomb gauge imposed in weak form naturally.
   std::string tngt_bc_type = "VectorTangentialPenaltyDirichletBC";
-  for (unsigned int i = 0; i < _zero_flux_boundaries.size(); ++i)
+  for (size_t i = 0; i < _zero_flux_boundaries.size(); ++i)
   {
     InputParameters tngt_params = _factory.getValidParams(tngt_bc_type);
     tngt_params.set<NonlinearVariableName>("variable") = Maxwell::magnetic_vector_potential;
@@ -196,9 +200,15 @@ AVAction::addZeroFluxBC()
 void
 AVAction::addElectricPotentialBC()
 {
+  // Safety check: avoid out-of-bound issue in for-loop.
+  if (_surface_electric_potentials.size() != _electric_potential_boundaries.size())
+  {
+    mooseError("Vector lengths do not match.");
+  }
+
   // Set potential V at boundary. V must be set at at least one boundary for uniqueness.
   std::string bc_type = "DirichletBC";
-  for (unsigned int i = 0; i < _electric_potential_boundaries.size(); ++i)
+  for (size_t i = 0; i < _electric_potential_boundaries.size(); ++i)
   {
     InputParameters params = _factory.getValidParams(bc_type);
     params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
@@ -212,11 +222,17 @@ AVAction::addElectricPotentialBC()
 void
 AVAction::addElectricCurrentBC()
 {
+  // Safety check: avoid out-of-bound issue in for-loop.
+  if (_surface_electric_currents.size() != _electric_current_boundaries.size())
+  {
+    mooseError("Vector lengths do not match.");
+  }
+
   // Neumann BC for the scalar potential V that fixes the integrated
   // current density over a surface on an external boundary in the direction of the surface normal.
   std::string bc_type = "FunctionFluxBC";
   // std::string bc_type = "FunctionNeumannBC";
-  for (unsigned int i = 0; i < _electric_current_boundaries.size(); ++i)
+  for (size_t i = 0; i < _electric_current_boundaries.size(); ++i)
   {
     InputParameters params = _factory.getValidParams(bc_type);
     params.set<NonlinearVariableName>("variable") = Maxwell::electric_scalar_potential;
