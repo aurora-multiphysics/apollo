@@ -8,7 +8,8 @@
 #include "libmesh/parallel_mesh.h"
 #include "mfem.hpp"
 
-class MFEMMesh : public mfem::Mesh {
+class MFEMMesh : public mfem::Mesh 
+{
  public:
   MFEMMesh(int num_elem, std::vector<double> &coordx,
                     std::vector<double> &coordy, std::vector<double> &coordz,

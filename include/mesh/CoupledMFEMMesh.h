@@ -13,7 +13,8 @@
 /**
  * CoupledMFEMMesh
  */
-class CoupledMFEMMesh : public ExclusiveMFEMMesh {
+class CoupledMFEMMesh : public ExclusiveMFEMMesh 
+{
  public:
   static InputParameters validParams();
 
@@ -37,7 +38,7 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
 
   int *getMeshPartitioning();
 
-  void create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id);
+  void createSidesetNodeIDs(int** elem_ss, int** side_ss, int** ss_node_id);
 
   std::map<int, int> libmeshToMFEMNode;
 
@@ -51,9 +52,9 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
 
  protected:
 
-  int curved  = 0;
+  int curved = 0;
   int read_gf = 0;
-  bool topo   = false;
+  bool topo = false;
 
 
   int num_side_sets;
