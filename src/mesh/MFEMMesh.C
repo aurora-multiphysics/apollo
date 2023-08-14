@@ -47,15 +47,15 @@ MFEMMesh::MFEMMesh(
       break;
   }
      
-  Dim           = dim_num;
-  spaceDim      = Dim;
+  Dim = dim_num;
+  spaceDim = Dim;
   NumOfElements = num_elem;
   NumOfVertices = uniqueVertexID.size();
 
   vertices.SetSize(NumOfVertices);
   elements.SetSize(num_elem);
 
-  for (int i = 0; i < (int)uniqueVertexID.size(); i++) 
+  for (std::size_t i = 0; i < uniqueVertexID.size(); i++) 
   {
     vertices[i](0) = coordx[uniqueVertexID[i]-1];
     vertices[i](1) = coordy[uniqueVertexID[i]-1];
@@ -69,11 +69,11 @@ MFEMMesh::MFEMMesh(
   int elcount = 0;
   int renumberedVertID[8];
 
-  for (int iblk = 0; iblk < (int)num_el_blk; iblk++)  // for all blocks
+  for (int iblk = 0; iblk < num_el_blk; iblk++)  // for all blocks
   {
     int NumNodePerEl = num_node_per_el;
 
-    for (int i = 0; i < (int)num_el_in_blk[iblk]; i++) 
+    for (int i = 0; i < num_el_in_blk[iblk]; i++) 
     {
       for (int j = 0; j < num_element_linear_nodes; j++) 
       {
@@ -123,11 +123,10 @@ MFEMMesh::MFEMMesh(
     }
   }
 
-
   NumOfBdrElements = 0;
 
   // For all the sidesets, add the number of sides to numbdrelems
-  for (int iss = 0; iss < (int)num_side_sets; iss++)
+  for (int iss = 0; iss < num_side_sets; iss++)
   {
     NumOfBdrElements += num_side_in_ss[iss];
   }
@@ -136,9 +135,9 @@ MFEMMesh::MFEMMesh(
 
   int sidecount = 0;
 
-  for (int iss = 0; iss < (int)num_side_sets; iss++) 
+  for (int iss = 0; iss < num_side_sets; iss++) 
   {
-    for (int i = 0; i < (int)num_side_in_ss[iss]; i++) 
+    for (int i = 0; i < num_side_in_ss[iss]; i++) 
     {
       for (int j = 0; j < num_face_linear_nodes; j++) 
       {
