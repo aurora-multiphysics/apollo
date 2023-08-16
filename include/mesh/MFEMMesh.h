@@ -8,23 +8,42 @@
 #include "libmesh/parallel_mesh.h"
 #include "mfem.hpp"
 
-class MFEMMesh : public mfem::Mesh 
+/**
+ * MFEMMesh
+ *
+ * MFEMMesh wraps an mfem::Mesh object.
+ */
+class MFEMMesh : public mfem::Mesh
 {
- public:
-  MFEMMesh(int num_elem, std::vector<double> &coordx,
-                    std::vector<double> &coordy, std::vector<double> &coordz,
-                    std::map<int, int> &cubitToMFEMVertMap,
-                    std::vector<int> uniqueVertexID, int libmesh_element_type,
-                    int libmesh_face_type, int **elem_blk, int num_el_blk,
-                    int num_node_per_el, size_t *num_el_in_blk,
-                    int num_element_linear_nodes, int num_face_nodes,
-                    int num_face_linear_nodes, int num_side_sets,
-                    std::vector<int> num_side_in_ss, int **ss_node_id,
-                    int *eb_prop, int *ss_prop, int dim_num, int* start_of_block,
-                    std::map<int, int>& libmeshToMFEMNode);
+public:
+  MFEMMesh(int num_elem,
+           std::vector<double> & coordx,
+           std::vector<double> & coordy,
+           std::vector<double> & coordz,
+           std::map<int, int> & cubitToMFEMVertMap,
+           std::vector<int> uniqueVertexID,
+           int libmesh_element_type,
+           int libmesh_face_type,
+           int ** elem_blk,
+           int num_el_blk,
+           int num_node_per_el,
+           size_t * num_el_in_blk,
+           int num_element_linear_nodes,
+           int num_face_nodes,
+           int num_face_linear_nodes,
+           int num_side_sets,
+           std::vector<int> num_side_in_ss,
+           int ** ss_node_id,
+           int * eb_prop,
+           int * ss_prop,
+           int dim_num,
+           int * start_of_block,
+           std::map<int, int> & libmeshToMFEMNode);
 
-  MFEMMesh(std::string cpp_filename, int generate_edges = 0,
-                    int refine = 1, bool fix_orientation = true);
+  MFEMMesh(std::string cpp_filename,
+           int generate_edges = 0,
+           int refine = 1,
+           bool fix_orientation = true);
 
   void get_mesh_nodes();
 
@@ -34,10 +53,12 @@ class MFEMMesh : public mfem::Mesh
 
   int get_num_nodes();
 
-  void create_boundary(int **ss_node_id, int *num_sides_in_sidesets,
+  void create_boundary(int ** ss_node_id,
+                       int * num_sides_in_sidesets,
                        int num_side_sets,
                        std::vector<libMesh::boundary_id_type> ssprop,
-                       int num_face_linear_nodes, int num_face_nodes,
+                       int num_face_linear_nodes,
+                       int num_face_nodes,
                        int libmesh_face_type);
 
   std::vector<int> connectivityVec;
@@ -45,7 +66,8 @@ class MFEMMesh : public mfem::Mesh
   std::vector<int> cellTypeVec;
   std::vector<int> verticesVec;
 
-  enum CubitFaceType {
+  enum CubitFaceType // TODO: - this should not be duplicated.
+  {
     FACE_EDGE2,
     FACE_EDGE3,
     FACE_TRI3,
@@ -54,7 +76,8 @@ class MFEMMesh : public mfem::Mesh
     FACE_QUAD9
   };
 
-  enum CubitElementType {
+  enum CubitElementType
+  {
     ELEMENT_TRI3,
     ELEMENT_TRI6,
     ELEMENT_QUAD4,

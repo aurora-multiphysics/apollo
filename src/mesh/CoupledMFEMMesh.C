@@ -28,10 +28,8 @@ CoupledMFEMMesh::~CoupledMFEMMesh() {}
 void
 CoupledMFEMMesh::buildMesh()
 {
-  // Use method from file mesh to build MOOSE mesh from exodus file
+  // Use method from file mesh to build MOOSE mesh from Exodus file.
   FileMesh::buildMesh();
-  // Create MFEM Mesh
-  createMFEMMesh();
 }
 
 std::unique_ptr<MooseMesh>
@@ -222,7 +220,7 @@ CoupledMFEMMesh::getElementInfo()
 }
 
 void
-CoupledMFEMMesh::createMFEMMesh()
+CoupledMFEMMesh::buildMFEMMesh()
 {
   // These are all maps that enable us to get the vertices on
   // one side of the mesh using the indexing system of [side number][node of that side]
@@ -286,9 +284,7 @@ CoupledMFEMMesh::createMFEMMesh()
   std::set<subdomain_id_type> block_ids;
   getMesh().subdomain_ids(block_ids);
 
-  // num_el_blk stores the number of blocks in the mesh
   int num_blocks_in_mesh = (int)(getMesh().n_subdomains());
-  std::map<subdomain_id_type, std::string> id_to_name_map = getMesh().get_subdomain_name_map();
 
   std::size_t * num_elements_per_block = new size_t[num_blocks_in_mesh];
   int * start_of_block = new int[num_blocks_in_mesh + 1];
@@ -360,13 +356,13 @@ CoupledMFEMMesh::createMFEMMesh()
   createSidesetNodeIDs(elem_ss, side_ss, ss_node_id);
 
   std::vector<int> unique_vertex_ids;
-  for (int iblk = 0; iblk < num_blocks_in_mesh; iblk++)
+  for (int iblock = 0; iblock < num_blocks_in_mesh; iblock++)
   {
-    for (int i = 0; i < num_elements_per_block[iblk]; i++)
+    for (int jelement = 0; jelement < num_elements_per_block[iblock]; jelement++)
     {
-      for (int j = 0; j < num_element_linear_nodes; j++)
+      for (int knode = 0; knode < num_element_linear_nodes; knode++)
       {
-        unique_vertex_ids.push_back(1 + elem_blk[iblk][i * num_node_per_el + j]);
+        unique_vertex_ids.push_back(1 + elem_blk[iblock][jelement * num_node_per_el + knode]);
       }
     }
   }
@@ -395,7 +391,7 @@ CoupledMFEMMesh::createMFEMMesh()
   std::vector<double> coordz(nNodes(), 0);
   int node_counter = 0;
 
-  // Populating coord data structures to hold all the node coorindates which are needed to create
+  // Populating coord data structures to hold all the node coordinates needed to create
   // the MFEM mesh
   // This could be problematic if localNodesBegin and End don't access nodes in ascending node id,
   // but this never seems to happen
@@ -411,31 +407,29 @@ CoupledMFEMMesh::createMFEMMesh()
   int num_elements_in_mesh = nElem();
 
   // Create MFEM mesh using this extremely long but necessary constructor
-  mfem_mesh = std::make_shared<MFEMMesh>(num_elements_in_mesh,
-                                         coordx,
-                                         coordy,
-                                         coordz,
-                                         cubit_to_MFEM_vertex_map,
-                                         unique_vertex_ids,
-                                         libmesh_element_type,
-                                         libmesh_face_type,
-                                         elem_blk,
-                                         num_blocks_in_mesh,
-                                         num_node_per_el,
-                                         num_elements_per_block,
-                                         num_element_linear_nodes,
-                                         num_face_nodes,
-                                         num_face_linear_nodes,
-                                         num_side_sets,
-                                         num_sides_in_ss,
-                                         ss_node_id,
-                                         ebprop,
-                                         ssprop,
-                                         3,
-                                         start_of_block,
-                                         libmeshToMFEMNode);
-
-  buildMFEMParMesh();
+  _mfem_mesh = std::make_shared<MFEMMesh>(num_elements_in_mesh,
+                                          coordx,
+                                          coordy,
+                                          coordz,
+                                          cubit_to_MFEM_vertex_map,
+                                          unique_vertex_ids,
+                                          libmesh_element_type,
+                                          libmesh_face_type,
+                                          elem_blk,
+                                          num_blocks_in_mesh,
+                                          num_node_per_el,
+                                          num_elements_per_block,
+                                          num_element_linear_nodes,
+                                          num_face_nodes,
+                                          num_face_linear_nodes,
+                                          num_side_sets,
+                                          num_sides_in_ss,
+                                          ss_node_id,
+                                          ebprop,
+                                          ssprop,
+                                          3,
+                                          start_of_block,
+                                          libmeshToMFEMNode);
 
   // Memory cleanup.
   for (int i = 0; i < num_side_sets; i++)
@@ -500,10 +494,9 @@ CoupledMFEMMesh::buildMFEMParMesh()
   //   unsigned int node_id = node->id();
   //   partitioning[node_id] = node->processor_id();
   // }
-  mfem::Mesh & mfem_meshref = *(mfem_mesh);
-  MFEMParMesh = new mfem::ParMesh(MPI_COMM_WORLD, mfem_meshref);
 
-  // MFEMParMesh = new mfem::ParMesh(MPI_COMM_WORLD, *mfem_mesh, partitioning);
+  _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, *getMFEMMesh());
+  // _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, *getMFEMMesh(), partitoning);
 }
 
 void

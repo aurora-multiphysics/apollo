@@ -31,16 +31,16 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-  mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
+  mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
   mfem_mesh.EnsureNCMesh();
 
-  int *partitioning = nullptr;
+  int * partitioning = nullptr;
 
   if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
   {
-    MooseMesh &mooseMesh = ExternalProblem::mesh();
+    MooseMesh & mooseMesh = ExternalProblem::mesh();
 
-    CoupledMFEMMesh *coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
+    CoupledMFEMMesh * coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
     if (coupledMFEMMesh)
     {
       partitioning = coupledMFEMMesh->getMeshPartitioning();
@@ -52,10 +52,9 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
   mfem_problem_builder->SetMesh(
       std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
 
-  if (partitioning)   // Cleanup to avoid memory leaks.
+  if (partitioning) // Cleanup to avoid memory leaks.
   {
     delete[] partitioning;
-    partitioning = nullptr;
   }
 
   std::cout << "Problem initialised\n\n" << std::endl;
@@ -478,7 +477,10 @@ void
 MFEMProblem::syncSolutions(Direction direction)
 {
   // Only sync solutions if MOOSE and MFEM meshes are coupled.
-  if (ExternalProblem::mesh().type() != "CoupledMFEMMesh") return;
+  if (ExternalProblem::mesh().type() != "CoupledMFEMMesh")
+  {
+    return;
+  }
 
   // Map for second order var transfer;
   std::map<int, int> * libmeshToMFEMNodePtr;
@@ -491,17 +493,19 @@ MFEMProblem::syncSolutions(Direction direction)
   switch (direction)
   {
     case Direction::TO_EXTERNAL_APP:
-      setVarDataFuncPtr = &MFEMProblem::setMFEMVarData;   // If data is being sent from the master app.
+      setVarDataFuncPtr =
+          &MFEMProblem::setMFEMVarData; // If data is being sent from the master app.
       break;
     case Direction::FROM_EXTERNAL_APP:
-      setVarDataFuncPtr = &MFEMProblem::setMOOSEVarData;  // If data is being sent back to the master app.
+      setVarDataFuncPtr =
+          &MFEMProblem::setMOOSEVarData; // If data is being sent back to the master app.
       break;
     default:
       setVarDataFuncPtr = nullptr;
       break;
   }
 
-  if (!setVarDataFuncPtr) 
+  if (!setVarDataFuncPtr)
   {
     std::cerr << "Error: invalid syncSolutions direction specified!" << std::endl;
     return;
