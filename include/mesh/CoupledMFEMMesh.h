@@ -35,7 +35,7 @@ public:
 
   int getNumSidesets();
 
-  int * getMeshPartitioning(); // TODO: - ugly and dodgy
+  int * getMeshPartitioning();
 
   void createSidesetNodeIDs(int ** elem_ss, int ** side_ss, int ** ss_node_id);
 

@@ -27,10 +27,10 @@
 
 /**
  * ExclusiveMFEMMesh
- * 
- * ExclusiveMFEMMesh inherits a MOOSE mesh class and contains pointers to an
- * MFEM serial and MFEM parallel mesh. This allows us to work with other MOOSE
- * objects.
+ *
+ * ExclusiveMFEMMesh inherits a MOOSE mesh class which allows us to work with
+ * other MOOSE objects. It contains pointers to an MFEM serial and MFEM parallel
+ * mesh.
  */
 class ExclusiveMFEMMesh : public FileMesh
 {
