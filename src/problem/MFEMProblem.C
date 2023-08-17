@@ -507,8 +507,7 @@ MFEMProblem::syncSolutions(Direction direction)
 
   if (!setVarDataFuncPtr)
   {
-    std::cerr << "Error: invalid syncSolutions direction specified!" << std::endl;
-    return;
+    mooseError("Invalid syncSolutions direction specified.");
   }
 
   for (std::string name : getAuxVariableNames())
