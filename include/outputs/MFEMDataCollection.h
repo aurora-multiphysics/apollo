@@ -14,5 +14,5 @@ public:
   mfem::DataCollection * _data_collection;
 
 protected:
-  virtual void output() override{};
+  void output() override{};
 };
