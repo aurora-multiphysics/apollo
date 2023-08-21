@@ -14,5 +14,5 @@ public:
   mfem::DataCollection * _data_collection;
 
 protected:
-  virtual void output(const ExecFlagType & type) override{};
+  void output() override{};
 };
