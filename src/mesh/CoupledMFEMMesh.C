@@ -318,7 +318,7 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   std::vector<size_t> num_elements_per_block(num_blocks_in_mesh);
 
-  int * start_of_block = new int[num_blocks_in_mesh + 1];
+  std::vector<int> start_of_block(num_blocks_in_mesh + 1);
 
   std::vector<int> ebprop(num_blocks_in_mesh);
   std::vector<int> ssprop(num_side_sets);
@@ -458,9 +458,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           3,
                                           start_of_block,
                                           libmeshToMFEMNode);
-
-  // Memory cleanup.
-  delete[] start_of_block;
 }
 
 /**

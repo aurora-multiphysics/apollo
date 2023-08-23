@@ -37,7 +37,7 @@ public:
            const std::vector<int> & eb_prop,
            const std::vector<int> & ss_prop,
            int dim_num,
-           int * start_of_block,
+           const std::vector<int> & start_of_block,
            std::map<int, int> & libmeshToMFEMNode);
 
   MFEMMesh(std::string cpp_filename,
