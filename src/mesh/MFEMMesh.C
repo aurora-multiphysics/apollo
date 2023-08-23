@@ -24,7 +24,7 @@ MFEMMesh::MFEMMesh(int num_elem,
                    const std::vector<int> & ebprop,
                    const std::vector<int> & ssprop,
                    int dim_num,
-                   int * start_of_block,
+                   const std::vector<int> & start_of_block,
                    std::map<int, int> & libmeshToMFEMNode)
 {
 
