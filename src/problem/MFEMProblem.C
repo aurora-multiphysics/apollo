@@ -483,7 +483,7 @@ MFEMProblem::syncSolutions(Direction direction)
   std::map<int, int> * libmeshToMFEMNodePtr;
 
   auto & coupledMesh = dynamic_cast<CoupledMFEMMesh &>(mesh());
-  libmeshToMFEMNodePtr = &(coupledMesh.libmeshToMFEMNode);
+  libmeshToMFEMNodePtr = &(coupledMesh._libmesh_to_mfem_node_map);
 
   void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &, std::map<int, int>);
 
