@@ -29,8 +29,6 @@ public:
    */
   void buildMesh() override;
 
-  void getElementInfo();
-
   void getBdrLists(std::vector<std::vector<int>> & elem_ss,
                    std::vector<std::vector<int>> & side_ss);
 
@@ -55,6 +53,14 @@ public:
   int num_face_linear_nodes;
 
 protected:
+  void buildLibmesh3DElementInfo();
+  void buildLibmesh2DElementInfo();
+  void buildLibmeshElementInfo();
+
+  void buildLibmeshFaceInfo();
+
+  void buildLibmeshElementAndFaceInfo();
+
   // Override methods in Exclusive MFEMMesh.
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
