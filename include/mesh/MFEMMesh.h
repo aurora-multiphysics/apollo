@@ -33,7 +33,7 @@ public:
            int num_face_linear_nodes,
            int num_side_sets,
            std::vector<int> num_side_in_ss,
-           int ** ss_node_id,
+           const std::vector<std::vector<int>> & ss_node_id,
            const std::vector<int> & eb_prop,
            const std::vector<int> & ss_prop,
            int dim_num,
@@ -52,14 +52,6 @@ public:
   void get_cell_type();
 
   int get_num_nodes();
-
-  void create_boundary(int ** ss_node_id,
-                       int * num_sides_in_sidesets,
-                       int num_side_sets,
-                       std::vector<libMesh::boundary_id_type> ssprop,
-                       int num_face_linear_nodes,
-                       int num_face_nodes,
-                       int libmesh_face_type);
 
   std::vector<int> connectivityVec;
   std::vector<double> pointsVec;
