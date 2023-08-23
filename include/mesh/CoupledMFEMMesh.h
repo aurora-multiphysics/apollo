@@ -43,14 +43,7 @@ public:
                             const std::vector<std::vector<int>> & side_ss,
                             std::vector<std::vector<int>> & ss_node_id);
 
-  std::map<int, int> libmeshToMFEMNode;
-
-  unsigned int num_node_per_el;
-  int libmesh_element_type;
-  int libmesh_face_type;
-  int num_element_linear_nodes;
-  int num_face_nodes;
-  int num_face_linear_nodes;
+  std::map<int, int> _libmesh_to_mfem_node_map;
 
 protected:
   void buildLibmesh3DElementInfo();
@@ -65,9 +58,15 @@ protected:
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
 
-  int num_side_sets;
-  int bdrElems;
-  std::vector<int> num_sides_in_ss;
+  std::vector<int> _num_sides_in_ss;
+
+  unsigned int _num_nodes_per_element;
+  int _libmesh_element_type;
+  int _libmesh_face_type;
+  int _num_linear_nodes_per_element;
+  int _num_face_nodes;
+  int _num_face_linear_nodes;
+  int _num_sidesets;
 
   enum CubitFaceType
   {
