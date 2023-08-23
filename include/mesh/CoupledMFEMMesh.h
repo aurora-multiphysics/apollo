@@ -56,10 +56,6 @@ protected:
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
 
-  int curved = 0; // TODO: - make consistent.
-  int read_gf = 0;
-  bool topo = false;
-
   int num_side_sets;
   int bdrElems;
   std::vector<int> num_sides_in_ss;
