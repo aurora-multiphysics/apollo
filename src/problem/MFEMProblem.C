@@ -34,7 +34,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
   mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
   mfem_mesh.EnsureNCMesh();
 
-  int * partitioning = nullptr;
+  std::unique_ptr<int[]> partitioning_ptr = nullptr;
 
   if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
   {
@@ -43,19 +43,16 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     CoupledMFEMMesh * coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
     if (coupledMFEMMesh)
     {
-      partitioning = coupledMFEMMesh->getMeshPartitioning();
+      partitioning_ptr = coupledMFEMMesh->getMeshPartitioning();
     }
   }
+
+  int * partitioning_raw_ptr = partitioning_ptr ? partitioning_ptr.get() : nullptr;
 
   mfem_problem_builder = hephaestus::Factory::createProblemBuilder(_formulation_name);
   mfem_problem_builder->ConstructEquationSystem();
   mfem_problem_builder->SetMesh(
-      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
-
-  if (partitioning) // Cleanup to avoid memory leaks.
-  {
-    delete[] partitioning;
-  }
+      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning_raw_ptr));
 
   std::cout << "Problem initialised\n\n" << std::endl;
 }
