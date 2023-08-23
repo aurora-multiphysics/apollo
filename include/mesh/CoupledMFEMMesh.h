@@ -31,7 +31,8 @@ public:
 
   void getElementInfo();
 
-  void getBdrLists(int ** elem_ss, int ** side_ss);
+  void getBdrLists(std::vector<std::vector<int>> & elem_ss,
+                   std::vector<std::vector<int>> & side_ss);
 
   int getNumSidesets();
 
@@ -40,7 +41,9 @@ public:
    */
   std::unique_ptr<int[]> getMeshPartitioning() const;
 
-  void createSidesetNodeIDs(int ** elem_ss, int ** side_ss, int ** ss_node_id);
+  void createSidesetNodeIDs(std::vector<std::vector<int>> & elem_ss,
+                            std::vector<std::vector<int>> & side_ss,
+                            int ** ss_node_id);
 
   std::map<int, int> libmeshToMFEMNode;
 
