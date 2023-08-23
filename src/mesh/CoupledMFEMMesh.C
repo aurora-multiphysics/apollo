@@ -316,7 +316,8 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   int num_blocks_in_mesh = (int)(getMesh().n_subdomains());
 
-  std::size_t * num_elements_per_block = new size_t[num_blocks_in_mesh];
+  std::vector<size_t> num_elements_per_block(num_blocks_in_mesh);
+
   int * start_of_block = new int[num_blocks_in_mesh + 1];
 
   std::vector<int> ebprop(num_blocks_in_mesh);
@@ -348,10 +349,11 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   // elem_blk is a 2D array that stores all the nodes of all the elements in all
   // the blocks. Indexing is done as so, elem_blk[block_id][node]
-  int ** elem_blk = new int *[num_blocks_in_mesh];
+  std::vector<std::vector<int>> elem_blk(num_blocks_in_mesh);
+
   for (int i = 0; i < num_blocks_in_mesh; i++)
   {
-    elem_blk[i] = new int[num_elements_per_block[i] * num_node_per_el];
+    elem_blk[i] = std::vector<int>(num_elements_per_block[i] * num_node_per_el);
   }
 
   // Here we are setting all the values in elem_blk
@@ -458,15 +460,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           libmeshToMFEMNode);
 
   // Memory cleanup.
-  for (int i = 0; i < num_blocks_in_mesh; i++)
-  {
-    delete[] elem_blk[i];
-  }
-
-  delete[] elem_blk;
-
-  delete[] num_elements_per_block;
-
   delete[] start_of_block;
 }
 
