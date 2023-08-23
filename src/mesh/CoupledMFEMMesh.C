@@ -458,12 +458,11 @@ CoupledMFEMMesh::buildMFEMMesh()
 }
 
 /**
- * Returns the libMesh partitioning.
- *
- * \note The returned partitioning array should be deleted after use to avoid memory leaks!
+ * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
+ * pointer.
  */
-int *
-CoupledMFEMMesh::getMeshPartitioning()
+std::unique_ptr<int[]>
+CoupledMFEMMesh::getMeshPartitioning() const
 {
   const MeshBase & lib_mesh = getMesh();
 
@@ -482,7 +481,8 @@ CoupledMFEMMesh::getMeshPartitioning()
     mesh_partitioning[element_id] = element->processor_id();
   }
 
-  return mesh_partitioning;
+  // Wrap-up in a unique pointer.
+  return std::unique_ptr<int[]>(mesh_partitioning);
 }
 
 void

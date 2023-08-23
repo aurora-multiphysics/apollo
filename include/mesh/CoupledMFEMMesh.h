@@ -35,7 +35,10 @@ public:
 
   int getNumSidesets();
 
-  int * getMeshPartitioning();
+  /**
+   * Returns a unique pointer to a C partitioning array.
+   */
+  std::unique_ptr<int[]> getMeshPartitioning() const;
 
   void createSidesetNodeIDs(int ** elem_ss, int ** side_ss, int ** ss_node_id);
 
