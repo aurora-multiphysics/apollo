@@ -34,8 +34,8 @@ public:
            int num_side_sets,
            std::vector<int> num_side_in_ss,
            int ** ss_node_id,
-           int * eb_prop,
-           int * ss_prop,
+           const std::vector<int> & eb_prop,
+           const std::vector<int> & ss_prop,
            int dim_num,
            int * start_of_block,
            std::map<int, int> & libmeshToMFEMNode);
