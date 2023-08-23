@@ -124,90 +124,100 @@ CoupledMFEMMesh::getBdrLists(std::vector<std::vector<int>> & elem_ss,
 }
 
 void
-CoupledMFEMMesh::getElementInfo()
+CoupledMFEMMesh::buildLibmesh2DElementInfo()
 {
+  // TODO: - this will not work with distributed. Can we just get the first local element?
   const Elem * element_ptr = elemPtr(0);
+
   num_node_per_el = element_ptr->n_nodes();
 
-  if (_dim == 2)
+  switch (num_node_per_el)
   {
-    switch (num_node_per_el)
+    case 3:
     {
-      case (3):
-      {
-        libmesh_element_type = ELEMENT_TRI3;
-        libmesh_face_type = FACE_EDGE2;
-        num_element_linear_nodes = 3;
-        break;
-      }
-      case (6):
-      {
-        libmesh_element_type = ELEMENT_TRI6;
-        libmesh_face_type = FACE_EDGE3;
-        num_element_linear_nodes = 3;
-        break;
-      }
-      case (4):
-      {
-        libmesh_element_type = ELEMENT_QUAD4;
-        libmesh_face_type = FACE_EDGE2;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      case (9):
-      {
-        libmesh_element_type = ELEMENT_QUAD9;
-        libmesh_face_type = FACE_EDGE3;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      default:
-      {
-        mooseError("Invalid number of nodes (", num_node_per_el, ") for a 2D element.");
-        break;
-      }
+      libmesh_element_type = ELEMENT_TRI3;
+      libmesh_face_type = FACE_EDGE2;
+      num_element_linear_nodes = 3;
+      break;
+    }
+    case 6:
+    {
+      libmesh_element_type = ELEMENT_TRI6;
+      libmesh_face_type = FACE_EDGE3;
+      num_element_linear_nodes = 3;
+      break;
+    }
+    case 4:
+    {
+      libmesh_element_type = ELEMENT_QUAD4;
+      libmesh_face_type = FACE_EDGE2;
+      num_element_linear_nodes = 4;
+      break;
+    }
+    case 9:
+    {
+      libmesh_element_type = ELEMENT_QUAD9;
+      libmesh_face_type = FACE_EDGE3;
+      num_element_linear_nodes = 4;
+      break;
+    }
+    default:
+    {
+      mooseError("Invalid number of nodes (", num_node_per_el, ") for a 2D element.");
+      break;
     }
   }
-  else if (_dim == 3)
-  {
-    switch (num_node_per_el)
-    {
-      case (4):
-      {
-        libmesh_element_type = ELEMENT_TET4;
-        libmesh_face_type = FACE_TRI3;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      case (10):
-      {
-        libmesh_element_type = ELEMENT_TET10;
-        libmesh_face_type = FACE_TRI6;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      case (8):
-      {
-        libmesh_element_type = ELEMENT_HEX8;
-        libmesh_face_type = FACE_QUAD4;
-        num_element_linear_nodes = 8;
-        break;
-      }
-      case (27):
-      {
-        libmesh_element_type = ELEMENT_HEX27;
-        libmesh_face_type = FACE_QUAD9;
-        num_element_linear_nodes = 8;
-        break;
-      }
-      default:
-      {
-        mooseError("Invalid number of nodes (", num_node_per_el, ") for a 2D element.");
-        break;
-      }
-    }
-  }
+}
 
+void
+CoupledMFEMMesh::buildLibmesh3DElementInfo()
+{
+  // TODO: - this will not work with distributed. Can we just get the first local element?
+  const Elem * element_ptr = elemPtr(0);
+
+  num_node_per_el = element_ptr->n_nodes();
+
+  switch (num_node_per_el)
+  {
+    case (4):
+    {
+      libmesh_element_type = ELEMENT_TET4;
+      libmesh_face_type = FACE_TRI3;
+      num_element_linear_nodes = 4;
+      break;
+    }
+    case (10):
+    {
+      libmesh_element_type = ELEMENT_TET10;
+      libmesh_face_type = FACE_TRI6;
+      num_element_linear_nodes = 4;
+      break;
+    }
+    case (8):
+    {
+      libmesh_element_type = ELEMENT_HEX8;
+      libmesh_face_type = FACE_QUAD4;
+      num_element_linear_nodes = 8;
+      break;
+    }
+    case (27):
+    {
+      libmesh_element_type = ELEMENT_HEX27;
+      libmesh_face_type = FACE_QUAD9;
+      num_element_linear_nodes = 8;
+      break;
+    }
+    default:
+    {
+      mooseError("Don't know what to do with a ", num_node_per_el, " node 2D element.");
+      break;
+    }
+  }
+}
+
+void
+CoupledMFEMMesh::buildLibmeshFaceInfo()
+{
   switch (libmesh_face_type)
   {
     case (FACE_EDGE2):
@@ -255,10 +265,40 @@ CoupledMFEMMesh::getElementInfo()
 }
 
 void
+CoupledMFEMMesh::buildLibmeshElementInfo()
+{
+  switch (_dim)
+  {
+    case 2:
+    {
+      buildLibmesh2DElementInfo();
+      break;
+    }
+    case 3:
+    {
+      buildLibmesh3DElementInfo();
+      break;
+    }
+    default:
+    {
+      mooseError("Invalid dimension (", _dim, ") specified.");
+      break;
+    }
+  }
+}
+
+void
+CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
+{
+  buildLibmeshElementInfo();
+  buildLibmeshFaceInfo();
+}
+
+void
 CoupledMFEMMesh::buildMFEMMesh()
 {
   // Retrieve information about the elements used within the mesh
-  getElementInfo();
+  buildLibmeshElementAndFaceInfo();
 
   // Elem_ss and side_ss store information about which elements are in each sideset, and which sides
   // of those elements are contained within the sideset
