@@ -382,7 +382,8 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   // ss_node_id stores all the id's of all the sides in a sideset
   // for example, ss_node_id[0][0] would access the first node id in the first sideset
-  int ** ss_node_id = new int *[num_side_sets];
+  std::vector<std::vector<int>> ss_node_id(num_side_sets);
+
   createSidesetNodeIDs(elem_ss, side_ss, ss_node_id);
 
   std::vector<int> unique_vertex_ids;
@@ -412,10 +413,6 @@ CoupledMFEMMesh::buildMFEMMesh()
     cubit_to_MFEM_vertex_map[unique_vertex_ids[i]] = i;
   }
 
-  // for (auto& [key, value] : cubit_to_MFEM_vertex_map) {
-  //   // value -= 1;
-  //   std::cout << '[' << key << "] = " << value << "; " << std::endl;
-  // }
   std::vector<double> coordx(nNodes(), 0);
   std::vector<double> coordy(nNodes(), 0);
   std::vector<double> coordz(nNodes(), 0);
@@ -461,13 +458,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           libmeshToMFEMNode);
 
   // Memory cleanup.
-  for (int i = 0; i < num_side_sets; i++)
-  {
-    delete[] ss_node_id[i];
-  }
-
-  delete[] ss_node_id;
-
   for (int i = 0; i < num_blocks_in_mesh; i++)
   {
     delete[] elem_blk[i];
@@ -523,13 +513,13 @@ CoupledMFEMMesh::buildMFEMParMesh()
 }
 
 void
-CoupledMFEMMesh::createSidesetNodeIDs(std::vector<std::vector<int>> & elem_ss,
-                                      std::vector<std::vector<int>> & side_ss,
-                                      int ** ss_node_id)
+CoupledMFEMMesh::createSidesetNodeIDs(const std::vector<std::vector<int>> & elem_ss,
+                                      const std::vector<std::vector<int>> & side_ss,
+                                      std::vector<std::vector<int>> & ss_node_id)
 {
   for (std::size_t i = 0; i < num_side_sets; i++)
   {
-    ss_node_id[i] = new int[num_sides_in_ss[i] * num_face_nodes];
+    ss_node_id[i] = std::vector<int>(num_sides_in_ss[i] * num_face_nodes);
 
     for (std::size_t j = 0; j < num_sides_in_ss[i]; j++)
     {

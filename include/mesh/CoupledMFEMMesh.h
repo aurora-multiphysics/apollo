@@ -39,9 +39,9 @@ public:
    */
   std::unique_ptr<int[]> getMeshPartitioning() const;
 
-  void createSidesetNodeIDs(std::vector<std::vector<int>> & elem_ss,
-                            std::vector<std::vector<int>> & side_ss,
-                            int ** ss_node_id);
+  void createSidesetNodeIDs(const std::vector<std::vector<int>> & elem_ss,
+                            const std::vector<std::vector<int>> & side_ss,
+                            std::vector<std::vector<int>> & ss_node_id);
 
   std::map<int, int> libmeshToMFEMNode;
 
