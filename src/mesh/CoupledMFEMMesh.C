@@ -222,49 +222,6 @@ CoupledMFEMMesh::getElementInfo()
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
-  // These are all maps that enable us to get the vertices on
-  // one side of the mesh using the indexing system of [side number][node of that side]
-  const int sideMapTri3[3][2] = {
-      {1, 2},
-      {2, 3},
-      {3, 1},
-  };
-
-  const int sideMapQuad4[4][2] = {
-      {1, 2},
-      {2, 3},
-      {3, 4},
-      {4, 1},
-  };
-
-  const int sideMapTri6[3][3] = {
-      {1, 2, 4},
-      {2, 3, 5},
-      {3, 1, 6},
-  };
-
-  const int sideMapQuad9[4][3] = {
-      {1, 2, 5},
-      {2, 3, 6},
-      {3, 4, 7},
-      {4, 1, 8},
-  };
-
-  const int sideMapTet4[4][3] = {{1, 3, 2}, {1, 2, 4}, {2, 3, 4}, {1, 4, 3}};
-
-  const int sideMapTet10[4][6] = {
-      {1, 2, 4, 5, 9, 8}, {2, 3, 4, 6, 10, 9}, {1, 4, 3, 8, 10, 7}, {1, 3, 2, 7, 6, 5}};
-
-  const int sideMapHex8[6][4] = {
-      {1, 2, 6, 5}, {2, 3, 7, 6}, {4, 3, 7, 8}, {1, 4, 8, 5}, {1, 4, 3, 2}, {5, 8, 7, 6}};
-
-  const int sideMapHex27[6][9] = {{1, 2, 6, 5, 9, 14, 17, 13, 26},
-                                  {2, 3, 7, 6, 10, 15, 18, 14, 25},
-                                  {4, 3, 7, 8, 11, 15, 19, 16, 27},
-                                  {1, 4, 8, 5, 12, 16, 20, 13, 24},
-                                  {1, 4, 3, 2, 12, 11, 10, 9, 22},
-                                  {5, 8, 7, 6, 20, 19, 18, 17, 23}};
-
   buildBndElemList();
 
   // Retrieve information about the elements used within the mesh
@@ -389,7 +346,6 @@ CoupledMFEMMesh::buildMFEMMesh()
   std::vector<double> coordx(nNodes(), 0);
   std::vector<double> coordy(nNodes(), 0);
   std::vector<double> coordz(nNodes(), 0);
-  int node_counter = 0;
 
   // Populating coord data structures to hold all the node coordinates needed to create
   // the MFEM mesh
