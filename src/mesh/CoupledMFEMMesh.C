@@ -131,7 +131,8 @@ CoupledMFEMMesh::getElementInfo()
       }
       default:
       {
-        MFEM_ABORT("Don't know what to do with a " << num_node_per_el << " node 2D element\n");
+        mooseError("Invalid number of nodes (", num_node_per_el, ") for a 2D element.");
+        break;
       }
     }
   }
@@ -169,7 +170,8 @@ CoupledMFEMMesh::getElementInfo()
       }
       default:
       {
-        MFEM_ABORT("Don't know what to do with a " << num_node_per_el << " node 3D element\n");
+        mooseError("Invalid number of nodes (", num_node_per_el, ") for a 2D element.");
+        break;
       }
     }
   }
@@ -214,6 +216,7 @@ CoupledMFEMMesh::getElementInfo()
     }
     default:
     {
+      mooseError("Invalid face type (", libmesh_face_type, ") specified.");
       break;
     }
   }
