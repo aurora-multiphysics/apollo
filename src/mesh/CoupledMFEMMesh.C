@@ -48,7 +48,8 @@ CoupledMFEMMesh::getNumSidesets()
 }
 
 void
-CoupledMFEMMesh::getBdrLists(int ** elem_ss, int ** side_ss)
+CoupledMFEMMesh::getBdrLists(std::vector<std::vector<int>> & elem_ss,
+                             std::vector<std::vector<int>> & side_ss)
 {
   buildBndElemList();
 
@@ -56,8 +57,8 @@ CoupledMFEMMesh::getBdrLists(int ** elem_ss, int ** side_ss)
 
   struct BoundaryElementAndSideIDs
   {
-    std::vector<dof_id_type> element_ids; // Element ids for a boundary id.
-    std::vector<unsigned short> side_ids; // Side ids for a boundary id.
+    std::vector<int> element_ids; // Element ids for a boundary id.
+    std::vector<int> side_ids;    // Side ids for a boundary id.
 
     BoundaryElementAndSideIDs() : element_ids{}, side_ids{} {}
   };
@@ -117,15 +118,8 @@ CoupledMFEMMesh::getBdrLists(int ** elem_ss, int ** side_ss)
     // NB: subtract 1 as indices are 1-based.
     num_sides_in_ss[boundary_id - 1] = element_ids.size();
 
-    // Allocate memory for element_ss, side_ss.
-    elem_ss[boundary_id - 1] = new int[element_ids.size()];
-    side_ss[boundary_id - 1] = new int[side_ids.size()];
-
-    for (int ielement = 0; ielement < element_ids.size(); ielement++)
-    {
-      elem_ss[boundary_id - 1][ielement] = element_ids[ielement];
-      side_ss[boundary_id - 1][ielement] = side_ids[ielement];
-    }
+    elem_ss[boundary_id - 1] = element_ids;
+    side_ss[boundary_id - 1] = side_ids;
   }
 }
 
@@ -270,8 +264,8 @@ CoupledMFEMMesh::buildMFEMMesh()
   // of those elements are contained within the sideset
   num_side_sets = getNumSidesets();
 
-  int ** elem_ss = new int *[num_side_sets];
-  int ** side_ss = new int *[num_side_sets];
+  std::vector<std::vector<int>> elem_ss(num_side_sets);
+  std::vector<std::vector<int>> side_ss(num_side_sets);
 
   // Populate the elem_ss and side_ss
   getBdrLists(elem_ss, side_ss);
@@ -430,13 +424,9 @@ CoupledMFEMMesh::buildMFEMMesh()
   for (int i = 0; i < num_side_sets; i++)
   {
     delete[] ss_node_id[i];
-    delete[] side_ss[i];
-    delete[] elem_ss[i];
   }
 
   delete[] ss_node_id;
-  delete[] side_ss;
-  delete[] elem_ss;
 
   for (int i = 0; i < num_blocks_in_mesh; i++)
   {
@@ -495,7 +485,9 @@ CoupledMFEMMesh::buildMFEMParMesh()
 }
 
 void
-CoupledMFEMMesh::createSidesetNodeIDs(int ** elem_ss, int ** side_ss, int ** ss_node_id)
+CoupledMFEMMesh::createSidesetNodeIDs(std::vector<std::vector<int>> & elem_ss,
+                                      std::vector<std::vector<int>> & side_ss,
+                                      int ** ss_node_id)
 {
   for (std::size_t i = 0; i < num_side_sets; i++)
   {
