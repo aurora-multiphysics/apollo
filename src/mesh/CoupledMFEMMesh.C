@@ -43,6 +43,7 @@ CoupledMFEMMesh::getNumSidesets()
 {
   libMesh::BoundaryInfo & bdInf = getMesh().get_boundary_info();
   const std::set<boundary_id_type> & ss = bdInf.get_side_boundary_ids();
+
   return ss.size();
 }
 
@@ -51,44 +52,79 @@ CoupledMFEMMesh::getBdrLists(int ** elem_ss, int ** side_ss)
 {
   buildBndElemList();
 
-  bdrElems = _bnd_elems.size();
+  num_sides_in_ss = std::vector<int>(num_side_sets, 0);
 
-  std::vector<dof_id_type> element_id_list(bdrElems, 0);
-  std::vector<unsigned short int> side_list(bdrElems, 0);
-  std::vector<BoundaryID> bc_id_list(bdrElems, 0);
-  std::vector<int> sides_in_ss_holder(num_side_sets, 0);
-
-  for (int i = 0; i < _bnd_elems.size(); i++)
+  struct BoundaryElementAndSideIDs
   {
-    element_id_list[i] = _bnd_elems[i]->_elem->id();
-    side_list[i] = _bnd_elems[i]->_side;
-    bc_id_list[i] = _bnd_elems[i]->_bnd_id;
-  }
+    std::vector<dof_id_type> element_ids; // Element ids for a boundary id.
+    std::vector<unsigned short> side_ids; // Side ids for a boundary id.
 
-  for (std::size_t i = 0; i < bc_id_list.size(); i++)
+    BoundaryElementAndSideIDs() : element_ids{}, side_ids{} {}
+  };
+
+  std::vector<BoundaryID> unique_boundary_ids;
+  std::map<BoundaryID, BoundaryElementAndSideIDs> boundary_ids_map;
+
+  // Iterate over elements on the boundary to build the map that allows us to go
+  // from a boundary id to a vector of element id/side ids.
+  for (auto boundary_element : _bnd_elems)
   {
-    sides_in_ss_holder[bc_id_list[i] - 1]++;
-  }
+    auto boundary_id = boundary_element->_bnd_id;
 
-  num_sides_in_ss = sides_in_ss_holder;
+    bool is_new_boundary_id = (boundary_ids_map.count(boundary_id) == 0);
 
-  for (int i = 0; i < num_side_sets; i++)
-  {
-    elem_ss[i] = new int[num_sides_in_ss[i]];
-    side_ss[i] = new int[num_sides_in_ss[i]];
-  }
-
-  for (int bc_id = 0; bc_id <= num_side_sets; bc_id++)
-  {
-    int counter = 0;
-    for (int side = 0; side < bdrElems; side++)
+    if (is_new_boundary_id) // Initialize new struct.
     {
-      if ((bc_id + 1) == bc_id_list[side])
-      {
-        elem_ss[bc_id][counter] = element_id_list[side];
-        side_ss[bc_id][counter] = side_list[side];
-        counter++;
-      }
+      boundary_ids_map[boundary_id] = BoundaryElementAndSideIDs();
+      unique_boundary_ids.push_back(boundary_id);
+    }
+
+    auto element_id = boundary_element->_elem->id(); // ID of element on boundary.
+    auto side_id = boundary_element->_side;          // ID of side that element is on.
+
+    boundary_ids_map[boundary_id].element_ids.push_back(element_id);
+    boundary_ids_map[boundary_id].side_ids.push_back(side_id);
+  }
+
+  // Check that the boundary IDs are 1-based and are numbered sequentially.
+  std::sort(unique_boundary_ids.begin(), unique_boundary_ids.end());
+
+  if (!unique_boundary_ids.empty())
+  {
+    if (unique_boundary_ids.front() != 1)
+      mooseError("Boundary IDs should be 1-based!");
+    else if (unique_boundary_ids.back() != num_side_sets)
+      mooseError("Number of side sets does not match highest boundary ID.");
+  }
+
+  for (int i = 1; i < unique_boundary_ids.size(); i++)
+  {
+    if (unique_boundary_ids[i] != (unique_boundary_ids[i - 1] + 1))
+    {
+      mooseError("Boundary IDs should be numbered sequentially!");
+      break;
+    }
+  }
+
+  // Run through the (key, value) pairs in the boundary_ids_map map.
+  for (const auto & key_value_pair : boundary_ids_map)
+  {
+    auto boundary_id = key_value_pair.first;
+
+    auto element_ids = key_value_pair.second.element_ids;
+    auto side_ids = key_value_pair.second.side_ids;
+
+    // NB: subtract 1 as indices are 1-based.
+    num_sides_in_ss[boundary_id - 1] = element_ids.size();
+
+    // Allocate memory for element_ss, side_ss.
+    elem_ss[boundary_id - 1] = new int[element_ids.size()];
+    side_ss[boundary_id - 1] = new int[side_ids.size()];
+
+    for (int ielement = 0; ielement < element_ids.size(); ielement++)
+    {
+      elem_ss[boundary_id - 1][ielement] = element_ids[ielement];
+      side_ss[boundary_id - 1][ielement] = side_ids[ielement];
     }
   }
 }
