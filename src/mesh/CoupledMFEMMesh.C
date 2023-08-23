@@ -49,6 +49,8 @@ CoupledMFEMMesh::getNumSidesets()
 void
 CoupledMFEMMesh::getBdrLists(int ** elem_ss, int ** side_ss)
 {
+  buildBndElemList();
+
   bdrElems = _bnd_elems.size();
 
   std::vector<dof_id_type> element_id_list(bdrElems, 0);
@@ -225,8 +227,6 @@ CoupledMFEMMesh::getElementInfo()
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
-  buildBndElemList();
-
   // Retrieve information about the elements used within the mesh
   getElementInfo();
 
