@@ -294,6 +294,51 @@ CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
   buildLibmeshFaceInfo();
 }
 
+/**
+ * Blocks/subdomains are separate subsets of the mesh that could have different
+ * material properties etc. This method returns a vector containing the unique
+ * IDs of each block in the mesh. This will be passed to the MFEMMesh constructor
+ * which sets the attribute of each element to the ID of the block that it is a
+ * part of.
+ */
+std::vector<int>
+CoupledMFEMMesh::getLibmeshBlockIDs() const
+{
+  auto & libmesh = getMesh();
+
+  // TODO: - may not work with distributed meshes.
+  std::set<subdomain_id_type> block_ids_set;
+  libmesh.subdomain_ids(block_ids_set);
+
+  std::vector<int> unique_block_ids(block_ids_set.size());
+
+  int counter = 0;
+  for (auto block_id : block_ids_set)
+  {
+    unique_block_ids[counter++] = block_id;
+  }
+
+  // TODO: - this safety check is called twice. Extract out to method.
+  // Safety check: ensure that the block IDs are 1-indexed and continuous:
+  std::sort(unique_block_ids.begin(), unique_block_ids.end());
+
+  if (!unique_block_ids.empty() && unique_block_ids.front() != 1)
+  {
+    mooseError("Block IDs should be 1-based!");
+  }
+
+  for (int i = 1; i < unique_block_ids.size(); i++)
+  {
+    if (unique_block_ids[i] != (unique_block_ids[i - 1] + 1))
+    {
+      mooseError("Block IDs should be numbered sequentially!");
+      break;
+    }
+  }
+
+  return unique_block_ids;
+}
+
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
@@ -310,23 +355,19 @@ CoupledMFEMMesh::buildMFEMMesh()
   // Populate the elem_ss and side_ss
   getBdrLists(elem_ss, side_ss);
 
-  // block_ids
-  std::set<subdomain_id_type> block_ids;
-  getMesh().subdomain_ids(block_ids);
+  // Get the unique libmesh IDs of each block in the mesh. The block IDs are
+  // 1-based and are numbered continuously.
+  // TODO: - using a std::map for num_elements_per_block would allow us to deal
+  // with block IDs that aren't numbered continuously/start at index 1.
+  std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
-  int num_blocks_in_mesh = (int)(getMesh().n_subdomains());
+  int num_blocks_in_mesh = unique_block_ids.size();
 
   std::vector<size_t> num_elements_per_block(num_blocks_in_mesh);
 
   std::vector<int> start_of_block(num_blocks_in_mesh + 1);
 
-  std::vector<int> ebprop(num_blocks_in_mesh);
   std::vector<int> ssprop(_num_sidesets);
-
-  for (int i = 0; i < num_blocks_in_mesh; i++)
-  {
-    ebprop[i] = i + 1;
-  }
 
   for (int i = 0; i < _num_sidesets; i++)
   {
@@ -334,16 +375,17 @@ CoupledMFEMMesh::buildMFEMMesh()
   }
 
   // Loops to set num_elements_per_block.
-  for (int iblock : block_ids)
+  for (int block_id : unique_block_ids)
   {
     int num_elements_in_block_counter = 1;
 
     for (libMesh::MeshBase::element_iterator element_ptr =
-             getMesh().active_subdomain_elements_begin(iblock);
-         element_ptr != getMesh().active_subdomain_elements_end(iblock);
+             getMesh().active_subdomain_elements_begin(block_id);
+         element_ptr != getMesh().active_subdomain_elements_end(block_id);
          element_ptr++)
     {
-      num_elements_per_block[iblock - 1] = num_elements_in_block_counter++;
+      // TODO: - could this fail? Are block_ids guaranteed to start at 1 and be incremental???
+      num_elements_per_block[block_id - 1] = num_elements_in_block_counter++;
     }
   }
 
@@ -357,7 +399,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   }
 
   // Here we are setting all the values in elem_blk
-  for (int iblock : block_ids)
+  for (int iblock : unique_block_ids)
   {
     int elem_count = 0;
     for (libMesh::MeshBase::element_iterator el_ptr =
@@ -454,7 +496,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           _num_sidesets,
                                           _num_sides_in_ss,
                                           ss_node_id,
-                                          ebprop,
+                                          unique_block_ids,
                                           ssprop,
                                           3,
                                           start_of_block);
