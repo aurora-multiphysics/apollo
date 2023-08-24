@@ -118,6 +118,7 @@ MFEMProblem::initialSetup()
   }
   executioner->Init();
 }
+
 void
 MFEMProblem::init()
 {
@@ -142,28 +143,33 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
                             const std::string & name,
                             InputParameters & parameters)
 {
-  mfem::Mesh & mfem_mesh = *(mesh().mfem_mesh);
+  mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
   mfem_mesh.EnsureNCMesh();
-  // Get mesh partitioning for CoupledMFEMMesh. TODO: move into CoupledMFEMMesh
-  int * partitioning = NULL;
+
+  int * partitioning = nullptr;
+
   if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
   {
-    partitioning = new int[mesh().getMesh().n_elem()];
-    for (auto elem : mesh().getMesh().element_ptr_range())
+    MooseMesh & mooseMesh = ExternalProblem::mesh();
+
+    CoupledMFEMMesh * coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
+    if (coupledMFEMMesh)
     {
-      unsigned int elem_id = elem->id();
-      partitioning[elem_id] = elem->processor_id();
+      partitioning = coupledMFEMMesh->getMeshPartitioning();
     }
   }
 
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
   mfem_problem_builder = mfem_formulation->getProblemBuilder();
-  // mfem_problem_builder = hephaestus::Factory::createProblemBuilder(_formulation_name);
-  // mfem_problem_builder = hephaestus::Factory::createProblemBuilder(name);
   mfem_problem_builder->ConstructEquationSystem();
   mfem_problem_builder->SetMesh(
       std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
+
+  if (partitioning) // Cleanup to avoid memory leaks.
+  {
+    delete[] partitioning;
+  }
 }
 
 void
@@ -296,8 +302,8 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 }
 
 void
-MFEMProblem::setMFEMVarData(EquationSystems & esRef,
-                            std::string var_name,
+MFEMProblem::setMFEMVarData(std::string var_name,
+                            EquationSystems & esRef,
                             std::map<int, int> libmeshToMFEMNode)
 {
 
@@ -476,32 +482,43 @@ MFEMProblem::getAuxVariableNames()
 void
 MFEMProblem::syncSolutions(Direction direction)
 {
-  // Only sync solutions if MOOSE and MFEM meshes are coupled
-  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
+  // Only sync solutions if MOOSE and MFEM meshes are coupled.
+  if (ExternalProblem::mesh().type() != "CoupledMFEMMesh")
   {
-    // Map for second order var transfer;
-    std::map<int, int> * libmeshToMFEMNodePtr;
+    return;
+  }
 
-    auto & coupledMesh = dynamic_cast<CoupledMFEMMesh &>(mesh());
-    libmeshToMFEMNodePtr = &(coupledMesh.libmeshToMFEMNode);
+  // Map for second order var transfer;
+  std::map<int, int> * libmeshToMFEMNodePtr;
 
-    // If data is being sent from the master app
-    if (direction == Direction::TO_EXTERNAL_APP)
-    {
-      for (std::string name : getAuxVariableNames())
-      {
-        setMFEMVarData(es(), name, (*libmeshToMFEMNodePtr));
-      }
-    }
+  auto & coupledMesh = dynamic_cast<CoupledMFEMMesh &>(mesh());
+  libmeshToMFEMNodePtr = &(coupledMesh.libmeshToMFEMNode);
 
-    // If data is being sent back to master app
-    if (direction == Direction::FROM_EXTERNAL_APP)
-    {
-      for (std::string name : getAuxVariableNames())
-      {
-        setMOOSEVarData(name, es(), (*libmeshToMFEMNodePtr));
-      }
-    }
+  void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &, std::map<int, int>);
+
+  switch (direction)
+  {
+    case Direction::TO_EXTERNAL_APP:
+      setVarDataFuncPtr =
+          &MFEMProblem::setMFEMVarData; // If data is being sent from the master app.
+      break;
+    case Direction::FROM_EXTERNAL_APP:
+      setVarDataFuncPtr =
+          &MFEMProblem::setMOOSEVarData; // If data is being sent back to the master app.
+      break;
+    default:
+      setVarDataFuncPtr = nullptr;
+      break;
+  }
+
+  if (!setVarDataFuncPtr)
+  {
+    mooseError("Invalid syncSolutions direction specified.");
+  }
+
+  for (std::string name : getAuxVariableNames())
+  {
+    (this->*setVarDataFuncPtr)(name, es(), (*libmeshToMFEMNodePtr));
   }
 }
 

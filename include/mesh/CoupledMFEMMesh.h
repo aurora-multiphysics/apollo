@@ -13,29 +13,31 @@
 /**
  * CoupledMFEMMesh
  */
-class CoupledMFEMMesh : public ExclusiveMFEMMesh {
- public:
+class CoupledMFEMMesh : public ExclusiveMFEMMesh
+{
+public:
   static InputParameters validParams();
 
-  CoupledMFEMMesh(const InputParameters& parameters);
+  CoupledMFEMMesh(const InputParameters & parameters);
 
   virtual ~CoupledMFEMMesh();
 
-  virtual std::unique_ptr<MooseMesh> safeClone() const override;
+  std::unique_ptr<MooseMesh> safeClone() const override;
 
-  virtual void buildMesh() override;
-  
+  /**
+   * Builds only the MOOSE mesh from the file.
+   */
+  void buildMesh() override;
+
   void getElementInfo();
 
-  void getBdrLists(int** elem_ss, int** side_ss);
+  void getBdrLists(int ** elem_ss, int ** side_ss);
 
   int getNumSidesets();
-  
-  void createMFEMMesh();
-  
-  void buildMFEMParMesh();
 
-  void create_ss_node_id(int** elem_ss, int** side_ss, int** ss_node_id);
+  int * getMeshPartitioning();
+
+  void createSidesetNodeIDs(int ** elem_ss, int ** side_ss, int ** ss_node_id);
 
   std::map<int, int> libmeshToMFEMNode;
 
@@ -45,20 +47,22 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
   int num_element_linear_nodes;
   int num_face_nodes;
   int num_face_linear_nodes;
-  mfem::ParMesh* MFEMParMesh;
 
- protected:
+protected:
+  // Override methods in Exclusive MFEMMesh.
+  void buildMFEMMesh() override;
+  void buildMFEMParMesh() override;
 
-  int curved = 0;
+  int curved = 0; // TODO: - make consistent.
   int read_gf = 0;
   bool topo = false;
-
 
   int num_side_sets;
   int bdrElems;
   std::vector<int> num_sides_in_ss;
 
-  enum CubitFaceType {
+  enum CubitFaceType
+  {
     FACE_EDGE2,
     FACE_EDGE3,
     FACE_TRI3,
@@ -67,7 +71,8 @@ class CoupledMFEMMesh : public ExclusiveMFEMMesh {
     FACE_QUAD9
   };
 
-  enum CubitElementType {
+  enum CubitElementType
+  {
     ELEMENT_TRI3,
     ELEMENT_TRI6,
     ELEMENT_QUAD4,
