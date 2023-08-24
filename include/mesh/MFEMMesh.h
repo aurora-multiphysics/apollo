@@ -39,7 +39,7 @@ public:
            int dim_num,
            const std::vector<int> & start_of_block);
 
-  MFEMMesh(std::string cpp_filename,
+  MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
            int refine = 1,
            bool fix_orientation = true);
