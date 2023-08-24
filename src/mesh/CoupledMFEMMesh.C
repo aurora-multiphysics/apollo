@@ -41,10 +41,10 @@ CoupledMFEMMesh::safeClone() const
 int
 CoupledMFEMMesh::getNumSidesets()
 {
-  libMesh::BoundaryInfo & bdInf = getMesh().get_boundary_info();
-  const std::set<boundary_id_type> & ss = bdInf.get_side_boundary_ids();
+  libMesh::BoundaryInfo & boundary_info = getMesh().get_boundary_info();
+  const std::set<boundary_id_type> & side_boundary_ids = boundary_info.get_side_boundary_ids();
 
-  return ss.size();
+  return side_boundary_ids.size();
 }
 
 void
@@ -287,6 +287,25 @@ CoupledMFEMMesh::buildLibmeshElementInfo()
   }
 }
 
+std::vector<int>
+CoupledMFEMMesh::getSideBoundaryIDs() const
+{
+  const libMesh::BoundaryInfo & boundary_info = getMesh().get_boundary_info();
+  const std::set<boundary_id_type> & side_boundary_ids_set = boundary_info.get_side_boundary_ids();
+
+  std::vector<int> side_boundary_ids(side_boundary_ids_set.size());
+
+  int counter = 0;
+  for (auto side_boundary_id : side_boundary_ids_set)
+  {
+    side_boundary_ids[counter++] = side_boundary_id;
+  }
+
+  std::sort(side_boundary_ids.begin(), side_boundary_ids.end());
+
+  return side_boundary_ids;
+}
+
 void
 CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
 {
@@ -347,7 +366,11 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   // Elem_ss and side_ss store information about which elements are in each sideset, and which sides
   // of those elements are contained within the sideset
-  _num_sidesets = getNumSidesets();
+
+  // Get a vector containing all boundary IDs on sides of semi-local elements.
+  std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
+
+  _num_sidesets = unique_side_boundary_ids.size();
 
   std::vector<std::vector<int>> elem_ss(_num_sidesets);
   std::vector<std::vector<int>> side_ss(_num_sidesets);
@@ -361,18 +384,11 @@ CoupledMFEMMesh::buildMFEMMesh()
   // with block IDs that aren't numbered continuously/start at index 1.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
-  int num_blocks_in_mesh = unique_block_ids.size();
+  const int num_blocks_in_mesh = unique_block_ids.size();
 
   std::vector<size_t> num_elements_per_block(num_blocks_in_mesh);
 
   std::vector<int> start_of_block(num_blocks_in_mesh + 1);
-
-  std::vector<int> ssprop(_num_sidesets);
-
-  for (int i = 0; i < _num_sidesets; i++)
-  {
-    ssprop[i] = i + 1;
-  }
 
   // Loops to set num_elements_per_block.
   for (int block_id : unique_block_ids)
@@ -497,7 +513,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           _num_sides_in_ss,
                                           ss_node_id,
                                           unique_block_ids,
-                                          ssprop,
+                                          unique_side_boundary_ids,
                                           3,
                                           start_of_block);
 }

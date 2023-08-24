@@ -53,6 +53,7 @@ protected:
   void buildLibmeshElementAndFaceInfo();
 
   std::vector<int> getLibmeshBlockIDs() const;
+  std::vector<int> getSideBoundaryIDs() const;
 
   // Override methods in Exclusive MFEMMesh.
   void buildMFEMMesh() override;
