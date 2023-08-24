@@ -293,9 +293,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 }
 
 void
-MFEMProblem::setMFEMVarData(std::string var_name,
-                            EquationSystems & esRef,
-                            std::map<int, int> libmeshToMFEMNode)
+MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 {
 
   auto & mooseVarRef = getVariable(0, var_name);
@@ -386,9 +384,7 @@ MFEMProblem::setMFEMVarData(std::string var_name,
 }
 
 void
-MFEMProblem::setMOOSEVarData(std::string var_name,
-                             EquationSystems & esRef,
-                             std::map<int, int> libmeshToMFEMNode)
+MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 {
   auto & mooseVarRef = getVariable(0, var_name);
   MeshBase & libmeshBase = mesh().getMesh();
@@ -479,13 +475,7 @@ MFEMProblem::syncSolutions(Direction direction)
     return;
   }
 
-  // Map for second order var transfer;
-  std::map<int, int> * libmeshToMFEMNodePtr;
-
-  auto & coupledMesh = dynamic_cast<CoupledMFEMMesh &>(mesh());
-  libmeshToMFEMNodePtr = &(coupledMesh._libmesh_to_mfem_node_map);
-
-  void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &, std::map<int, int>);
+  void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &);
 
   switch (direction)
   {
@@ -509,7 +499,7 @@ MFEMProblem::syncSolutions(Direction direction)
 
   for (std::string name : getAuxVariableNames())
   {
-    (this->*setVarDataFuncPtr)(name, es(), (*libmeshToMFEMNodePtr));
+    (this->*setVarDataFuncPtr)(name, es());
   }
 }
 

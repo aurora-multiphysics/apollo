@@ -101,18 +101,14 @@ public:
    * transfer it to the other. For example if you solve for temperature in MOOSE, you would use
    * setMFEMVarData to get this temperature data into an MFEM grid function.
    */
-  void setMFEMVarData(std::string var_name,
-                      EquationSystems & esRef,
-                      std::map<int, int> libmeshToMFEMNode);
+  void setMFEMVarData(std::string var_name, EquationSystems & esRef);
   /**
    * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data
    * from one of the variable types (either Moose AuxVar or MFEM grid function), and transfer it to
    * the other. For example if you solve for temperature in MOOSE, you would use setMFEMVarData to
    * get this temperature data into an MFEM grid function.
    */
-  void setMOOSEVarData(std::string var_name,
-                       EquationSystems & esRef,
-                       std::map<int, int> libmeshToMFEMNode);
+  void setMOOSEVarData(std::string var_name, EquationSystems & esRef);
 
   /**
    * Method used to get an mfem FEC depending on the variable family specified in the input file.
