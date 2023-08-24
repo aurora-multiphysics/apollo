@@ -1,6 +1,6 @@
 # Build Apollo dependencies
 # Get base image
-FROM alexanderianblair/hephaestus-deps:latest
+FROM alexanderianblair/hephaestus-deps:master
 
 # By default one core is used to compile
 ARG compile_cores=4
