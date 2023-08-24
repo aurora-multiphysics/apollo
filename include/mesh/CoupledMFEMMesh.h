@@ -43,8 +43,6 @@ public:
                             const std::vector<std::vector<int>> & side_ss,
                             std::vector<std::vector<int>> & ss_node_id);
 
-  std::map<int, int> _libmesh_to_mfem_node_map;
-
 protected:
   void buildLibmesh3DElementInfo();
   void buildLibmesh2DElementInfo();

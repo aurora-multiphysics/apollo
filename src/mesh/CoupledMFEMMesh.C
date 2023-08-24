@@ -457,8 +457,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           ebprop,
                                           ssprop,
                                           3,
-                                          start_of_block,
-                                          _libmesh_to_mfem_node_map);
+                                          start_of_block);
 }
 
 /**

@@ -24,8 +24,7 @@ MFEMMesh::MFEMMesh(int num_elem,
                    const std::vector<int> & ebprop,
                    const std::vector<int> & ssprop,
                    int dim_num,
-                   const std::vector<int> & start_of_block,
-                   std::map<int, int> & libmeshToMFEMNode)
+                   const std::vector<int> & start_of_block)
 {
 
   const int mfemToLibmeshTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
@@ -252,7 +251,7 @@ MFEMMesh::MFEMMesh(int num_elem,
         int point_id = elem_blk[iblk][loc_ind * num_node_per_el + mfemToLibmeshMap[j] - 1];
 
         // Map to help with second order variable transfer
-        libmeshToMFEMNode[point_id] = vdofs[j] / 3;
+        _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
 
         (*Nodes)(vdofs[j]) = coordx[point_id];
         (*Nodes)(vdofs[j] + 1) = coordy[point_id];
@@ -284,4 +283,10 @@ MFEMMesh::MFEMMesh(std::string cpp_filename, int generate_edges, int refine, boo
   {
     Load(imesh, generate_edges, refine, fix_orientation);
   }
+}
+
+const std::map<int, int> &
+MFEMMesh::getLibmeshToMFEMNodeMap() const
+{
+  return _libmesh_to_mfem_node_map;
 }

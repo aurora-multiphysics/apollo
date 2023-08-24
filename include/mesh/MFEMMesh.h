@@ -37,26 +37,20 @@ public:
            const std::vector<int> & eb_prop,
            const std::vector<int> & ss_prop,
            int dim_num,
-           const std::vector<int> & start_of_block,
-           std::map<int, int> & libmeshToMFEMNode);
+           const std::vector<int> & start_of_block);
 
   MFEMMesh(std::string cpp_filename,
            int generate_edges = 0,
            int refine = 1,
            bool fix_orientation = true);
 
-  void get_mesh_nodes();
+  /**
+   * Returns a constant reference to the protected libmesh_to_mfem_node_map.
+   */
+  const std::map<int, int> & getLibmeshToMFEMNodeMap() const;
 
-  void get_connectivity_data();
-
-  void get_cell_type();
-
-  int get_num_nodes();
-
-  std::vector<int> connectivityVec;
-  std::vector<double> pointsVec;
-  std::vector<int> cellTypeVec;
-  std::vector<int> verticesVec;
+protected:
+  std::map<int, int> _libmesh_to_mfem_node_map;
 
   enum CubitFaceType // TODO: - this should not be duplicated.
   {
