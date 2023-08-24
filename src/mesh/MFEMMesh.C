@@ -35,26 +35,7 @@ MFEMMesh::MFEMMesh(int num_elem,
   const int mfemToLibmeshTri6[6] = {1, 2, 3, 4, 5, 6};
   const int mfemToLibmeshQuad9[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-  int order;
-
-  switch (libmesh_element_type)
-  {
-    case ELEMENT_TRI3:
-    case ELEMENT_QUAD4:
-    case ELEMENT_TET4:
-    case ELEMENT_HEX8:
-      order = 1;
-      break;
-    case ELEMENT_TRI6:
-    case ELEMENT_QUAD9:
-    case ELEMENT_TET10:
-    case ELEMENT_HEX27:
-      order = 2;
-      break;
-    default:
-      order = 0;
-      break;
-  }
+  const int order = getOrderFromLibmeshElementType(libmesh_element_type);
 
   Dim = dim_num;
   spaceDim = Dim;
@@ -289,4 +270,31 @@ const std::map<int, int> &
 MFEMMesh::getLibmeshToMFEMNodeMap() const
 {
   return _libmesh_to_mfem_node_map;
+}
+
+const int
+MFEMMesh::getOrderFromLibmeshElementType(int libmesh_element_type) const
+{
+  int order;
+
+  switch (libmesh_element_type)
+  {
+    case ELEMENT_TRI3:
+    case ELEMENT_QUAD4:
+    case ELEMENT_TET4:
+    case ELEMENT_HEX8:
+      order = 1;
+      break;
+    case ELEMENT_TRI6:
+    case ELEMENT_QUAD9:
+    case ELEMENT_TET10:
+    case ELEMENT_HEX27:
+      order = 2;
+      break;
+    default:
+      order = 0;
+      break;
+  }
+
+  return order;
 }

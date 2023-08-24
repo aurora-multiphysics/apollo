@@ -52,6 +52,8 @@ public:
 protected:
   std::map<int, int> _libmesh_to_mfem_node_map;
 
+  const int getOrderFromLibmeshElementType(int libmesh_element_type) const;
+
   enum CubitFaceType // TODO: - this should not be duplicated.
   {
     FACE_EDGE2,
