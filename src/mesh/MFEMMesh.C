@@ -1,5 +1,6 @@
 #pragma once
 #include "MFEMMesh.h"
+#include "MooseError.h"
 
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMproblem
@@ -182,9 +183,7 @@ MFEMMesh::MFEMMesh(int num_elem,
       case ELEMENT_TET4:
       case ELEMENT_HEX8:
       default:
-        MFEM_ABORT(
-            "Something went wrong. Linear elements detected when order is 2."); // TODO: - switch to
-                                                                                // MOOSE equivalent.
+        mooseError("Linear elements detected when order is 2.");
         break;
     }
 
@@ -249,20 +248,18 @@ MFEMMesh::MFEMMesh(int num_elem,
   FinalizeMesh();
 }
 
-MFEMMesh::MFEMMesh(std::string cpp_filename, int generate_edges, int refine, bool fix_orientation)
+MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool fix_orientation)
 {
-  const char * filename = cpp_filename.c_str();
   SetEmpty();
 
-  mfem::named_ifgzstream imesh(filename);
-  if (!imesh)
+  mfem::named_ifgzstream mesh_fstream(mesh_fname);
+  if (!mesh_fstream) // TODO: - can this be NULL?
   {
-    // Abort with an error message.
-    MFEM_ABORT("Mesh file not found: " << filename << '\n'); // TODO: - switch to MOOSE equivalent
+    mooseError("Failed to read '" + mesh_fname + "'\n");
   }
   else
   {
-    Load(imesh, generate_edges, refine, fix_orientation);
+    Load(mesh_fstream, generate_edges, refine, fix_orientation);
   }
 }
 
