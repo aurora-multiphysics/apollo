@@ -37,7 +37,7 @@ public:
            const std::vector<int> & unique_block_ids,
            const std::vector<int> & unique_side_boundary_ids,
            int num_dimensions,
-           const std::vector<int> & start_of_block);
+           std::map<int, int> & start_of_block);
 
   MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,

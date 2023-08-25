@@ -25,7 +25,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    const std::vector<int> & unique_block_ids,
                    const std::vector<int> & unique_side_boundary_ids,
                    int num_dimensions,
-                   const std::vector<int> & start_of_block)
+                   std::map<int, int> & start_of_block)
 {
 
   const int mfemToLibmeshTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
@@ -216,22 +216,23 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
       fes->DofsToVDofs(vdofs);
 
-      int iblk = 0;
+      int block_index = 0;
 
-      int loc_ind;
-
-      while (iblk < (int)num_blocks_in_mesh && i >= start_of_block[iblk + 1])
+      // Locate which block the element originates from. TODO: - a reverse map would work here...
+      while (block_index < (num_blocks_in_mesh - 1) &&
+             i >= start_of_block[unique_block_ids[block_index + 1]])
       {
-        iblk++;
+        block_index++;
       }
 
-      loc_ind = i - start_of_block[iblk];
+      const int block_id = unique_block_ids[block_index];
+
+      const int element_offset = i - start_of_block[block_id];
 
       for (int j = 0; j < dofs.Size(); j++)
       {
-        int point_id =
-            element_nodes_for_block_id[unique_block_ids[iblk]]
-                                      [loc_ind * num_nodes_per_element + mfemToLibmeshMap[j] - 1];
+        int point_id = element_nodes_for_block_id[block_id][element_offset * num_nodes_per_element +
+                                                            mfemToLibmeshMap[j] - 1];
 
         // Map to help with second order variable transfer
         _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
