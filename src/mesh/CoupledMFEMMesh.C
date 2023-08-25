@@ -432,9 +432,9 @@ CoupledMFEMMesh::buildMFEMMesh()
     sum_num_elements_per_block += num_elements_per_block[block_id];
   }
 
-  // ss_node_id stores all the id's of all the sides in a sideset
-  // for example, ss_node_id[0][0] would access the first node id in the first sideset
-  std::vector<std::vector<int>> ss_node_id(_num_sidesets);
+  // ss_node_id maps from the boundary_id to a vector containing nodes of each
+  // element on the boundary that correspond to the face of the boundary.
+  std::map<int, std::vector<int>> ss_node_id;
 
   createSidesetNodeIDs(
       unique_side_boundary_ids, element_ids_for_boundary_id, side_ids_for_boundary_id, ss_node_id);
@@ -557,7 +557,7 @@ void
 CoupledMFEMMesh::createSidesetNodeIDs(const std::vector<int> & unique_side_boundary_ids,
                                       std::map<int, std::vector<int>> & element_ids_for_boundary_id,
                                       std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                                      std::vector<std::vector<int>> & ss_node_id)
+                                      std::map<int, std::vector<int>> & ss_node_id)
 {
   // Iterate over all boundary IDs.
   for (int boundary_id : unique_side_boundary_ids)
@@ -594,6 +594,6 @@ CoupledMFEMMesh::createSidesetNodeIDs(const std::vector<int> & unique_side_bound
     }
 
     // Add to ss_node_id for boundary_id.
-    ss_node_id[boundary_id - 1] = boundary_nodes;
+    ss_node_id[boundary_id] = boundary_nodes;
   }
 }

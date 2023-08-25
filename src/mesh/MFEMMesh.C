@@ -21,7 +21,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    int num_face_linear_nodes,
                    int num_side_sets,
                    std::vector<int> num_side_in_ss,
-                   const std::vector<std::vector<int>> & ss_node_id,
+                   std::map<int, std::vector<int>> & ss_node_id,
                    const std::vector<int> & unique_block_ids,
                    const std::vector<int> & unique_side_boundary_ids,
                    int num_dimensions,
@@ -127,12 +127,14 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   for (int iss = 0; iss < num_side_sets; iss++)
   {
+    int boundary_id = unique_side_boundary_ids[iss];
+
     for (int jside = 0; jside < num_side_in_ss[iss]; jside++)
     {
       for (int knode = 0; knode < num_face_linear_nodes; knode++)
       {
         renumbered_vertex_ids[knode] =
-            cubit_to_MFEM_vertex_map[1 + ss_node_id[iss][jside * num_face_nodes + knode]];
+            cubit_to_MFEM_vertex_map[1 + ss_node_id[boundary_id][jside * num_face_nodes + knode]];
       }
 
       switch (libmesh_face_type)
