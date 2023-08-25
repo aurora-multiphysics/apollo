@@ -412,26 +412,33 @@ CoupledMFEMMesh::buildMFEMMesh()
   // elements in the block.
   std::map<int, std::vector<int>> elem_blk;
 
-  // Here we are setting all the values in elem_blk
   for (int block_id : unique_block_ids)
   {
-    std::vector<int> num_nodes_in_block(num_elements_per_block[block_id] * _num_nodes_per_element);
+    // Create vector to hold nodes of all elements in current block.
+    const int num_nodes_in_block = num_elements_per_block[block_id] * _num_nodes_per_element;
 
-    int elem_count = 0;
-    for (libMesh::MeshBase::element_iterator el_ptr =
-             getMesh().active_subdomain_elements_begin(block_id);
-         el_ptr != getMesh().active_subdomain_elements_end(block_id);
-         el_ptr++)
+    std::vector<int> element_nodes_in_block(num_nodes_in_block);
+
+    int element_counter = 0;
+
+    for (auto element_iterator = getMesh().active_subdomain_elements_begin(block_id);
+         element_iterator != getMesh().active_subdomain_elements_end(block_id);
+         element_iterator++)
     {
-      for (int el_nodes = 0; el_nodes < _num_nodes_per_element; el_nodes++)
+      auto element_ptr = *element_iterator;
+
+      const int node_offset = element_counter * _num_nodes_per_element;
+
+      for (int node_counter = 0; node_counter < _num_nodes_per_element; node_counter++)
       {
-        num_nodes_in_block[(elem_count * _num_nodes_per_element) + el_nodes] =
-            (*el_ptr)->node_id(el_nodes);
+        element_nodes_in_block[node_offset + node_counter] = element_ptr->node_id(node_counter);
       }
-      elem_count++;
+
+      element_counter++;
     }
 
-    elem_blk[block_id] = num_nodes_in_block;
+    // Add to map.
+    elem_blk[block_id] = element_nodes_in_block;
   }
 
   // start_of_block is just an array of ints that represent what the first element id of
