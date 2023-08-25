@@ -337,6 +337,7 @@ CoupledMFEMMesh::getLibmeshBlockIDs() const
     unique_block_ids[counter++] = block_id;
   }
 
+  // TODO: - remove this...
   // TODO: - this safety check is called twice. Extract out to method.
   // Safety check: ensure that the block IDs are 1-indexed and continuous:
   std::sort(unique_block_ids.begin(), unique_block_ids.end());
@@ -380,20 +381,20 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   // Get the unique libmesh IDs of each block in the mesh. The block IDs are
   // 1-based and are numbered continuously.
-  // TODO: - using a std::map for num_elements_per_block would allow us to deal
-  // with block IDs that aren't numbered continuously/start at index 1.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
   const int num_blocks_in_mesh = unique_block_ids.size();
 
-  std::vector<size_t> num_elements_per_block(num_blocks_in_mesh);
+  // num_elements_per_block maps from the block_id to an unsigned integer
+  // containing the number of elements present in the block.
+  std::map<int, size_t> num_elements_per_block;
 
   std::vector<int> start_of_block(num_blocks_in_mesh + 1);
 
   // Loops to set num_elements_per_block.
   for (int block_id : unique_block_ids)
   {
-    int num_elements_in_block_counter = 1;
+    int num_elements_in_block_counter = 0;
 
     for (libMesh::MeshBase::element_iterator element_ptr =
              getMesh().active_subdomain_elements_begin(block_id);
@@ -401,35 +402,36 @@ CoupledMFEMMesh::buildMFEMMesh()
          element_ptr++)
     {
       // TODO: - could this fail? Are block_ids guaranteed to start at 1 and be incremental???
-      num_elements_per_block[block_id - 1] = num_elements_in_block_counter++;
+      num_elements_in_block_counter++;
     }
+
+    num_elements_per_block[block_id] = num_elements_in_block_counter;
   }
 
-  // elem_blk is a 2D array that stores all the nodes of all the elements in all
-  // the blocks. Indexing is done as so, elem_blk[block_id][node]
-  std::vector<std::vector<int>> elem_blk(num_blocks_in_mesh);
-
-  for (int i = 0; i < num_blocks_in_mesh; i++)
-  {
-    elem_blk[i] = std::vector<int>(num_elements_per_block[i] * _num_nodes_per_element);
-  }
+  // elem_blk maps from the block_id to a vector containing the nodes of all
+  // elements in the block.
+  std::map<int, std::vector<int>> elem_blk;
 
   // Here we are setting all the values in elem_blk
-  for (int iblock : unique_block_ids)
+  for (int block_id : unique_block_ids)
   {
+    std::vector<int> num_nodes_in_block(num_elements_per_block[block_id] * _num_nodes_per_element);
+
     int elem_count = 0;
     for (libMesh::MeshBase::element_iterator el_ptr =
-             getMesh().active_subdomain_elements_begin(iblock);
-         el_ptr != getMesh().active_subdomain_elements_end(iblock);
+             getMesh().active_subdomain_elements_begin(block_id);
+         el_ptr != getMesh().active_subdomain_elements_end(block_id);
          el_ptr++)
     {
       for (int el_nodes = 0; el_nodes < _num_nodes_per_element; el_nodes++)
       {
-        elem_blk[iblock - 1][(elem_count * _num_nodes_per_element) + el_nodes] =
+        num_nodes_in_block[(elem_count * _num_nodes_per_element) + el_nodes] =
             (*el_ptr)->node_id(el_nodes);
       }
       elem_count++;
     }
+
+    elem_blk[block_id] = num_nodes_in_block;
   }
 
   // start_of_block is just an array of ints that represent what the first element id of
@@ -437,7 +439,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   start_of_block[0] = 0;
   for (int i = 1; i < num_blocks_in_mesh + 1; i++)
   {
-    start_of_block[i] = start_of_block[i - 1] + num_elements_per_block[i - 1];
+    start_of_block[i] = start_of_block[i - 1] + num_elements_per_block[i];
   }
 
   // ss_node_id stores all the id's of all the sides in a sideset
@@ -447,14 +449,14 @@ CoupledMFEMMesh::buildMFEMMesh()
   createSidesetNodeIDs(elem_ss, side_ss, ss_node_id);
 
   std::vector<int> unique_vertex_ids;
-  for (int iblock = 0; iblock < num_blocks_in_mesh; iblock++)
+  for (int block_id : unique_block_ids)
   {
-    for (int jelement = 0; jelement < num_elements_per_block[iblock]; jelement++)
+    for (int jelement = 0; jelement < num_elements_per_block[block_id]; jelement++)
     {
       for (int knode = 0; knode < _num_linear_nodes_per_element; knode++)
       {
         unique_vertex_ids.push_back(1 +
-                                    elem_blk[iblock][jelement * _num_nodes_per_element + knode]);
+                                    elem_blk[block_id][jelement * _num_nodes_per_element + knode]);
       }
     }
   }
