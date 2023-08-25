@@ -29,21 +29,21 @@ public:
    */
   void buildMesh() override;
 
-  void getBdrLists(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                   std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                   std::map<int, int> & num_elements_for_boundary_id);
-
   /**
    * Returns a unique pointer to a C partitioning array.
    */
   std::unique_ptr<int[]> getMeshPartitioning() const;
 
-  void createSidesetNodeIDs(const std::vector<int> & unique_side_boundary_ids,
+protected:
+  void buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                         std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+                         std::map<int, int> & num_elements_for_boundary_id);
+
+  void buildBoundaryNodeIDs(const std::vector<int> & unique_side_boundary_ids,
                             std::map<int, std::vector<int>> & element_ids_for_boundary_id,
                             std::map<int, std::vector<int>> & side_ids_for_boundary_id,
                             std::map<int, std::vector<int>> & node_ids_for_boundary_id);
 
-protected:
   void buildLibmesh3DElementInfo();
   void buildLibmesh2DElementInfo();
   void buildLibmeshElementInfo();
