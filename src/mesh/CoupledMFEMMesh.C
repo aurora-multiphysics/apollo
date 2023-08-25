@@ -38,15 +38,6 @@ CoupledMFEMMesh::safeClone() const
   return std::make_unique<CoupledMFEMMesh>(*this);
 }
 
-int
-CoupledMFEMMesh::getNumSidesets()
-{
-  libMesh::BoundaryInfo & boundary_info = getMesh().get_boundary_info();
-  const std::set<boundary_id_type> & side_boundary_ids = boundary_info.get_side_boundary_ids();
-
-  return side_boundary_ids.size();
-}
-
 void
 CoupledMFEMMesh::getBdrLists(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
                              std::map<int, std::vector<int>> & side_ids_for_boundary_id,
