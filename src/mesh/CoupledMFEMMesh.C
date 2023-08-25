@@ -49,11 +49,10 @@ CoupledMFEMMesh::getNumSidesets()
 
 void
 CoupledMFEMMesh::getBdrLists(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                             std::map<int, std::vector<int>> & side_ids_for_boundary_id)
+                             std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+                             std::map<int, int> & num_elements_for_boundary_id)
 {
   buildBndElemList();
-
-  _num_sides_in_ss = std::vector<int>(_num_sidesets, 0);
 
   struct BoundaryElementAndSideIDs
   {
@@ -87,25 +86,8 @@ CoupledMFEMMesh::getBdrLists(std::map<int, std::vector<int>> & element_ids_for_b
     boundary_ids_map[boundary_id].side_ids.push_back(side_id);
   }
 
-  // Check that the boundary IDs are 1-based and are numbered sequentially.
+  // Sort.
   std::sort(unique_boundary_ids.begin(), unique_boundary_ids.end());
-
-  if (!unique_boundary_ids.empty())
-  {
-    if (unique_boundary_ids.front() != 1)
-      mooseError("Boundary IDs should be 1-based!");
-    else if (unique_boundary_ids.back() != _num_sidesets)
-      mooseError("Number of side sets does not match highest boundary ID.");
-  }
-
-  for (int i = 1; i < unique_boundary_ids.size(); i++)
-  {
-    if (unique_boundary_ids[i] != (unique_boundary_ids[i - 1] + 1))
-    {
-      mooseError("Boundary IDs should be numbered sequentially!");
-      break;
-    }
-  }
 
   // Run through the (key, value) pairs in the boundary_ids_map map.
   for (const auto & key_value_pair : boundary_ids_map)
@@ -115,11 +97,10 @@ CoupledMFEMMesh::getBdrLists(std::map<int, std::vector<int>> & element_ids_for_b
     auto element_ids = key_value_pair.second.element_ids;
     auto side_ids = key_value_pair.second.side_ids;
 
-    // NB: subtract 1 as indices are 1-based.
-    _num_sides_in_ss[boundary_id - 1] = element_ids.size();
-
     element_ids_for_boundary_id[boundary_id] = element_ids;
     side_ids_for_boundary_id[boundary_id] = side_ids;
+
+    num_elements_for_boundary_id[boundary_id] = element_ids.size();
   }
 }
 
@@ -356,9 +337,10 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   std::map<int, std::vector<int>> element_ids_for_boundary_id;
   std::map<int, std::vector<int>> side_ids_for_boundary_id;
+  std::map<int, int> num_elements_for_boundary_id;
 
   // Populate the elem_ss and side_ss
-  getBdrLists(element_ids_for_boundary_id, side_ids_for_boundary_id);
+  getBdrLists(element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
 
   // Get the unique libmesh IDs of each block in the mesh. The block IDs are
   // 1-based and are numbered continuously.
@@ -503,7 +485,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           _num_face_nodes,
                                           _num_face_linear_nodes,
                                           _num_sidesets,
-                                          _num_sides_in_ss,
+                                          num_elements_for_boundary_id,
                                           ss_node_id,
                                           unique_block_ids,
                                           unique_side_boundary_ids,

@@ -30,7 +30,8 @@ public:
   void buildMesh() override;
 
   void getBdrLists(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                   std::map<int, std::vector<int>> & side_ids_for_boundary_id);
+                   std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+                   std::map<int, int> & num_elements_for_boundary_id);
 
   int getNumSidesets();
 
@@ -59,8 +60,6 @@ protected:
   // Override methods in Exclusive MFEMMesh.
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
-
-  std::vector<int> _num_sides_in_ss;
 
   unsigned int _num_nodes_per_element;
   int _libmesh_element_type;
