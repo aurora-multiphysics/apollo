@@ -33,8 +33,6 @@ public:
                    std::map<int, std::vector<int>> & side_ids_for_boundary_id,
                    std::map<int, int> & num_elements_for_boundary_id);
 
-  int getNumSidesets();
-
   /**
    * Returns a unique pointer to a C partitioning array.
    */
@@ -43,7 +41,7 @@ public:
   void createSidesetNodeIDs(const std::vector<int> & unique_side_boundary_ids,
                             std::map<int, std::vector<int>> & element_ids_for_boundary_id,
                             std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                            std::map<int, std::vector<int>> & ss_node_id);
+                            std::map<int, std::vector<int>> & node_ids_for_boundary_id);
 
 protected:
   void buildLibmesh3DElementInfo();
