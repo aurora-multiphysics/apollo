@@ -370,8 +370,6 @@ CoupledMFEMMesh::buildMFEMMesh()
   // containing the number of elements present in the block.
   std::map<int, size_t> num_elements_per_block;
 
-  std::vector<int> start_of_block(num_blocks_in_mesh + 1);
-
   // Loops to set num_elements_per_block.
   for (int block_id : unique_block_ids)
   {
@@ -422,12 +420,16 @@ CoupledMFEMMesh::buildMFEMMesh()
     element_nodes_for_block_id[block_id] = element_nodes_in_block;
   }
 
-  // start_of_block is just an array of ints that represent what the first element id of
-  // each block is
-  start_of_block[0] = 0;
-  for (int i = 1; i < num_blocks_in_mesh + 1; i++)
+  // start_of_block maps from the block_id to the first element id of the block.
+  std::map<int, int> start_of_block;
+
+  int sum_num_elements_per_block = 0;
+
+  for (int block_id : unique_block_ids)
   {
-    start_of_block[i] = start_of_block[i - 1] + num_elements_per_block[i];
+    start_of_block[block_id] = sum_num_elements_per_block;
+
+    sum_num_elements_per_block += num_elements_per_block[block_id];
   }
 
   // ss_node_id stores all the id's of all the sides in a sideset
