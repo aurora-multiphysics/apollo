@@ -65,7 +65,6 @@ protected:
   int _num_linear_nodes_per_element;
   int _num_face_nodes;
   int _num_face_linear_nodes;
-  int _num_sidesets;
 
   enum CubitFaceType
   {

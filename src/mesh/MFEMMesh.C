@@ -13,13 +13,11 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    int libmesh_element_type,
                    int libmesh_face_type,
                    std::map<int, std::vector<int>> & element_nodes_for_block_id,
-                   int num_blocks_in_mesh,
                    int num_nodes_per_element,
                    std::map<int, size_t> & num_elements_per_block,
                    int num_linear_nodes_per_element,
                    int num_face_nodes,
                    int num_face_linear_nodes,
-                   int num_side_sets,
                    std::map<int, int> & num_elements_for_boundary_id,
                    std::map<int, std::vector<int>> & node_ids_for_boundary_id,
                    const std::vector<int> & unique_block_ids,
@@ -221,6 +219,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
       int block_index = 0;
 
       // Locate which block the element originates from. TODO: - a reverse map would work here...
+      const int num_blocks_in_mesh = unique_block_ids.size();
+
       while (block_index < (num_blocks_in_mesh - 1) &&
              i >= start_of_block[unique_block_ids[block_index + 1]])
       {
