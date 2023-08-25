@@ -20,7 +20,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    int num_face_nodes,
                    int num_face_linear_nodes,
                    int num_side_sets,
-                   std::vector<int> num_side_in_ss,
+                   std::map<int, int> & num_elements_for_boundary_id,
                    std::map<int, std::vector<int>> & ss_node_id,
                    const std::vector<int> & unique_block_ids,
                    const std::vector<int> & unique_side_boundary_ids,
@@ -115,26 +115,26 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   NumOfBdrElements = 0;
 
-  // For all the sidesets, add the number of sides to numbdrelems
-  for (int iss = 0; iss < num_side_sets; iss++)
+  for (int boundary_id : unique_side_boundary_ids)
   {
-    NumOfBdrElements += num_side_in_ss[iss];
+    NumOfBdrElements += num_elements_for_boundary_id[boundary_id];
   }
 
   boundary.SetSize(NumOfBdrElements);
 
-  int sidecount = 0;
+  int boundary_counter = 0;
 
-  for (int iss = 0; iss < num_side_sets; iss++)
+  for (int boundary_id : unique_side_boundary_ids)
   {
-    int boundary_id = unique_side_boundary_ids[iss];
+    auto boundary_nodes = ss_node_id[boundary_id];
 
-    for (int jside = 0; jside < num_side_in_ss[iss]; jside++)
+    for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
     {
       for (int knode = 0; knode < num_face_linear_nodes; knode++)
       {
-        renumbered_vertex_ids[knode] =
-            cubit_to_MFEM_vertex_map[1 + ss_node_id[boundary_id][jside * num_face_nodes + knode]];
+        const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
+
+        renumbered_vertex_ids[knode] = cubit_to_MFEM_vertex_map[1 + node_global_index];
       }
 
       switch (libmesh_face_type)
@@ -142,27 +142,24 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         case FACE_EDGE2:
         case FACE_EDGE3:
         {
-          boundary[sidecount] =
-              new mfem::Segment(renumbered_vertex_ids, unique_side_boundary_ids[iss]);
+          boundary[boundary_counter] = new mfem::Segment(renumbered_vertex_ids, boundary_id);
           break;
         }
         case FACE_TRI3:
         case FACE_TRI6:
         {
-          boundary[sidecount] =
-              new mfem::Triangle(renumbered_vertex_ids, unique_side_boundary_ids[iss]);
+          boundary[boundary_counter] = new mfem::Triangle(renumbered_vertex_ids, boundary_id);
           break;
         }
         case FACE_QUAD4:
         case FACE_QUAD9:
         {
-          boundary[sidecount] =
-              new mfem::Quadrilateral(renumbered_vertex_ids, unique_side_boundary_ids[iss]);
+          boundary[boundary_counter] = new mfem::Quadrilateral(renumbered_vertex_ids, boundary_id);
           break;
         }
       }
 
-      sidecount++;
+      boundary_counter++;
     }
   }
 
