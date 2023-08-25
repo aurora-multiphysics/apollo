@@ -324,8 +324,6 @@ CoupledMFEMMesh::buildMFEMMesh()
   // Get a vector containing all boundary IDs on sides of semi-local elements.
   std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
 
-  _num_sidesets = unique_side_boundary_ids.size();
-
   std::map<int, std::vector<int>> element_ids_for_boundary_id;
   std::map<int, std::vector<int>> side_ids_for_boundary_id;
   std::map<int, int> num_elements_for_boundary_id;
@@ -336,8 +334,6 @@ CoupledMFEMMesh::buildMFEMMesh()
   // Get the unique libmesh IDs of each block in the mesh. The block IDs are
   // 1-based and are numbered continuously.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
-
-  const int num_blocks_in_mesh = unique_block_ids.size();
 
   // num_elements_per_block maps from the block_id to an unsigned integer
   // containing the number of elements present in the block.
@@ -471,13 +467,11 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           _libmesh_element_type,
                                           _libmesh_face_type,
                                           element_nodes_for_block_id,
-                                          num_blocks_in_mesh,
                                           _num_nodes_per_element,
                                           num_elements_per_block,
                                           _num_linear_nodes_per_element,
                                           _num_face_nodes,
                                           _num_face_linear_nodes,
-                                          _num_sidesets,
                                           num_elements_for_boundary_id,
                                           node_ids_for_boundary_id,
                                           unique_block_ids,
