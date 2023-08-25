@@ -16,12 +16,12 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    int num_blocks_in_mesh,
                    int num_nodes_per_element,
                    std::map<int, size_t> & num_elements_per_block,
-                   int num_linaer_nodes_per_element,
+                   int num_linear_nodes_per_element,
                    int num_face_nodes,
                    int num_face_linear_nodes,
                    int num_side_sets,
                    std::map<int, int> & num_elements_for_boundary_id,
-                   std::map<int, std::vector<int>> & ss_node_id,
+                   std::map<int, std::vector<int>> & node_ids_for_boundary_id,
                    const std::vector<int> & unique_block_ids,
                    const std::vector<int> & unique_side_boundary_ids,
                    int num_dimensions,
@@ -67,7 +67,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
     for (int jelement = 0; jelement < num_elements_per_block[block_id]; jelement++)
     {
-      for (int knode = 0; knode < num_linaer_nodes_per_element; knode++)
+      for (int knode = 0; knode < num_linear_nodes_per_element; knode++)
       {
         const int node_index = jelement * num_nodes_per_element + knode;
 
@@ -126,7 +126,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   for (int boundary_id : unique_side_boundary_ids)
   {
-    auto boundary_nodes = ss_node_id[boundary_id];
+    auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
 
     for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
     {
