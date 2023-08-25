@@ -337,25 +337,6 @@ CoupledMFEMMesh::getLibmeshBlockIDs() const
     unique_block_ids[counter++] = block_id;
   }
 
-  // TODO: - remove this...
-  // TODO: - this safety check is called twice. Extract out to method.
-  // Safety check: ensure that the block IDs are 1-indexed and continuous:
-  std::sort(unique_block_ids.begin(), unique_block_ids.end());
-
-  if (!unique_block_ids.empty() && unique_block_ids.front() != 1)
-  {
-    mooseError("Block IDs should be 1-based!");
-  }
-
-  for (int i = 1; i < unique_block_ids.size(); i++)
-  {
-    if (unique_block_ids[i] != (unique_block_ids[i - 1] + 1))
-    {
-      mooseError("Block IDs should be numbered sequentially!");
-      break;
-    }
-  }
-
   return unique_block_ids;
 }
 
