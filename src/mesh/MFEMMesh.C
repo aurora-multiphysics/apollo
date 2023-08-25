@@ -4,27 +4,27 @@
 
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMproblem
-MFEMMesh::MFEMMesh(int num_elem,
+MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::vector<double> & coordx,
                    std::vector<double> & coordy,
                    std::vector<double> & coordz,
-                   std::map<int, int> & cubitToMFEMVertMap,
-                   std::vector<int> uniqueVertexID,
+                   std::map<int, int> & cubit_to_MFEM_vertex_map,
+                   std::vector<int> unique_vertex_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
                    const std::vector<std::vector<int>> & elem_blk,
-                   int num_el_blk,
-                   int num_node_per_el,
-                   const std::vector<size_t> & num_el_in_blk,
-                   int num_element_linear_nodes,
+                   int num_blocks_in_mesh,
+                   int num_nodes_per_element,
+                   const std::vector<size_t> & num_elements_per_block,
+                   int num_linaer_nodes_per_element,
                    int num_face_nodes,
                    int num_face_linear_nodes,
                    int num_side_sets,
                    std::vector<int> num_side_in_ss,
                    const std::vector<std::vector<int>> & ss_node_id,
-                   const std::vector<int> & ebprop,
-                   const std::vector<int> & ssprop,
-                   int dim_num,
+                   const std::vector<int> & unique_block_ids,
+                   const std::vector<int> & unique_side_boundary_ids,
+                   int num_dimensions,
                    const std::vector<int> & start_of_block)
 {
 
@@ -38,38 +38,38 @@ MFEMMesh::MFEMMesh(int num_elem,
 
   const int order = getOrderFromLibmeshElementType(libmesh_element_type);
 
-  Dim = dim_num;
+  Dim = num_dimensions;
   spaceDim = Dim;
-  NumOfElements = num_elem;
-  NumOfVertices = uniqueVertexID.size();
+  NumOfElements = num_elements_in_mesh;
+  NumOfVertices = unique_vertex_ids.size();
 
   vertices.SetSize(NumOfVertices);
-  elements.SetSize(num_elem);
+  elements.SetSize(num_elements_in_mesh);
 
-  for (std::size_t i = 0; i < uniqueVertexID.size(); i++)
+  for (std::size_t i = 0; i < unique_vertex_ids.size(); i++)
   {
-    vertices[i](0) = coordx[uniqueVertexID[i] - 1];
-    vertices[i](1) = coordy[uniqueVertexID[i] - 1];
+    vertices[i](0) = coordx[unique_vertex_ids[i] - 1];
+    vertices[i](1) = coordy[unique_vertex_ids[i] - 1];
 
     if (Dim == 3)
     {
-      vertices[i](2) = coordz[uniqueVertexID[i] - 1];
+      vertices[i](2) = coordz[unique_vertex_ids[i] - 1];
     }
   }
 
   int elcount = 0;
   int renumberedVertID[8];
 
-  for (int iblock = 0; iblock < num_el_blk; iblock++) // for all blocks
+  for (int iblock = 0; iblock < num_blocks_in_mesh; iblock++) // for all blocks
   {
-    int NumNodePerEl = num_node_per_el;
+    int NumNodePerEl = num_nodes_per_element;
 
-    for (int jelement = 0; jelement < num_el_in_blk[iblock]; jelement++)
+    for (int jelement = 0; jelement < num_elements_per_block[iblock]; jelement++)
     {
-      for (int knode = 0; knode < num_element_linear_nodes; knode++)
+      for (int knode = 0; knode < num_linaer_nodes_per_element; knode++)
       {
         renumberedVertID[knode] =
-            cubitToMFEMVertMap[(elem_blk[iblock][jelement * NumNodePerEl + knode]) + 1];
+            cubit_to_MFEM_vertex_map[(elem_blk[iblock][jelement * NumNodePerEl + knode]) + 1];
         // std::cout << cubitToMFEMVertMap[1] << std::endl;
       }
 
@@ -78,13 +78,13 @@ MFEMMesh::MFEMMesh(int num_elem,
         case ELEMENT_TRI3:
         case ELEMENT_TRI6:
         {
-          elements[elcount] = new mfem::Triangle(renumberedVertID, ebprop[iblock]);
+          elements[elcount] = new mfem::Triangle(renumberedVertID, unique_block_ids[iblock]);
           break;
         }
         case ELEMENT_QUAD4:
         case ELEMENT_QUAD9:
         {
-          elements[elcount] = new mfem::Quadrilateral(renumberedVertID, ebprop[iblock]);
+          elements[elcount] = new mfem::Quadrilateral(renumberedVertID, unique_block_ids[iblock]);
           break;
         }
         case ELEMENT_TET4:
@@ -93,7 +93,7 @@ MFEMMesh::MFEMMesh(int num_elem,
 #ifdef MFEM_USE_MEMALLOC
           elements[elcount] = TetMemory.Alloc();
           elements[elcount]->SetVertices(renumberedVertID);
-          elements[elcount]->SetAttribute(ebprop[iblock]);
+          elements[elcount]->SetAttribute(unique_block_ids[iblock]);
 #else
           elements[elcount] = new mfem::Tetrahedron(renumberedVertID, ebprop[iblock]);
 #endif
@@ -102,7 +102,7 @@ MFEMMesh::MFEMMesh(int num_elem,
         case ELEMENT_HEX8:
         case ELEMENT_HEX27:
         {
-          elements[elcount] = new mfem::Hexahedron(renumberedVertID, ebprop[iblock]);
+          elements[elcount] = new mfem::Hexahedron(renumberedVertID, unique_block_ids[iblock]);
           break;
         }
       }
@@ -130,7 +130,7 @@ MFEMMesh::MFEMMesh(int num_elem,
       for (int knode = 0; knode < num_face_linear_nodes; knode++)
       {
         renumberedVertID[knode] =
-            cubitToMFEMVertMap[1 + ss_node_id[iss][jside * num_face_nodes + knode]];
+            cubit_to_MFEM_vertex_map[1 + ss_node_id[iss][jside * num_face_nodes + knode]];
         // std::cout << renumberedVertID[j] << std::endl;
       }
 
@@ -139,19 +139,20 @@ MFEMMesh::MFEMMesh(int num_elem,
         case FACE_EDGE2:
         case FACE_EDGE3:
         {
-          boundary[sidecount] = new mfem::Segment(renumberedVertID, ssprop[iss]);
+          boundary[sidecount] = new mfem::Segment(renumberedVertID, unique_side_boundary_ids[iss]);
           break;
         }
         case FACE_TRI3:
         case FACE_TRI6:
         {
-          boundary[sidecount] = new mfem::Triangle(renumberedVertID, ssprop[iss]);
+          boundary[sidecount] = new mfem::Triangle(renumberedVertID, unique_side_boundary_ids[iss]);
           break;
         }
         case FACE_QUAD4:
         case FACE_QUAD9:
         {
-          boundary[sidecount] = new mfem::Quadrilateral(renumberedVertID, ssprop[iss]);
+          boundary[sidecount] =
+              new mfem::Quadrilateral(renumberedVertID, unique_side_boundary_ids[iss]);
           break;
         }
       }
@@ -219,7 +220,7 @@ MFEMMesh::MFEMMesh(int num_elem,
 
       int loc_ind;
 
-      while (iblk < (int)num_el_blk && i >= start_of_block[iblk + 1])
+      while (iblk < (int)num_blocks_in_mesh && i >= start_of_block[iblk + 1])
       {
         iblk++;
       }
@@ -228,7 +229,7 @@ MFEMMesh::MFEMMesh(int num_elem,
 
       for (int j = 0; j < dofs.Size(); j++)
       {
-        int point_id = elem_blk[iblk][loc_ind * num_node_per_el + mfemToLibmeshMap[j] - 1];
+        int point_id = elem_blk[iblk][loc_ind * num_nodes_per_element + mfemToLibmeshMap[j] - 1];
 
         // Map to help with second order variable transfer
         _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
