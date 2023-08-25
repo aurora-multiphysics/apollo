@@ -57,20 +57,22 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
     }
   }
 
-  int elcount = 0;
-  int renumberedVertID[8];
+  int element_counter = 0;
 
-  for (int iblock = 0; iblock < num_blocks_in_mesh; iblock++) // for all blocks
+  int renumbered_vertex_ids[8];
+
+  for (int block_id : unique_block_ids)
   {
-    const int block_id = unique_block_ids[iblock];
+    auto & element_nodes_for_block = element_nodes_for_block_id[block_id];
 
     for (int jelement = 0; jelement < num_elements_per_block[block_id]; jelement++)
     {
       for (int knode = 0; knode < num_linaer_nodes_per_element; knode++)
       {
-        renumberedVertID[knode] = cubit_to_MFEM_vertex_map
-            [(element_nodes_for_block_id[block_id][jelement * num_nodes_per_element + knode]) + 1];
-        // std::cout << cubitToMFEMVertMap[1] << std::endl;
+        const int node_index = jelement * num_nodes_per_element + knode;
+
+        renumbered_vertex_ids[knode] =
+            cubit_to_MFEM_vertex_map[element_nodes_for_block[node_index] + 1];
       }
 
       switch (libmesh_element_type)
@@ -78,36 +80,36 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         case ELEMENT_TRI3:
         case ELEMENT_TRI6:
         {
-          elements[elcount] = new mfem::Triangle(renumberedVertID, block_id);
+          elements[element_counter] = new mfem::Triangle(renumbered_vertex_ids, block_id);
           break;
         }
         case ELEMENT_QUAD4:
         case ELEMENT_QUAD9:
         {
-          elements[elcount] = new mfem::Quadrilateral(renumberedVertID, block_id);
+          elements[element_counter] = new mfem::Quadrilateral(renumbered_vertex_ids, block_id);
           break;
         }
         case ELEMENT_TET4:
         case ELEMENT_TET10:
         {
 #ifdef MFEM_USE_MEMALLOC
-          elements[elcount] = TetMemory.Alloc();
-          elements[elcount]->SetVertices(renumberedVertID);
-          elements[elcount]->SetAttribute(block_id);
+          elements[element_counter] = TetMemory.Alloc();
+          elements[element_counter]->SetVertices(renumbered_vertex_ids);
+          elements[element_counter]->SetAttribute(block_id);
 #else
-          elements[elcount] = new mfem::Tetrahedron(renumberedVertID, block_id);
+          elements[elcount] = new mfem::Tetrahedron(renumbered_vertex_ids, block_id);
 #endif
           break;
         }
         case ELEMENT_HEX8:
         case ELEMENT_HEX27:
         {
-          elements[elcount] = new mfem::Hexahedron(renumberedVertID, block_id);
+          elements[element_counter] = new mfem::Hexahedron(renumbered_vertex_ids, block_id);
           break;
         }
       }
 
-      elcount++;
+      element_counter++;
     }
   }
 
@@ -129,9 +131,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
     {
       for (int knode = 0; knode < num_face_linear_nodes; knode++)
       {
-        renumberedVertID[knode] =
+        renumbered_vertex_ids[knode] =
             cubit_to_MFEM_vertex_map[1 + ss_node_id[iss][jside * num_face_nodes + knode]];
-        // std::cout << renumberedVertID[j] << std::endl;
       }
 
       switch (libmesh_face_type)
@@ -139,20 +140,22 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         case FACE_EDGE2:
         case FACE_EDGE3:
         {
-          boundary[sidecount] = new mfem::Segment(renumberedVertID, unique_side_boundary_ids[iss]);
+          boundary[sidecount] =
+              new mfem::Segment(renumbered_vertex_ids, unique_side_boundary_ids[iss]);
           break;
         }
         case FACE_TRI3:
         case FACE_TRI6:
         {
-          boundary[sidecount] = new mfem::Triangle(renumberedVertID, unique_side_boundary_ids[iss]);
+          boundary[sidecount] =
+              new mfem::Triangle(renumbered_vertex_ids, unique_side_boundary_ids[iss]);
           break;
         }
         case FACE_QUAD4:
         case FACE_QUAD9:
         {
           boundary[sidecount] =
-              new mfem::Quadrilateral(renumberedVertID, unique_side_boundary_ids[iss]);
+              new mfem::Quadrilateral(renumbered_vertex_ids, unique_side_boundary_ids[iss]);
           break;
         }
       }
