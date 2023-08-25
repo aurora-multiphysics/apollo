@@ -48,8 +48,8 @@ CoupledMFEMMesh::getNumSidesets()
 }
 
 void
-CoupledMFEMMesh::getBdrLists(std::vector<std::vector<int>> & elem_ss,
-                             std::vector<std::vector<int>> & side_ss)
+CoupledMFEMMesh::getBdrLists(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                             std::map<int, std::vector<int>> & side_ids_for_boundary_id)
 {
   buildBndElemList();
 
@@ -118,8 +118,8 @@ CoupledMFEMMesh::getBdrLists(std::vector<std::vector<int>> & elem_ss,
     // NB: subtract 1 as indices are 1-based.
     _num_sides_in_ss[boundary_id - 1] = element_ids.size();
 
-    elem_ss[boundary_id - 1] = element_ids;
-    side_ss[boundary_id - 1] = side_ids;
+    element_ids_for_boundary_id[boundary_id] = element_ids;
+    side_ids_for_boundary_id[boundary_id] = side_ids;
   }
 }
 
@@ -354,11 +354,11 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   _num_sidesets = unique_side_boundary_ids.size();
 
-  std::vector<std::vector<int>> elem_ss(_num_sidesets);
-  std::vector<std::vector<int>> side_ss(_num_sidesets);
+  std::map<int, std::vector<int>> element_ids_for_boundary_id;
+  std::map<int, std::vector<int>> side_ids_for_boundary_id;
 
   // Populate the elem_ss and side_ss
-  getBdrLists(elem_ss, side_ss);
+  getBdrLists(element_ids_for_boundary_id, side_ids_for_boundary_id);
 
   // Get the unique libmesh IDs of each block in the mesh. The block IDs are
   // 1-based and are numbered continuously.
@@ -436,7 +436,8 @@ CoupledMFEMMesh::buildMFEMMesh()
   // for example, ss_node_id[0][0] would access the first node id in the first sideset
   std::vector<std::vector<int>> ss_node_id(_num_sidesets);
 
-  createSidesetNodeIDs(elem_ss, side_ss, ss_node_id);
+  createSidesetNodeIDs(
+      unique_side_boundary_ids, element_ids_for_boundary_id, side_ids_for_boundary_id, ss_node_id);
 
   std::vector<int> unique_vertex_ids;
   for (int block_id : unique_block_ids)
@@ -553,27 +554,46 @@ CoupledMFEMMesh::buildMFEMParMesh()
 }
 
 void
-CoupledMFEMMesh::createSidesetNodeIDs(const std::vector<std::vector<int>> & elem_ss,
-                                      const std::vector<std::vector<int>> & side_ss,
+CoupledMFEMMesh::createSidesetNodeIDs(const std::vector<int> & unique_side_boundary_ids,
+                                      std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                                      std::map<int, std::vector<int>> & side_ids_for_boundary_id,
                                       std::vector<std::vector<int>> & ss_node_id)
 {
-  for (std::size_t i = 0; i < _num_sidesets; i++)
+  // Iterate over all boundary IDs.
+  for (int boundary_id : unique_side_boundary_ids)
   {
-    ss_node_id[i] = std::vector<int>(_num_sides_in_ss[i] * _num_face_nodes);
+    // Get element IDs  of element on boundary (and their sides that are on boundary).
+    auto & boundary_element_ids = element_ids_for_boundary_id[boundary_id];
+    auto & boundary_element_sides = side_ids_for_boundary_id[boundary_id];
 
-    for (std::size_t j = 0; j < _num_sides_in_ss[i]; j++)
+    // Create vector to hold all nodes on boundary.
+    std::vector<int> boundary_nodes(boundary_element_ids.size() * _num_face_nodes);
+
+    // Iterate over elements on boundary.
+    for (int jelement = 0; jelement < boundary_element_ids.size(); jelement++)
     {
-      int glob_ind = elem_ss[i][j];
-      int side = side_ss[i][j];
+      // Get element ID and the boundary side.
+      const int boundary_element_global_id = boundary_element_ids[jelement];
+      const int boundary_element_side = boundary_element_sides[jelement];
 
-      Elem * elem = elemPtr(glob_ind);
+      Elem * element_ptr = elemPtr(boundary_element_global_id);
 
-      std::vector<unsigned int> nodes = elem->nodes_on_side(side);
+      // Get vector of local node IDs on boundary side of element.
+      auto nodes_of_element_on_side = element_ptr->nodes_on_side(boundary_element_side);
 
-      for (int k = 0; k < _num_face_nodes; k++)
+      // Iterate over nodes on boundary side of element.
+      for (int knode = 0; knode < _num_face_nodes; knode++)
       {
-        ss_node_id[i][j * _num_face_nodes + k] = elem->node_id(nodes[k]);
+        // Get the global node ID of each node.
+        const int local_node_id = nodes_of_element_on_side[knode];
+        const int global_node_id = element_ptr->node_id(local_node_id);
+
+        // Add to boundary_nodes vector.
+        boundary_nodes[jelement * _num_face_nodes + knode] = global_node_id;
       }
     }
+
+    // Add to ss_node_id for boundary_id.
+    ss_node_id[boundary_id - 1] = boundary_nodes;
   }
 }

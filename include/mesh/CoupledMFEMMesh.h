@@ -29,8 +29,8 @@ public:
    */
   void buildMesh() override;
 
-  void getBdrLists(std::vector<std::vector<int>> & elem_ss,
-                   std::vector<std::vector<int>> & side_ss);
+  void getBdrLists(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                   std::map<int, std::vector<int>> & side_ids_for_boundary_id);
 
   int getNumSidesets();
 
@@ -39,8 +39,9 @@ public:
    */
   std::unique_ptr<int[]> getMeshPartitioning() const;
 
-  void createSidesetNodeIDs(const std::vector<std::vector<int>> & elem_ss,
-                            const std::vector<std::vector<int>> & side_ss,
+  void createSidesetNodeIDs(const std::vector<int> & unique_side_boundary_ids,
+                            std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                            std::map<int, std::vector<int>> & side_ids_for_boundary_id,
                             std::vector<std::vector<int>> & ss_node_id);
 
 protected:
