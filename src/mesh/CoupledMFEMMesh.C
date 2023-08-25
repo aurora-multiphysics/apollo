@@ -408,9 +408,9 @@ CoupledMFEMMesh::buildMFEMMesh()
     num_elements_per_block[block_id] = num_elements_in_block_counter;
   }
 
-  // elem_blk maps from the block_id to a vector containing the nodes of all
+  // element_nodes_for_block_id maps from the block_id to a vector containing the nodes of all
   // elements in the block.
-  std::map<int, std::vector<int>> elem_blk;
+  std::map<int, std::vector<int>> element_nodes_for_block_id;
 
   for (int block_id : unique_block_ids)
   {
@@ -438,7 +438,7 @@ CoupledMFEMMesh::buildMFEMMesh()
     }
 
     // Add to map.
-    elem_blk[block_id] = element_nodes_in_block;
+    element_nodes_for_block_id[block_id] = element_nodes_in_block;
   }
 
   // start_of_block is just an array of ints that represent what the first element id of
@@ -462,8 +462,8 @@ CoupledMFEMMesh::buildMFEMMesh()
     {
       for (int knode = 0; knode < _num_linear_nodes_per_element; knode++)
       {
-        unique_vertex_ids.push_back(1 +
-                                    elem_blk[block_id][jelement * _num_nodes_per_element + knode]);
+        unique_vertex_ids.push_back(
+            1 + element_nodes_for_block_id[block_id][jelement * _num_nodes_per_element + knode]);
       }
     }
   }
@@ -511,7 +511,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           unique_vertex_ids,
                                           _libmesh_element_type,
                                           _libmesh_face_type,
-                                          elem_blk,
+                                          element_nodes_for_block_id,
                                           num_blocks_in_mesh,
                                           _num_nodes_per_element,
                                           num_elements_per_block,

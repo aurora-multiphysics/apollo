@@ -12,7 +12,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::vector<int> unique_vertex_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
-                   std::map<int, std::vector<int>> & elem_blk,
+                   std::map<int, std::vector<int>> & element_nodes_for_block_id,
                    int num_blocks_in_mesh,
                    int num_nodes_per_element,
                    std::map<int, size_t> & num_elements_per_block,
@@ -69,7 +69,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
       for (int knode = 0; knode < num_linaer_nodes_per_element; knode++)
       {
         renumberedVertID[knode] = cubit_to_MFEM_vertex_map
-            [(elem_blk[block_id][jelement * num_nodes_per_element + knode]) + 1];
+            [(element_nodes_for_block_id[block_id][jelement * num_nodes_per_element + knode]) + 1];
         // std::cout << cubitToMFEMVertMap[1] << std::endl;
       }
 
@@ -229,8 +229,9 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
       for (int j = 0; j < dofs.Size(); j++)
       {
-        int point_id = elem_blk[unique_block_ids[iblk]]
-                               [loc_ind * num_nodes_per_element + mfemToLibmeshMap[j] - 1];
+        int point_id =
+            element_nodes_for_block_id[unique_block_ids[iblk]]
+                                      [loc_ind * num_nodes_per_element + mfemToLibmeshMap[j] - 1];
 
         // Map to help with second order variable transfer
         _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
