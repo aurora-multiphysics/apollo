@@ -33,7 +33,7 @@ public:
            int num_face_linear_nodes,
            int num_side_sets,
            std::vector<int> num_side_in_ss,
-           const std::vector<std::vector<int>> & ss_node_id,
+           std::map<int, std::vector<int>> & ss_node_id,
            const std::vector<int> & unique_block_ids,
            const std::vector<int> & unique_side_boundary_ids,
            int num_dimensions,

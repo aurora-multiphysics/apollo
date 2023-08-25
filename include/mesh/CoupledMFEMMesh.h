@@ -42,7 +42,7 @@ public:
   void createSidesetNodeIDs(const std::vector<int> & unique_side_boundary_ids,
                             std::map<int, std::vector<int>> & element_ids_for_boundary_id,
                             std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                            std::vector<std::vector<int>> & ss_node_id);
+                            std::map<int, std::vector<int>> & ss_node_id);
 
 protected:
   void buildLibmesh3DElementInfo();
