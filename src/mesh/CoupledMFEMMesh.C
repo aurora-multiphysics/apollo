@@ -39,9 +39,9 @@ CoupledMFEMMesh::safeClone() const
 }
 
 void
-CoupledMFEMMesh::getBdrLists(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                             std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                             std::map<int, int> & num_elements_for_boundary_id)
+CoupledMFEMMesh::buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                                   std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+                                   std::map<int, int> & num_elements_for_boundary_id)
 {
   buildBndElemList();
 
@@ -318,18 +318,18 @@ CoupledMFEMMesh::buildMFEMMesh()
   // Retrieve information about the elements used within the mesh
   buildLibmeshElementAndFaceInfo();
 
-  // Elem_ss and side_ss store information about which elements are in each sideset, and which sides
-  // of those elements are contained within the sideset
-
   // Get a vector containing all boundary IDs on sides of semi-local elements.
   std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
 
+  // element_ids_for_boundary_id stores the ids of each element on each boundary.
+  // side_ids_for_boundary_id stores the sides of those elements that are on each boundary.
+  // num_elements_for_boundary_id stores the number of elements contained on each boundary.
   std::map<int, std::vector<int>> element_ids_for_boundary_id;
   std::map<int, std::vector<int>> side_ids_for_boundary_id;
   std::map<int, int> num_elements_for_boundary_id;
 
-  // Populate the elem_ss and side_ss
-  getBdrLists(element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
+  buildBoundaryInfo(
+      element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
 
   // Get the unique libmesh IDs of each block in the mesh. The block IDs are
   // 1-based and are numbered continuously.
@@ -349,7 +349,6 @@ CoupledMFEMMesh::buildMFEMMesh()
          element_ptr != getMesh().active_subdomain_elements_end(block_id);
          element_ptr++)
     {
-      // TODO: - could this fail? Are block_ids guaranteed to start at 1 and be incremental???
       num_elements_in_block_counter++;
     }
 
@@ -405,7 +404,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   // element on the boundary that correspond to the face of the boundary.
   std::map<int, std::vector<int>> node_ids_for_boundary_id;
 
-  createSidesetNodeIDs(unique_side_boundary_ids,
+  buildBoundaryNodeIDs(unique_side_boundary_ids,
                        element_ids_for_boundary_id,
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
@@ -523,7 +522,7 @@ CoupledMFEMMesh::buildMFEMParMesh()
 }
 
 void
-CoupledMFEMMesh::createSidesetNodeIDs(const std::vector<int> & unique_side_boundary_ids,
+CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_boundary_ids,
                                       std::map<int, std::vector<int>> & element_ids_for_boundary_id,
                                       std::map<int, std::vector<int>> & side_ids_for_boundary_id,
                                       std::map<int, std::vector<int>> & node_ids_for_boundary_id)
