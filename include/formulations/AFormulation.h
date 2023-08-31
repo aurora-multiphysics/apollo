@@ -20,5 +20,6 @@ private:
   std::string magnetic_vector_potential_name;
   std::string magnetic_permeability_name;
   std::string electric_conductivity_name;
+  std::string magnetic_reluctivity_name;
   hephaestus::AFormulation formulation;
 };

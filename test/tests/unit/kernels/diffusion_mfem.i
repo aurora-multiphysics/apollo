@@ -11,10 +11,6 @@
 
 [Formulation]
   type = CustomFormulation
-  e_field_name = electric_field
-  b_field_name = magnetic_flux_density
-  magnetic_permeability_name = magnetic_permeability
-  electric_conductivity_name = electrical_conductivity
 []
 
 [AuxVariables]

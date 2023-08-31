@@ -17,10 +17,13 @@ public:
   virtual hephaestus::ProblemBuilder * getProblemBuilder() override { return &formulation; };
 
 private:
+  std::string e_field_name;
   std::string e_field_re_name;
   std::string e_field_im_name;
+  std::string frequency_name;
   std::string magnetic_permeability_name;
   std::string electric_conductivity_name;
   std::string dielectric_permittivity_name;
+  std::string magnetic_reluctivity_name;
   hephaestus::ComplexEFormulation formulation;
 };

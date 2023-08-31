@@ -10,8 +10,11 @@
 
 [Formulation]
   type = ComplexEFormulation
+  e_field_name = electric_field
   e_field_re_name = electric_field_re
   e_field_im_name = electric_field_im
+  frequency_name = frequency
+  magnetic_reluctivity_name = magnetic_reluctivity
   magnetic_permeability_name = magnetic_permeability
   electric_conductivity_name = electrical_conductivity
   dielectric_permittivity_name = dielectric_permittivity

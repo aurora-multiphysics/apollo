@@ -21,5 +21,6 @@ private:
   std::string b_field_name;
   std::string magnetic_permeability_name;
   std::string electric_conductivity_name;
+  std::string magnetic_reluctivity_name;
   hephaestus::EBDualFormulation formulation;
 };
