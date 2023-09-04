@@ -381,8 +381,9 @@ CoupledMFEMMesh::buildMFEMMesh()
                        node_ids_for_boundary_id);
 
   // Iterate through all nodes (on edge of each element) and add their global IDs
-  // to the unique_vertex_ids vector.
-  std::vector<int> unique_vertex_ids;
+  // to the unique_linear_node_ids vector.
+  std::vector<int> unique_linear_node_ids;
+
   for (int block_id : unique_block_ids)
   {
     auto & element_ids = element_ids_for_block_id[block_id];
@@ -394,27 +395,27 @@ CoupledMFEMMesh::buildMFEMMesh()
       // Only use the nodes on the edge of the element!
       for (int knode = 0; knode < _num_linear_nodes_per_element; knode++)
       {
-        unique_vertex_ids.push_back(1 + node_ids[knode]);
+        unique_linear_node_ids.push_back(1 + node_ids[knode]);
       }
     }
   }
 
   // Sort unique_vertex_ids in ascending order and remove duplicate node IDs.
-  std::sort(unique_vertex_ids.begin(), unique_vertex_ids.end());
+  std::sort(unique_linear_node_ids.begin(), unique_linear_node_ids.end());
 
-  auto new_end = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
+  auto new_end = std::unique(unique_linear_node_ids.begin(), unique_linear_node_ids.end());
 
-  unique_vertex_ids.resize(std::distance(unique_vertex_ids.begin(), new_end));
+  unique_linear_node_ids.resize(std::distance(unique_linear_node_ids.begin(), new_end));
 
-  // The unique_vertex_ids vector now contains each unique node ID used by the
-  // mesh. We create a map from the node ID to the index in the unique_vertex_ids
+  // The unique_linear_node_ids vector now contains each unique node ID used by the
+  // mesh. We create a map from the node ID to the index in the unique_linear_node_ids
   // vector.
-  std::map<int, int> unique_vertex_index_for_node_id;
-  for (int node_index = 0; node_index < unique_vertex_ids.size(); node_index++)
+  std::map<int, int> unique_linear_node_index_for_node_id;
+  for (int node_index = 0; node_index < unique_linear_node_ids.size(); node_index++)
   {
-    int node_id = unique_vertex_ids[node_index];
+    int node_id = unique_linear_node_ids[node_index];
 
-    unique_vertex_index_for_node_id[node_id] = node_index;
+    unique_linear_node_index_for_node_id[node_id] = node_index;
   }
 
   std::vector<double> coordx(nNodes());
@@ -441,8 +442,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           coordx,
                                           coordy,
                                           coordz,
-                                          unique_vertex_index_for_node_id,
-                                          unique_vertex_ids,
+                                          unique_linear_node_index_for_node_id,
+                                          unique_linear_node_ids,
                                           _libmesh_element_type,
                                           _libmesh_face_type,
                                           element_ids_for_block_id,
