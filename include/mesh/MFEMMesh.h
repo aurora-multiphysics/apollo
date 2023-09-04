@@ -27,7 +27,6 @@ public:
            std::map<int, std::vector<int>> element_ids_for_block_id,
            std::map<int, std::vector<int>> node_ids_for_element_id,
            std::map<int, int> & block_id_for_element_id,
-           std::map<int, std::vector<int>> & element_nodes_for_block_id,
            int num_linear_nodes_per_element,
            int num_face_nodes,
            int num_face_linear_nodes,

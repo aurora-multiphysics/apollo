@@ -355,10 +355,6 @@ CoupledMFEMMesh::buildMFEMMesh()
     num_elements_per_block[block_id] = num_elements_in_block_counter;
   }
 
-  // element_nodes_for_block_id maps from the block_id to a vector containing the nodes of all
-  // elements in the block.
-  std::map<int, std::vector<int>> element_nodes_for_block_id;
-
   std::map<int, std::vector<int>> element_ids_for_block_id;
   std::map<int, std::vector<int>> node_ids_for_element_id;
 
@@ -366,11 +362,6 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   for (int block_id : unique_block_ids)
   {
-    // Create vector to hold nodes of all elements in current block.
-    const int num_nodes_in_block = num_elements_per_block[block_id] * _num_nodes_per_element;
-
-    std::vector<int> element_nodes_in_block(num_nodes_in_block);
-
     std::vector<int> elements_in_block(num_elements_per_block[block_id]);
 
     int element_counter = 0;
@@ -389,12 +380,8 @@ CoupledMFEMMesh::buildMFEMMesh()
 
       elements_in_block[element_counter] = element_id;
 
-      const int node_offset = element_counter * _num_nodes_per_element;
-
       for (int node_counter = 0; node_counter < _num_nodes_per_element; node_counter++)
       {
-        element_nodes_in_block[node_offset + node_counter] = element_ptr->node_id(node_counter);
-
         element_node_ids[node_counter] = element_ptr->node_id(node_counter);
       }
 
@@ -404,7 +391,6 @@ CoupledMFEMMesh::buildMFEMMesh()
     }
 
     // Add to map.
-    element_nodes_for_block_id[block_id] = element_nodes_in_block;
     element_ids_for_block_id[block_id] = elements_in_block;
   }
 
@@ -480,7 +466,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           element_ids_for_block_id,
                                           node_ids_for_element_id,
                                           block_id_for_element_id,
-                                          element_nodes_for_block_id,
                                           _num_linear_nodes_per_element,
                                           _num_face_nodes,
                                           _num_face_linear_nodes,
