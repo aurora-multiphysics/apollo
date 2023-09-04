@@ -408,18 +408,6 @@ CoupledMFEMMesh::buildMFEMMesh()
     element_ids_for_block_id[block_id] = elements_in_block;
   }
 
-  // start_of_block maps from the block_id to the first element id of the block.
-  std::map<int, int> start_of_block;
-
-  int sum_num_elements_per_block = 0;
-
-  for (int block_id : unique_block_ids)
-  {
-    start_of_block[block_id] = sum_num_elements_per_block;
-
-    sum_num_elements_per_block += num_elements_per_block[block_id];
-  }
-
   // node_ids_for_boundary_id maps from the boundary_id to a vector containing nodes of each
   // element on the boundary that correspond to the face of the boundary.
   std::map<int, std::vector<int>> node_ids_for_boundary_id;
@@ -494,7 +482,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           block_id_for_element_id,
                                           element_nodes_for_block_id,
                                           _num_nodes_per_element,
-                                          num_elements_per_block,
                                           _num_linear_nodes_per_element,
                                           _num_face_nodes,
                                           _num_face_linear_nodes,
@@ -502,8 +489,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           node_ids_for_boundary_id,
                                           unique_block_ids,
                                           unique_side_boundary_ids,
-                                          3,
-                                          start_of_block);
+                                          3);
 }
 
 /**
