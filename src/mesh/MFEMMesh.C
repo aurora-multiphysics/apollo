@@ -12,6 +12,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::vector<int> unique_vertex_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
+                   std::map<int, int> & block_id_for_element_id,
                    std::map<int, std::vector<int>> & element_nodes_for_block_id,
                    int num_nodes_per_element,
                    std::map<int, size_t> & num_elements_per_block,
@@ -199,12 +200,13 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
     Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
                                                  // and 'finite_element_space'
 
-    own_nodes = 1;
+    own_nodes = 1; // True.
 
+    // No! These may not be the correct element IDs! MFEM expects element_ids to be incremental
+    // from 0!!! Think about!!!
     for (int ielement = 0; ielement < NumOfElements; ielement++)
     {
       mfem::Array<int> dofs;
-
       finite_element_space->GetElementDofs(ielement, dofs);
 
       mfem::Array<int> vdofs;
@@ -217,18 +219,20 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
       finite_element_space->DofsToVDofs(vdofs);
 
-      int block_index = 0;
+      // int block_index = 0;
 
       // Locate which block the element originates from. TODO: - a reverse map would work here...
-      const int num_blocks_in_mesh = unique_block_ids.size();
+      // const int num_blocks_in_mesh = unique_block_ids.size();
 
-      while (block_index < (num_blocks_in_mesh - 1) &&
-             ielement >= start_of_block[unique_block_ids[block_index + 1]])
-      {
-        block_index++;
-      }
+      // while (block_index < (num_blocks_in_mesh - 1) &&
+      //        ielement >= start_of_block[unique_block_ids[block_index + 1]])
+      // {
+      //   block_index++;
+      // }
 
-      const int block_id = unique_block_ids[block_index];
+      const int block_id = block_id_for_element_id[ielement];
+
+      // const int block_id = unique_block_ids[block_index];
 
       const int element_offset = ielement - start_of_block[block_id];
 
