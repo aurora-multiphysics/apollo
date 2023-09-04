@@ -24,6 +24,7 @@ public:
            std::vector<int> unique_vertex_ids,
            int libmesh_element_type,
            int libmesh_face_type,
+           std::map<int, int> & block_id_for_element_id,
            std::map<int, std::vector<int>> & element_nodes_for_block_id,
            int num_nodes_per_element,
            std::map<int, size_t> & num_elements_per_block,

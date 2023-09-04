@@ -359,6 +359,8 @@ CoupledMFEMMesh::buildMFEMMesh()
   // elements in the block.
   std::map<int, std::vector<int>> element_nodes_for_block_id;
 
+  std::map<int, int> block_id_for_element_id; // Reverse map from element id --> block_id.
+
   for (int block_id : unique_block_ids)
   {
     // Create vector to hold nodes of all elements in current block.
@@ -373,6 +375,10 @@ CoupledMFEMMesh::buildMFEMMesh()
          element_iterator++)
     {
       auto element_ptr = *element_iterator;
+
+      int element_id = element_ptr->id();
+
+      block_id_for_element_id[element_id] = block_id;
 
       const int node_offset = element_counter * _num_nodes_per_element;
 
@@ -465,6 +471,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           unique_vertex_ids,
                                           _libmesh_element_type,
                                           _libmesh_face_type,
+                                          block_id_for_element_id,
                                           element_nodes_for_block_id,
                                           _num_nodes_per_element,
                                           num_elements_per_block,
