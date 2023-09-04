@@ -481,7 +481,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           node_ids_for_element_id,
                                           block_id_for_element_id,
                                           element_nodes_for_block_id,
-                                          _num_nodes_per_element,
                                           _num_linear_nodes_per_element,
                                           _num_face_nodes,
                                           _num_face_linear_nodes,
