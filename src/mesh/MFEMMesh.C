@@ -92,7 +92,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
           elements[element_counter]->SetVertices(renumbered_vertex_ids);
           elements[element_counter]->SetAttribute(block_id);
 #else
-          elements[elcount] = new mfem::Tetrahedron(renumbered_vertex_ids, block_id);
+          elements[element_counter] = new mfem::Tetrahedron(renumbered_vertex_ids, block_id);
 #endif
           break;
         }
@@ -119,6 +119,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   int boundary_counter = 0;
 
+  // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
   for (int boundary_id : unique_side_boundary_ids)
   {
     auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
