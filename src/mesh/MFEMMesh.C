@@ -26,13 +26,13 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::map<int, int> & start_of_block)
 {
 
-  const int mfemToLibmeshTet10[10] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+  const int mfemToLibmeshTet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
-  const int mfemToLibmeshHex27[27] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
-                                      19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
+  const int mfemToLibmeshHex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
+                                    19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
 
-  const int mfemToLibmeshTri6[6] = {1, 2, 3, 4, 5, 6};
-  const int mfemToLibmeshQuad9[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  const int mfemToLibmeshTri6[] = {1, 2, 3, 4, 5, 6};
+  const int mfemToLibmeshQuad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
   const int order = getOrderFromLibmeshElementType(libmesh_element_type);
 
@@ -191,20 +191,21 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
     FinalizeTopology();
 
     // Define quadratic FE space
-    mfem::FiniteElementCollection * fec = new mfem::H1_FECollection(2, 3);
-    mfem::FiniteElementSpace * fes =
-        new mfem::FiniteElementSpace(this, fec, Dim, mfem::Ordering::byVDIM);
+    mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, 3);
+    mfem::FiniteElementSpace * finite_element_space =
+        new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
 
-    Nodes = new mfem::GridFunction(fes);
-    Nodes->MakeOwner(fec); // Nodes will destroy 'fec' and 'fes'
+    Nodes = new mfem::GridFunction(finite_element_space);
+    Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
+                                                 // and 'finite_element_space'
 
     own_nodes = 1;
 
-    for (int i = 0; i < NumOfElements; i++)
+    for (int ielement = 0; ielement < NumOfElements; ielement++)
     {
       mfem::Array<int> dofs;
 
-      fes->GetElementDofs(i, dofs);
+      finite_element_space->GetElementDofs(ielement, dofs);
 
       mfem::Array<int> vdofs;
       vdofs.SetSize(dofs.Size());
@@ -214,7 +215,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         vdofs[l] = dofs[l];
       }
 
-      fes->DofsToVDofs(vdofs);
+      finite_element_space->DofsToVDofs(vdofs);
 
       int block_index = 0;
 
@@ -222,14 +223,14 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
       const int num_blocks_in_mesh = unique_block_ids.size();
 
       while (block_index < (num_blocks_in_mesh - 1) &&
-             i >= start_of_block[unique_block_ids[block_index + 1]])
+             ielement >= start_of_block[unique_block_ids[block_index + 1]])
       {
         block_index++;
       }
 
       const int block_id = unique_block_ids[block_index];
 
-      const int element_offset = i - start_of_block[block_id];
+      const int element_offset = ielement - start_of_block[block_id];
 
       for (int j = 0; j < dofs.Size(); j++)
       {
@@ -250,7 +251,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
     }
   }
 
-  // Finalize mesh method is needed to fully finish constructing the mesh
+  // Finalize mesh method is needed to fully finish constructing the mesh.
   FinalizeMesh();
 }
 
