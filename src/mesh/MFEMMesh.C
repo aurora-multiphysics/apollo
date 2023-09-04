@@ -8,8 +8,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::vector<double> & coordx,
                    std::vector<double> & coordy,
                    std::vector<double> & coordz,
-                   std::map<int, int> & cubit_to_MFEM_vertex_map,
-                   std::vector<int> unique_vertex_ids,
+                   std::map<int, int> & unique_linear_node_index_for_node_id,
+                   std::vector<int> unique_linear_node_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
                    std::map<int, std::vector<int>> element_ids_for_block_id,
@@ -37,19 +37,19 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
   Dim = num_dimensions;
   spaceDim = Dim;
   NumOfElements = num_elements_in_mesh;
-  NumOfVertices = unique_vertex_ids.size();
+  NumOfVertices = unique_linear_node_ids.size();
 
   vertices.SetSize(NumOfVertices);
   elements.SetSize(num_elements_in_mesh);
 
-  for (std::size_t i = 0; i < unique_vertex_ids.size(); i++)
+  for (std::size_t i = 0; i < unique_linear_node_ids.size(); i++)
   {
-    vertices[i](0) = coordx[unique_vertex_ids[i] - 1];
-    vertices[i](1) = coordy[unique_vertex_ids[i] - 1];
+    vertices[i](0) = coordx[unique_linear_node_ids[i] - 1];
+    vertices[i](1) = coordy[unique_linear_node_ids[i] - 1];
 
     if (Dim == 3)
     {
-      vertices[i](2) = coordz[unique_vertex_ids[i] - 1];
+      vertices[i](2) = coordz[unique_linear_node_ids[i] - 1];
     }
   }
 
@@ -67,7 +67,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
       for (int node_index = 0; node_index < num_linear_nodes_per_element; node_index++)
       {
-        renumbered_vertex_ids[node_index] = cubit_to_MFEM_vertex_map[node_ids[node_index] + 1];
+        renumbered_vertex_ids[node_index] =
+            unique_linear_node_index_for_node_id[node_ids[node_index] + 1];
       }
 
       switch (libmesh_element_type)
@@ -130,7 +131,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
       {
         const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
 
-        renumbered_vertex_ids[knode] = cubit_to_MFEM_vertex_map[1 + node_global_index];
+        renumbered_vertex_ids[knode] = unique_linear_node_index_for_node_id[1 + node_global_index];
       }
 
       switch (libmesh_face_type)
