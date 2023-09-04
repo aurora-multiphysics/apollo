@@ -335,34 +335,12 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 1-based and are numbered continuously.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
-  // num_elements_per_block maps from the block_id to an unsigned integer
-  // containing the number of elements present in the block.
-  std::map<int, size_t> num_elements_per_block;
-
-  // Loops to set num_elements_per_block.
-  for (int block_id : unique_block_ids)
-  {
-    int num_elements_in_block_counter = 0;
-
-    for (libMesh::MeshBase::element_iterator element_ptr =
-             getMesh().active_subdomain_elements_begin(block_id);
-         element_ptr != getMesh().active_subdomain_elements_end(block_id);
-         element_ptr++)
-    {
-      num_elements_in_block_counter++;
-    }
-
-    num_elements_per_block[block_id] = num_elements_in_block_counter;
-  }
-
   std::map<int, std::vector<int>> element_ids_for_block_id;
   std::map<int, std::vector<int>> node_ids_for_element_id;
 
   for (int block_id : unique_block_ids)
   {
-    std::vector<int> elements_in_block(num_elements_per_block[block_id]);
-
-    int element_counter = 0;
+    std::vector<int> elements_in_block;
 
     for (auto element_iterator = getMesh().active_subdomain_elements_begin(block_id);
          element_iterator != getMesh().active_subdomain_elements_end(block_id);
@@ -374,7 +352,7 @@ CoupledMFEMMesh::buildMFEMMesh()
 
       std::vector<int> element_node_ids(_num_nodes_per_element);
 
-      elements_in_block[element_counter] = element_id;
+      elements_in_block.push_back(element_id);
 
       for (int node_counter = 0; node_counter < _num_nodes_per_element; node_counter++)
       {
@@ -382,9 +360,9 @@ CoupledMFEMMesh::buildMFEMMesh()
       }
 
       node_ids_for_element_id[element_id] = element_node_ids;
-
-      element_counter++;
     }
+
+    elements_in_block.shrink_to_fit();
 
     // Add to map.
     element_ids_for_block_id[block_id] = elements_in_block;
