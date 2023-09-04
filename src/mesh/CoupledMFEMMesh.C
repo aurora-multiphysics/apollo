@@ -359,6 +359,9 @@ CoupledMFEMMesh::buildMFEMMesh()
   // elements in the block.
   std::map<int, std::vector<int>> element_nodes_for_block_id;
 
+  std::map<int, std::vector<int>> element_ids_for_block_id;
+  std::map<int, std::vector<int>> node_ids_for_element_id;
+
   std::map<int, int> block_id_for_element_id; // Reverse map from element id --> block_id.
 
   for (int block_id : unique_block_ids)
@@ -367,6 +370,8 @@ CoupledMFEMMesh::buildMFEMMesh()
     const int num_nodes_in_block = num_elements_per_block[block_id] * _num_nodes_per_element;
 
     std::vector<int> element_nodes_in_block(num_nodes_in_block);
+
+    std::vector<int> elements_in_block(num_elements_per_block[block_id]);
 
     int element_counter = 0;
 
@@ -378,20 +383,29 @@ CoupledMFEMMesh::buildMFEMMesh()
 
       int element_id = element_ptr->id();
 
+      std::vector<int> element_node_ids(_num_nodes_per_element);
+
       block_id_for_element_id[element_id] = block_id;
+
+      elements_in_block[element_counter] = element_id;
 
       const int node_offset = element_counter * _num_nodes_per_element;
 
       for (int node_counter = 0; node_counter < _num_nodes_per_element; node_counter++)
       {
         element_nodes_in_block[node_offset + node_counter] = element_ptr->node_id(node_counter);
+
+        element_node_ids[node_counter] = element_ptr->node_id(node_counter);
       }
+
+      node_ids_for_element_id[element_id] = element_node_ids;
 
       element_counter++;
     }
 
     // Add to map.
     element_nodes_for_block_id[block_id] = element_nodes_in_block;
+    element_ids_for_block_id[block_id] = elements_in_block;
   }
 
   // start_of_block maps from the block_id to the first element id of the block.
@@ -418,12 +432,16 @@ CoupledMFEMMesh::buildMFEMMesh()
   std::vector<int> unique_vertex_ids;
   for (int block_id : unique_block_ids)
   {
-    for (int jelement = 0; jelement < num_elements_per_block[block_id]; jelement++)
+    auto & element_ids = element_ids_for_block_id[block_id];
+
+    for (int element_id : element_ids)
     {
+      auto & node_ids = node_ids_for_element_id[element_id];
+
+      // Only use the nodes on the edge of the element!
       for (int knode = 0; knode < _num_linear_nodes_per_element; knode++)
       {
-        unique_vertex_ids.push_back(
-            1 + element_nodes_for_block_id[block_id][jelement * _num_nodes_per_element + knode]);
+        unique_vertex_ids.push_back(1 + node_ids[knode]);
       }
     }
   }
