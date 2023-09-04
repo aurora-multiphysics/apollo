@@ -335,7 +335,10 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 1-based and are numbered continuously.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
+  // Maps from the block_id --> vector of elements in block.
   std::map<int, std::vector<int>> element_ids_for_block_id;
+
+  // Maps from element id --> vector of ALL node IDs of element.
   std::map<int, std::vector<int>> node_ids_for_element_id;
 
   for (int block_id : unique_block_ids)
@@ -377,6 +380,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
 
+  // Iterate through all nodes (on edge of each element) and add their global IDs
+  // to the unique_vertex_ids vector.
   std::vector<int> unique_vertex_ids;
   for (int block_id : unique_block_ids)
   {
@@ -394,24 +399,27 @@ CoupledMFEMMesh::buildMFEMMesh()
     }
   }
 
-  // Setting map
+  // Sort unique_vertex_ids in ascending order and remove duplicate node IDs.
   std::sort(unique_vertex_ids.begin(), unique_vertex_ids.end());
-  std::vector<int>::iterator newEnd;
-  newEnd = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
-  unique_vertex_ids.resize(std::distance(unique_vertex_ids.begin(), newEnd));
 
-  // OK at this point unique_vertex_ids contains a list of all the nodes that are
-  // actually used by the mesh, 1-based, and sorted. We need to invert this
-  // list, the inverse is a map
-  std::map<int, int> cubit_to_MFEM_vertex_map;
-  for (std::size_t i = 0; i < unique_vertex_ids.size(); i++)
+  auto new_end = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
+
+  unique_vertex_ids.resize(std::distance(unique_vertex_ids.begin(), new_end));
+
+  // The unique_vertex_ids vector now contains each unique node ID used by the
+  // mesh. We create a map from the node ID to the index in the unique_vertex_ids
+  // vector.
+  std::map<int, int> unique_vertex_index_for_node_id;
+  for (int node_index = 0; node_index < unique_vertex_ids.size(); node_index++)
   {
-    cubit_to_MFEM_vertex_map[unique_vertex_ids[i]] = i;
+    int node_id = unique_vertex_ids[node_index];
+
+    unique_vertex_index_for_node_id[node_id] = node_index;
   }
 
-  std::vector<double> coordx(nNodes(), 0);
-  std::vector<double> coordy(nNodes(), 0);
-  std::vector<double> coordz(nNodes(), 0);
+  std::vector<double> coordx(nNodes());
+  std::vector<double> coordy(nNodes());
+  std::vector<double> coordz(nNodes());
 
   // Populating coord data structures to hold all the node coordinates needed to create
   // the MFEM mesh
@@ -433,7 +441,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           coordx,
                                           coordy,
                                           coordz,
-                                          cubit_to_MFEM_vertex_map,
+                                          unique_vertex_index_for_node_id,
                                           unique_vertex_ids,
                                           _libmesh_element_type,
                                           _libmesh_face_type,
