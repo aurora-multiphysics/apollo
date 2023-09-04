@@ -6,7 +6,7 @@
 // structures are obtained by the methods found in MFEMproblem
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
-                   std::map<int, int> & unique_linear_node_index_for_node_id,
+                   std::map<int, int> & index_for_unique_linear_node_id,
                    std::vector<int> unique_linear_node_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
@@ -32,46 +32,57 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   const int order = getOrderFromLibmeshElementType(libmesh_element_type);
 
+  // Set dimensions.
   Dim = num_dimensions;
   spaceDim = Dim;
-  NumOfElements = num_elements_in_mesh;
+
+  // Create the vertices. These are the unique linear nodes.
   NumOfVertices = unique_linear_node_ids.size();
-
   vertices.SetSize(NumOfVertices);
-  elements.SetSize(num_elements_in_mesh);
 
-  for (std::size_t i = 0; i < unique_linear_node_ids.size(); i++)
+  // Iterate over the global IDs of each unqiue linear node from the MOOSE mesh.
+  int ivertex = 0;
+
+  for (int global_node_id : unique_linear_node_ids)
   {
-    int global_node_id = unique_linear_node_ids[i];
-
+    // Get the xyz coordinates associated with the node.
     auto & coordinates = coordinates_for_unique_linear_node_id[global_node_id];
 
-    vertices[i](0) = coordinates[0];
-    vertices[i](1) = coordinates[1];
+    // Set xyz components.
+    vertices[ivertex](0) = coordinates[0];
+    vertices[ivertex](1) = coordinates[1];
 
     if (Dim == 3)
     {
-      vertices[i](2) = coordinates[2];
+      vertices[ivertex](2) = coordinates[2];
     }
+
+    ivertex++;
   }
 
-  int element_counter = 0;
+  // Set mesh elements.
+  NumOfElements = num_elements_in_mesh;
+  elements.SetSize(num_elements_in_mesh);
 
   int renumbered_vertex_ids[8];
 
-  for (int block_id : unique_block_ids)
+  int ielement = 0;
+
+  for (int block_id : unique_block_ids) // Iterate over blocks.
   {
     auto & element_ids = element_ids_for_block_id[block_id];
 
-    for (int element_id : element_ids)
+    for (int element_id : element_ids) // Iterate over elements in block.
     {
       auto & node_ids = node_ids_for_element_id[element_id];
 
-      for (int node_index = 0; node_index < num_linear_nodes_per_element; node_index++)
+      // Iterate over ONLY the linear nodes in the element.
+      for (int inode = 0; inode < num_linear_nodes_per_element; inode++)
       {
-        auto node_id = node_ids[node_index];
+        int global_node_id = node_ids[inode];
 
-        renumbered_vertex_ids[node_index] = unique_linear_node_index_for_node_id[node_id];
+        // Map from the global node ID --> index in the unique_linear_node_ids vector.
+        renumbered_vertex_ids[inode] = index_for_unique_linear_node_id[global_node_id];
       }
 
       switch (libmesh_element_type)
@@ -79,39 +90,40 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         case ELEMENT_TRI3:
         case ELEMENT_TRI6:
         {
-          elements[element_counter] = new mfem::Triangle(renumbered_vertex_ids, block_id);
+          elements[ielement] = new mfem::Triangle(renumbered_vertex_ids, block_id);
           break;
         }
         case ELEMENT_QUAD4:
         case ELEMENT_QUAD9:
         {
-          elements[element_counter] = new mfem::Quadrilateral(renumbered_vertex_ids, block_id);
+          elements[ielement] = new mfem::Quadrilateral(renumbered_vertex_ids, block_id);
           break;
         }
         case ELEMENT_TET4:
         case ELEMENT_TET10:
         {
 #ifdef MFEM_USE_MEMALLOC
-          elements[element_counter] = TetMemory.Alloc();
-          elements[element_counter]->SetVertices(renumbered_vertex_ids);
-          elements[element_counter]->SetAttribute(block_id);
+          elements[ielement] = TetMemory.Alloc();
+          elements[ielement]->SetVertices(renumbered_vertex_ids);
+          elements[ielement]->SetAttribute(block_id);
 #else
-          elements[element_counter] = new mfem::Tetrahedron(renumbered_vertex_ids, block_id);
+          elements[ielement] = new mfem::Tetrahedron(renumbered_vertex_ids, block_id);
 #endif
           break;
         }
         case ELEMENT_HEX8:
         case ELEMENT_HEX27:
         {
-          elements[element_counter] = new mfem::Hexahedron(renumbered_vertex_ids, block_id);
+          elements[ielement] = new mfem::Hexahedron(renumbered_vertex_ids, block_id);
           break;
         }
       }
 
-      element_counter++;
+      ielement++;
     }
   }
 
+  // Set boundary elements:
   NumOfBdrElements = 0;
 
   for (int boundary_id : unique_side_boundary_ids)
@@ -134,7 +146,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
       {
         const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
 
-        renumbered_vertex_ids[knode] = unique_linear_node_index_for_node_id[node_global_index];
+        renumbered_vertex_ids[knode] = index_for_unique_linear_node_id[node_global_index];
       }
 
       switch (libmesh_face_type)
@@ -198,8 +210,9 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
 
     Nodes = new mfem::GridFunction(finite_element_space);
-    Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
-                                                 // and 'finite_element_space'
+    unique_side_boundary_ids Nodes->MakeOwner(
+        finite_element_collection); // Nodes will destroy 'finite_element_collection'
+                                    // and 'finite_element_space'
 
     own_nodes = 1; // True.
 
