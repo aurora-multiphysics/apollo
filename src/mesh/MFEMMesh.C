@@ -5,9 +5,7 @@
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMproblem
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
-                   std::vector<double> & coordx,
-                   std::vector<double> & coordy,
-                   std::vector<double> & coordz,
+                   std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
                    std::map<int, int> & unique_linear_node_index_for_node_id,
                    std::vector<int> unique_linear_node_ids,
                    int libmesh_element_type,
@@ -44,12 +42,16 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   for (std::size_t i = 0; i < unique_linear_node_ids.size(); i++)
   {
-    vertices[i](0) = coordx[unique_linear_node_ids[i] - 1];
-    vertices[i](1) = coordy[unique_linear_node_ids[i] - 1];
+    int global_node_id = unique_linear_node_ids[i];
+
+    auto & coordinates = coordinates_for_unique_linear_node_id[global_node_id];
+
+    vertices[i](0) = coordinates[0];
+    vertices[i](1) = coordinates[1];
 
     if (Dim == 3)
     {
-      vertices[i](2) = coordz[unique_linear_node_ids[i] - 1];
+      vertices[i](2) = coordinates[2];
     }
   }
 
@@ -67,8 +69,9 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
       for (int node_index = 0; node_index < num_linear_nodes_per_element; node_index++)
       {
-        renumbered_vertex_ids[node_index] =
-            unique_linear_node_index_for_node_id[node_ids[node_index] + 1];
+        auto node_id = node_ids[node_index];
+
+        renumbered_vertex_ids[node_index] = unique_linear_node_index_for_node_id[node_id];
       }
 
       switch (libmesh_element_type)
@@ -131,7 +134,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
       {
         const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
 
-        renumbered_vertex_ids[knode] = unique_linear_node_index_for_node_id[1 + node_global_index];
+        renumbered_vertex_ids[knode] = unique_linear_node_index_for_node_id[node_global_index];
       }
 
       switch (libmesh_face_type)
@@ -231,12 +234,14 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
           // Map to help with second order variable transfer
           _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
 
-          (*Nodes)(vdofs[j]) = coordx[point_id];
-          (*Nodes)(vdofs[j] + 1) = coordy[point_id];
+          auto coordinates = coordinates_for_unique_linear_node_id[point_id];
+
+          (*Nodes)(vdofs[j]) = coordinates[0];
+          (*Nodes)(vdofs[j] + 1) = coordinates[1];
 
           if (Dim == 3)
           {
-            (*Nodes)(vdofs[j] + 2) = coordz[point_id];
+            (*Nodes)(vdofs[j] + 2) = coordinates[2];
           }
         }
 

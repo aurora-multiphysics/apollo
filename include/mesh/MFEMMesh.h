@@ -17,9 +17,7 @@ class MFEMMesh : public mfem::Mesh
 {
 public:
   MFEMMesh(int num_elements_in_mesh,
-           std::vector<double> & coordx,
-           std::vector<double> & coordy,
-           std::vector<double> & coordz,
+           std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
            std::map<int, int> & unique_linear_node_index_for_node_id,
            std::vector<int> unique_linear_node_ids,
            int libmesh_element_type,

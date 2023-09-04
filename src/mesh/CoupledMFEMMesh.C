@@ -395,7 +395,7 @@ CoupledMFEMMesh::buildMFEMMesh()
       // Only use the nodes on the edge of the element!
       for (int knode = 0; knode < _num_linear_nodes_per_element; knode++)
       {
-        unique_linear_node_ids.push_back(1 + node_ids[knode]);
+        unique_linear_node_ids.push_back(node_ids[knode]);
       }
     }
   }
@@ -418,30 +418,23 @@ CoupledMFEMMesh::buildMFEMMesh()
     unique_linear_node_index_for_node_id[node_id] = node_index;
   }
 
-  std::vector<double> coordx(nNodes());
-  std::vector<double> coordy(nNodes());
-  std::vector<double> coordz(nNodes());
+  // Create a map to hold the x, y, z coordinates for each unique linear node.
+  std::map<int, std::array<double, 3>> coordinates_for_unique_linear_node_id;
 
-  // Populating coord data structures to hold all the node coordinates needed to create
-  // the MFEM mesh
-  // This could be problematic if localNodesBegin and End don't access nodes in ascending node id,
-  // but this never seems to happen
-  for (auto node : getMesh().node_ptr_range())
+  for (auto node_ptr : getMesh().node_ptr_range())
   {
-    unsigned int node_id = node->id();
+    auto & linear_node = *node_ptr;
 
-    coordx[node_id] = (*node)(0);
-    coordy[node_id] = (*node)(1);
-    coordz[node_id] = (*node)(2);
+    std::array<double, 3> coordinates = {linear_node(0), linear_node(1), linear_node(2)};
+
+    coordinates_for_unique_linear_node_id[linear_node.id()] = coordinates;
   }
 
   const int num_elements_in_mesh = nElem();
 
   // Create MFEM mesh using this extremely long but necessary constructor
   _mfem_mesh = std::make_shared<MFEMMesh>(num_elements_in_mesh,
-                                          coordx,
-                                          coordy,
-                                          coordz,
+                                          coordinates_for_unique_linear_node_id,
                                           unique_linear_node_index_for_node_id,
                                           unique_linear_node_ids,
                                           _libmesh_element_type,
