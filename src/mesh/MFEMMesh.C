@@ -203,55 +203,47 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
     own_nodes = 1; // True.
 
-    // No! These may not be the correct element IDs! MFEM expects element_ids to be incremental
-    // from 0!!! Think about!!!
-    for (int ielement = 0; ielement < NumOfElements; ielement++)
+    // Iterate over elements.
+    int element_index = 0;
+
+    for (int block_id : unique_block_ids)
     {
-      mfem::Array<int> dofs;
-      finite_element_space->GetElementDofs(ielement, dofs);
+      auto & element_ids = element_ids_for_block_id[block_id];
 
-      mfem::Array<int> vdofs;
-      vdofs.SetSize(dofs.Size());
-
-      for (int l = 0; l < dofs.Size(); l++)
+      for (int element_id : element_ids)
       {
-        vdofs[l] = dofs[l];
-      }
+        auto & node_ids = node_ids_for_element_id[element_id];
 
-      finite_element_space->DofsToVDofs(vdofs);
+        mfem::Array<int> dofs;
+        finite_element_space->GetElementDofs(element_index, dofs);
 
-      // int block_index = 0;
+        mfem::Array<int> vdofs;
+        vdofs.SetSize(dofs.Size());
 
-      // Locate which block the element originates from. TODO: - a reverse map would work here...
-      // const int num_blocks_in_mesh = unique_block_ids.size();
-
-      // while (block_index < (num_blocks_in_mesh - 1) &&
-      //        ielement >= start_of_block[unique_block_ids[block_index + 1]])
-      // {
-      //   block_index++;
-      // }
-
-      const int block_id = block_id_for_element_id[ielement];
-
-      // const int block_id = unique_block_ids[block_index];
-
-      const int element_offset = ielement - start_of_block[block_id];
-
-      for (int j = 0; j < dofs.Size(); j++)
-      {
-        int point_id = element_nodes_for_block_id[block_id][element_offset * num_nodes_per_element +
-                                                            mfemToLibmeshMap[j] - 1];
-
-        // Map to help with second order variable transfer
-        _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
-
-        (*Nodes)(vdofs[j]) = coordx[point_id];
-        (*Nodes)(vdofs[j] + 1) = coordy[point_id];
-
-        if (Dim == 3)
+        for (int l = 0; l < dofs.Size(); l++)
         {
-          (*Nodes)(vdofs[j] + 2) = coordz[point_id];
+          vdofs[l] = dofs[l];
         }
+
+        finite_element_space->DofsToVDofs(vdofs);
+
+        for (int j = 0; j < dofs.Size(); j++)
+        {
+          int point_id = node_ids[mfemToLibmeshMap[j] - 1];
+
+          // Map to help with second order variable transfer
+          _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
+
+          (*Nodes)(vdofs[j]) = coordx[point_id];
+          (*Nodes)(vdofs[j] + 1) = coordy[point_id];
+
+          if (Dim == 3)
+          {
+            (*Nodes)(vdofs[j] + 2) = coordz[point_id];
+          }
+        }
+
+        element_index++;
       }
     }
   }
