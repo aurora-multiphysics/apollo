@@ -489,6 +489,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           unique_vertex_ids,
                                           _libmesh_element_type,
                                           _libmesh_face_type,
+                                          element_ids_for_block_id,
+                                          node_ids_for_element_id,
                                           block_id_for_element_id,
                                           element_nodes_for_block_id,
                                           _num_nodes_per_element,

@@ -12,6 +12,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::vector<int> unique_vertex_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
+                   std::map<int, std::vector<int>> element_ids_for_block_id,
+                   std::map<int, std::vector<int>> node_ids_for_element_id,
                    std::map<int, int> & block_id_for_element_id,
                    std::map<int, std::vector<int>> & element_nodes_for_block_id,
                    int num_nodes_per_element,
@@ -62,16 +64,15 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   for (int block_id : unique_block_ids)
   {
-    auto & element_nodes_for_block = element_nodes_for_block_id[block_id];
+    auto & element_ids = element_ids_for_block_id[block_id];
 
-    for (int jelement = 0; jelement < num_elements_per_block[block_id]; jelement++)
+    for (int element_id : element_ids)
     {
-      for (int knode = 0; knode < num_linear_nodes_per_element; knode++)
-      {
-        const int node_index = jelement * num_nodes_per_element + knode;
+      auto & node_ids = node_ids_for_element_id[element_id];
 
-        renumbered_vertex_ids[knode] =
-            cubit_to_MFEM_vertex_map[element_nodes_for_block[node_index] + 1];
+      for (int node_index = 0; node_index < num_linear_nodes_per_element; node_index++)
+      {
+        renumbered_vertex_ids[node_index] = cubit_to_MFEM_vertex_map[node_ids[node_index] + 1];
       }
 
       switch (libmesh_element_type)
