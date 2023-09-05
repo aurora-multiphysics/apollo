@@ -177,6 +177,49 @@ MFEMMesh::BuildMFEMElements(const int num_elements_in_mesh,
   }
 }
 
+void
+MFEMMesh::BuildMFEMBoundaryElements(const int libmesh_face_type,
+                                    const int num_face_nodes,
+                                    const int num_face_linear_nodes,
+                                    const std::vector<int> & unique_side_boundary_ids,
+                                    std::map<int, int> & num_elements_for_boundary_id,
+                                    std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+                                    std::map<int, int> & index_for_unique_linear_node_id)
+{
+  // Set boundary elements:
+  NumOfBdrElements = 0;
+
+  for (int boundary_id : unique_side_boundary_ids)
+  {
+    NumOfBdrElements += num_elements_for_boundary_id[boundary_id];
+  }
+
+  boundary.SetSize(NumOfBdrElements);
+
+  int iboundary = 0;
+
+  int renumbered_vertex_ids[8];
+
+  // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
+  for (int boundary_id : unique_side_boundary_ids)
+  {
+    auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
+
+    for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
+    {
+      for (int knode = 0; knode < num_face_linear_nodes; knode++)
+      {
+        const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
+
+        renumbered_vertex_ids[knode] = index_for_unique_linear_node_id[node_global_index];
+      }
+
+      boundary[iboundary++] =
+          BuildMFEMFaceElement(libmesh_face_type, renumbered_vertex_ids, boundary_id);
+    }
+  }
+}
+
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMproblem
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
@@ -223,39 +266,16 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                     node_ids_for_element_id,
                     index_for_unique_linear_node_id);
 
-  // Set boundary elements:
-  NumOfBdrElements = 0;
+  // Create the boundary elements.
+  BuildMFEMBoundaryElements(libmesh_face_type,
+                            num_face_nodes,
+                            num_face_linear_nodes,
+                            unique_side_boundary_ids,
+                            num_elements_for_boundary_id,
+                            node_ids_for_boundary_id,
+                            index_for_unique_linear_node_id);
 
-  for (int boundary_id : unique_side_boundary_ids)
-  {
-    NumOfBdrElements += num_elements_for_boundary_id[boundary_id];
-  }
-
-  boundary.SetSize(NumOfBdrElements);
-
-  int iboundary = 0;
-
-  int renumbered_vertex_ids[8];
-
-  // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
-  for (int boundary_id : unique_side_boundary_ids)
-  {
-    auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
-
-    for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
-    {
-      for (int knode = 0; knode < num_face_linear_nodes; knode++)
-      {
-        const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
-
-        renumbered_vertex_ids[knode] = index_for_unique_linear_node_id[node_global_index];
-      }
-
-      boundary[iboundary++] =
-          BuildMFEMFaceElement(libmesh_face_type, renumbered_vertex_ids, boundary_id);
-    }
-  }
-
+  // Handle higher-order meshes.
   if (order == 2)
   {
     int * mfemToLibmeshMap = nullptr;

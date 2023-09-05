@@ -58,6 +58,14 @@ protected:
                          std::map<int, std::vector<int>> & node_ids_for_element_id,
                          std::map<int, int> & index_for_unique_linear_node_id);
 
+  void BuildMFEMBoundaryElements(const int libmesh_face_type,
+                                 const int num_face_nodes,
+                                 const int num_face_linear_nodes,
+                                 const std::vector<int> & unique_side_boundary_ids,
+                                 std::map<int, int> & num_elements_for_boundary_id,
+                                 std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+                                 std::map<int, int> & index_for_unique_linear_node_id);
+
   mfem::Element *
   BuildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
 
