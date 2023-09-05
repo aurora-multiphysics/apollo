@@ -39,16 +39,25 @@ public:
            bool fix_orientation = true);
 
   /**
-   * Returns a constant reference to the protected libmesh_to_mfem_node_map.
+   * Returns a constant reference to the protected _libmesh_to_mfem_node_map
+   * member variable.
    */
   const std::map<int, int> & getLibmeshToMFEMNodeMap() const;
 
 protected:
+  /**
+   * Sets the protected variable array using the provided vector of corner node
+   * IDs from MOOSE. Note that the vertices (named "nodes" in MOOSE) are ONLY
+   * at the corners of elements. These are referred to as "corner nodes" in MOOSE.
+   */
   void
   buildMFEMVertices(std::vector<int> & unique_corner_node_ids,
                     std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
                     const int num_dimensions);
 
+  /**
+   * Construct the MFEM elements array.
+   */
   void buildMFEMElements(const int num_elements_in_mesh,
                          const int libmesh_element_type,
                          const int num_corner_nodes_per_element,
@@ -57,6 +66,9 @@ protected:
                          std::map<int, std::vector<int>> & node_ids_for_element_id,
                          std::map<int, int> & index_for_unique_corner_node_id);
 
+  /**
+   * Construct the boundary array of elements.
+   */
   void buildMFEMBoundaryElements(const int libmesh_face_type,
                                  const int num_face_nodes,
                                  const int num_face_corner_nodes,
@@ -65,12 +77,21 @@ protected:
                                  std::map<int, std::vector<int>> & node_ids_for_boundary_id,
                                  std::map<int, int> & index_for_unique_corner_node_id);
 
+  /**
+   * Returns a pointer to an mfem::Element.
+   */
   mfem::Element *
   buildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
 
+  /**
+   * Returns an pointer to an mfem::Element (for faces only).
+   */
   mfem::Element *
   buildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id);
 
+  /**
+   * Called internally in constructor if the order == 2.
+   */
   void handleQuadraticFESpace(
       const int libmesh_element_type,
       const std::vector<int> & unique_block_ids,
@@ -78,9 +99,12 @@ protected:
       std::map<int, std::vector<int>> & node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
 
-  std::map<int, int> _libmesh_to_mfem_node_map;
-
+  /**
+   * Determines the order from the libmesh element type provided.
+   */
   const int getOrderFromLibmeshElementType(int libmesh_element_type) const;
+
+  std::map<int, int> _libmesh_to_mfem_node_map;
 
   enum CubitFaceType // TODO: - this should not be duplicated.
   {
