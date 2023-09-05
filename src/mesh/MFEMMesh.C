@@ -133,7 +133,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
 
   boundary.SetSize(NumOfBdrElements);
 
-  int boundary_counter = 0;
+  int iboundary = 0;
 
   // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
   for (int boundary_id : unique_side_boundary_ids)
@@ -154,24 +154,24 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         case FACE_EDGE2:
         case FACE_EDGE3:
         {
-          boundary[boundary_counter] = new mfem::Segment(renumbered_vertex_ids, boundary_id);
+          boundary[iboundary] = new mfem::Segment(renumbered_vertex_ids, boundary_id);
           break;
         }
         case FACE_TRI3:
         case FACE_TRI6:
         {
-          boundary[boundary_counter] = new mfem::Triangle(renumbered_vertex_ids, boundary_id);
+          boundary[iboundary] = new mfem::Triangle(renumbered_vertex_ids, boundary_id);
           break;
         }
         case FACE_QUAD4:
         case FACE_QUAD9:
         {
-          boundary[boundary_counter] = new mfem::Quadrilateral(renumbered_vertex_ids, boundary_id);
+          boundary[iboundary] = new mfem::Quadrilateral(renumbered_vertex_ids, boundary_id);
           break;
         }
       }
 
-      boundary_counter++;
+      iboundary++;
     }
   }
 
@@ -210,11 +210,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
 
     Nodes = new mfem::GridFunction(finite_element_space);
-    unique_side_boundary_ids Nodes->MakeOwner(
-        finite_element_collection); // Nodes will destroy 'finite_element_collection'
-                                    // and 'finite_element_space'
-
-    own_nodes = 1; // True.
+    Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
+                                                 // and 'finite_element_space'
 
     // Iterate over elements.
     int element_index = 0;
