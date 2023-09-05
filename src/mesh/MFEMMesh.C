@@ -221,7 +221,7 @@ MFEMMesh::BuildMFEMBoundaryElements(const int libmesh_face_type,
 }
 
 // Constructor to create an MFEM mesh from VTK data structures. These data
-// structures are obtained by the methods found in MFEMproblem
+// structures are obtained by the methods found in MFEMProblem.
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
                    std::map<int, int> & index_for_unique_linear_node_id,
@@ -239,20 +239,9 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    const std::vector<int> & unique_side_boundary_ids,
                    int num_dimensions)
 {
-
-  const int mfemToLibmeshTet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
-
-  const int mfemToLibmeshHex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
-                                    19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
-
-  const int mfemToLibmeshTri6[] = {1, 2, 3, 4, 5, 6};
-  const int mfemToLibmeshQuad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-  const int order = getOrderFromLibmeshElementType(libmesh_element_type);
-
   // Set dimensions.
   Dim = num_dimensions;
-  spaceDim = Dim;
+  spaceDim = Dim; // TODO: - is this always the case?
 
   // Create the vertices.
   BuildMFEMVertices(unique_linear_node_ids, coordinates_for_unique_linear_node_id, num_dimensions);
@@ -276,98 +265,123 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                             index_for_unique_linear_node_id);
 
   // Handle higher-order meshes.
+  const int order = getOrderFromLibmeshElementType(libmesh_element_type);
+
   if (order == 2)
   {
-    int * mfemToLibmeshMap = nullptr;
-
-    switch (libmesh_element_type)
-    {
-      case ELEMENT_TRI6:
-        mfemToLibmeshMap = (int *)mfemToLibmeshTri6;
-        break;
-      case ELEMENT_QUAD9:
-        mfemToLibmeshMap = (int *)mfemToLibmeshQuad9;
-        break;
-      case ELEMENT_TET10:
-        mfemToLibmeshMap = (int *)mfemToLibmeshTet10;
-        break;
-      case ELEMENT_HEX27:
-        mfemToLibmeshMap = (int *)mfemToLibmeshHex27;
-        break;
-      case ELEMENT_TRI3:
-      case ELEMENT_QUAD4:
-      case ELEMENT_TET4:
-      case ELEMENT_HEX8:
-      default:
-        mooseError("Linear elements detected when order is 2.");
-        break;
-    }
-
-    FinalizeTopology();
-
-    // Define quadratic FE space
-    mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, 3);
-    mfem::FiniteElementSpace * finite_element_space =
-        new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
-
-    Nodes = new mfem::GridFunction(finite_element_space);
-    Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
-                                                 // and 'finite_element_space'
-
-    int ielement = 0;
-
-    // Loop over blocks.
-    for (int block_id : unique_block_ids)
-    {
-      // Get vector containing all element IDs in block.
-      auto & element_ids = element_ids_for_block_id[block_id];
-
-      // Loop over element IDs.
-      for (int element_id : element_ids)
-      {
-        // Get vector containing ALL node global IDs for element.
-        auto & node_ids = node_ids_for_element_id[element_id];
-
-        // Sets DOF array of element.
-        mfem::Array<int> dofs;
-        finite_element_space->GetElementDofs(ielement, dofs);
-
-        // Sets VDOFs array.
-        mfem::Array<int> vdofs;
-        vdofs.SetSize(dofs.Size());
-
-        for (int l = 0; l < dofs.Size(); l++)
-        {
-          vdofs[l] = dofs[l];
-        }
-
-        finite_element_space->DofsToVDofs(vdofs);
-
-        for (int j = 0; j < dofs.Size(); j++)
-        {
-          int point_id = node_ids[mfemToLibmeshMap[j] - 1];
-
-          // Map to help with second order variable transfer
-          _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
-
-          auto coordinates = coordinates_for_unique_linear_node_id[point_id];
-
-          (*Nodes)(vdofs[j]) = coordinates[0];
-          (*Nodes)(vdofs[j] + 1) = coordinates[1];
-
-          if (Dim == 3)
-          {
-            (*Nodes)(vdofs[j] + 2) = coordinates[2];
-          }
-        }
-
-        ielement++;
-      }
-    }
+    handleQuadraticFESpace(libmesh_element_type,
+                           unique_block_ids,
+                           element_ids_for_block_id,
+                           node_ids_for_element_id,
+                           coordinates_for_unique_linear_node_id);
   }
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
   FinalizeMesh();
+}
+
+void
+MFEMMesh::handleQuadraticFESpace(
+    const int libmesh_element_type,
+    const std::vector<int> & unique_block_ids,
+    std::map<int, std::vector<int>> & element_ids_for_block_id,
+    std::map<int, std::vector<int>> & node_ids_for_element_id,
+    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id)
+{
+  const int mfemToLibmeshTet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+
+  const int mfemToLibmeshHex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
+                                    19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
+
+  const int mfemToLibmeshTri6[] = {1, 2, 3, 4, 5, 6};
+  const int mfemToLibmeshQuad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+  int * mfemToLibmeshMap = nullptr;
+
+  switch (libmesh_element_type)
+  {
+    case ELEMENT_TRI6:
+      mfemToLibmeshMap = (int *)mfemToLibmeshTri6;
+      break;
+    case ELEMENT_QUAD9:
+      mfemToLibmeshMap = (int *)mfemToLibmeshQuad9;
+      break;
+    case ELEMENT_TET10:
+      mfemToLibmeshMap = (int *)mfemToLibmeshTet10;
+      break;
+    case ELEMENT_HEX27:
+      mfemToLibmeshMap = (int *)mfemToLibmeshHex27;
+      break;
+    case ELEMENT_TRI3:
+    case ELEMENT_QUAD4:
+    case ELEMENT_TET4:
+    case ELEMENT_HEX8:
+    default:
+      mooseError("Linear elements detected when order is 2.");
+      break;
+  }
+
+  FinalizeTopology();
+
+  // Define quadratic FE space
+  mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, 3);
+  mfem::FiniteElementSpace * finite_element_space =
+      new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
+
+  Nodes = new mfem::GridFunction(finite_element_space);
+  Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
+                                               // and 'finite_element_space'
+
+  int ielement = 0;
+
+  // Loop over blocks.
+  for (int block_id : unique_block_ids)
+  {
+    // Get vector containing all element IDs in block.
+    auto & element_ids = element_ids_for_block_id[block_id];
+
+    // Loop over element IDs.
+    for (int element_id : element_ids)
+    {
+      // Get vector containing ALL node global IDs for element.
+      auto & node_ids = node_ids_for_element_id[element_id];
+
+      // Sets DOF array of element.
+      mfem::Array<int> dofs;
+      finite_element_space->GetElementDofs(ielement, dofs);
+
+      // Sets VDOFs array.
+      mfem::Array<int> vdofs; // TODO: - just create a deep copy.
+      vdofs.SetSize(dofs.Size());
+
+      for (int l = 0; l < dofs.Size(); l++)
+      {
+        vdofs[l] = dofs[l];
+      }
+
+      finite_element_space->DofsToVDofs(vdofs);
+
+      for (int j = 0; j < dofs.Size(); j++)
+      {
+        int point_id = node_ids[mfemToLibmeshMap[j] - 1];
+
+        // Map to help with second order variable transfer
+        _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
+
+        auto coordinates = coordinates_for_unique_linear_node_id[point_id];
+
+        (*Nodes)(vdofs[j]) = coordinates[0];
+        (*Nodes)(vdofs[j] + 1) = coordinates[1];
+
+        if (Dim == 3)
+        {
+          (*Nodes)(vdofs[j] + 2) = coordinates[2];
+        }
+      }
+
+      ielement++;
+    }
+  }
 }
 
 MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool fix_orientation)
