@@ -22,9 +22,8 @@ public:
            std::vector<int> & unique_linear_node_ids,
            int libmesh_element_type,
            int libmesh_face_type,
-           std::map<int, std::vector<int>>
-               element_ids_for_block_id, // TODO: - should be passed by reference!!!
-           std::map<int, std::vector<int>> node_ids_for_element_id,
+           std::map<int, std::vector<int>> & element_ids_for_block_id,
+           std::map<int, std::vector<int>> & node_ids_for_element_id,
            int num_linear_nodes_per_element,
            int num_face_nodes,
            int num_face_linear_nodes,
