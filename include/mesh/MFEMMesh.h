@@ -18,7 +18,7 @@ class MFEMMesh : public mfem::Mesh
 public:
   MFEMMesh(int num_elements_in_mesh,
            std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-           std::map<int, int> & unique_corner_node_index_for_node_id,
+           std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
            std::vector<int> & unique_corner_node_ids,
            int libmesh_element_type,
            int libmesh_face_type,

@@ -349,6 +349,39 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
 }
 
 void
+CoupledMFEMMesh::buildUniqueCornerNodeIDs(
+    std::vector<int> & unique_corner_node_ids,
+    const std::vector<int> & unique_block_ids,
+    std::map<int, std::vector<int>> & element_ids_for_block_id,
+    std::map<int, std::vector<int>> & node_ids_for_element_id)
+{
+  // Iterate through all nodes (on edge of each element) and add their global IDs
+  // to the unique_corner_node_ids vector.
+  for (int block_id : unique_block_ids)
+  {
+    auto & element_ids = element_ids_for_block_id[block_id];
+
+    for (int element_id : element_ids)
+    {
+      auto & node_ids = node_ids_for_element_id[element_id];
+
+      // Only use the nodes on the edge of the element!
+      for (int knode = 0; knode < _num_corner_nodes_per_element; knode++)
+      {
+        unique_corner_node_ids.push_back(node_ids[knode]);
+      }
+    }
+  }
+
+  // Sort unique_vertex_ids in ascending order and remove duplicate node IDs.
+  std::sort(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
+
+  auto new_end = std::unique(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
+
+  unique_corner_node_ids.resize(std::distance(unique_corner_node_ids.begin(), new_end));
+}
+
+void
 CoupledMFEMMesh::buildMFEMMesh()
 {
   // Retrieve information about the elements used within the mesh
@@ -365,6 +398,34 @@ CoupledMFEMMesh::buildMFEMMesh()
   std::map<int, std::vector<int>> node_ids_for_element_id;
 
   buildElementAndNodeIDs(unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
+
+  std::vector<int> unique_corner_node_ids;
+
+  buildUniqueCornerNodeIDs(
+      unique_corner_node_ids, unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
+
+  // We now create a map from the unique corner node ID to its index in the
+  // vector. This ensures that nodes are numbered contiguously starting at index 0.
+  std::map<int, int> libmesh_to_mfem_corner_node_id_map;
+
+  for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
+  {
+    int node_id = unique_corner_node_ids[node_index];
+
+    libmesh_to_mfem_corner_node_id_map[node_id] = node_index;
+  }
+
+  // Create a map to hold the x, y, z coordinates for each unique corner node.
+  std::map<int, std::array<double, 3>> coordinates_for_unique_corner_node_id;
+
+  for (auto node_ptr : getMesh().node_ptr_range())
+  {
+    auto & corner_node = *node_ptr;
+
+    std::array<double, 3> coordinates = {corner_node(0), corner_node(1), corner_node(2)};
+
+    coordinates_for_unique_corner_node_id[corner_node.id()] = coordinates;
+  }
 
   // element_ids_for_boundary_id stores the ids of each element on each boundary.
   // side_ids_for_boundary_id stores the sides of those elements that are on each boundary.
@@ -388,62 +449,12 @@ CoupledMFEMMesh::buildMFEMMesh()
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
 
-  // Iterate through all nodes (on edge of each element) and add their global IDs
-  // to the unique_corner_node_ids vector.
-  std::vector<int> unique_corner_node_ids;
-
-  for (int block_id : unique_block_ids)
-  {
-    auto & element_ids = element_ids_for_block_id[block_id];
-
-    for (int element_id : element_ids)
-    {
-      auto & node_ids = node_ids_for_element_id[element_id];
-
-      // Only use the nodes on the edge of the element!
-      for (int knode = 0; knode < _num_corner_nodes_per_element; knode++)
-      {
-        unique_corner_node_ids.push_back(node_ids[knode]);
-      }
-    }
-  }
-
-  // Sort unique_vertex_ids in ascending order and remove duplicate node IDs.
-  std::sort(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
-
-  auto new_end = std::unique(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
-
-  unique_corner_node_ids.resize(std::distance(unique_corner_node_ids.begin(), new_end));
-
-  // The unique_corner_node_ids vector now contains each unique node ID used by the
-  // mesh. We create a map from the node ID to the index in the unique_corner_node_ids
-  // vector.
-  std::map<int, int> unique_corner_node_index_for_node_id;
-  for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
-  {
-    int node_id = unique_corner_node_ids[node_index];
-
-    unique_corner_node_index_for_node_id[node_id] = node_index;
-  }
-
-  // Create a map to hold the x, y, z coordinates for each unique corner node.
-  std::map<int, std::array<double, 3>> coordinates_for_unique_corner_node_id;
-
-  for (auto node_ptr : getMesh().node_ptr_range())
-  {
-    auto & corner_node = *node_ptr;
-
-    std::array<double, 3> coordinates = {corner_node(0), corner_node(1), corner_node(2)};
-
-    coordinates_for_unique_corner_node_id[corner_node.id()] = coordinates;
-  }
-
   const int num_elements_in_mesh = nElem();
 
   // Create MFEM mesh using this extremely long but necessary constructor
   _mfem_mesh = std::make_shared<MFEMMesh>(num_elements_in_mesh,
                                           coordinates_for_unique_corner_node_id,
-                                          unique_corner_node_index_for_node_id,
+                                          libmesh_to_mfem_corner_node_id_map,
                                           unique_corner_node_ids,
                                           _libmesh_element_type,
                                           _libmesh_face_type,

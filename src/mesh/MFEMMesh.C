@@ -6,7 +6,7 @@
 // structures are obtained by the methods found in MFEMProblem.
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-                   std::map<int, int> & index_for_unique_corner_node_id,
+                   std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
                    std::vector<int> & unique_corner_node_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
@@ -35,7 +35,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                     unique_block_ids,
                     element_ids_for_block_id,
                     node_ids_for_element_id,
-                    index_for_unique_corner_node_id);
+                    libmesh_to_mfem_corner_node_id_map);
 
   // Create the boundary elements.
   buildMFEMBoundaryElements(libmesh_face_type,
@@ -44,7 +44,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                             unique_side_boundary_ids,
                             num_elements_for_boundary_id,
                             node_ids_for_boundary_id,
-                            index_for_unique_corner_node_id);
+                            libmesh_to_mfem_corner_node_id_map);
 
   // Handle higher-order meshes.
   const int order = getOrderFromLibmeshElementType(libmesh_element_type);
@@ -128,7 +128,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
                             const std::vector<int> & unique_block_ids,
                             std::map<int, std::vector<int>> & element_ids_for_block_id,
                             std::map<int, std::vector<int>> & node_ids_for_element_id,
-                            std::map<int, int> & index_for_unique_corner_node_id)
+                            std::map<int, int> & libmesh_to_mfem_corner_node_id_map)
 {
   // Set mesh elements.
   NumOfElements = num_elements_in_mesh;
@@ -152,7 +152,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
         int global_node_id = node_ids[inode];
 
         // Map from the global node ID --> index in the unique_corner_node_ids vector.
-        renumbered_vertex_ids[inode] = index_for_unique_corner_node_id[global_node_id];
+        renumbered_vertex_ids[inode] = libmesh_to_mfem_corner_node_id_map[global_node_id];
       }
 
       elements[ielement++] =
@@ -168,7 +168,7 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
                                     const std::vector<int> & unique_side_boundary_ids,
                                     std::map<int, int> & num_elements_for_boundary_id,
                                     std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-                                    std::map<int, int> & index_for_unique_corner_node_id)
+                                    std::map<int, int> & libmesh_to_mfem_corner_node_id_map)
 {
   // Set boundary elements:
   NumOfBdrElements = 0;
@@ -195,7 +195,7 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
       {
         const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
 
-        renumbered_vertex_ids[knode] = index_for_unique_corner_node_id[node_global_index];
+        renumbered_vertex_ids[knode] = libmesh_to_mfem_corner_node_id_map[node_global_index];
       }
 
       boundary[iboundary++] =
