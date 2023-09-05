@@ -46,11 +46,11 @@ public:
 
 protected:
   void
-  BuildMFEMVertices(std::vector<int> & unique_linear_node_ids,
+  buildMFEMVertices(std::vector<int> & unique_linear_node_ids,
                     std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
                     const int num_dimensions);
 
-  void BuildMFEMElements(const int num_elements_in_mesh,
+  void buildMFEMElements(const int num_elements_in_mesh,
                          const int libmesh_element_type,
                          const int num_linear_nodes_per_element,
                          const std::vector<int> & unique_block_ids,
@@ -58,7 +58,7 @@ protected:
                          std::map<int, std::vector<int>> & node_ids_for_element_id,
                          std::map<int, int> & index_for_unique_linear_node_id);
 
-  void BuildMFEMBoundaryElements(const int libmesh_face_type,
+  void buildMFEMBoundaryElements(const int libmesh_face_type,
                                  const int num_face_nodes,
                                  const int num_face_linear_nodes,
                                  const std::vector<int> & unique_side_boundary_ids,
@@ -67,10 +67,10 @@ protected:
                                  std::map<int, int> & index_for_unique_linear_node_id);
 
   mfem::Element *
-  BuildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
+  buildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
 
   mfem::Element *
-  BuildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id);
+  buildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id);
 
   void handleQuadraticFESpace(
       const int libmesh_element_type,
