@@ -2,12 +2,51 @@
 #include "MFEMMesh.h"
 #include "MooseError.h"
 
+/**
+ * BuildMFEMVertices
+ *
+ * This method is called to construct the vertices of the MFEM mesh. Note that
+ * the vertices (named "nodes" in MOOSE) are ONLY at the corners of elements.
+ * These are referred to as "linear nodes" in MOOSE.
+ */
+void
+MFEMMesh::BuildMFEMVertices(
+    std::vector<int> & unique_linear_node_ids,
+    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
+    const int num_dimensions)
+{
+  NumOfVertices = unique_linear_node_ids.size();
+  vertices.SetSize(NumOfVertices);
+
+  // Iterate over the global IDs of each unqiue linear node from the MOOSE mesh.
+  const bool use_z_component = (num_dimensions == 3);
+
+  int ivertex = 0;
+
+  for (int global_node_id : unique_linear_node_ids)
+  {
+    // Get the xyz coordinates associated with the node.
+    auto & coordinates = coordinates_for_unique_linear_node_id[global_node_id];
+
+    // Set xyz components.
+    vertices[ivertex](0) = coordinates[0];
+    vertices[ivertex](1) = coordinates[1];
+
+    if (use_z_component)
+    {
+      vertices[ivertex](2) = coordinates[2];
+    }
+
+    ivertex++;
+  }
+}
+
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMproblem
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
                    std::map<int, int> & index_for_unique_linear_node_id,
-                   std::vector<int> unique_linear_node_ids,
+                   std::vector<int> & unique_linear_node_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
                    std::map<int, std::vector<int>> element_ids_for_block_id,
@@ -36,29 +75,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
   Dim = num_dimensions;
   spaceDim = Dim;
 
-  // Create the vertices. These are the unique linear nodes.
-  NumOfVertices = unique_linear_node_ids.size();
-  vertices.SetSize(NumOfVertices);
-
-  // Iterate over the global IDs of each unqiue linear node from the MOOSE mesh.
-  int ivertex = 0;
-
-  for (int global_node_id : unique_linear_node_ids)
-  {
-    // Get the xyz coordinates associated with the node.
-    auto & coordinates = coordinates_for_unique_linear_node_id[global_node_id];
-
-    // Set xyz components.
-    vertices[ivertex](0) = coordinates[0];
-    vertices[ivertex](1) = coordinates[1];
-
-    if (Dim == 3)
-    {
-      vertices[ivertex](2) = coordinates[2];
-    }
-
-    ivertex++;
-  }
+  // Create the vertices.
+  BuildMFEMVertices(unique_linear_node_ids, coordinates_for_unique_linear_node_id, num_dimensions);
 
   // Set mesh elements.
   NumOfElements = num_elements_in_mesh;
@@ -169,6 +187,11 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
           boundary[iboundary] = new mfem::Quadrilateral(renumbered_vertex_ids, boundary_id);
           break;
         }
+        default:
+        {
+          mooseError("Unsupported face type encountered.\n");
+          break;
+        }
       }
 
       iboundary++;
@@ -213,20 +236,25 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
     Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
                                                  // and 'finite_element_space'
 
-    // Iterate over elements.
-    int element_index = 0;
+    int ielement = 0;
 
+    // Loop over blocks.
     for (int block_id : unique_block_ids)
     {
+      // Get vector containing all element IDs in block.
       auto & element_ids = element_ids_for_block_id[block_id];
 
+      // Loop over element IDs.
       for (int element_id : element_ids)
       {
+        // Get vector containing ALL node global IDs for element.
         auto & node_ids = node_ids_for_element_id[element_id];
 
+        // Sets DOF array of element.
         mfem::Array<int> dofs;
-        finite_element_space->GetElementDofs(element_index, dofs);
+        finite_element_space->GetElementDofs(ielement, dofs);
 
+        // Sets VDOFs array.
         mfem::Array<int> vdofs;
         vdofs.SetSize(dofs.Size());
 
@@ -255,7 +283,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
           }
         }
 
-        element_index++;
+        ielement++;
       }
     }
   }

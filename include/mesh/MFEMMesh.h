@@ -19,7 +19,7 @@ public:
   MFEMMesh(int num_elements_in_mesh,
            std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
            std::map<int, int> & unique_linear_node_index_for_node_id,
-           std::vector<int> unique_linear_node_ids,
+           std::vector<int> & unique_linear_node_ids,
            int libmesh_element_type,
            int libmesh_face_type,
            std::map<int, std::vector<int>> element_ids_for_block_id,
@@ -44,6 +44,11 @@ public:
   const std::map<int, int> & getLibmeshToMFEMNodeMap() const;
 
 protected:
+  void
+  BuildMFEMVertices(std::vector<int> & unique_linear_node_ids,
+                    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
+                    const int num_dimensions);
+
   std::map<int, int> _libmesh_to_mfem_node_map;
 
   const int getOrderFromLibmeshElementType(int libmesh_element_type) const;
