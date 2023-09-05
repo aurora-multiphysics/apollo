@@ -22,7 +22,8 @@ public:
            std::vector<int> & unique_linear_node_ids,
            int libmesh_element_type,
            int libmesh_face_type,
-           std::map<int, std::vector<int>> element_ids_for_block_id,
+           std::map<int, std::vector<int>>
+               element_ids_for_block_id, // TODO: - should be passed by reference!!!
            std::map<int, std::vector<int>> node_ids_for_element_id,
            int num_linear_nodes_per_element,
            int num_face_nodes,
@@ -48,6 +49,17 @@ protected:
   BuildMFEMVertices(std::vector<int> & unique_linear_node_ids,
                     std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
                     const int num_dimensions);
+
+  void BuildMFEMElements(const int num_elements_in_mesh,
+                         const int libmesh_element_type,
+                         const int num_linear_nodes_per_element,
+                         const std::vector<int> & unique_block_ids,
+                         std::map<int, std::vector<int>> & element_ids_for_block_id,
+                         std::map<int, std::vector<int>> & node_ids_for_element_id,
+                         std::map<int, int> & index_for_unique_linear_node_id);
+
+  mfem::Element *
+  BuildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
 
   std::map<int, int> _libmesh_to_mfem_node_map;
 

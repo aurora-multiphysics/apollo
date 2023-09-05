@@ -41,6 +41,103 @@ MFEMMesh::BuildMFEMVertices(
   }
 }
 
+/**
+ * BuildMFEMElement
+ *
+ * This method is called to construct an element of the MFEMMesh.
+ */
+mfem::Element *
+MFEMMesh::BuildMFEMElement(const int element_type, const int * vertex_ids, const int block_id)
+{
+  mfem::Element * new_element = nullptr;
+
+  switch (element_type) // TODO: - we need a default case.
+  {
+    case ELEMENT_TRI3:
+    case ELEMENT_TRI6:
+    {
+      new_element = new mfem::Triangle(vertex_ids, block_id);
+      break;
+    }
+    case ELEMENT_QUAD4:
+    case ELEMENT_QUAD9:
+    {
+      new_element = new mfem::Quadrilateral(vertex_ids, block_id);
+      break;
+    }
+    case ELEMENT_TET4:
+    case ELEMENT_TET10:
+    {
+#ifdef MFEM_USE_MEMALLOC
+      new_element = TetMemory.Alloc();
+      new_element->SetVertices(vertex_ids);
+      new_element->SetAttribute(block_id);
+#else
+      new_element = new mfem::Tetrahedron(vertex_ids, block_id);
+#endif
+      break;
+    }
+    case ELEMENT_HEX8:
+    case ELEMENT_HEX27:
+    {
+      new_element = new mfem::Hexahedron(vertex_ids, block_id);
+      break;
+    }
+    default:
+    {
+      mooseError("Unsupported element type specified.\n");
+      break;
+    }
+  }
+
+  return new_element;
+}
+
+/**
+ * BuildMFEMElements
+ *
+ * This method is called to construct the elements of the MFEMMesh.
+ */
+void
+MFEMMesh::BuildMFEMElements(const int num_elements_in_mesh,
+                            const int libmesh_element_type,
+                            const int num_linear_nodes_per_element,
+                            const std::vector<int> & unique_block_ids,
+                            std::map<int, std::vector<int>> & element_ids_for_block_id,
+                            std::map<int, std::vector<int>> & node_ids_for_element_id,
+                            std::map<int, int> & index_for_unique_linear_node_id)
+{
+  // Set mesh elements.
+  NumOfElements = num_elements_in_mesh;
+  elements.SetSize(num_elements_in_mesh);
+
+  int renumbered_vertex_ids[8]; // TODO: - replace magic number.
+
+  int ielement = 0;
+
+  for (int block_id : unique_block_ids) // Iterate over blocks.
+  {
+    auto & element_ids = element_ids_for_block_id[block_id];
+
+    for (int element_id : element_ids) // Iterate over elements in block.
+    {
+      auto & node_ids = node_ids_for_element_id[element_id];
+
+      // Iterate over ONLY the linear nodes in the element.
+      for (int inode = 0; inode < num_linear_nodes_per_element; inode++)
+      {
+        int global_node_id = node_ids[inode];
+
+        // Map from the global node ID --> index in the unique_linear_node_ids vector.
+        renumbered_vertex_ids[inode] = index_for_unique_linear_node_id[global_node_id];
+      }
+
+      elements[ielement++] =
+          BuildMFEMElement(libmesh_element_type, renumbered_vertex_ids, block_id);
+    }
+  }
+}
+
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMproblem
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
@@ -78,68 +175,14 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
   // Create the vertices.
   BuildMFEMVertices(unique_linear_node_ids, coordinates_for_unique_linear_node_id, num_dimensions);
 
-  // Set mesh elements.
-  NumOfElements = num_elements_in_mesh;
-  elements.SetSize(num_elements_in_mesh);
-
-  int renumbered_vertex_ids[8];
-
-  int ielement = 0;
-
-  for (int block_id : unique_block_ids) // Iterate over blocks.
-  {
-    auto & element_ids = element_ids_for_block_id[block_id];
-
-    for (int element_id : element_ids) // Iterate over elements in block.
-    {
-      auto & node_ids = node_ids_for_element_id[element_id];
-
-      // Iterate over ONLY the linear nodes in the element.
-      for (int inode = 0; inode < num_linear_nodes_per_element; inode++)
-      {
-        int global_node_id = node_ids[inode];
-
-        // Map from the global node ID --> index in the unique_linear_node_ids vector.
-        renumbered_vertex_ids[inode] = index_for_unique_linear_node_id[global_node_id];
-      }
-
-      switch (libmesh_element_type)
-      {
-        case ELEMENT_TRI3:
-        case ELEMENT_TRI6:
-        {
-          elements[ielement] = new mfem::Triangle(renumbered_vertex_ids, block_id);
-          break;
-        }
-        case ELEMENT_QUAD4:
-        case ELEMENT_QUAD9:
-        {
-          elements[ielement] = new mfem::Quadrilateral(renumbered_vertex_ids, block_id);
-          break;
-        }
-        case ELEMENT_TET4:
-        case ELEMENT_TET10:
-        {
-#ifdef MFEM_USE_MEMALLOC
-          elements[ielement] = TetMemory.Alloc();
-          elements[ielement]->SetVertices(renumbered_vertex_ids);
-          elements[ielement]->SetAttribute(block_id);
-#else
-          elements[ielement] = new mfem::Tetrahedron(renumbered_vertex_ids, block_id);
-#endif
-          break;
-        }
-        case ELEMENT_HEX8:
-        case ELEMENT_HEX27:
-        {
-          elements[ielement] = new mfem::Hexahedron(renumbered_vertex_ids, block_id);
-          break;
-        }
-      }
-
-      ielement++;
-    }
-  }
+  // Create the mesh elements.
+  BuildMFEMElements(num_elements_in_mesh,
+                    libmesh_element_type,
+                    num_linear_nodes_per_element,
+                    unique_block_ids,
+                    element_ids_for_block_id,
+                    node_ids_for_element_id,
+                    index_for_unique_linear_node_id);
 
   // Set boundary elements:
   NumOfBdrElements = 0;
@@ -152,6 +195,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
   boundary.SetSize(NumOfBdrElements);
 
   int iboundary = 0;
+
+  int renumbered_vertex_ids[8];
 
   // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
   for (int boundary_id : unique_side_boundary_ids)
