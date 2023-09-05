@@ -17,16 +17,16 @@ class MFEMMesh : public mfem::Mesh
 {
 public:
   MFEMMesh(int num_elements_in_mesh,
-           std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
-           std::map<int, int> & unique_linear_node_index_for_node_id,
-           std::vector<int> & unique_linear_node_ids,
+           std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+           std::map<int, int> & unique_corner_node_index_for_node_id,
+           std::vector<int> & unique_corner_node_ids,
            int libmesh_element_type,
            int libmesh_face_type,
            std::map<int, std::vector<int>> & element_ids_for_block_id,
            std::map<int, std::vector<int>> & node_ids_for_element_id,
-           int num_linear_nodes_per_element,
+           int num_corner_nodes_per_element,
            int num_face_nodes,
-           int num_face_linear_nodes,
+           int num_face_corner_nodes,
            std::map<int, int> & num_elements_for_boundary_id,
            std::map<int, std::vector<int>> & node_ids_for_boundary_id,
            const std::vector<int> & unique_block_ids,
@@ -45,25 +45,25 @@ public:
 
 protected:
   void
-  buildMFEMVertices(std::vector<int> & unique_linear_node_ids,
-                    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
+  buildMFEMVertices(std::vector<int> & unique_corner_node_ids,
+                    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
                     const int num_dimensions);
 
   void buildMFEMElements(const int num_elements_in_mesh,
                          const int libmesh_element_type,
-                         const int num_linear_nodes_per_element,
+                         const int num_corner_nodes_per_element,
                          const std::vector<int> & unique_block_ids,
                          std::map<int, std::vector<int>> & element_ids_for_block_id,
                          std::map<int, std::vector<int>> & node_ids_for_element_id,
-                         std::map<int, int> & index_for_unique_linear_node_id);
+                         std::map<int, int> & index_for_unique_corner_node_id);
 
   void buildMFEMBoundaryElements(const int libmesh_face_type,
                                  const int num_face_nodes,
-                                 const int num_face_linear_nodes,
+                                 const int num_face_corner_nodes,
                                  const std::vector<int> & unique_side_boundary_ids,
                                  std::map<int, int> & num_elements_for_boundary_id,
                                  std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-                                 std::map<int, int> & index_for_unique_linear_node_id);
+                                 std::map<int, int> & index_for_unique_corner_node_id);
 
   mfem::Element *
   buildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
@@ -76,7 +76,7 @@ protected:
       const std::vector<int> & unique_block_ids,
       std::map<int, std::vector<int>> & element_ids_for_block_id,
       std::map<int, std::vector<int>> & node_ids_for_element_id,
-      std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id);
+      std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
 
   std::map<int, int> _libmesh_to_mfem_node_map;
 

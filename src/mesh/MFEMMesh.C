@@ -5,16 +5,16 @@
 // Constructor to create an MFEM mesh from VTK data structures. These data
 // structures are obtained by the methods found in MFEMProblem.
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
-                   std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
-                   std::map<int, int> & index_for_unique_linear_node_id,
-                   std::vector<int> & unique_linear_node_ids,
+                   std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+                   std::map<int, int> & index_for_unique_corner_node_id,
+                   std::vector<int> & unique_corner_node_ids,
                    int libmesh_element_type,
                    int libmesh_face_type,
                    std::map<int, std::vector<int>> & element_ids_for_block_id,
                    std::map<int, std::vector<int>> & node_ids_for_element_id,
-                   int num_linear_nodes_per_element,
+                   int num_corner_nodes_per_element,
                    int num_face_nodes,
-                   int num_face_linear_nodes,
+                   int num_face_corner_nodes,
                    std::map<int, int> & num_elements_for_boundary_id,
                    std::map<int, std::vector<int>> & node_ids_for_boundary_id,
                    const std::vector<int> & unique_block_ids,
@@ -26,25 +26,25 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
   spaceDim = Dim; // TODO: - is this always the case?
 
   // Create the vertices.
-  buildMFEMVertices(unique_linear_node_ids, coordinates_for_unique_linear_node_id, num_dimensions);
+  buildMFEMVertices(unique_corner_node_ids, coordinates_for_unique_corner_node_id, num_dimensions);
 
   // Create the mesh elements.
   buildMFEMElements(num_elements_in_mesh,
                     libmesh_element_type,
-                    num_linear_nodes_per_element,
+                    num_corner_nodes_per_element,
                     unique_block_ids,
                     element_ids_for_block_id,
                     node_ids_for_element_id,
-                    index_for_unique_linear_node_id);
+                    index_for_unique_corner_node_id);
 
   // Create the boundary elements.
   buildMFEMBoundaryElements(libmesh_face_type,
                             num_face_nodes,
-                            num_face_linear_nodes,
+                            num_face_corner_nodes,
                             unique_side_boundary_ids,
                             num_elements_for_boundary_id,
                             node_ids_for_boundary_id,
-                            index_for_unique_linear_node_id);
+                            index_for_unique_corner_node_id);
 
   // Handle higher-order meshes.
   const int order = getOrderFromLibmeshElementType(libmesh_element_type);
@@ -55,7 +55,7 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                            unique_block_ids,
                            element_ids_for_block_id,
                            node_ids_for_element_id,
-                           coordinates_for_unique_linear_node_id);
+                           coordinates_for_unique_corner_node_id);
   }
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
@@ -82,26 +82,26 @@ MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool 
  *
  * This method is called to construct the vertices of the MFEM mesh. Note that
  * the vertices (named "nodes" in MOOSE) are ONLY at the corners of elements.
- * These are referred to as "linear nodes" in MOOSE.
+ * These are referred to as "corner nodes" in MOOSE.
  */
 void
 MFEMMesh::buildMFEMVertices(
-    std::vector<int> & unique_linear_node_ids,
-    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
+    std::vector<int> & unique_corner_node_ids,
+    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
     const int num_dimensions)
 {
-  NumOfVertices = unique_linear_node_ids.size();
+  NumOfVertices = unique_corner_node_ids.size();
   vertices.SetSize(NumOfVertices);
 
-  // Iterate over the global IDs of each unqiue linear node from the MOOSE mesh.
+  // Iterate over the global IDs of each unqiue corner node from the MOOSE mesh.
   const bool use_z_component = (num_dimensions == 3);
 
   int ivertex = 0;
 
-  for (int global_node_id : unique_linear_node_ids)
+  for (int global_node_id : unique_corner_node_ids)
   {
     // Get the xyz coordinates associated with the node.
-    auto & coordinates = coordinates_for_unique_linear_node_id[global_node_id];
+    auto & coordinates = coordinates_for_unique_corner_node_id[global_node_id];
 
     // Set xyz components.
     vertices[ivertex](0) = coordinates[0];
@@ -124,17 +124,17 @@ MFEMMesh::buildMFEMVertices(
 void
 MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
                             const int libmesh_element_type,
-                            const int num_linear_nodes_per_element,
+                            const int num_corner_nodes_per_element,
                             const std::vector<int> & unique_block_ids,
                             std::map<int, std::vector<int>> & element_ids_for_block_id,
                             std::map<int, std::vector<int>> & node_ids_for_element_id,
-                            std::map<int, int> & index_for_unique_linear_node_id)
+                            std::map<int, int> & index_for_unique_corner_node_id)
 {
   // Set mesh elements.
   NumOfElements = num_elements_in_mesh;
   elements.SetSize(num_elements_in_mesh);
 
-  int renumbered_vertex_ids[num_linear_nodes_per_element];
+  int renumbered_vertex_ids[num_corner_nodes_per_element];
 
   int ielement = 0;
 
@@ -146,13 +146,13 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
     {
       auto & node_ids = node_ids_for_element_id[element_id];
 
-      // Iterate over ONLY the linear nodes in the element.
-      for (int inode = 0; inode < num_linear_nodes_per_element; inode++)
+      // Iterate over ONLY the corner nodes in the element.
+      for (int inode = 0; inode < num_corner_nodes_per_element; inode++)
       {
         int global_node_id = node_ids[inode];
 
-        // Map from the global node ID --> index in the unique_linear_node_ids vector.
-        renumbered_vertex_ids[inode] = index_for_unique_linear_node_id[global_node_id];
+        // Map from the global node ID --> index in the unique_corner_node_ids vector.
+        renumbered_vertex_ids[inode] = index_for_unique_corner_node_id[global_node_id];
       }
 
       elements[ielement++] =
@@ -164,11 +164,11 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
 void
 MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
                                     const int num_face_nodes,
-                                    const int num_face_linear_nodes,
+                                    const int num_face_corner_nodes,
                                     const std::vector<int> & unique_side_boundary_ids,
                                     std::map<int, int> & num_elements_for_boundary_id,
                                     std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-                                    std::map<int, int> & index_for_unique_linear_node_id)
+                                    std::map<int, int> & index_for_unique_corner_node_id)
 {
   // Set boundary elements:
   NumOfBdrElements = 0;
@@ -182,7 +182,7 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
 
   int iboundary = 0;
 
-  int renumbered_vertex_ids[num_face_linear_nodes];
+  int renumbered_vertex_ids[num_face_corner_nodes];
 
   // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
   for (int boundary_id : unique_side_boundary_ids)
@@ -191,11 +191,11 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
 
     for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
     {
-      for (int knode = 0; knode < num_face_linear_nodes; knode++)
+      for (int knode = 0; knode < num_face_corner_nodes; knode++)
       {
         const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
 
-        renumbered_vertex_ids[knode] = index_for_unique_linear_node_id[node_global_index];
+        renumbered_vertex_ids[knode] = index_for_unique_corner_node_id[node_global_index];
       }
 
       boundary[iboundary++] =
@@ -301,7 +301,7 @@ MFEMMesh::handleQuadraticFESpace(
     const std::vector<int> & unique_block_ids,
     std::map<int, std::vector<int>> & element_ids_for_block_id,
     std::map<int, std::vector<int>> & node_ids_for_element_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id)
+    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id)
 {
   const int mfemToLibmeshTet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
@@ -383,7 +383,7 @@ MFEMMesh::handleQuadraticFESpace(
         // Map to help with second order variable transfer.
         _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
 
-        auto coordinates = coordinates_for_unique_linear_node_id[point_id];
+        auto coordinates = coordinates_for_unique_corner_node_id[point_id];
 
         (*Nodes)(vdofs[j]) = coordinates[0];
         (*Nodes)(vdofs[j] + 1) = coordinates[1];
