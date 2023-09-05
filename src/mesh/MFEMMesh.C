@@ -42,6 +42,45 @@ MFEMMesh::BuildMFEMVertices(
 }
 
 /**
+ * BuildMFEMFaceElement
+ *
+ */
+mfem::Element *
+MFEMMesh::BuildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id)
+{
+  mfem::Element * new_face = nullptr;
+
+  switch (face_type)
+  {
+    case FACE_EDGE2:
+    case FACE_EDGE3:
+    {
+      new_face = new mfem::Segment(vertex_ids, boundary_id);
+      break;
+    }
+    case FACE_TRI3:
+    case FACE_TRI6:
+    {
+      new_face = new mfem::Triangle(vertex_ids, boundary_id);
+      break;
+    }
+    case FACE_QUAD4:
+    case FACE_QUAD9:
+    {
+      new_face = new mfem::Quadrilateral(vertex_ids, boundary_id);
+      break;
+    }
+    default:
+    {
+      mooseError("Unsupported face type encountered.\n");
+      break;
+    }
+  }
+
+  return new_face;
+}
+
+/**
  * BuildMFEMElement
  *
  * This method is called to construct an element of the MFEMMesh.
@@ -212,34 +251,8 @@ MFEMMesh::MFEMMesh(int num_elements_in_mesh,
         renumbered_vertex_ids[knode] = index_for_unique_linear_node_id[node_global_index];
       }
 
-      switch (libmesh_face_type)
-      {
-        case FACE_EDGE2:
-        case FACE_EDGE3:
-        {
-          boundary[iboundary] = new mfem::Segment(renumbered_vertex_ids, boundary_id);
-          break;
-        }
-        case FACE_TRI3:
-        case FACE_TRI6:
-        {
-          boundary[iboundary] = new mfem::Triangle(renumbered_vertex_ids, boundary_id);
-          break;
-        }
-        case FACE_QUAD4:
-        case FACE_QUAD9:
-        {
-          boundary[iboundary] = new mfem::Quadrilateral(renumbered_vertex_ids, boundary_id);
-          break;
-        }
-        default:
-        {
-          mooseError("Unsupported face type encountered.\n");
-          break;
-        }
-      }
-
-      iboundary++;
+      boundary[iboundary++] =
+          BuildMFEMFaceElement(libmesh_face_type, renumbered_vertex_ids, boundary_id);
     }
   }
 

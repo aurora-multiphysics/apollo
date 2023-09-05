@@ -61,6 +61,9 @@ protected:
   mfem::Element *
   BuildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
 
+  mfem::Element *
+  BuildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id);
+
   std::map<int, int> _libmesh_to_mfem_node_map;
 
   const int getOrderFromLibmeshElementType(int libmesh_element_type) const;
