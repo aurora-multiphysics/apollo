@@ -44,6 +44,10 @@ protected:
                             std::map<int, std::vector<int>> & side_ids_for_boundary_id,
                             std::map<int, std::vector<int>> & node_ids_for_boundary_id);
 
+  void buildElementAndNodeIDs(const std::vector<int> & unique_block_ids,
+                              std::map<int, std::vector<int>> & element_ids_for_block_id,
+                              std::map<int, std::vector<int>> & node_ids_for_element_id);
+
   void buildLibmesh3DElementInfo();
   void buildLibmesh2DElementInfo();
   void buildLibmeshElementInfo();

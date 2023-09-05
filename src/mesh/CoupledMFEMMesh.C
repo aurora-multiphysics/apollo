@@ -313,34 +313,10 @@ CoupledMFEMMesh::getLibmeshBlockIDs() const
 }
 
 void
-CoupledMFEMMesh::buildMFEMMesh()
+CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_ids,
+                                        std::map<int, std::vector<int>> & element_ids_for_block_id,
+                                        std::map<int, std::vector<int>> & node_ids_for_element_id)
 {
-  // Retrieve information about the elements used within the mesh
-  buildLibmeshElementAndFaceInfo();
-
-  // Get a vector containing all boundary IDs on sides of semi-local elements.
-  std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
-
-  // element_ids_for_boundary_id stores the ids of each element on each boundary.
-  // side_ids_for_boundary_id stores the sides of those elements that are on each boundary.
-  // num_elements_for_boundary_id stores the number of elements contained on each boundary.
-  std::map<int, std::vector<int>> element_ids_for_boundary_id;
-  std::map<int, std::vector<int>> side_ids_for_boundary_id;
-  std::map<int, int> num_elements_for_boundary_id;
-
-  buildBoundaryInfo(
-      element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
-
-  // Get the unique libmesh IDs of each block in the mesh. The block IDs are
-  // 1-based and are numbered continuously.
-  std::vector<int> unique_block_ids = getLibmeshBlockIDs();
-
-  // Maps from the block_id --> vector of elements in block.
-  std::map<int, std::vector<int>> element_ids_for_block_id;
-
-  // Maps from element id --> vector of ALL node IDs of element.
-  std::map<int, std::vector<int>> node_ids_for_element_id;
-
   for (int block_id : unique_block_ids)
   {
     std::vector<int> elements_in_block;
@@ -370,6 +346,38 @@ CoupledMFEMMesh::buildMFEMMesh()
     // Add to map.
     element_ids_for_block_id[block_id] = elements_in_block;
   }
+}
+
+void
+CoupledMFEMMesh::buildMFEMMesh()
+{
+  // Retrieve information about the elements used within the mesh
+  buildLibmeshElementAndFaceInfo();
+
+  // Get the unique libmesh IDs of each block in the mesh. The block IDs are
+  // 1-based and are numbered continuously.
+  std::vector<int> unique_block_ids = getLibmeshBlockIDs();
+
+  // Maps from the block_id --> vector of elements in block.
+  std::map<int, std::vector<int>> element_ids_for_block_id;
+
+  // Maps from element id --> vector of ALL node IDs of element.
+  std::map<int, std::vector<int>> node_ids_for_element_id;
+
+  buildElementAndNodeIDs(unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
+
+  // element_ids_for_boundary_id stores the ids of each element on each boundary.
+  // side_ids_for_boundary_id stores the sides of those elements that are on each boundary.
+  // num_elements_for_boundary_id stores the number of elements contained on each boundary.
+  std::map<int, std::vector<int>> element_ids_for_boundary_id;
+  std::map<int, std::vector<int>> side_ids_for_boundary_id;
+  std::map<int, int> num_elements_for_boundary_id;
+
+  buildBoundaryInfo(
+      element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
+
+  // Get a vector containing all boundary IDs on sides of semi-local elements.
+  std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
 
   // node_ids_for_boundary_id maps from the boundary_id to a vector containing nodes of each
   // element on the boundary that correspond to the face of the boundary.
