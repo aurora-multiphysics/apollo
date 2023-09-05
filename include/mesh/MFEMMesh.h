@@ -72,6 +72,13 @@ protected:
   mfem::Element *
   BuildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id);
 
+  void handleQuadraticFESpace(
+      const int libmesh_element_type,
+      const std::vector<int> & unique_block_ids,
+      std::map<int, std::vector<int>> & element_ids_for_block_id,
+      std::map<int, std::vector<int>> & node_ids_for_element_id,
+      std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id);
+
   std::map<int, int> _libmesh_to_mfem_node_map;
 
   const int getOrderFromLibmeshElementType(int libmesh_element_type) const;
