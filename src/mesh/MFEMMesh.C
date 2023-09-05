@@ -2,22 +2,22 @@
 #include "MFEMMesh.h"
 #include "MooseError.h"
 
-MFEMMesh::MFEMMesh(int num_elements_in_mesh,
-                   std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-                   std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
-                   std::vector<int> & unique_corner_node_ids,
-                   int libmesh_element_type,
-                   int libmesh_face_type,
-                   std::map<int, std::vector<int>> & element_ids_for_block_id,
-                   std::map<int, std::vector<int>> & node_ids_for_element_id,
-                   int num_corner_nodes_per_element,
-                   int num_face_nodes,
-                   int num_face_corner_nodes,
-                   std::map<int, int> & num_elements_for_boundary_id,
-                   std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+MFEMMesh::MFEMMesh(const int num_dimensions,
+                   const int num_elements_in_mesh,
+                   const int libmesh_element_type,
+                   const int libmesh_face_type,
+                   const int num_face_nodes,
+                   const int num_face_corner_nodes,
+                   const int num_corner_nodes_per_element,
                    const std::vector<int> & unique_block_ids,
                    const std::vector<int> & unique_side_boundary_ids,
-                   int num_dimensions)
+                   const std::vector<int> & unique_corner_node_ids,
+                   std::map<int, int> & num_elements_for_boundary_id,
+                   std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
+                   std::map<int, std::vector<int>> & element_ids_for_block_id,
+                   std::map<int, std::vector<int>> & node_ids_for_element_id,
+                   std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+                   std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id)
 {
   // Set dimensions.
   Dim = num_dimensions;
@@ -77,7 +77,7 @@ MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool 
 
 void
 MFEMMesh::buildMFEMVertices(
-    std::vector<int> & unique_corner_node_ids,
+    const std::vector<int> & unique_corner_node_ids,
     std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
     const int num_dimensions)
 {
@@ -135,7 +135,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       // Iterate over ONLY the corner nodes in the element.
       for (int inode = 0; inode < num_corner_nodes_per_element; inode++)
       {
-        int global_node_id = node_ids[inode];
+        const int global_node_id = node_ids[inode];
 
         // Map from the global node ID --> index in the unique_corner_node_ids vector.
         renumbered_vertex_ids[inode] = libmesh_to_mfem_corner_node_id_map[global_node_id];
@@ -195,7 +195,7 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
 {
   mfem::Element * new_element = nullptr;
 
-  switch (element_type) // TODO: - we need a default case.
+  switch (element_type)
   {
     case ELEMENT_TRI3:
     case ELEMENT_TRI6:
@@ -346,14 +346,9 @@ MFEMMesh::handleQuadraticFESpace(
       mfem::Array<int> dofs;
       finite_element_space->GetElementDofs(ielement, dofs);
 
-      // Sets VDOFs array.
-      mfem::Array<int> vdofs; // TODO: - just create a deep copy.
+      // Deep copy of DOFs array.
+      mfem::Array<int> vdofs = dofs;
       vdofs.SetSize(dofs.Size());
-
-      for (int l = 0; l < dofs.Size(); l++)
-      {
-        vdofs[l] = dofs[l];
-      }
 
       finite_element_space->DofsToVDofs(vdofs);
 
