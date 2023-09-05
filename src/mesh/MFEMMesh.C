@@ -2,15 +2,90 @@
 #include "MFEMMesh.h"
 #include "MooseError.h"
 
+// Constructor to create an MFEM mesh from VTK data structures. These data
+// structures are obtained by the methods found in MFEMProblem.
+MFEMMesh::MFEMMesh(int num_elements_in_mesh,
+                   std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
+                   std::map<int, int> & index_for_unique_linear_node_id,
+                   std::vector<int> & unique_linear_node_ids,
+                   int libmesh_element_type,
+                   int libmesh_face_type,
+                   std::map<int, std::vector<int>> element_ids_for_block_id,
+                   std::map<int, std::vector<int>> node_ids_for_element_id,
+                   int num_linear_nodes_per_element,
+                   int num_face_nodes,
+                   int num_face_linear_nodes,
+                   std::map<int, int> & num_elements_for_boundary_id,
+                   std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+                   const std::vector<int> & unique_block_ids,
+                   const std::vector<int> & unique_side_boundary_ids,
+                   int num_dimensions)
+{
+  // Set dimensions.
+  Dim = num_dimensions;
+  spaceDim = Dim; // TODO: - is this always the case?
+
+  // Create the vertices.
+  buildMFEMVertices(unique_linear_node_ids, coordinates_for_unique_linear_node_id, num_dimensions);
+
+  // Create the mesh elements.
+  buildMFEMElements(num_elements_in_mesh,
+                    libmesh_element_type,
+                    num_linear_nodes_per_element,
+                    unique_block_ids,
+                    element_ids_for_block_id,
+                    node_ids_for_element_id,
+                    index_for_unique_linear_node_id);
+
+  // Create the boundary elements.
+  buildMFEMBoundaryElements(libmesh_face_type,
+                            num_face_nodes,
+                            num_face_linear_nodes,
+                            unique_side_boundary_ids,
+                            num_elements_for_boundary_id,
+                            node_ids_for_boundary_id,
+                            index_for_unique_linear_node_id);
+
+  // Handle higher-order meshes.
+  const int order = getOrderFromLibmeshElementType(libmesh_element_type);
+
+  if (order == 2)
+  {
+    handleQuadraticFESpace(libmesh_element_type,
+                           unique_block_ids,
+                           element_ids_for_block_id,
+                           node_ids_for_element_id,
+                           coordinates_for_unique_linear_node_id);
+  }
+
+  // Finalize mesh method is needed to fully finish constructing the mesh.
+  FinalizeMesh();
+}
+
+MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool fix_orientation)
+{
+  SetEmpty();
+
+  mfem::named_ifgzstream mesh_fstream(mesh_fname);
+  if (!mesh_fstream) // TODO: - can this be NULL?
+  {
+    mooseError("Failed to read '" + mesh_fname + "'\n");
+  }
+  else
+  {
+    Load(mesh_fstream, generate_edges, refine, fix_orientation);
+  }
+}
+
 /**
- * BuildMFEMVertices
+ * buildMFEMVertices
  *
  * This method is called to construct the vertices of the MFEM mesh. Note that
  * the vertices (named "nodes" in MOOSE) are ONLY at the corners of elements.
  * These are referred to as "linear nodes" in MOOSE.
  */
 void
-MFEMMesh::BuildMFEMVertices(
+MFEMMesh::buildMFEMVertices(
     std::vector<int> & unique_linear_node_ids,
     std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
     const int num_dimensions)
@@ -42,51 +117,100 @@ MFEMMesh::BuildMFEMVertices(
 }
 
 /**
- * BuildMFEMFaceElement
+ * buildMFEMElements
  *
+ * This method is called to construct the elements of the MFEMMesh.
  */
-mfem::Element *
-MFEMMesh::BuildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id)
+void
+MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
+                            const int libmesh_element_type,
+                            const int num_linear_nodes_per_element,
+                            const std::vector<int> & unique_block_ids,
+                            std::map<int, std::vector<int>> & element_ids_for_block_id,
+                            std::map<int, std::vector<int>> & node_ids_for_element_id,
+                            std::map<int, int> & index_for_unique_linear_node_id)
 {
-  mfem::Element * new_face = nullptr;
+  // Set mesh elements.
+  NumOfElements = num_elements_in_mesh;
+  elements.SetSize(num_elements_in_mesh);
 
-  switch (face_type)
+  int renumbered_vertex_ids[8]; // TODO: - replace magic number.
+
+  int ielement = 0;
+
+  for (int block_id : unique_block_ids) // Iterate over blocks.
   {
-    case FACE_EDGE2:
-    case FACE_EDGE3:
+    auto & element_ids = element_ids_for_block_id[block_id];
+
+    for (int element_id : element_ids) // Iterate over elements in block.
     {
-      new_face = new mfem::Segment(vertex_ids, boundary_id);
-      break;
-    }
-    case FACE_TRI3:
-    case FACE_TRI6:
-    {
-      new_face = new mfem::Triangle(vertex_ids, boundary_id);
-      break;
-    }
-    case FACE_QUAD4:
-    case FACE_QUAD9:
-    {
-      new_face = new mfem::Quadrilateral(vertex_ids, boundary_id);
-      break;
-    }
-    default:
-    {
-      mooseError("Unsupported face type encountered.\n");
-      break;
+      auto & node_ids = node_ids_for_element_id[element_id];
+
+      // Iterate over ONLY the linear nodes in the element.
+      for (int inode = 0; inode < num_linear_nodes_per_element; inode++)
+      {
+        int global_node_id = node_ids[inode];
+
+        // Map from the global node ID --> index in the unique_linear_node_ids vector.
+        renumbered_vertex_ids[inode] = index_for_unique_linear_node_id[global_node_id];
+      }
+
+      elements[ielement++] =
+          buildMFEMElement(libmesh_element_type, renumbered_vertex_ids, block_id);
     }
   }
+}
 
-  return new_face;
+void
+MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
+                                    const int num_face_nodes,
+                                    const int num_face_linear_nodes,
+                                    const std::vector<int> & unique_side_boundary_ids,
+                                    std::map<int, int> & num_elements_for_boundary_id,
+                                    std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+                                    std::map<int, int> & index_for_unique_linear_node_id)
+{
+  // Set boundary elements:
+  NumOfBdrElements = 0;
+
+  for (int boundary_id : unique_side_boundary_ids)
+  {
+    NumOfBdrElements += num_elements_for_boundary_id[boundary_id];
+  }
+
+  boundary.SetSize(NumOfBdrElements);
+
+  int iboundary = 0;
+
+  int renumbered_vertex_ids[8];
+
+  // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
+  for (int boundary_id : unique_side_boundary_ids)
+  {
+    auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
+
+    for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
+    {
+      for (int knode = 0; knode < num_face_linear_nodes; knode++)
+      {
+        const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
+
+        renumbered_vertex_ids[knode] = index_for_unique_linear_node_id[node_global_index];
+      }
+
+      boundary[iboundary++] =
+          buildMFEMFaceElement(libmesh_face_type, renumbered_vertex_ids, boundary_id);
+    }
+  }
 }
 
 /**
- * BuildMFEMElement
+ * buildMFEMElement
  *
  * This method is called to construct an element of the MFEMMesh.
  */
 mfem::Element *
-MFEMMesh::BuildMFEMElement(const int element_type, const int * vertex_ids, const int block_id)
+MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const int block_id)
 {
   mfem::Element * new_element = nullptr;
 
@@ -133,151 +257,42 @@ MFEMMesh::BuildMFEMElement(const int element_type, const int * vertex_ids, const
 }
 
 /**
- * BuildMFEMElements
+ * buildMFEMFaceElement
  *
- * This method is called to construct the elements of the MFEMMesh.
  */
-void
-MFEMMesh::BuildMFEMElements(const int num_elements_in_mesh,
-                            const int libmesh_element_type,
-                            const int num_linear_nodes_per_element,
-                            const std::vector<int> & unique_block_ids,
-                            std::map<int, std::vector<int>> & element_ids_for_block_id,
-                            std::map<int, std::vector<int>> & node_ids_for_element_id,
-                            std::map<int, int> & index_for_unique_linear_node_id)
+mfem::Element *
+MFEMMesh::buildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id)
 {
-  // Set mesh elements.
-  NumOfElements = num_elements_in_mesh;
-  elements.SetSize(num_elements_in_mesh);
+  mfem::Element * new_face = nullptr;
 
-  int renumbered_vertex_ids[8]; // TODO: - replace magic number.
-
-  int ielement = 0;
-
-  for (int block_id : unique_block_ids) // Iterate over blocks.
+  switch (face_type)
   {
-    auto & element_ids = element_ids_for_block_id[block_id];
-
-    for (int element_id : element_ids) // Iterate over elements in block.
+    case FACE_EDGE2:
+    case FACE_EDGE3:
     {
-      auto & node_ids = node_ids_for_element_id[element_id];
-
-      // Iterate over ONLY the linear nodes in the element.
-      for (int inode = 0; inode < num_linear_nodes_per_element; inode++)
-      {
-        int global_node_id = node_ids[inode];
-
-        // Map from the global node ID --> index in the unique_linear_node_ids vector.
-        renumbered_vertex_ids[inode] = index_for_unique_linear_node_id[global_node_id];
-      }
-
-      elements[ielement++] =
-          BuildMFEMElement(libmesh_element_type, renumbered_vertex_ids, block_id);
+      new_face = new mfem::Segment(vertex_ids, boundary_id);
+      break;
+    }
+    case FACE_TRI3:
+    case FACE_TRI6:
+    {
+      new_face = new mfem::Triangle(vertex_ids, boundary_id);
+      break;
+    }
+    case FACE_QUAD4:
+    case FACE_QUAD9:
+    {
+      new_face = new mfem::Quadrilateral(vertex_ids, boundary_id);
+      break;
+    }
+    default:
+    {
+      mooseError("Unsupported face type encountered.\n");
+      break;
     }
   }
-}
 
-void
-MFEMMesh::BuildMFEMBoundaryElements(const int libmesh_face_type,
-                                    const int num_face_nodes,
-                                    const int num_face_linear_nodes,
-                                    const std::vector<int> & unique_side_boundary_ids,
-                                    std::map<int, int> & num_elements_for_boundary_id,
-                                    std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-                                    std::map<int, int> & index_for_unique_linear_node_id)
-{
-  // Set boundary elements:
-  NumOfBdrElements = 0;
-
-  for (int boundary_id : unique_side_boundary_ids)
-  {
-    NumOfBdrElements += num_elements_for_boundary_id[boundary_id];
-  }
-
-  boundary.SetSize(NumOfBdrElements);
-
-  int iboundary = 0;
-
-  int renumbered_vertex_ids[8];
-
-  // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
-  for (int boundary_id : unique_side_boundary_ids)
-  {
-    auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
-
-    for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
-    {
-      for (int knode = 0; knode < num_face_linear_nodes; knode++)
-      {
-        const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
-
-        renumbered_vertex_ids[knode] = index_for_unique_linear_node_id[node_global_index];
-      }
-
-      boundary[iboundary++] =
-          BuildMFEMFaceElement(libmesh_face_type, renumbered_vertex_ids, boundary_id);
-    }
-  }
-}
-
-// Constructor to create an MFEM mesh from VTK data structures. These data
-// structures are obtained by the methods found in MFEMProblem.
-MFEMMesh::MFEMMesh(int num_elements_in_mesh,
-                   std::map<int, std::array<double, 3>> & coordinates_for_unique_linear_node_id,
-                   std::map<int, int> & index_for_unique_linear_node_id,
-                   std::vector<int> & unique_linear_node_ids,
-                   int libmesh_element_type,
-                   int libmesh_face_type,
-                   std::map<int, std::vector<int>> element_ids_for_block_id,
-                   std::map<int, std::vector<int>> node_ids_for_element_id,
-                   int num_linear_nodes_per_element,
-                   int num_face_nodes,
-                   int num_face_linear_nodes,
-                   std::map<int, int> & num_elements_for_boundary_id,
-                   std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-                   const std::vector<int> & unique_block_ids,
-                   const std::vector<int> & unique_side_boundary_ids,
-                   int num_dimensions)
-{
-  // Set dimensions.
-  Dim = num_dimensions;
-  spaceDim = Dim; // TODO: - is this always the case?
-
-  // Create the vertices.
-  BuildMFEMVertices(unique_linear_node_ids, coordinates_for_unique_linear_node_id, num_dimensions);
-
-  // Create the mesh elements.
-  BuildMFEMElements(num_elements_in_mesh,
-                    libmesh_element_type,
-                    num_linear_nodes_per_element,
-                    unique_block_ids,
-                    element_ids_for_block_id,
-                    node_ids_for_element_id,
-                    index_for_unique_linear_node_id);
-
-  // Create the boundary elements.
-  BuildMFEMBoundaryElements(libmesh_face_type,
-                            num_face_nodes,
-                            num_face_linear_nodes,
-                            unique_side_boundary_ids,
-                            num_elements_for_boundary_id,
-                            node_ids_for_boundary_id,
-                            index_for_unique_linear_node_id);
-
-  // Handle higher-order meshes.
-  const int order = getOrderFromLibmeshElementType(libmesh_element_type);
-
-  if (order == 2)
-  {
-    handleQuadraticFESpace(libmesh_element_type,
-                           unique_block_ids,
-                           element_ids_for_block_id,
-                           node_ids_for_element_id,
-                           coordinates_for_unique_linear_node_id);
-  }
-
-  // Finalize mesh method is needed to fully finish constructing the mesh.
-  FinalizeMesh();
+  return new_face;
 }
 
 void
@@ -381,21 +396,6 @@ MFEMMesh::handleQuadraticFESpace(
 
       ielement++;
     }
-  }
-}
-
-MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool fix_orientation)
-{
-  SetEmpty();
-
-  mfem::named_ifgzstream mesh_fstream(mesh_fname);
-  if (!mesh_fstream) // TODO: - can this be NULL?
-  {
-    mooseError("Failed to read '" + mesh_fname + "'\n");
-  }
-  else
-  {
-    Load(mesh_fstream, generate_edges, refine, fix_orientation);
   }
 }
 
