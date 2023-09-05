@@ -377,38 +377,40 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
-  // Retrieve information about the elements used within the mesh
+  // 1. Retrieve information about the elements used within the mesh.
   buildLibmeshElementAndFaceInfo();
 
-  // Get the unique libmesh IDs of each block in the mesh. The block IDs are
-  // 1-based and are numbered continuously.
+  // 2. Get the unique libmesh IDs of each block in the mesh.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
-  // Maps from the block_id --> vector of elements in block.
+  // 3. Build maps:
+  // Map from block ID --> vector of element IDs.
+  // Map from element ID --> vector of global node IDs.
   std::map<int, std::vector<int>> element_ids_for_block_id;
-
-  // Maps from element id --> vector of ALL node IDs of element.
   std::map<int, std::vector<int>> node_ids_for_element_id;
 
   buildElementAndNodeIDs(unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
 
+  // 4. Create vector containing the IDs of all nodes that are on the corners of
+  // elements. MFEM only requires the corner nodes.
   std::vector<int> unique_corner_node_ids;
 
   buildUniqueCornerNodeIDs(
       unique_corner_node_ids, unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
 
-  // We now create a map from the unique corner node ID to its index in the
+  // 5. We now create a map from the unique corner node ID to its index in the
   // vector. This ensures that nodes are numbered contiguously starting at index 0.
+  // This will be used in the MFEMMesh initializer to renumber the global node IDs.
   std::map<int, int> libmesh_to_mfem_corner_node_id_map;
 
   for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
   {
-    int node_id = unique_corner_node_ids[node_index];
+    const int node_id = unique_corner_node_ids[node_index];
 
     libmesh_to_mfem_corner_node_id_map[node_id] = node_index;
   }
 
-  // Create a map to hold the x, y, z coordinates for each unique corner node.
+  // 6. Create a map to hold the x, y, z coordinates for each unique corner node.
   std::map<int, std::array<double, 3>> coordinates_for_unique_corner_node_id;
 
   for (auto node_ptr : getMesh().node_ptr_range())
@@ -420,6 +422,7 @@ CoupledMFEMMesh::buildMFEMMesh()
     coordinates_for_unique_corner_node_id[corner_node.id()] = coordinates;
   }
 
+  // 7.
   // element_ids_for_boundary_id stores the ids of each element on each boundary.
   // side_ids_for_boundary_id stores the sides of those elements that are on each boundary.
   // num_elements_for_boundary_id stores the number of elements contained on each boundary.
@@ -430,11 +433,12 @@ CoupledMFEMMesh::buildMFEMMesh()
   buildBoundaryInfo(
       element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
 
-  // Get a vector containing all boundary IDs on sides of semi-local elements.
+  // 8. Get a vector containing all boundary IDs on sides of semi-local elements.
   std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
 
-  // node_ids_for_boundary_id maps from the boundary_id to a vector containing nodes of each
-  // element on the boundary that correspond to the face of the boundary.
+  // 9.
+  // node_ids_for_boundary_id maps from the boundary ID to a vector containing
+  // the nodes of each element on the boundary that correspond to the face of the boundary.
   std::map<int, std::vector<int>> node_ids_for_boundary_id;
 
   buildBoundaryNodeIDs(unique_side_boundary_ids,
@@ -442,11 +446,9 @@ CoupledMFEMMesh::buildMFEMMesh()
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
 
-  const int num_elements_in_mesh = nElem();
-
-  // Create MFEM mesh using this extremely long but necessary constructor
+  // 10. Create MFEM mesh using this extremely long but necessary constructor.
   _mfem_mesh = std::make_shared<MFEMMesh>(3,
-                                          num_elements_in_mesh,
+                                          nElem(),
                                           _libmesh_element_type,
                                           _libmesh_face_type,
                                           _num_face_nodes,
@@ -463,10 +465,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           coordinates_for_unique_corner_node_id);
 }
 
-/**
- * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
- * pointer.
- */
 std::unique_ptr<int[]>
 CoupledMFEMMesh::getMeshPartitioning() const
 {

@@ -170,7 +170,6 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
 
   int renumbered_vertex_ids[num_face_corner_nodes];
 
-  // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
   for (int boundary_id : unique_side_boundary_ids)
   {
     auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
@@ -181,6 +180,7 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
       {
         const int node_global_index = boundary_nodes[jelement * num_face_nodes + knode];
 
+        // Renumber vertex ("node") IDs so they're contiguous and start from 0.
         renumbered_vertex_ids[knode] = libmesh_to_mfem_corner_node_id_map[node_global_index];
       }
 
@@ -237,10 +237,6 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
   return new_element;
 }
 
-/**
- * buildMFEMFaceElement
- *
- */
 mfem::Element *
 MFEMMesh::buildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id)
 {
