@@ -445,22 +445,22 @@ CoupledMFEMMesh::buildMFEMMesh()
   const int num_elements_in_mesh = nElem();
 
   // Create MFEM mesh using this extremely long but necessary constructor
-  _mfem_mesh = std::make_shared<MFEMMesh>(num_elements_in_mesh,
-                                          coordinates_for_unique_corner_node_id,
-                                          libmesh_to_mfem_corner_node_id_map,
-                                          unique_corner_node_ids,
+  _mfem_mesh = std::make_shared<MFEMMesh>(3,
+                                          num_elements_in_mesh,
                                           _libmesh_element_type,
                                           _libmesh_face_type,
-                                          element_ids_for_block_id,
-                                          node_ids_for_element_id,
-                                          _num_corner_nodes_per_element,
                                           _num_face_nodes,
                                           _num_face_corner_nodes,
-                                          num_elements_for_boundary_id,
-                                          node_ids_for_boundary_id,
+                                          _num_corner_nodes_per_element,
                                           unique_block_ids,
                                           unique_side_boundary_ids,
-                                          3);
+                                          unique_corner_node_ids,
+                                          num_elements_for_boundary_id,
+                                          libmesh_to_mfem_corner_node_id_map,
+                                          element_ids_for_block_id,
+                                          node_ids_for_element_id,
+                                          node_ids_for_boundary_id,
+                                          coordinates_for_unique_corner_node_id);
 }
 
 /**

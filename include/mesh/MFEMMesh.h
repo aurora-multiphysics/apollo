@@ -16,22 +16,22 @@
 class MFEMMesh : public mfem::Mesh
 {
 public:
-  MFEMMesh(int num_elements_in_mesh,
-           std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-           std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
-           std::vector<int> & unique_corner_node_ids,
-           int libmesh_element_type,
-           int libmesh_face_type,
-           std::map<int, std::vector<int>> & element_ids_for_block_id,
-           std::map<int, std::vector<int>> & node_ids_for_element_id,
-           int num_corner_nodes_per_element,
-           int num_face_nodes,
-           int num_face_corner_nodes,
-           std::map<int, int> & num_elements_for_boundary_id,
-           std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+  MFEMMesh(const int num_dimensions,
+           const int num_elements_in_mesh,
+           const int libmesh_element_type,
+           const int libmesh_face_type,
+           const int num_face_nodes,
+           const int num_face_corner_nodes,
+           const int num_corner_nodes_per_element,
            const std::vector<int> & unique_block_ids,
            const std::vector<int> & unique_side_boundary_ids,
-           int num_dimensions);
+           const std::vector<int> & unique_corner_node_ids,
+           std::map<int, int> & num_elements_for_boundary_id,
+           std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
+           std::map<int, std::vector<int>> & element_ids_for_block_id,
+           std::map<int, std::vector<int>> & node_ids_for_element_id,
+           std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+           std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
 
   MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
@@ -51,7 +51,7 @@ protected:
    * at the corners of elements. These are referred to as "corner nodes" in MOOSE.
    */
   void
-  buildMFEMVertices(std::vector<int> & unique_corner_node_ids,
+  buildMFEMVertices(const std::vector<int> & unique_corner_node_ids,
                     std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
                     const int num_dimensions);
 
