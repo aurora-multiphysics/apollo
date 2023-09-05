@@ -106,7 +106,7 @@ protected:
 
   std::map<int, int> _libmesh_to_mfem_node_map;
 
-  enum CubitFaceType // TODO: - this should not be duplicated.
+  enum CubitFaceType
   {
     FACE_EDGE2,
     FACE_EDGE3,
