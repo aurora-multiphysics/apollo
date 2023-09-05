@@ -2,8 +2,6 @@
 #include "MFEMMesh.h"
 #include "MooseError.h"
 
-// Constructor to create an MFEM mesh from VTK data structures. These data
-// structures are obtained by the methods found in MFEMProblem.
 MFEMMesh::MFEMMesh(int num_elements_in_mesh,
                    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
                    std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
@@ -77,13 +75,6 @@ MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool 
   }
 }
 
-/**
- * buildMFEMVertices
- *
- * This method is called to construct the vertices of the MFEM mesh. Note that
- * the vertices (named "nodes" in MOOSE) are ONLY at the corners of elements.
- * These are referred to as "corner nodes" in MOOSE.
- */
 void
 MFEMMesh::buildMFEMVertices(
     std::vector<int> & unique_corner_node_ids,
@@ -116,11 +107,6 @@ MFEMMesh::buildMFEMVertices(
   }
 }
 
-/**
- * buildMFEMElements
- *
- * This method is called to construct the elements of the MFEMMesh.
- */
 void
 MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
                             const int libmesh_element_type,
@@ -204,11 +190,6 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
   }
 }
 
-/**
- * buildMFEMElement
- *
- * This method is called to construct an element of the MFEMMesh.
- */
 mfem::Element *
 MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const int block_id)
 {

@@ -285,13 +285,6 @@ CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
   buildLibmeshFaceInfo();
 }
 
-/**
- * Blocks/subdomains are separate subsets of the mesh that could have different
- * material properties etc. This method returns a vector containing the unique
- * IDs of each block in the mesh. This will be passed to the MFEMMesh constructor
- * which sets the attribute of each element to the ID of the block that it is a
- * part of.
- */
 std::vector<int>
 CoupledMFEMMesh::getLibmeshBlockIDs() const
 {
