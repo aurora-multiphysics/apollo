@@ -48,6 +48,11 @@ protected:
                               std::map<int, std::vector<int>> & element_ids_for_block_id,
                               std::map<int, std::vector<int>> & node_ids_for_element_id);
 
+  void buildUniqueCornerNodeIDs(std::vector<int> & unique_corner_node_ids,
+                                const std::vector<int> & unique_block_ids,
+                                std::map<int, std::vector<int>> & element_ids_for_block_id,
+                                std::map<int, std::vector<int>> & node_ids_for_element_id);
+
   void buildLibmesh3DElementInfo();
   void buildLibmesh2DElementInfo();
   void buildLibmeshElementInfo();
