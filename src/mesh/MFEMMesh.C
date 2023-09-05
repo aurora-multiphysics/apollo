@@ -21,7 +21,7 @@ MFEMMesh::MFEMMesh(const int num_dimensions,
 {
   // Set dimensions.
   Dim = num_dimensions;
-  spaceDim = Dim; // TODO: - is this always the case?
+  spaceDim = Dim; // Is this always the case?
 
   // Create the vertices.
   buildMFEMVertices(unique_corner_node_ids, coordinates_for_unique_corner_node_id, num_dimensions);

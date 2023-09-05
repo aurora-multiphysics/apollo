@@ -45,8 +45,8 @@ protected:
                          std::map<int, int> & num_elements_for_boundary_id);
 
   /**
-   * Create a map from each boundary ID to a vector of all global node IDs that
-   * are on the side of the element that falls on the boundary.
+   * Create a mapping from each boundary ID to a vector containing the global node
+   * IDs of nodes that lie on the faces of elements that fall on the boundary.
    */
   void buildBoundaryNodeIDs(const std::vector<int> & unique_side_boundary_ids,
                             std::map<int, std::vector<int>> & element_ids_for_boundary_id,
