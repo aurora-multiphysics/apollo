@@ -109,28 +109,28 @@ CoupledMFEMMesh::buildLibmesh2DElementInfo()
     {
       _libmesh_element_type = ELEMENT_TRI3;
       _libmesh_face_type = FACE_EDGE2;
-      _num_linear_nodes_per_element = 3;
+      _num_corner_nodes_per_element = 3;
       break;
     }
     case 6:
     {
       _libmesh_element_type = ELEMENT_TRI6;
       _libmesh_face_type = FACE_EDGE3;
-      _num_linear_nodes_per_element = 3;
+      _num_corner_nodes_per_element = 3;
       break;
     }
     case 4:
     {
       _libmesh_element_type = ELEMENT_QUAD4;
       _libmesh_face_type = FACE_EDGE2;
-      _num_linear_nodes_per_element = 4;
+      _num_corner_nodes_per_element = 4;
       break;
     }
     case 9:
     {
       _libmesh_element_type = ELEMENT_QUAD9;
       _libmesh_face_type = FACE_EDGE3;
-      _num_linear_nodes_per_element = 4;
+      _num_corner_nodes_per_element = 4;
       break;
     }
     default:
@@ -155,28 +155,28 @@ CoupledMFEMMesh::buildLibmesh3DElementInfo()
     {
       _libmesh_element_type = ELEMENT_TET4;
       _libmesh_face_type = FACE_TRI3;
-      _num_linear_nodes_per_element = 4;
+      _num_corner_nodes_per_element = 4;
       break;
     }
     case (10):
     {
       _libmesh_element_type = ELEMENT_TET10;
       _libmesh_face_type = FACE_TRI6;
-      _num_linear_nodes_per_element = 4;
+      _num_corner_nodes_per_element = 4;
       break;
     }
     case (8):
     {
       _libmesh_element_type = ELEMENT_HEX8;
       _libmesh_face_type = FACE_QUAD4;
-      _num_linear_nodes_per_element = 8;
+      _num_corner_nodes_per_element = 8;
       break;
     }
     case (27):
     {
       _libmesh_element_type = ELEMENT_HEX27;
       _libmesh_face_type = FACE_QUAD9;
-      _num_linear_nodes_per_element = 8;
+      _num_corner_nodes_per_element = 8;
       break;
     }
     default:
@@ -195,37 +195,37 @@ CoupledMFEMMesh::buildLibmeshFaceInfo()
     case (FACE_EDGE2):
     {
       _num_face_nodes = 2;
-      _num_face_linear_nodes = 2;
+      _num_face_corner_nodes = 2;
       break;
     }
     case (FACE_EDGE3):
     {
       _num_face_nodes = 3;
-      _num_face_linear_nodes = 2;
+      _num_face_corner_nodes = 2;
       break;
     }
     case (FACE_TRI3):
     {
       _num_face_nodes = 3;
-      _num_face_linear_nodes = 3;
+      _num_face_corner_nodes = 3;
       break;
     }
     case (FACE_TRI6):
     {
       _num_face_nodes = 6;
-      _num_face_linear_nodes = 3;
+      _num_face_corner_nodes = 3;
       break;
     }
     case (FACE_QUAD4):
     {
       _num_face_nodes = 4;
-      _num_face_linear_nodes = 4;
+      _num_face_corner_nodes = 4;
       break;
     }
     case (FACE_QUAD9):
     {
       _num_face_nodes = 9;
-      _num_face_linear_nodes = 4;
+      _num_face_corner_nodes = 4;
       break;
     }
     default:
@@ -381,8 +381,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                        node_ids_for_boundary_id);
 
   // Iterate through all nodes (on edge of each element) and add their global IDs
-  // to the unique_linear_node_ids vector.
-  std::vector<int> unique_linear_node_ids;
+  // to the unique_corner_node_ids vector.
+  std::vector<int> unique_corner_node_ids;
 
   for (int block_id : unique_block_ids)
   {
@@ -393,57 +393,57 @@ CoupledMFEMMesh::buildMFEMMesh()
       auto & node_ids = node_ids_for_element_id[element_id];
 
       // Only use the nodes on the edge of the element!
-      for (int knode = 0; knode < _num_linear_nodes_per_element; knode++)
+      for (int knode = 0; knode < _num_corner_nodes_per_element; knode++)
       {
-        unique_linear_node_ids.push_back(node_ids[knode]);
+        unique_corner_node_ids.push_back(node_ids[knode]);
       }
     }
   }
 
   // Sort unique_vertex_ids in ascending order and remove duplicate node IDs.
-  std::sort(unique_linear_node_ids.begin(), unique_linear_node_ids.end());
+  std::sort(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
 
-  auto new_end = std::unique(unique_linear_node_ids.begin(), unique_linear_node_ids.end());
+  auto new_end = std::unique(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
 
-  unique_linear_node_ids.resize(std::distance(unique_linear_node_ids.begin(), new_end));
+  unique_corner_node_ids.resize(std::distance(unique_corner_node_ids.begin(), new_end));
 
-  // The unique_linear_node_ids vector now contains each unique node ID used by the
-  // mesh. We create a map from the node ID to the index in the unique_linear_node_ids
+  // The unique_corner_node_ids vector now contains each unique node ID used by the
+  // mesh. We create a map from the node ID to the index in the unique_corner_node_ids
   // vector.
-  std::map<int, int> unique_linear_node_index_for_node_id;
-  for (int node_index = 0; node_index < unique_linear_node_ids.size(); node_index++)
+  std::map<int, int> unique_corner_node_index_for_node_id;
+  for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
   {
-    int node_id = unique_linear_node_ids[node_index];
+    int node_id = unique_corner_node_ids[node_index];
 
-    unique_linear_node_index_for_node_id[node_id] = node_index;
+    unique_corner_node_index_for_node_id[node_id] = node_index;
   }
 
-  // Create a map to hold the x, y, z coordinates for each unique linear node.
-  std::map<int, std::array<double, 3>> coordinates_for_unique_linear_node_id;
+  // Create a map to hold the x, y, z coordinates for each unique corner node.
+  std::map<int, std::array<double, 3>> coordinates_for_unique_corner_node_id;
 
   for (auto node_ptr : getMesh().node_ptr_range())
   {
-    auto & linear_node = *node_ptr;
+    auto & corner_node = *node_ptr;
 
-    std::array<double, 3> coordinates = {linear_node(0), linear_node(1), linear_node(2)};
+    std::array<double, 3> coordinates = {corner_node(0), corner_node(1), corner_node(2)};
 
-    coordinates_for_unique_linear_node_id[linear_node.id()] = coordinates;
+    coordinates_for_unique_corner_node_id[corner_node.id()] = coordinates;
   }
 
   const int num_elements_in_mesh = nElem();
 
   // Create MFEM mesh using this extremely long but necessary constructor
   _mfem_mesh = std::make_shared<MFEMMesh>(num_elements_in_mesh,
-                                          coordinates_for_unique_linear_node_id,
-                                          unique_linear_node_index_for_node_id,
-                                          unique_linear_node_ids,
+                                          coordinates_for_unique_corner_node_id,
+                                          unique_corner_node_index_for_node_id,
+                                          unique_corner_node_ids,
                                           _libmesh_element_type,
                                           _libmesh_face_type,
                                           element_ids_for_block_id,
                                           node_ids_for_element_id,
-                                          _num_linear_nodes_per_element,
+                                          _num_corner_nodes_per_element,
                                           _num_face_nodes,
-                                          _num_face_linear_nodes,
+                                          _num_face_corner_nodes,
                                           num_elements_for_boundary_id,
                                           node_ids_for_boundary_id,
                                           unique_block_ids,

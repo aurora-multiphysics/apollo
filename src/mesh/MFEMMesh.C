@@ -134,7 +134,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
   NumOfElements = num_elements_in_mesh;
   elements.SetSize(num_elements_in_mesh);
 
-  int renumbered_vertex_ids[8]; // TODO: - replace magic number.
+  int renumbered_vertex_ids[num_linear_nodes_per_element];
 
   int ielement = 0;
 
@@ -182,7 +182,7 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
 
   int iboundary = 0;
 
-  int renumbered_vertex_ids[8];
+  int renumbered_vertex_ids[num_face_linear_nodes];
 
   // TODO: - rewrite this in the same way that we wrote element_ids_for_boundary_ids etc...
   for (int boundary_id : unique_side_boundary_ids)
@@ -380,7 +380,7 @@ MFEMMesh::handleQuadraticFESpace(
       {
         int point_id = node_ids[mfemToLibmeshMap[j] - 1];
 
-        // Map to help with second order variable transfer
+        // Map to help with second order variable transfer.
         _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
 
         auto coordinates = coordinates_for_unique_linear_node_id[point_id];

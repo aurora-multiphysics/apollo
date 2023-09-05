@@ -63,9 +63,9 @@ protected:
   unsigned int _num_nodes_per_element;
   int _libmesh_element_type;
   int _libmesh_face_type;
-  int _num_linear_nodes_per_element;
+  int _num_corner_nodes_per_element;
   int _num_face_nodes;
-  int _num_face_linear_nodes;
+  int _num_face_corner_nodes;
 
   enum CubitFaceType
   {
