@@ -30,7 +30,8 @@ public:
   void buildMesh() override;
 
   /**
-   * Returns a unique pointer to a C partitioning array.
+   * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
+   * pointer.
    */
   std::unique_ptr<int[]> getMeshPartitioning() const;
 
