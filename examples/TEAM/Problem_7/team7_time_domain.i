@@ -5,8 +5,15 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = AForm
   use_glvis = true
+[]
+
+[Formulation]
+  type = AFormulation
+  magnetic_vector_potential_name = magnetic_vector_potential
+  magnetic_reluctivity_name = magnetic_reluctivity
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
 []
 
 [AuxVariables]
@@ -20,17 +27,17 @@
     type = MFEMVariable
     fespace_name = _HDivFESpace
     fespace_type = RT
-    order = first
+    order = constant
   [../]
   [./electric_potential]
     type = MFEMVariable
     fespace_name = _H1FESpace
     fespace_type = H1
-    order = second
+    order = first
   [../]
 []
 
-[UserObjects]
+[Sources]
   [./SourceCoil]
     type = MFEMDivFreeVolumetricSource
     function = RacetrackCoilCurrentFunction
@@ -45,7 +52,7 @@
     coil_axis_y = 100e-3 # m
     coil_thickness = 50e-3  # m
     coil_current_magnitude = 2742.0 # Ampere-turns
-    coil_xsection_area = 2.5e-3  # m^2 
+    coil_xsection_area = 2.5e-3  # m^2
     frequency = 200.0 # Hz
   [../]
 []
@@ -67,7 +74,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./AirEConductivity]
     type = MFEMConstantCoefficient
     value = 1.0 # S/m
@@ -97,7 +104,7 @@
 [Executioner]
   type = Transient
   dt = 0.001       # s
-  start_time = 0.0 # s 
+  start_time = 0.0 # s
   end_time = 0.02  # s
 
   l_tol = 1e-16
@@ -107,7 +114,7 @@
 [Outputs]
   [ParaViewDataCollection]
     type = MFEMParaViewDataCollection
-    file_base = OutputData/TEAM7ParaView
+    file_base = OutputData/TEAM7ParaViewTimeDomain
     high_order_output = true
   []
 []
