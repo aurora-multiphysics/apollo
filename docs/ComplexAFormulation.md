@@ -18,6 +18,7 @@ $$
 $$
 
 The physical electric field $\vec E$ and magnetic field $\vec H$ can be obtained from the complex magnetic vector potential $\vec A_c$ via 
+
 $$
 \vec E = \text{Re}\left\{-\imath ω\vec A_c e^{i \omega t}\right\}
 $$ 
@@ -29,6 +30,7 @@ $$
 
 ## Weak Form
 The complex $\vec A$ formulation is solved using the weak form
+
 $$
 \langle ν_c \vec ∇ × \vec A_c, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} + \langle \imath ω σ_c \vec A_c, \vec u \rangle_{\vec L^2(\Omega)} - \langle ω^2 ε_c \vec A_c, \vec u \rangle_{\vec L^2(\Omega)} + \left\langle \left( ν_c \vec ∇ × \vec A_c \right) × \vec n, \vec u\right\rangle_{\vec L^2(\partial \Omega)} = \langle \vec J_c^\mathrm{ext}, \vec u \rangle_{\vec L^2(\Omega)}
 $$

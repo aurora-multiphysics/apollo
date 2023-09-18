@@ -7,11 +7,13 @@ filename: AVFormulation.md
 The $\vec A-V$ formulation is a $\vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec B = 0$ in the solution. It is a mixed time domain formulation available from Hephaestus, similar to the [AFormulation](AFormulation.md) but with the direct inclusion of the electric scalar potential $V$, which can improve numerical stability for domains containing large variations in resisitivity carrying persistent currents. 
 
 The governing equations for this formulations is given by Ampere's law:
+
 $$
 \vec ∇× \left(ν \vec ∇× \vec A\right) +σ\left(\partial_t \vec A + \vec ∇ V \right) = \vec J_\mathrm{ext}
 $$
 
 and the continuity of current
+
 $$
 \vec ∇ \cdot \left[-σ\left(\partial_t \vec A + \vec ∇ V \right) \right] = 0
 $$
@@ -23,6 +25,7 @@ The material coefficients $σ$ and $ν$ vary spatially and represent the local e
 
 ## Weak Form
 The $\vec A-V$ formulation is solved using the weak form
+
 $$
 \langle ν \vec ∇× \vec A, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \left\langle σ \left(\partial_t \vec A + \vec ∇ V\right), \vec v \right\rangle_{\vec L^2(\Omega)} - \langle \vec J_\mathrm{ext}, \vec v\rangle_{\vec L^2(\Omega)} - \langle \vec H × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)} = 0
 $$
@@ -32,11 +35,13 @@ $$
 $$
 
 where the test functions $v ∈ H(\mathrm{curl})$, $q ∈ H^1$. Time discretisation is performed using a backwards Euler method, 
+
 $$
 \vec A_{n+1} = \vec A_{n} + \delta t \left(\partial_t \vec A\right)_{n+1}
 $$
 
 Substituting into the weak form evaluated at timestep $n+1$;
+
 $$
 \langle ν \delta t \vec ∇× \partial_t \vec A_{n+1}, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} +
 \langle  σ \partial_t \vec A_{n+1}, \vec v \rangle_{\vec L^2(\Omega)} + \langle  σ \vec ∇ V_{n+1}, \vec v \rangle_{\vec L^2(\Omega)} = \langle \vec J_\mathrm{ext}|_{n+1}, \vec v\rangle_{\vec L^2(\Omega)} -\langle ν \vec ∇× \vec A_n, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle \vec H_{n+1} × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)}

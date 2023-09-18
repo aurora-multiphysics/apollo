@@ -17,6 +17,7 @@ The double curl Maxwell equation in general is not positive definite, and is dif
 
 ## Weak Form
 The complex $\vec E$ formulation is solved using the weak form
+
 $$
 \langle α \vec ∇ × \vec u, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle \imath ω β \vec u, \vec v \rangle_{\vec L^2(\Omega)} - \langle ω^2 ζ \vec u, \vec v \rangle_{\vec L^2(\Omega)} + \left\langle \left( α \vec ∇ × \vec u \right) × \vec n, \vec v\right\rangle_{\vec L^2(\partial \Omega)} = \langle \vec g, \vec v \rangle_{\vec L^2(\Omega)}
 $$

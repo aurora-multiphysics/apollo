@@ -14,17 +14,20 @@ $$
 where $\vec E_c$ is the complex electric field, $\omega$ is the angular frequency of the mode under study, and $\vec J_c^\text{ext}$ is the (complex) imposed external source current density. The material coefficients $σ_c$, $ν_c$, and $ε_c$ vary spatially and represent the local complex electric conductivity, the complex magnetic reluctivity (the reciprocal of the magnetic permeability), and the complex permittivity respectively.
 
 The physical electric and magnetic fields $\vec E$ and $\vec H$ can be obtained from the complex field $\vec E_c$ since 
+
 $$
 \vec E = \text{Re}\left\{\vec E_c e^{i \omega t}\right\}
 $$ 
 
 and 
+
 $$
 \vec H = \text{Re}\left\{\frac{-ν_c}{\imath ω} \vec \nabla \times \vec E_c\right\}
 $$
 
 ## Weak Form
 The complex $\vec E$ formulation is solved using the weak form
+
 $$
 \langle ν_c \vec ∇ × \vec E_c, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} + \langle \imath ω σ_c \vec E_c, \vec u \rangle_{\vec L^2(\Omega)} - \langle ω^2 ε_c \vec E_c, \vec u \rangle_{\vec L^2(\Omega)} + \left\langle \left( ν_c \vec ∇ × \vec E_c \right) × \vec n, \vec u\right\rangle_{\vec L^2(\partial \Omega)} = -\langle \imath ω \vec J_c^\mathrm{ext}, \vec u \rangle_{\vec L^2(\Omega)}
 $$

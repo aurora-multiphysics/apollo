@@ -13,6 +13,7 @@ $$
 
 where $\vec u ∈ H(\mathrm{curl})$ and $\vec q ∈ H(\mathrm{div})$. $α$ and $β$ are material-dependent coefficients.
 This is solved using the weak form
+
 $$
 \langle\alpha \vec ∇× \vec u, \vec ∇× \vec v' \rangle_{\vec L^2(\Omega)} + \langle\beta \partial_t \vec u, \vec v' \rangle_{\vec L^2(\Omega)} - \langle\vec q, \vec v'\rangle_{\vec L^2(\Omega)} - \langle(α \vec ∇× \vec u) × \vec n, \vec v'\rangle_{\vec L^2(\partial \Omega)} = 0
 $$
@@ -21,11 +22,13 @@ where the test function $v' ∈ H(\mathrm{curl})$.
 
 ## Time Discretisation
 Time discretisation is performed using a backwards Euler method, 
+
 $$
 \vec u_{n+1} = \vec u_{n} + \delta t \left(\partial_t \vec u\right)_{n+1}
 $$
 
 Substituting into the weak form evaluated at timestep $n+1$;
+
 $$
 \langle\alpha \delta t \vec ∇× \partial_t \vec u_{n+1}, \vec ∇× \vec v' \rangle_{\vec L^2(\Omega)} +
 \langle\beta \partial_t \vec u_{n+1}, \vec v' \rangle_{\vec L^2(\Omega)} = \langle\vec q_{n+1}, \vec v'\rangle_{\vec L^2(\Omega)} -\langle\alpha \vec ∇× \vec u_n, \vec ∇× \vec v' \rangle_{\vec L^2(\Omega)} + \langle(α \vec ∇× \vec u_{n+1}) × \vec n, \vec v'\rangle_{\vec L^2(\partial \Omega)}
