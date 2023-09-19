@@ -1,27 +1,12 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="{{ site.lang | default: "en-US" }}">
 
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
-    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css?v=546ea42c9b184390d2b6da1d6ebfd37d35b24c8c">
-
-<!-- Begin Jekyll SEO tag v2.7.1 -->
-<title>Welcome to GitHub Pages | apollo</title>
-<meta name="generator" content="Jekyll v3.9.0" />
-<meta property="og:title" content="Welcome to GitHub Pages" />
-<meta property="og:locale" content="en_US" />
-<link rel="canonical" href="http://localhost:4000/" />
-<meta property="og:url" content="http://localhost:4000/" />
-<meta property="og:site_name" content="apollo" />
-<meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Welcome to GitHub Pages" />
-<script type="application/ld+json">
-{"@type":"WebSite","url":"http://localhost:4000/","headline":"Welcome to GitHub Pages","name":"apollo","@context":"https://schema.org"}</script>
-<!-- End Jekyll SEO tag -->
-<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
   </head>
 
   <body>
@@ -29,12 +14,19 @@
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="https://github.com/aurora-multiphysics/apollo">View on GitHub</a>
-          <h1 id="project_title">apollo</h1>
-          <h2 id="project_tagline"></h2>
-          <!-- {% for page in site.pages %}
-            <a href={{ page.filename }}>{{ page.title }}</a>
-          {% endfor %} -->
+          {% if site.github.is_project_page %}
+            <a id="forkme_banner" href="{{ site.github.repository_url }}">View on GitHub</a>
+          {% endif %}
+
+          <h1 id="project_title">{{ site.title | default: site.github.repository_name }}</h1>
+          <h2 id="project_tagline">{{ site.description | default: site.github.project_tagline }}</h2>
+
+          {% if site.show_downloads %}
+            <section id="downloads">
+              <a class="zip_download_link" href="{{ site.github.zip_url }}">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="{{ site.github.tar_url }}">Download this project as a tar.gz file</a>
+            </section>
+          {% endif %}
         </header>
     </div>
 
@@ -42,20 +34,17 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         {{ content }}
-
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-
-        <p class="copyright">apollo maintained by <a href="https://github.com/aurora-multiphysics">aurora-multiphysics</a></p>
-
+        {% if site.github.is_project_page %}
+        <p class="copyright">{{ site.title | default: site.github.repository_name }} maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
+        {% endif %}
         <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-
-
   </body>
 </html>
