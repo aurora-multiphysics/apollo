@@ -16,57 +16,97 @@
 class MFEMMesh : public mfem::Mesh
 {
 public:
-  MFEMMesh(int num_elem,
-           std::vector<double> & coordx,
-           std::vector<double> & coordy,
-           std::vector<double> & coordz,
-           std::map<int, int> & cubitToMFEMVertMap,
-           std::vector<int> uniqueVertexID,
-           int libmesh_element_type,
-           int libmesh_face_type,
-           int ** elem_blk,
-           int num_el_blk,
-           int num_node_per_el,
-           size_t * num_el_in_blk,
-           int num_element_linear_nodes,
-           int num_face_nodes,
-           int num_face_linear_nodes,
-           int num_side_sets,
-           std::vector<int> num_side_in_ss,
-           int ** ss_node_id,
-           int * eb_prop,
-           int * ss_prop,
-           int dim_num,
-           int * start_of_block,
-           std::map<int, int> & libmeshToMFEMNode);
+  MFEMMesh(const int num_dimensions,
+           const int num_elements_in_mesh,
+           const int libmesh_element_type,
+           const int libmesh_face_type,
+           const int num_face_nodes,
+           const int num_face_corner_nodes,
+           const int num_corner_nodes_per_element,
+           const std::vector<int> & unique_block_ids,
+           const std::vector<int> & unique_side_boundary_ids,
+           const std::vector<int> & unique_corner_node_ids,
+           std::map<int, int> & num_elements_for_boundary_id,
+           std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
+           std::map<int, std::vector<int>> & element_ids_for_block_id,
+           std::map<int, std::vector<int>> & node_ids_for_element_id,
+           std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+           std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
 
-  MFEMMesh(std::string cpp_filename,
+  MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
            int refine = 1,
            bool fix_orientation = true);
 
-  void get_mesh_nodes();
+  /**
+   * Returns a constant reference to the protected _libmesh_to_mfem_node_map
+   * member variable.
+   */
+  const std::map<int, int> & getLibmeshToMFEMNodeMap() const;
 
-  void get_connectivity_data();
+protected:
+  /**
+   * Sets the protected variable array using the provided vector of corner node
+   * IDs from MOOSE. Note that the vertices (named "nodes" in MOOSE) are ONLY
+   * at the corners of elements. These are referred to as "corner nodes" in MOOSE.
+   */
+  void
+  buildMFEMVertices(const std::vector<int> & unique_corner_node_ids,
+                    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+                    const int num_dimensions);
 
-  void get_cell_type();
+  /**
+   * Construct the MFEM elements array.
+   */
+  void buildMFEMElements(const int num_elements_in_mesh,
+                         const int libmesh_element_type,
+                         const int num_corner_nodes_per_element,
+                         const std::vector<int> & unique_block_ids,
+                         std::map<int, std::vector<int>> & element_ids_for_block_id,
+                         std::map<int, std::vector<int>> & node_ids_for_element_id,
+                         std::map<int, int> & index_for_unique_corner_node_id);
 
-  int get_num_nodes();
+  /**
+   * Construct the boundary array of elements.
+   */
+  void buildMFEMBoundaryElements(const int libmesh_face_type,
+                                 const int num_face_nodes,
+                                 const int num_face_corner_nodes,
+                                 const std::vector<int> & unique_side_boundary_ids,
+                                 std::map<int, int> & num_elements_for_boundary_id,
+                                 std::map<int, std::vector<int>> & node_ids_for_boundary_id,
+                                 std::map<int, int> & index_for_unique_corner_node_id);
 
-  void create_boundary(int ** ss_node_id,
-                       int * num_sides_in_sidesets,
-                       int num_side_sets,
-                       std::vector<libMesh::boundary_id_type> ssprop,
-                       int num_face_linear_nodes,
-                       int num_face_nodes,
-                       int libmesh_face_type);
+  /**
+   * Returns a pointer to an mfem::Element.
+   */
+  mfem::Element *
+  buildMFEMElement(const int element_type, const int * vertex_ids, const int block_id);
 
-  std::vector<int> connectivityVec;
-  std::vector<double> pointsVec;
-  std::vector<int> cellTypeVec;
-  std::vector<int> verticesVec;
+  /**
+   * Returns an pointer to an mfem::Element (for faces only).
+   */
+  mfem::Element *
+  buildMFEMFaceElement(const int face_type, const int * vertex_ids, const int boundary_id);
 
-  enum CubitFaceType // TODO: - this should not be duplicated.
+  /**
+   * Called internally in constructor if the order == 2.
+   */
+  void handleQuadraticFESpace(
+      const int libmesh_element_type,
+      const std::vector<int> & unique_block_ids,
+      std::map<int, std::vector<int>> & element_ids_for_block_id,
+      std::map<int, std::vector<int>> & node_ids_for_element_id,
+      std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
+
+  /**
+   * Determines the order from the libmesh element type provided.
+   */
+  const int getOrderFromLibmeshElementType(int libmesh_element_type) const;
+
+  std::map<int, int> _libmesh_to_mfem_node_map;
+
+  enum CubitFaceType
   {
     FACE_EDGE2,
     FACE_EDGE3,

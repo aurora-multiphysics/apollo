@@ -29,7 +29,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-
   std::cout << "Problem initialised\n\n" << std::endl;
 }
 
@@ -146,7 +145,7 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
   mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
   mfem_mesh.EnsureNCMesh();
 
-  int * partitioning = nullptr;
+  std::unique_ptr<int[]> partitioning_ptr = nullptr;
 
   if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
   {
@@ -155,21 +154,18 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
     CoupledMFEMMesh * coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
     if (coupledMFEMMesh)
     {
-      partitioning = coupledMFEMMesh->getMeshPartitioning();
+      partitioning_ptr = coupledMFEMMesh->getMeshPartitioning();
     }
   }
+
+  int * partitioning_raw_ptr = partitioning_ptr ? partitioning_ptr.get() : nullptr;
 
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
   mfem_problem_builder = mfem_formulation->getProblemBuilder();
   mfem_problem_builder->ConstructEquationSystem();
   mfem_problem_builder->SetMesh(
-      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning));
-
-  if (partitioning) // Cleanup to avoid memory leaks.
-  {
-    delete[] partitioning;
-  }
+      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning_raw_ptr));
 }
 
 void
@@ -302,9 +298,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 }
 
 void
-MFEMProblem::setMFEMVarData(std::string var_name,
-                            EquationSystems & esRef,
-                            std::map<int, int> libmeshToMFEMNode)
+MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 {
 
   auto & mooseVarRef = getVariable(0, var_name);
@@ -395,9 +389,7 @@ MFEMProblem::setMFEMVarData(std::string var_name,
 }
 
 void
-MFEMProblem::setMOOSEVarData(std::string var_name,
-                             EquationSystems & esRef,
-                             std::map<int, int> libmeshToMFEMNode)
+MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 {
   auto & mooseVarRef = getVariable(0, var_name);
   MeshBase & libmeshBase = mesh().getMesh();
@@ -488,13 +480,7 @@ MFEMProblem::syncSolutions(Direction direction)
     return;
   }
 
-  // Map for second order var transfer;
-  std::map<int, int> * libmeshToMFEMNodePtr;
-
-  auto & coupledMesh = dynamic_cast<CoupledMFEMMesh &>(mesh());
-  libmeshToMFEMNodePtr = &(coupledMesh.libmeshToMFEMNode);
-
-  void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &, std::map<int, int>);
+  void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &);
 
   switch (direction)
   {
@@ -518,7 +504,7 @@ MFEMProblem::syncSolutions(Direction direction)
 
   for (std::string name : getAuxVariableNames())
   {
-    (this->*setVarDataFuncPtr)(name, es(), (*libmeshToMFEMNodePtr));
+    (this->*setVarDataFuncPtr)(name, es());
   }
 }
 

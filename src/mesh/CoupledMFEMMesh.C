@@ -38,432 +38,435 @@ CoupledMFEMMesh::safeClone() const
   return std::make_unique<CoupledMFEMMesh>(*this);
 }
 
-int
-CoupledMFEMMesh::getNumSidesets()
-{
-  libMesh::BoundaryInfo & bdInf = getMesh().get_boundary_info();
-  const std::set<boundary_id_type> & ss = bdInf.get_side_boundary_ids();
-  return ss.size();
-}
-
 void
-CoupledMFEMMesh::getBdrLists(int ** elem_ss, int ** side_ss)
+CoupledMFEMMesh::buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                                   std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+                                   std::map<int, int> & num_elements_for_boundary_id)
 {
-  bdrElems = _bnd_elems.size();
+  buildBndElemList();
 
-  std::vector<dof_id_type> element_id_list(bdrElems, 0);
-  std::vector<unsigned short int> side_list(bdrElems, 0);
-  std::vector<BoundaryID> bc_id_list(bdrElems, 0);
-  std::vector<int> sides_in_ss_holder(num_side_sets, 0);
-
-  for (int i = 0; i < _bnd_elems.size(); i++)
+  struct BoundaryElementAndSideIDs
   {
-    element_id_list[i] = _bnd_elems[i]->_elem->id();
-    side_list[i] = _bnd_elems[i]->_side;
-    bc_id_list[i] = _bnd_elems[i]->_bnd_id;
-  }
+    std::vector<int> element_ids; // Element ids for a boundary id.
+    std::vector<int> side_ids;    // Side ids for a boundary id.
 
-  for (std::size_t i = 0; i < bc_id_list.size(); i++)
+    BoundaryElementAndSideIDs() : element_ids{}, side_ids{} {}
+  };
+
+  std::vector<BoundaryID> unique_boundary_ids;
+  std::map<BoundaryID, BoundaryElementAndSideIDs> boundary_ids_map;
+
+  // Iterate over elements on the boundary to build the map that allows us to go
+  // from a boundary id to a vector of element id/side ids.
+  for (auto boundary_element : _bnd_elems)
   {
-    sides_in_ss_holder[bc_id_list[i] - 1]++;
-  }
+    auto boundary_id = boundary_element->_bnd_id;
 
-  num_sides_in_ss = sides_in_ss_holder;
+    bool is_new_boundary_id = (boundary_ids_map.count(boundary_id) == 0);
 
-  for (int i = 0; i < num_side_sets; i++)
-  {
-    elem_ss[i] = new int[num_sides_in_ss[i]];
-    side_ss[i] = new int[num_sides_in_ss[i]];
-  }
-
-  for (int bc_id = 0; bc_id <= num_side_sets; bc_id++)
-  {
-    int counter = 0;
-    for (int side = 0; side < bdrElems; side++)
+    if (is_new_boundary_id) // Initialize new struct.
     {
-      if ((bc_id + 1) == bc_id_list[side])
-      {
-        elem_ss[bc_id][counter] = element_id_list[side];
-        side_ss[bc_id][counter] = side_list[side];
-        counter++;
-      }
+      boundary_ids_map[boundary_id] = BoundaryElementAndSideIDs();
+      unique_boundary_ids.push_back(boundary_id);
     }
+
+    auto element_id = boundary_element->_elem->id(); // ID of element on boundary.
+    auto side_id = boundary_element->_side;          // ID of side that element is on.
+
+    boundary_ids_map[boundary_id].element_ids.push_back(element_id);
+    boundary_ids_map[boundary_id].side_ids.push_back(side_id);
+  }
+
+  // Sort.
+  std::sort(unique_boundary_ids.begin(), unique_boundary_ids.end());
+
+  // Run through the (key, value) pairs in the boundary_ids_map map.
+  for (const auto & key_value_pair : boundary_ids_map)
+  {
+    auto boundary_id = key_value_pair.first;
+
+    auto element_ids = key_value_pair.second.element_ids;
+    auto side_ids = key_value_pair.second.side_ids;
+
+    element_ids_for_boundary_id[boundary_id] = element_ids;
+    side_ids_for_boundary_id[boundary_id] = side_ids;
+
+    num_elements_for_boundary_id[boundary_id] = element_ids.size();
   }
 }
 
 void
-CoupledMFEMMesh::getElementInfo()
+CoupledMFEMMesh::buildLibmesh2DElementInfo()
 {
+  // TODO: - this will not work with distributed. Can we just get the first local element?
   const Elem * element_ptr = elemPtr(0);
-  num_node_per_el = element_ptr->n_nodes();
 
-  if (_dim == 2)
-  {
-    switch (num_node_per_el)
-    {
-      case (3):
-      {
-        libmesh_element_type = ELEMENT_TRI3;
-        libmesh_face_type = FACE_EDGE2;
-        num_element_linear_nodes = 3;
-        break;
-      }
-      case (6):
-      {
-        libmesh_element_type = ELEMENT_TRI6;
-        libmesh_face_type = FACE_EDGE3;
-        num_element_linear_nodes = 3;
-        break;
-      }
-      case (4):
-      {
-        libmesh_element_type = ELEMENT_QUAD4;
-        libmesh_face_type = FACE_EDGE2;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      case (9):
-      {
-        libmesh_element_type = ELEMENT_QUAD9;
-        libmesh_face_type = FACE_EDGE3;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      default:
-      {
-        MFEM_ABORT("Don't know what to do with a " << num_node_per_el << " node 2D element\n");
-      }
-    }
-  }
-  else if (_dim == 3)
-  {
-    switch (num_node_per_el)
-    {
-      case (4):
-      {
-        libmesh_element_type = ELEMENT_TET4;
-        libmesh_face_type = FACE_TRI3;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      case (10):
-      {
-        libmesh_element_type = ELEMENT_TET10;
-        libmesh_face_type = FACE_TRI6;
-        num_element_linear_nodes = 4;
-        break;
-      }
-      case (8):
-      {
-        libmesh_element_type = ELEMENT_HEX8;
-        libmesh_face_type = FACE_QUAD4;
-        num_element_linear_nodes = 8;
-        break;
-      }
-      case (27):
-      {
-        libmesh_element_type = ELEMENT_HEX27;
-        libmesh_face_type = FACE_QUAD9;
-        num_element_linear_nodes = 8;
-        break;
-      }
-      default:
-      {
-        MFEM_ABORT("Don't know what to do with a " << num_node_per_el << " node 3D element\n");
-      }
-    }
-  }
+  _num_nodes_per_element = element_ptr->n_nodes();
 
-  switch (libmesh_face_type)
+  switch (_num_nodes_per_element)
   {
-    case (FACE_EDGE2):
+    case 3:
     {
-      num_face_nodes = 2;
-      num_face_linear_nodes = 2;
+      _libmesh_element_type = ELEMENT_TRI3;
+      _libmesh_face_type = FACE_EDGE2;
+      _num_corner_nodes_per_element = 3;
       break;
     }
-    case (FACE_EDGE3):
+    case 6:
     {
-      num_face_nodes = 3;
-      num_face_linear_nodes = 2;
+      _libmesh_element_type = ELEMENT_TRI6;
+      _libmesh_face_type = FACE_EDGE3;
+      _num_corner_nodes_per_element = 3;
       break;
     }
-    case (FACE_TRI3):
+    case 4:
     {
-      num_face_nodes = 3;
-      num_face_linear_nodes = 3;
+      _libmesh_element_type = ELEMENT_QUAD4;
+      _libmesh_face_type = FACE_EDGE2;
+      _num_corner_nodes_per_element = 4;
       break;
     }
-    case (FACE_TRI6):
+    case 9:
     {
-      num_face_nodes = 6;
-      num_face_linear_nodes = 3;
-      break;
-    }
-    case (FACE_QUAD4):
-    {
-      num_face_nodes = 4;
-      num_face_linear_nodes = 4;
-      break;
-    }
-    case (FACE_QUAD9):
-    {
-      num_face_nodes = 9;
-      num_face_linear_nodes = 4;
+      _libmesh_element_type = ELEMENT_QUAD9;
+      _libmesh_face_type = FACE_EDGE3;
+      _num_corner_nodes_per_element = 4;
       break;
     }
     default:
     {
+      mooseError("Invalid number of nodes (", _num_nodes_per_element, ") for a 2D element.");
       break;
     }
   }
+}
+
+void
+CoupledMFEMMesh::buildLibmesh3DElementInfo()
+{
+  // TODO: - this will not work with distributed. Can we just get the first local element?
+  const Elem * element_ptr = elemPtr(0);
+
+  _num_nodes_per_element = element_ptr->n_nodes();
+
+  switch (_num_nodes_per_element)
+  {
+    case (4):
+    {
+      _libmesh_element_type = ELEMENT_TET4;
+      _libmesh_face_type = FACE_TRI3;
+      _num_corner_nodes_per_element = 4;
+      break;
+    }
+    case (10):
+    {
+      _libmesh_element_type = ELEMENT_TET10;
+      _libmesh_face_type = FACE_TRI6;
+      _num_corner_nodes_per_element = 4;
+      break;
+    }
+    case (8):
+    {
+      _libmesh_element_type = ELEMENT_HEX8;
+      _libmesh_face_type = FACE_QUAD4;
+      _num_corner_nodes_per_element = 8;
+      break;
+    }
+    case (27):
+    {
+      _libmesh_element_type = ELEMENT_HEX27;
+      _libmesh_face_type = FACE_QUAD9;
+      _num_corner_nodes_per_element = 8;
+      break;
+    }
+    default:
+    {
+      mooseError("Don't know what to do with a ", _num_nodes_per_element, " node 2D element.");
+      break;
+    }
+  }
+}
+
+void
+CoupledMFEMMesh::buildLibmeshFaceInfo()
+{
+  switch (_libmesh_face_type)
+  {
+    case (FACE_EDGE2):
+    {
+      _num_face_nodes = 2;
+      _num_face_corner_nodes = 2;
+      break;
+    }
+    case (FACE_EDGE3):
+    {
+      _num_face_nodes = 3;
+      _num_face_corner_nodes = 2;
+      break;
+    }
+    case (FACE_TRI3):
+    {
+      _num_face_nodes = 3;
+      _num_face_corner_nodes = 3;
+      break;
+    }
+    case (FACE_TRI6):
+    {
+      _num_face_nodes = 6;
+      _num_face_corner_nodes = 3;
+      break;
+    }
+    case (FACE_QUAD4):
+    {
+      _num_face_nodes = 4;
+      _num_face_corner_nodes = 4;
+      break;
+    }
+    case (FACE_QUAD9):
+    {
+      _num_face_nodes = 9;
+      _num_face_corner_nodes = 4;
+      break;
+    }
+    default:
+    {
+      mooseError("Invalid face type (", _libmesh_face_type, ") specified.");
+      break;
+    }
+  }
+}
+
+void
+CoupledMFEMMesh::buildLibmeshElementInfo()
+{
+  switch (_dim)
+  {
+    case 2:
+    {
+      buildLibmesh2DElementInfo();
+      break;
+    }
+    case 3:
+    {
+      buildLibmesh3DElementInfo();
+      break;
+    }
+    default:
+    {
+      mooseError("Invalid dimension (", _dim, ") specified.");
+      break;
+    }
+  }
+}
+
+std::vector<int>
+CoupledMFEMMesh::getSideBoundaryIDs() const
+{
+  const libMesh::BoundaryInfo & boundary_info = getMesh().get_boundary_info();
+  const std::set<boundary_id_type> & side_boundary_ids_set = boundary_info.get_side_boundary_ids();
+
+  std::vector<int> side_boundary_ids(side_boundary_ids_set.size());
+
+  int counter = 0;
+  for (auto side_boundary_id : side_boundary_ids_set)
+  {
+    side_boundary_ids[counter++] = side_boundary_id;
+  }
+
+  std::sort(side_boundary_ids.begin(), side_boundary_ids.end());
+
+  return side_boundary_ids;
+}
+
+void
+CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
+{
+  buildLibmeshElementInfo();
+  buildLibmeshFaceInfo();
+}
+
+std::vector<int>
+CoupledMFEMMesh::getLibmeshBlockIDs() const
+{
+  auto & libmesh = getMesh();
+
+  // TODO: - may not work with distributed meshes.
+  std::set<subdomain_id_type> block_ids_set;
+  libmesh.subdomain_ids(block_ids_set);
+
+  std::vector<int> unique_block_ids(block_ids_set.size());
+
+  int counter = 0;
+  for (auto block_id : block_ids_set)
+  {
+    unique_block_ids[counter++] = block_id;
+  }
+
+  return unique_block_ids;
+}
+
+void
+CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_ids,
+                                        std::map<int, std::vector<int>> & element_ids_for_block_id,
+                                        std::map<int, std::vector<int>> & node_ids_for_element_id)
+{
+  for (int block_id : unique_block_ids)
+  {
+    std::vector<int> elements_in_block;
+
+    for (auto element_iterator = getMesh().active_subdomain_elements_begin(block_id);
+         element_iterator != getMesh().active_subdomain_elements_end(block_id);
+         element_iterator++)
+    {
+      auto element_ptr = *element_iterator;
+
+      int element_id = element_ptr->id();
+
+      std::vector<int> element_node_ids(_num_nodes_per_element);
+
+      elements_in_block.push_back(element_id);
+
+      for (int node_counter = 0; node_counter < _num_nodes_per_element; node_counter++)
+      {
+        element_node_ids[node_counter] = element_ptr->node_id(node_counter);
+      }
+
+      node_ids_for_element_id[element_id] = element_node_ids;
+    }
+
+    elements_in_block.shrink_to_fit();
+
+    // Add to map.
+    element_ids_for_block_id[block_id] = elements_in_block;
+  }
+}
+
+void
+CoupledMFEMMesh::buildUniqueCornerNodeIDs(
+    std::vector<int> & unique_corner_node_ids,
+    const std::vector<int> & unique_block_ids,
+    std::map<int, std::vector<int>> & element_ids_for_block_id,
+    std::map<int, std::vector<int>> & node_ids_for_element_id)
+{
+  // Iterate through all nodes (on edge of each element) and add their global IDs
+  // to the unique_corner_node_ids vector.
+  for (int block_id : unique_block_ids)
+  {
+    auto & element_ids = element_ids_for_block_id[block_id];
+
+    for (int element_id : element_ids)
+    {
+      auto & node_ids = node_ids_for_element_id[element_id];
+
+      // Only use the nodes on the edge of the element!
+      for (int knode = 0; knode < _num_corner_nodes_per_element; knode++)
+      {
+        unique_corner_node_ids.push_back(node_ids[knode]);
+      }
+    }
+  }
+
+  // Sort unique_vertex_ids in ascending order and remove duplicate node IDs.
+  std::sort(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
+
+  auto new_end = std::unique(unique_corner_node_ids.begin(), unique_corner_node_ids.end());
+
+  unique_corner_node_ids.resize(std::distance(unique_corner_node_ids.begin(), new_end));
 }
 
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
-  // These are all maps that enable us to get the vertices on
-  // one side of the mesh using the indexing system of [side number][node of that side]
-  const int sideMapTri3[3][2] = {
-      {1, 2},
-      {2, 3},
-      {3, 1},
-  };
+  // 1. Retrieve information about the elements used within the mesh.
+  buildLibmeshElementAndFaceInfo();
 
-  const int sideMapQuad4[4][2] = {
-      {1, 2},
-      {2, 3},
-      {3, 4},
-      {4, 1},
-  };
+  // 2. Get the unique libmesh IDs of each block in the mesh.
+  std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
-  const int sideMapTri6[3][3] = {
-      {1, 2, 4},
-      {2, 3, 5},
-      {3, 1, 6},
-  };
+  // 3. Build maps:
+  // Map from block ID --> vector of element IDs.
+  // Map from element ID --> vector of global node IDs.
+  std::map<int, std::vector<int>> element_ids_for_block_id;
+  std::map<int, std::vector<int>> node_ids_for_element_id;
 
-  const int sideMapQuad9[4][3] = {
-      {1, 2, 5},
-      {2, 3, 6},
-      {3, 4, 7},
-      {4, 1, 8},
-  };
+  buildElementAndNodeIDs(unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
 
-  const int sideMapTet4[4][3] = {{1, 3, 2}, {1, 2, 4}, {2, 3, 4}, {1, 4, 3}};
+  // 4. Create vector containing the IDs of all nodes that are on the corners of
+  // elements. MFEM only requires the corner nodes.
+  std::vector<int> unique_corner_node_ids;
 
-  const int sideMapTet10[4][6] = {
-      {1, 2, 4, 5, 9, 8}, {2, 3, 4, 6, 10, 9}, {1, 4, 3, 8, 10, 7}, {1, 3, 2, 7, 6, 5}};
+  buildUniqueCornerNodeIDs(
+      unique_corner_node_ids, unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
 
-  const int sideMapHex8[6][4] = {
-      {1, 2, 6, 5}, {2, 3, 7, 6}, {4, 3, 7, 8}, {1, 4, 8, 5}, {1, 4, 3, 2}, {5, 8, 7, 6}};
+  // 5. We now create a map from the unique corner node ID to its index in the
+  // vector. This ensures that nodes are numbered contiguously starting at index 0.
+  // This will be used in the MFEMMesh initializer to renumber the global node IDs.
+  std::map<int, int> libmesh_to_mfem_corner_node_id_map;
 
-  const int sideMapHex27[6][9] = {{1, 2, 6, 5, 9, 14, 17, 13, 26},
-                                  {2, 3, 7, 6, 10, 15, 18, 14, 25},
-                                  {4, 3, 7, 8, 11, 15, 19, 16, 27},
-                                  {1, 4, 8, 5, 12, 16, 20, 13, 24},
-                                  {1, 4, 3, 2, 12, 11, 10, 9, 22},
-                                  {5, 8, 7, 6, 20, 19, 18, 17, 23}};
-
-  buildBndElemList();
-
-  // Retrieve information about the elements used within the mesh
-  getElementInfo();
-
-  // Elem_ss and side_ss store information about which elements are in each sideset, and which sides
-  // of those elements are contained within the sideset
-  num_side_sets = getNumSidesets();
-
-  int ** elem_ss = new int *[num_side_sets];
-  int ** side_ss = new int *[num_side_sets];
-
-  // Populate the elem_ss and side_ss
-  getBdrLists(elem_ss, side_ss);
-
-  // block_ids
-  std::set<subdomain_id_type> block_ids;
-  getMesh().subdomain_ids(block_ids);
-
-  int num_blocks_in_mesh = (int)(getMesh().n_subdomains());
-
-  std::size_t * num_elements_per_block = new size_t[num_blocks_in_mesh];
-  int * start_of_block = new int[num_blocks_in_mesh + 1];
-
-  int * ebprop = new int[num_blocks_in_mesh];
-  int * ssprop = new int[num_side_sets];
-
-  for (int i = 0; i < num_blocks_in_mesh; i++)
+  for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
   {
-    ebprop[i] = i + 1;
+    const int node_id = unique_corner_node_ids[node_index];
+
+    libmesh_to_mfem_corner_node_id_map[node_id] = node_index;
   }
 
-  for (int i = 0; i < num_side_sets; i++)
+  // 6. Create a map to hold the x, y, z coordinates for each unique corner node.
+  std::map<int, std::array<double, 3>> coordinates_for_unique_corner_node_id;
+
+  for (auto node_ptr : getMesh().node_ptr_range())
   {
-    ssprop[i] = i + 1;
+    auto & corner_node = *node_ptr;
+
+    std::array<double, 3> coordinates = {corner_node(0), corner_node(1), corner_node(2)};
+
+    coordinates_for_unique_corner_node_id[corner_node.id()] = coordinates;
   }
 
-  // Loops to set num_elements_per_block.
-  for (int iblock : block_ids)
-  {
-    int num_elements_in_block_counter = 1;
+  // 7.
+  // element_ids_for_boundary_id stores the ids of each element on each boundary.
+  // side_ids_for_boundary_id stores the sides of those elements that are on each boundary.
+  // num_elements_for_boundary_id stores the number of elements contained on each boundary.
+  std::map<int, std::vector<int>> element_ids_for_boundary_id;
+  std::map<int, std::vector<int>> side_ids_for_boundary_id;
+  std::map<int, int> num_elements_for_boundary_id;
 
-    for (libMesh::MeshBase::element_iterator element_ptr =
-             getMesh().active_subdomain_elements_begin(iblock);
-         element_ptr != getMesh().active_subdomain_elements_end(iblock);
-         element_ptr++)
-    {
-      num_elements_per_block[iblock - 1] = num_elements_in_block_counter++;
-    }
-  }
+  buildBoundaryInfo(
+      element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
 
-  // elem_blk is a 2D array that stores all the nodes of all the elements in all
-  // the blocks. Indexing is done as so, elem_blk[block_id][node]
-  int ** elem_blk = new int *[num_blocks_in_mesh];
-  for (int i = 0; i < num_blocks_in_mesh; i++)
-  {
-    elem_blk[i] = new int[num_elements_per_block[i] * num_node_per_el];
-  }
+  // 8. Get a vector containing all boundary IDs on sides of semi-local elements.
+  std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
 
-  // Here we are setting all the values in elem_blk
-  for (int iblock : block_ids)
-  {
-    int elem_count = 0;
-    for (libMesh::MeshBase::element_iterator el_ptr =
-             getMesh().active_subdomain_elements_begin(iblock);
-         el_ptr != getMesh().active_subdomain_elements_end(iblock);
-         el_ptr++)
-    {
-      for (int el_nodes = 0; el_nodes < num_node_per_el; el_nodes++)
-      {
-        elem_blk[iblock - 1][(elem_count * num_node_per_el) + el_nodes] =
-            (*el_ptr)->node_id(el_nodes);
-      }
-      elem_count++;
-    }
-  }
+  // 9.
+  // node_ids_for_boundary_id maps from the boundary ID to a vector containing
+  // the nodes of each element on the boundary that correspond to the face of the boundary.
+  std::map<int, std::vector<int>> node_ids_for_boundary_id;
 
-  // start_of_block is just an array of ints that represent what the first element id of
-  // each block is
-  start_of_block[0] = 0;
-  for (int i = 1; i < num_blocks_in_mesh + 1; i++)
-  {
-    start_of_block[i] = start_of_block[i - 1] + num_elements_per_block[i - 1];
-  }
+  buildBoundaryNodeIDs(unique_side_boundary_ids,
+                       element_ids_for_boundary_id,
+                       side_ids_for_boundary_id,
+                       node_ids_for_boundary_id);
 
-  // ss_node_id stores all the id's of all the sides in a sideset
-  // for example, ss_node_id[0][0] would access the first node id in the first sideset
-  int ** ss_node_id = new int *[num_side_sets];
-  createSidesetNodeIDs(elem_ss, side_ss, ss_node_id);
-
-  std::vector<int> unique_vertex_ids;
-  for (int iblock = 0; iblock < num_blocks_in_mesh; iblock++)
-  {
-    for (int jelement = 0; jelement < num_elements_per_block[iblock]; jelement++)
-    {
-      for (int knode = 0; knode < num_element_linear_nodes; knode++)
-      {
-        unique_vertex_ids.push_back(1 + elem_blk[iblock][jelement * num_node_per_el + knode]);
-      }
-    }
-  }
-
-  // Setting map
-  std::sort(unique_vertex_ids.begin(), unique_vertex_ids.end());
-  std::vector<int>::iterator newEnd;
-  newEnd = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
-  unique_vertex_ids.resize(std::distance(unique_vertex_ids.begin(), newEnd));
-
-  // OK at this point unique_vertex_ids contains a list of all the nodes that are
-  // actually used by the mesh, 1-based, and sorted. We need to invert this
-  // list, the inverse is a map
-  std::map<int, int> cubit_to_MFEM_vertex_map;
-  for (std::size_t i = 0; i < unique_vertex_ids.size(); i++)
-  {
-    cubit_to_MFEM_vertex_map[unique_vertex_ids[i]] = i;
-  }
-
-  // for (auto& [key, value] : cubit_to_MFEM_vertex_map) {
-  //   // value -= 1;
-  //   std::cout << '[' << key << "] = " << value << "; " << std::endl;
-  // }
-  std::vector<double> coordx(nNodes(), 0);
-  std::vector<double> coordy(nNodes(), 0);
-  std::vector<double> coordz(nNodes(), 0);
-  int node_counter = 0;
-
-  // Populating coord data structures to hold all the node coordinates needed to create
-  // the MFEM mesh
-  // This could be problematic if localNodesBegin and End don't access nodes in ascending node id,
-  // but this never seems to happen
-  for (auto node : getMesh().node_ptr_range())
-  {
-    unsigned int node_id = node->id();
-
-    coordx[node_id] = (*node)(0);
-    coordy[node_id] = (*node)(1);
-    coordz[node_id] = (*node)(2);
-  }
-
-  int num_elements_in_mesh = nElem();
-
-  // Create MFEM mesh using this extremely long but necessary constructor
-  _mfem_mesh = std::make_shared<MFEMMesh>(num_elements_in_mesh,
-                                          coordx,
-                                          coordy,
-                                          coordz,
-                                          cubit_to_MFEM_vertex_map,
-                                          unique_vertex_ids,
-                                          libmesh_element_type,
-                                          libmesh_face_type,
-                                          elem_blk,
-                                          num_blocks_in_mesh,
-                                          num_node_per_el,
-                                          num_elements_per_block,
-                                          num_element_linear_nodes,
-                                          num_face_nodes,
-                                          num_face_linear_nodes,
-                                          num_side_sets,
-                                          num_sides_in_ss,
-                                          ss_node_id,
-                                          ebprop,
-                                          ssprop,
-                                          3,
-                                          start_of_block,
-                                          libmeshToMFEMNode);
-
-  // Memory cleanup.
-  for (int i = 0; i < num_side_sets; i++)
-  {
-    delete[] ss_node_id[i];
-    delete[] side_ss[i];
-    delete[] elem_ss[i];
-  }
-
-  delete[] ss_node_id;
-  delete[] side_ss;
-  delete[] elem_ss;
-
-  for (int i = 0; i < num_blocks_in_mesh; i++)
-  {
-    delete[] elem_blk[i];
-  }
-
-  delete[] elem_blk;
-
-  delete[] num_elements_per_block;
-
-  delete[] ebprop;
-  delete[] ssprop;
-  delete[] start_of_block;
+  // 10. Create MFEM mesh using this extremely long but necessary constructor.
+  _mfem_mesh = std::make_shared<MFEMMesh>(3,
+                                          nElem(),
+                                          _libmesh_element_type,
+                                          _libmesh_face_type,
+                                          _num_face_nodes,
+                                          _num_face_corner_nodes,
+                                          _num_corner_nodes_per_element,
+                                          unique_block_ids,
+                                          unique_side_boundary_ids,
+                                          unique_corner_node_ids,
+                                          num_elements_for_boundary_id,
+                                          libmesh_to_mfem_corner_node_id_map,
+                                          element_ids_for_block_id,
+                                          node_ids_for_element_id,
+                                          node_ids_for_boundary_id,
+                                          coordinates_for_unique_corner_node_id);
 }
 
-/**
- * Returns the libMesh partitioning.
- *
- * \note The returned partitioning array should be deleted after use to avoid memory leaks!
- */
-int *
-CoupledMFEMMesh::getMeshPartitioning()
+std::unique_ptr<int[]>
+CoupledMFEMMesh::getMeshPartitioning() const
 {
   const MeshBase & lib_mesh = getMesh();
 
@@ -482,7 +485,8 @@ CoupledMFEMMesh::getMeshPartitioning()
     mesh_partitioning[element_id] = element->processor_id();
   }
 
-  return mesh_partitioning;
+  // Wrap-up in a unique pointer.
+  return std::unique_ptr<int[]>(mesh_partitioning);
 }
 
 void
@@ -500,25 +504,46 @@ CoupledMFEMMesh::buildMFEMParMesh()
 }
 
 void
-CoupledMFEMMesh::createSidesetNodeIDs(int ** elem_ss, int ** side_ss, int ** ss_node_id)
+CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_boundary_ids,
+                                      std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+                                      std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+                                      std::map<int, std::vector<int>> & node_ids_for_boundary_id)
 {
-  for (std::size_t i = 0; i < num_side_sets; i++)
+  // Iterate over all boundary IDs.
+  for (int boundary_id : unique_side_boundary_ids)
   {
-    ss_node_id[i] = new int[num_sides_in_ss[i] * num_face_nodes];
+    // Get element IDs  of element on boundary (and their sides that are on boundary).
+    auto & boundary_element_ids = element_ids_for_boundary_id[boundary_id];
+    auto & boundary_element_sides = side_ids_for_boundary_id[boundary_id];
 
-    for (std::size_t j = 0; j < num_sides_in_ss[i]; j++)
+    // Create vector to hold all nodes on boundary.
+    std::vector<int> boundary_nodes(boundary_element_ids.size() * _num_face_nodes);
+
+    // Iterate over elements on boundary.
+    for (int jelement = 0; jelement < boundary_element_ids.size(); jelement++)
     {
-      int glob_ind = elem_ss[i][j];
-      int side = side_ss[i][j];
+      // Get element ID and the boundary side.
+      const int boundary_element_global_id = boundary_element_ids[jelement];
+      const int boundary_element_side = boundary_element_sides[jelement];
 
-      Elem * elem = elemPtr(glob_ind);
+      Elem * element_ptr = elemPtr(boundary_element_global_id);
 
-      std::vector<unsigned int> nodes = elem->nodes_on_side(side);
+      // Get vector of local node IDs on boundary side of element.
+      auto nodes_of_element_on_side = element_ptr->nodes_on_side(boundary_element_side);
 
-      for (int k = 0; k < num_face_nodes; k++)
+      // Iterate over nodes on boundary side of element.
+      for (int knode = 0; knode < _num_face_nodes; knode++)
       {
-        ss_node_id[i][j * num_face_nodes + k] = elem->node_id(nodes[k]);
+        // Get the global node ID of each node.
+        const int local_node_id = nodes_of_element_on_side[knode];
+        const int global_node_id = element_ptr->node_id(local_node_id);
+
+        // Add to boundary_nodes vector.
+        boundary_nodes[jelement * _num_face_nodes + knode] = global_node_id;
       }
     }
+
+    // Add to node_ids_for_boundary_id for boundary_id.
+    node_ids_for_boundary_id[boundary_id] = boundary_nodes;
   }
 }
