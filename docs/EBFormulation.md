@@ -33,7 +33,7 @@ $$
 where the test functions $\vec u ∈ H(\mathrm{curl})$ and $\vec v ∈ H(\mathrm{div})$. Time discretisation is performed using a backwards Euler method, 
 
 $$
-\vec B_{n+1} = \vec B_{n} + \delta t \left(\partial_t \vec B\right)_{n+1} = \vec B_{n} - \delta t \left(\vec ∇× \vec E\right)_{n+1} 
+\vec B_{n+1} = \vec B_{n} + \delta t \partial_t \vec B_{n+1} = \vec B_{n} - \delta t \left(\vec ∇× \vec E\right)_{n+1} 
 $$
 
 Substituting into the weak form evaluated at timestep $n+1$;
