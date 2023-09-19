@@ -6,7 +6,15 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = EBForm
+[]
+
+[Formulation]
+  type = EBFormulation
+  e_field_name = electric_field
+  b_field_name = magnetic_flux_density
+  magnetic_reluctivity_name = magnetic_reluctivity
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
 []
 
 [AuxVariables]
@@ -22,8 +30,8 @@
     [./InitialCondition]
       type = FunctionIC
       function = 2-x
-    [../]    
-  [../]  
+    [../]
+  [../]
 [../]
 
 [Materials]
@@ -43,7 +51,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./CopperEConductivity]
     type = MFEMConstantCoefficient
     value = 5.96e7
@@ -51,7 +59,7 @@
   [./CopperPermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]  
+  [../]
   [./CopperPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
@@ -76,9 +84,9 @@
   dt = 0.5
   start_time = 0.0
   end_time = 0.5
-  
+
   l_tol = 1e-16
-  l_max_its = 1000  
+  l_max_its = 1000
 []
 
 [Outputs]

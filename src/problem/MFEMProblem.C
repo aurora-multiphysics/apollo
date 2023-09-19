@@ -6,7 +6,6 @@ InputParameters
 MFEMProblem::validParams()
 {
   InputParameters params = ExternalProblem::validParams();
-  params.addParam<std::string>("formulation", "Name of EM formulation to use in MFEM.");
   params.addParam<int>(
       "vis_steps",
       1,
@@ -20,7 +19,6 @@ MFEMProblem::validParams()
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
     _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
-    _formulation_name(getParam<std::string>("formulation")),
     _bc_maps(),
     _coefficients(),
     _fespaces(),
@@ -31,29 +29,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-  mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
-  mfem_mesh.EnsureNCMesh();
-
-  std::unique_ptr<int[]> partitioning_ptr = nullptr;
-
-  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
-  {
-    MooseMesh & mooseMesh = ExternalProblem::mesh();
-
-    CoupledMFEMMesh * coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
-    if (coupledMFEMMesh)
-    {
-      partitioning_ptr = coupledMFEMMesh->getMeshPartitioning();
-    }
-  }
-
-  int * partitioning_raw_ptr = partitioning_ptr ? partitioning_ptr.get() : nullptr;
-
-  mfem_problem_builder = hephaestus::Factory::createProblemBuilder(_formulation_name);
-  mfem_problem_builder->ConstructEquationSystem();
-  mfem_problem_builder->SetMesh(
-      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning_raw_ptr));
-
   std::cout << "Problem initialised\n\n" << std::endl;
 }
 
@@ -163,6 +138,37 @@ MFEMProblem::externalSolve()
 }
 
 void
+MFEMProblem::setFormulation(const std::string & user_object_name,
+                            const std::string & name,
+                            InputParameters & parameters)
+{
+  mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
+  mfem_mesh.EnsureNCMesh();
+
+  std::unique_ptr<int[]> partitioning_ptr = nullptr;
+
+  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
+  {
+    MooseMesh & mooseMesh = ExternalProblem::mesh();
+
+    CoupledMFEMMesh * coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
+    if (coupledMFEMMesh)
+    {
+      partitioning_ptr = coupledMFEMMesh->getMeshPartitioning();
+    }
+  }
+
+  int * partitioning_raw_ptr = partitioning_ptr ? partitioning_ptr.get() : nullptr;
+
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+  MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
+  mfem_problem_builder = mfem_formulation->getProblemBuilder();
+  mfem_problem_builder->ConstructEquationSystem();
+  mfem_problem_builder->SetMesh(
+      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning_raw_ptr));
+}
+
+void
 MFEMProblem::addBoundaryCondition(const std::string & bc_name,
                                   const std::string & name,
                                   InputParameters & parameters)
@@ -206,26 +212,25 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
 }
 
 void
-MFEMProblem::addUserObject(const std::string & user_object_name,
-                           const std::string & name,
-                           InputParameters & parameters)
+MFEMProblem::addSource(const std::string & user_object_name,
+                       const std::string & name,
+                       InputParameters & parameters)
+{
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+  MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
+  _sources.Register(name, mfem_source->getSource(), true);
+  mfem_source->storeCoefficients(_coefficients);
+}
+
+void
+MFEMProblem::addCoefficient(const std::string & user_object_name,
+                            const std::string & name,
+                            InputParameters & parameters)
 {
 
   FEProblemBase::addUserObject(user_object_name, name, parameters);
-
-  const UserObject * uo = &(getUserObjectBase(name));
-
-  if (dynamic_cast<const MFEMSource *>(uo) != nullptr)
-  {
-    MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
-    _sources.Register(name, mfem_source->getSource(), true);
-    mfem_source->storeCoefficients(_coefficients);
-  }
-  else if (dynamic_cast<const MFEMConstantCoefficient *>(uo) != nullptr)
-  {
-    MFEMConstantCoefficient * mfem_coef(&getUserObject<MFEMConstantCoefficient>(name));
-    _coefficients.scalars.Register(name, mfem_coef, true);
-  }
+  mfem::Coefficient * mfem_coef(&getUserObject<mfem::Coefficient>(name));
+  _coefficients.scalars.Register(name, mfem_coef, true);
 }
 
 void

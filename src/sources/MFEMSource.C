@@ -6,6 +6,7 @@ InputParameters
 MFEMSource::validParams()
 {
   InputParameters params = GeneralUserObject::validParams();
+  params.registerBase("MFEMSource");
   params.addParam<std::vector<SubdomainID>>(
       "block", "The list of block IDs on which the source will be applied");
   return params;

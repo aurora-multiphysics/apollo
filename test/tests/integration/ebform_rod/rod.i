@@ -5,8 +5,16 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = EBForm
   use_glvis = true
+[]
+
+[Formulation]
+  type = EBFormulation
+  e_field_name = electric_field
+  b_field_name = magnetic_flux_density
+  magnetic_reluctivity_name = magnetic_reluctivity
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
 []
 
 [AuxVariables]
@@ -60,7 +68,7 @@
   [../]
 []
 
-[UserObjects]
+[Sources]
   [./SourcePotential]
     type = MFEMScalarPotentialSource
     potential = electric_potential
@@ -86,7 +94,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./CopperEConductivity]
     type = MFEMConstantCoefficient
     value = 62.83185
@@ -121,7 +129,7 @@
   end_time = 2.5
 
   l_tol = 1e-16
-  l_max_its = 1000  
+  l_max_its = 1000
 []
 
 [Outputs]

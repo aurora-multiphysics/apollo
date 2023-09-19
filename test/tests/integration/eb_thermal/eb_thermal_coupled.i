@@ -6,8 +6,16 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = EBForm
-  use_glvis=true
+  use_glvis = false
+[]
+
+[Formulation]
+  type = EBFormulation
+  e_field_name = electric_field
+  b_field_name = magnetic_flux_density
+  magnetic_reluctivity_name = magnetic_reluctivity
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
 []
 
 [Functions]
@@ -52,7 +60,7 @@
   [../]
 []
 
-[UserObjects]
+[Sources]
   [./SourcePotential]
     type = MFEMScalarPotentialSource
     potential = electric_potential
@@ -69,13 +77,13 @@
     family = MONOMIAL
     order = CONSTANT
     initial_condition = 0.0
-  [../]  
+  [../]
 []
 
 [AuxKernels]
   [joule_heating_aux]
     type = MFEMJouleHeatingAux
-  []  
+  []
 []
 
 [Materials]
@@ -95,7 +103,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./CopperEConductivity]
     type = MFEMParsedCoefficient
     mfem_gridfunction_names = 'temperature'
@@ -112,7 +120,6 @@
     type = MFEMConstantCoefficient
     value = 0.0
   [../]
-
   [./AirEConductivity]
     type = MFEMConstantCoefficient
     value = 1.0
@@ -132,9 +139,9 @@
   dt = 0.5
   start_time = 0.0
   end_time = 1.0
-  
+
   l_tol = 1e-16
-  l_max_its = 1000  
+  l_max_its = 1000
 []
 
 [Outputs]

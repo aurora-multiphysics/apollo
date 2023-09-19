@@ -5,8 +5,19 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = ComplexAForm
-  use_glvis = true
+  use_glvis = false
+[]
+
+[Formulation]
+  type = ComplexAFormulation
+  magnetic_vector_potential_name = magnetic_vector_potential
+  magnetic_vector_potential_re_name = magnetic_vector_potential_real
+  magnetic_vector_potential_im_name = magnetic_vector_potential_imag
+  frequency_name = frequency
+  magnetic_reluctivity_name = magnetic_reluctivity
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
+  dielectric_permittivity_name = dielectric_permittivity
 []
 
 [AuxVariables]
@@ -14,35 +25,35 @@
     type = MFEMVariable
     fespace_name = _HCurlFESpace
     fespace_type = ND
-    order = second
+    order = first
   [../]
   [./magnetic_vector_potential_imag]
     type = MFEMVariable
     fespace_name = _HCurlFESpace
     fespace_type = ND
-    order = second
+    order = first
   [../]
   [./magnetic_flux_density_real]
     type = MFEMVariable
     fespace_name = _HDivFESpace
     fespace_type = RT
-    order = second
+    order = constant
   [../]
   [./magnetic_flux_density_imag]
     type = MFEMVariable
     fespace_name = _HDivFESpace
     fespace_type = RT
-    order = second
+    order = constant
   [../]
   [./electric_potential]
     type = MFEMVariable
     fespace_name = _H1FESpace
     fespace_type = H1
-    order = second
+    order = first
   [../]
 []
 
-[UserObjects]
+[Sources]
   [./SourceCoil]
     type = MFEMDivFreeVolumetricSource
     function = RacetrackCoilCurrentFunction
@@ -53,7 +64,7 @@
 [Functions]
   [./RacetrackCoilCurrentFunction]
     type = RacetrackCoilCurrentDensity
-    coil_axis_x = 194e-3 
+    coil_axis_x = 194e-3
     coil_axis_y = 100e-3
     coil_thickness = 50e-3
     coil_current_magnitude = 2742.0
@@ -78,7 +89,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./frequency]
     type = MFEMConstantCoefficient
     value = 200
@@ -117,7 +128,7 @@
 [Outputs]
   [ParaViewDataCollection]
     type = MFEMParaViewDataCollection
-    file_base = OutputData/TEAM7ParaView
+    file_base = OutputData/TEAM7ParaViewFrequencyDomain
     refinements = 1
     high_order_output = true
   []

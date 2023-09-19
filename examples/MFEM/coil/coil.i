@@ -52,7 +52,7 @@
     thermal_conductivity_coeff = CoilTConductivity
     heat_capacity_coeff = CoilHeatCapacity
     block = 1
-  [../] 
+  [../]
   [./core]
     type = MFEMConductor
     electrical_conductivity_coeff = CoreEConductivity
@@ -65,7 +65,7 @@
     thermal_conductivity_coeff = CoreTConductivity
     heat_capacity_coeff = CoreHeatCapacity
     block = 2
-  [../]  
+  [../]
   [./air]
     type = MFEMConductor
     electrical_conductivity_coeff = AirEConductivity
@@ -78,10 +78,10 @@
     thermal_conductivity_coeff = AirTConductivity
     heat_capacity_coeff = AirHeatCapacity
     block = 3
-  [../]  
+  [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./CoilEConductivity]
     type = MFEMConstantCoefficient
     value = 62.83185
