@@ -34,7 +34,7 @@ $$
 \left\langle σ \left(\partial_t \vec A + \vec ∇ V\right), \vec ∇ q \right\rangle_{\vec L^2(\Omega)} - \left\langle σ \left(\partial_t \vec A + \vec ∇ V\right)\cdot \vec n, q \right\rangle_{\vec L^2(\partial \Omega)} = 0
 $$
 
-where the test functions $v ∈ H(\mathrm{curl})$, $q ∈ H^1$. Time discretisation is performed using a backwards Euler method, 
+where the test functions $\vec v ∈ H(\mathrm{curl})$, $q ∈ H^1$. Time discretisation is performed using a backwards Euler method, 
 
 $$
 \vec A_{n+1} = \vec A_{n} + \delta t \left(\partial_t \vec A\right)_{n+1}

@@ -16,20 +16,20 @@ where $\vec E_c$ is the complex electric field, $\omega$ is the angular frequenc
 The physical electric and magnetic fields $\vec E$ and $\vec H$ can be obtained from the complex field $\vec E_c$ since 
 
 $$
-\vec E = \text{Re}\left\{\vec E_c e^{i \omega t}\right\}
+\vec E = \text{Re}\left[\vec E_c e^{i \omega t}\right]
 $$ 
 
 and 
 
 $$
-\vec H = \text{Re}\left\{\frac{-ν_c}{\imath ω} \vec \nabla \times \vec E_c\right\}
+\vec H = \text{Re}\left[\frac{-ν_c}{\imath ω} \vec \nabla \times \vec E_c\right]
 $$
 
 ## Weak Form
 The complex $\vec E$ formulation is solved using the weak form
 
 $$
-\langle ν_c \vec ∇ × \vec E_c, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} + \langle \imath ω σ_c \vec E_c, \vec u \rangle_{\vec L^2(\Omega)} - \langle ω^2 ε_c \vec E_c, \vec u \rangle_{\vec L^2(\Omega)} + \left\langle \left( ν_c \vec ∇ × \vec E_c \right) × \vec n, \vec u\right\rangle_{\vec L^2(\partial \Omega)} = -\langle \imath ω \vec J_c^\mathrm{ext}, \vec u \rangle_{\vec L^2(\Omega)}
+\langle ν_c \vec ∇ × \vec E_c, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle \imath ω σ_c \vec E_c, \vec v \rangle_{\vec L^2(\Omega)} - \langle ω^2 ε_c \vec E_c, \vec v \rangle_{\vec L^2(\Omega)} + \left\langle \left( ν_c \vec ∇ × \vec E_c \right) × \vec n, \vec v\right\rangle_{\vec L^2(\partial \Omega)} = -\langle \imath ω \vec J_c^\mathrm{ext}, \vec v \rangle_{\vec L^2(\Omega)}
 $$
 
-where the complex valued test function $v ∈ H(\mathrm{curl})$.
+where the complex valued test function $\vec v ∈ H(\mathrm{curl})$.

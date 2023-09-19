@@ -30,7 +30,7 @@ $$
 \langle \partial_t \vec B, \vec v \rangle_{\vec L^2(\Omega)} + \langle \vec ∇× \vec E, \vec v \rangle_{\vec L^2(\Omega)} = 0
 $$
 
-where the test functions $u ∈ H(\mathrm{curl})$ and $v ∈ H(\mathrm{div})$. Time discretisation is performed using a backwards Euler method, 
+where the test functions $\vec u ∈ H(\mathrm{curl})$ and $\vec v ∈ H(\mathrm{div})$. Time discretisation is performed using a backwards Euler method, 
 
 $$
 \vec B_{n+1} = \vec B_{n} + \delta t \left(\partial_t \vec B\right)_{n+1} = \vec B_{n} - \delta t \left(\vec ∇× \vec E\right)_{n+1} 
@@ -47,4 +47,4 @@ $$
 \langle  \vec ∇× \vec E_{n+1}, \vec v \rangle_{\vec L^2(\Omega)}
 $$
 
-which can be solved simultaneously for $E_{n+1}$ and $\partial_t \vec B_{n+1}$.
+which can be solved simultaneously for $\vec E_{n+1}$ and $\partial_t \vec B_{n+1}$.

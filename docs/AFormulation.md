@@ -24,7 +24,7 @@ $$
 \langle ν \vec ∇× \vec A, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle σ \partial_t \vec A, \vec v \rangle_{\vec L^2(\Omega)} - \langle \vec J^\mathrm{ext}, \vec v\rangle_{\vec L^2(\Omega)} - \langle \vec H × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)} = 0
 $$
 
-where the test function $v ∈ H(\mathrm{curl})$. Time discretisation is performed using a backwards Euler method, 
+where the test function $\vec v ∈ H(\mathrm{curl})$. Time discretisation is performed using a backwards Euler method, 
 
 $$
 \vec A_{n+1} = \vec A_{n} + \delta t \left(\partial_t \vec A\right)_{n+1}
