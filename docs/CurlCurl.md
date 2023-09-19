@@ -34,7 +34,7 @@ $$
 \langle\beta \partial_t \vec u_{n+1}, \vec v \rangle_{\vec L^2(\Omega)} = \langle\vec q_{n+1}, \vec v\rangle_{\vec L^2(\Omega)} -\langle\alpha \vec ∇× \vec u_n, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle(α \vec ∇× \vec u_{n+1}) × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)}
 $$
 
-With suitable boundary conditions, one can therefore solve for $(\partial_t \vec u)_{n+1}$ and thus $\vec u_{n+1}$.
+With suitable boundary conditions, one can therefore solve for $ {(\partial_t \vec u)_{n+1}} $ and thus $\vec u_{n+1}$.
 
 ## Formulations
 Formulations that are solved using this weak form are:
