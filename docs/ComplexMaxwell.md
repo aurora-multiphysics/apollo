@@ -26,5 +26,5 @@ where the complex valued test function $v ∈ H(\mathrm{curl})$.
 
 ## Formulations
 Formulations that are solved using this weak form are:
-- [Complex $\vec E$ Formulation](ComplexEFormulation.md) - taking the trial function $\vec u$ as as the complex electric field $\vec E_c$.
-- [Complex $\vec A$ Formulation](ComplexAFormulation.md) - taking the trial function $\vec u$ as the complex magnetic vector potential $\vec A_c$.
+- [Complex $E$ Formulation](ComplexEFormulation.md) - taking the trial function $\vec u$ as as the complex electric field $\vec E_c$.
+- [Complex $A$ Formulation](ComplexAFormulation.md) - taking the trial function $\vec u$ as the complex magnetic vector potential $\vec A_c$.

@@ -7,23 +7,23 @@ filename: EBFormulation.md
 The governing equations for this formulation are given by Ampere's law and Faraday's law:
 
 $$
-\vec ∇× \left(ν \vec ∇× \vec B\right) -σ\vec E = \vec J_\mathrm{ext}
+\vec ∇× \left(ν \vec ∇× \vec B\right) -σ\vec E = \vec J^\mathrm{ext}
 $$
 
 $$
 \partial_t \vec B = -\vec ∇× \vec E
 $$
 
-where $\vec E ∈ H(\mathrm{curl})$, $\vec B ∈ H(\mathrm{div})$, and $\vec J_\mathrm{ext} ∈ H(\mathrm{div})$.
+where $\vec E ∈ H(\mathrm{curl})$, $\vec B ∈ H(\mathrm{div})$, and $\vec J^\mathrm{ext} ∈ H(\mathrm{div})$.
 
-The material coefficients $σ$ and $ν$ vary spatially and represent the local electric conductivity and the magnetic reluctivity (the reciprocal of the magnetic permeability) respectively. In terms of these variables, the magnetic field $\vec H = ν \vec B$, and the (total) electric current $\vec J = \vec J_\mathrm{ext} + σ \vec E$.
+The material coefficients $σ$ and $ν$ vary spatially and represent the local electric conductivity and the magnetic reluctivity (the reciprocal of the magnetic permeability) respectively. In terms of these variables, the magnetic field $\vec H = ν \vec B$, and the (total) electric current $\vec J = \vec J^\mathrm{ext} + σ \vec E$.
 
 
 ## Weak Form
 The $\vec E \vec B$ formulation is solved using the weak form
 
 $$
-\langle ν \vec ∇× \vec B, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle σ \vec E, \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J_\mathrm{ext}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)} = 0
+\langle ν \vec ∇× \vec B, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle σ \vec E, \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J^\mathrm{ext}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)} = 0
 $$
 
 $$
@@ -39,7 +39,7 @@ $$
 Substituting into the weak form evaluated at timestep $n+1$;
 
 $$
- \langle  ν \delta t \vec ∇× \vec E_{n+1}, \vec u \rangle_{\vec L^2(\Omega)} + \langle  σ \vec E_{n+1}, \vec u \rangle_{\vec L^2(\Omega)} = \langle ν \vec ∇× \vec B_n, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J_\mathrm{ext}|_{n+1}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H_{n+1} × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)}
+ \langle  ν \delta t \vec ∇× \vec E_{n+1}, \vec u \rangle_{\vec L^2(\Omega)} + \langle  σ \vec E_{n+1}, \vec u \rangle_{\vec L^2(\Omega)} = \langle ν \vec ∇× \vec B_n, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J_{n+1}^\mathrm{ext}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H_{n+1} × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)}
 $$
 
 $$
