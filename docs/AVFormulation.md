@@ -1,5 +1,6 @@
 ---
 title: AVFormulation
+layout: default
 filename: AVFormulation.md
 ---
 # AVFormulation

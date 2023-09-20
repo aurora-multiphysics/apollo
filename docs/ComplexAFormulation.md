@@ -1,5 +1,6 @@
 ---
 title: ComplexAFormulation
+layout: default
 filename: ComplexAFormulation.md
 ---
 # ComplexAFormulation

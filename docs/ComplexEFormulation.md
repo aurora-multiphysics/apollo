@@ -1,5 +1,6 @@
 ---
 title: ComplexEFormulation
+layout: default
 filename: ComplexEFormulation.md
 ---
 # ComplexEFormulation

@@ -1,5 +1,6 @@
 ---
 title: AFormulation
+layout: default
 filename: AFormulation.md
 ---
 # AFormulation

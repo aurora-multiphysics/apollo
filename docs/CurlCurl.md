@@ -1,5 +1,6 @@
 ---
 title: CurlCurl
+layout: default
 filename: CurlCurl.md
 ---
 # Transient Curl-Curl Formulations

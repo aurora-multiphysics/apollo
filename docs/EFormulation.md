@@ -1,5 +1,6 @@
 ---
 title: EFormulation
+layout: default
 filename: EFormulation.md
 ---
 # EFormulation

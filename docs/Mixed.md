@@ -1,5 +1,6 @@
 ---
 title: Mixed
+layout: default
 filename: Mixed.md
 ---
 # Mixed Formulations

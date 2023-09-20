@@ -1,5 +1,6 @@
 ---
 title: HFormulation
+layout: default
 filename: HFormulation.md
 ---
 # HFormulation

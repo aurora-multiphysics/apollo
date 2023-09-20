@@ -1,5 +1,6 @@
 ---
 title: ComplexMaxwell
+layout: default
 filename: ComplexMaxwell.md
 ---
 # Time Harmonic Curl-Curl Formulations
