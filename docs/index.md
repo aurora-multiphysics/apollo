@@ -58,7 +58,7 @@ Running `make test` after `apollo` is built will run the entire set of tests fou
 # Electromagnetic Models
 Apollo currently provides access to a range of electromagnetic formulations in MOOSE, for use in different regimes:
 
-- [Definite curl-curl formulations]{% link time_domain/curl_curl/CurlCurl.md %} in the time domain for solving low frequency problems using H(Curl) conforming FEs - [AFormulation](AFormulation.md), [HFormulation](HFormulation.md), [EFormulation](EFormulation.md).
+- [Definite curl-curl formulations]({% link time_domain/curl_curl/CurlCurl.md %}) in the time domain for solving low frequency problems using H(Curl) conforming FEs - [AFormulation](AFormulation.md), [HFormulation](HFormulation.md), [EFormulation](EFormulation.md).
 - [Mixed formulations](Mixed.md) in the time domain using H(Curl) and H1 conforming FEs for the representation of vector and scalar potentials respectively - [AVFormulation](AVFormulation.md), [EBFormulation](EBFormulation.md). 
 - [Indefinite complex Maxwell](ComplexMaxwell.md) problem in the frequency domain using H(Curl) conforming FEs (currently requires use of direct solvers, limiting scalability) - [ComplexEFormulation](ComplexEFormulation.md) and [ComplexAFormulation](ComplexAFormulation.md).
 
