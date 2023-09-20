@@ -1,5 +1,6 @@
 ---
 title: Home
+layout: home
 filename: index.md
 ---
 
