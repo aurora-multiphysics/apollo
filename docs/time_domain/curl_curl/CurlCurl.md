@@ -10,14 +10,14 @@ The set of transient curl-curl formulations are intended to solve Maxwell's equa
 The governing equation for these formulations is given by
 
 $$
-\vec ∇× \left(α \vec ∇× \vec u\right) +\partial_t \left(β \vec u \right) = \vec q
+\vec ∇× \left(α \vec ∇× \vec u\right) +\partial_t \left(β \vec u \right) = \vec g
 $$
 
-where $\vec u ∈ H(\mathrm{curl})$ and $\vec q ∈ H(\mathrm{div})$. $α$ and $β$ are material-dependent coefficients.
+where $\vec u ∈ H(\mathrm{curl})$ and $\vec g ∈ H(\mathrm{div})$. $α$ and $β$ are material-dependent coefficients.
 This is solved using the weak form
 
 $$
-\langle\alpha \vec ∇× \vec u, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle\beta \partial_t \vec u, \vec v \rangle_{\vec L^2(\Omega)} - \langle\vec q, \vec v\rangle_{\vec L^2(\Omega)} - \langle(α \vec ∇× \vec u) × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)} = 0
+\langle\alpha \vec ∇× \vec u, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle\beta \partial_t \vec u, \vec v \rangle_{\vec L^2(\Omega)} - \langle\vec g, \vec v\rangle_{\vec L^2(\Omega)} - \langle(α \vec ∇× \vec u) × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)} = 0
 $$
 
 where the test function $\vec v ∈ H(\mathrm{curl})$.
@@ -33,7 +33,7 @@ Substituting into the weak form evaluated at timestep $n+1$;
 
 $$
 \langle\alpha \delta t \vec ∇× \partial_t \vec u_{n+1}, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} +
-\langle\beta \partial_t \vec u_{n+1}, \vec v \rangle_{\vec L^2(\Omega)} = \langle\vec q_{n+1}, \vec v\rangle_{\vec L^2(\Omega)} -\langle\alpha \vec ∇× \vec u_n, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle(α \vec ∇× \vec u_{n+1}) × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)}
+\langle\beta \partial_t \vec u_{n+1}, \vec v \rangle_{\vec L^2(\Omega)} = \langle\vec g_{n+1}, \vec v\rangle_{\vec L^2(\Omega)} -\langle\alpha \vec ∇× \vec u_n, \vec ∇× \vec v \rangle_{\vec L^2(\Omega)} + \langle(α \vec ∇× \vec u_{n+1}) × \vec n, \vec v\rangle_{\vec L^2(\partial \Omega)}
 $$
 
 With suitable boundary conditions, one can therefore solve for $\partial_t \vec u_{n+1}$.
