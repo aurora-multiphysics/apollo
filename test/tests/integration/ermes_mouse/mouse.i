@@ -5,8 +5,19 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = ComplexEForm
   use_glvis = true
+[]
+
+[Formulation]
+  type = ComplexEFormulation
+  e_field_name = electric_field
+  e_field_re_name = electric_field_re
+  e_field_im_name = electric_field_im
+  frequency_name = frequency
+  magnetic_reluctivity_name = magnetic_reluctivity
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
+  dielectric_permittivity_name = dielectric_permittivity
 []
 
 [Functions]
@@ -31,7 +42,7 @@
     variable = electric_field
     boundary = '5'
     port_length_vector = '24.76e-2 0 0'
-    port_width_vector = '0 12.38e-2 0'    
+    port_width_vector = '0 12.38e-2 0'
     frequency = 900e6
     input_port = true
   [../]
@@ -40,7 +51,7 @@
     variable = electric_field
     boundary = '6'
     port_length_vector = '24.76e-2 0 0'
-    port_width_vector = '0 12.38e-2 0'    
+    port_width_vector = '0 12.38e-2 0'
     frequency = 900e6
     input_port = false
   [../]
@@ -60,14 +71,14 @@
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
     block = 2
-  [../]  
+  [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./frequency]
     type = MFEMConstantCoefficient
     value = 900e6
-  [../]  
+  [../]
   [./MouseEConductivity]
     type = MFEMConstantCoefficient
     value = 0.97

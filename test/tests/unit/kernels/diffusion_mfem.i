@@ -6,8 +6,11 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = Custom
   use_glvis=true
+[]
+
+[Formulation]
+  type = CustomFormulation
 []
 
 [AuxVariables]
@@ -43,7 +46,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./one]
     type = MFEMConstantCoefficient
     value = 1.0
@@ -63,9 +66,9 @@
   dt = 1.0
   start_time = 0.0
   end_time = 1.0
-  
+
   l_tol = 1e-16
-  l_max_its = 1000  
+  l_max_its = 1000
 []
 
 [Outputs]

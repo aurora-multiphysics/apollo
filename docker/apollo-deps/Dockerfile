@@ -39,5 +39,5 @@ ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 # RUN cd /$WORKDIR/moose/test && \
 #     ./run_tests -j"$compile_cores" --re='(?!initial_condition.newton_with_exact_initialization)'
 
-ENV OMPI_ALLOW_RUN_AS_ROOT=
-ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=
+# ENV OMPI_ALLOW_RUN_AS_ROOT=
+# ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=

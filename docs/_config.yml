@@ -25,8 +25,10 @@
 # github_username:  jekyll
 
 # Build settings
-markdown: kramdown
-theme: jekyll-theme-slate
+markdown: GFM
+remote_theme: pages-themes/slate@v0.2.0
+plugins:
+- jekyll-remote-theme
 # plugins:
 #   - jekyll-feed
 
