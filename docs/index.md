@@ -3,7 +3,6 @@ title: Home
 layout: home
 filename: index.md
 nav_order: 1
-permalink: /docs/
 ---
 
 # Apollo
