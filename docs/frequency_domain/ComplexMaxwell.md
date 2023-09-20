@@ -1,7 +1,10 @@
 ---
-title: ComplexMaxwell
 layout: default
+title: Time Harmonic Curl-Curl Formulations
 filename: ComplexMaxwell.md
+nav_order: 4
+has_children: true
+permalink: /docs/ComplexMaxwell
 ---
 # Time Harmonic Curl-Curl Formulations
 The set of time harmonic curl-curl formulations in the frequency domain are intended to solve Maxwell's equations in low or high frequency regimes driven by time-harmonic sources and boundary conditions.

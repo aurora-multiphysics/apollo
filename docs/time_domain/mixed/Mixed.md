@@ -1,7 +1,10 @@
 ---
-title: Mixed
 layout: default
+title: Mixed Formulations
 filename: Mixed.md
+nav_order: 3
+has_children: true
+permalink: /docs/Mixed
 ---
 # Mixed Formulations
 Mixed formulations from hephaestus solve equations systems containing multiple different finite element types in the equation system solved for.

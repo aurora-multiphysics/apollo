@@ -1,7 +1,9 @@
 ---
-title: EBFormulation
 layout: default
+title: EBFormulation
 filename: EBFormulation.md
+parent: Mixed Formulations
+nav_order: 2
 ---
 # EBFormulation
 The governing equations for this formulation are given by Ampere's law and Faraday's law:

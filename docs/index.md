@@ -2,6 +2,8 @@
 title: Home
 layout: home
 filename: index.md
+nav_order: 1
+permalink: /docs/
 ---
 
 # Apollo
@@ -54,7 +56,7 @@ Running `make test` after `apollo` is built will run the entire set of tests fou
 /opt/apollo/run_tests --re=CoupledFONodalMFEMVar
 ```
 
-## Electromagnetic Models
+# Electromagnetic Models
 Apollo currently provides access to a range of electromagnetic formulations in MOOSE, for use in different regimes:
 
 - [Definite curl-curl formulations](CurlCurl.md) in the time domain for solving low frequency problems using H(Curl) conforming FEs - [AFormulation](AFormulation.md), [HFormulation](HFormulation.md), [EFormulation](EFormulation.md).

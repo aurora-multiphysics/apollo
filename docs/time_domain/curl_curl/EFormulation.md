@@ -1,7 +1,9 @@
 ---
-title: EFormulation
 layout: default
+title: EFormulation
 filename: EFormulation.md
+parent: Transient Curl-Curl Formulations
+nav_order: 3
 ---
 # EFormulation
 The $\vec E$ formulation is a $\partial_t \vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \partial_t \vec B = 0$ in the solution. It is one of the time domain [curl-curl formulations](CurlCurl.md) available from Hephaestus.

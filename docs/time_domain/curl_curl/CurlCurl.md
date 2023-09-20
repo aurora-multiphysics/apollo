@@ -1,7 +1,10 @@
 ---
-title: CurlCurl
 layout: default
+title: Transient Curl-Curl Formulations
 filename: CurlCurl.md
+nav_order: 2
+has_children: true
+permalink: /docs/TransientCurlCurl
 ---
 # Transient Curl-Curl Formulations
 The set of transient curl-curl formulations are intended to solve Maxwell's equations in low frequency limits in the time domain.

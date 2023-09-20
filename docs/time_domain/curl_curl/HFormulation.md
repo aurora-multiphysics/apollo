@@ -1,7 +1,9 @@
 ---
-title: HFormulation
 layout: default
+title: HFormulation
 filename: HFormulation.md
+parent: Transient Curl-Curl Formulations
+nav_order: 2
 ---
 # HFormulation
 The $\vec H$ formulation is an $\vec H$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec J = 0$ in the solution. It is one of the time domain [curl-curl formulations](CurlCurl.md) available from Hephaestus.
