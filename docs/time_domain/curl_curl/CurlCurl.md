@@ -40,6 +40,6 @@ With suitable boundary conditions, one can therefore solve for $\partial_t \vec 
 
 ## Formulations
 Formulations that are solved using this weak form are:
-- [H Formulation](HFormulation.md) - an $\vec H$ conformal formulation, taking the trial function $\vec u$ as as the magnetic field $\vec H$ to strongly enforce $\vec ∇ \cdot \vec J = 0$ in the solution.
-- [A Formulation](AFormulation.md) - a $\vec B$ conformal formulation, taking the trial function $\vec u$ as the magnetic vector potential $\vec A$ to strongly enforce $\vec ∇ \cdot \vec B = 0$ in the solution. 
-- [E Formulation](EFormulation.md) - taking the trial function $\vec u$ as as the electric field $\vec E$ to strongly enforce $\vec ∇ \cdot \partial_t \vec B = 0$ in the solution.
+- [H Formulation]({% link time_domain/curl_curl/HFormulation.md %}) - an $\vec H$ conformal formulation, taking the trial function $\vec u$ as as the magnetic field $\vec H$ to strongly enforce $\vec ∇ \cdot \vec J = 0$ in the solution.
+- [A Formulation]({% link time_domain/curl_curl/AFormulation.md %}) - a $\vec B$ conformal formulation, taking the trial function $\vec u$ as the magnetic vector potential $\vec A$ to strongly enforce $\vec ∇ \cdot \vec B = 0$ in the solution. 
+- [E Formulation]({% link time_domain/curl_curl/EFormulation.md %}) - taking the trial function $\vec u$ as as the electric field $\vec E$ to strongly enforce $\vec ∇ \cdot \partial_t \vec B = 0$ in the solution.

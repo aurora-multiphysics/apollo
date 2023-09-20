@@ -6,7 +6,7 @@ parent: Transient Curl-Curl Formulations
 nav_order: 3
 ---
 # EFormulation
-The $\vec E$ formulation is a $\partial_t \vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \partial_t \vec B = 0$ in the solution. It is one of the time domain [curl-curl formulations](CurlCurl.md) available from Hephaestus.
+The $\vec E$ formulation is a $\partial_t \vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \partial_t \vec B = 0$ in the solution. It is one of the time domain [curl-curl formulations]({% link time_domain/curl_curl/CurlCurl.md %}) available from Hephaestus.
 
 The governing equation for this formulations is given by Ampere's law:
 
