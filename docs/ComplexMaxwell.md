@@ -1,6 +1,5 @@
 ---
 title: ComplexMaxwell
-layout: template
 filename: ComplexMaxwell.md
 ---
 # Time Harmonic Curl-Curl Formulations

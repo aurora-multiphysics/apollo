@@ -1,6 +1,5 @@
 ---
 title: CurlCurl
-layout: template
 filename: CurlCurl.md
 ---
 # Transient Curl-Curl Formulations

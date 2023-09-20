@@ -1,6 +1,5 @@
 ---
 title: EBFormulation
-layout: template
 filename: EBFormulation.md
 ---
 # EBFormulation

@@ -1,6 +1,5 @@
 ---
 title: ComplexAFormulation
-layout: template
 filename: ComplexAFormulation.md
 ---
 # ComplexAFormulation

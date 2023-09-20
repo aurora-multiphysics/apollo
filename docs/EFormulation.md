@@ -1,6 +1,5 @@
 ---
 title: EFormulation
-layout: template
 filename: EFormulation.md
 ---
 # EFormulation

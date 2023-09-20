@@ -1,6 +1,5 @@
 ---
 title: AVFormulation
-layout: template
 filename: AVFormulation.md
 ---
 # AVFormulation

@@ -1,6 +1,5 @@
 ---
 title: Mixed
-layout: template
 filename: Mixed.md
 ---
 # Mixed Formulations

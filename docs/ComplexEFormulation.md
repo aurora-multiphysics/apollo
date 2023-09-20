@@ -1,6 +1,5 @@
 ---
 title: ComplexEFormulation
-layout: template
 filename: ComplexEFormulation.md
 ---
 # ComplexEFormulation

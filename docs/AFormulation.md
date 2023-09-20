@@ -1,6 +1,5 @@
 ---
 title: AFormulation
-layout: template
 filename: AFormulation.md
 ---
 # AFormulation
