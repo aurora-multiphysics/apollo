@@ -5,6 +5,7 @@ theme: just-the-docs
 url: https://just-the-docs.github.io
 
 aux_links:
-  Template Repository: https://github.com/just-the-docs/just-the-docs-template
+  Apollo Repository: https://github.com/aurora-multiphysics/apollo
+  Hephaestus Repository: https://github.com/aurora-multiphysics/hephaestus
 
 color_scheme: dark
