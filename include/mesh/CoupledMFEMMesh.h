@@ -99,6 +99,11 @@ protected:
   std::vector<int> getSideBoundaryIDs() const;
 
   /**
+   * Returns true if mesh is split between two or more processors.
+   */
+  bool isDistributedMesh() const;
+
+  /**
    * Override methods in Exclusive MFEMMesh.
    */
   void buildMFEMMesh() override;
