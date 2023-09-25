@@ -499,8 +499,9 @@ CoupledMFEMMesh::buildMFEMParMesh()
   //   partitioning[node_id] = node->processor_id();
   // }
 
-  _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, *getMFEMMesh());
+  _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, getMFEMMesh());
   // _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, *getMFEMMesh(), partitoning);
+  _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
 }
 
 void

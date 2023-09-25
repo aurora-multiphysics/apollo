@@ -142,7 +142,7 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
                             const std::string & name,
                             InputParameters & parameters)
 {
-  mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
+  mfem::Mesh & mfem_mesh = mesh().getMFEMMesh();
   mfem_mesh.EnsureNCMesh();
 
   std::unique_ptr<int[]> partitioning_ptr = nullptr;
