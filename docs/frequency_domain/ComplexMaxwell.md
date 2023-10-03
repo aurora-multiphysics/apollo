@@ -1,7 +1,9 @@
 ---
-title: ComplexMaxwell
-layout: template
+layout: default
+title: Time Harmonic Curl-Curl Formulations
 filename: ComplexMaxwell.md
+nav_order: 4
+has_children: true
 ---
 # Time Harmonic Curl-Curl Formulations
 The set of time harmonic curl-curl formulations in the frequency domain are intended to solve Maxwell's equations in low or high frequency regimes driven by time-harmonic sources and boundary conditions.
@@ -26,5 +28,5 @@ where the complex valued test function $\vec v ∈ H(\mathrm{curl})$.
 
 ## Formulations
 Formulations that are solved using this weak form are:
-- [Complex E Formulation](ComplexEFormulation.md) - taking the trial function $\vec u$ as as the complex electric field $\vec E_c$.
-- [Complex A Formulation](ComplexAFormulation.md) - taking the trial function $\vec u$ as the complex magnetic vector potential $\vec A_c$.
+- [Complex E Formulation]({% link frequency_domain/ComplexEFormulation.md %}) - taking the trial function $\vec u$ as as the complex electric field $\vec E_c$.
+- [Complex A Formulation]({% link frequency_domain/ComplexAFormulation.md %}) - taking the trial function $\vec u$ as the complex magnetic vector potential $\vec A_c$.

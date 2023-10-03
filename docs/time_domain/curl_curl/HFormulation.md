@@ -1,10 +1,12 @@
 ---
+layout: default
 title: HFormulation
-layout: template
 filename: HFormulation.md
+parent: Transient Curl-Curl Formulations
+nav_order: 2
 ---
 # HFormulation
-The $\vec H$ formulation is an $\vec H$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec J = 0$ in the solution. It is one of the time domain [curl-curl formulations](CurlCurl.md) available from Hephaestus.
+The $\vec H$ formulation is an $\vec H$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec J = 0$ in the solution. It is one of the time domain [curl-curl formulations]({% link time_domain/curl_curl/CurlCurl.md %}) available from Hephaestus.
 
 The governing equation for this formulations is given by Faraday's law:
 
