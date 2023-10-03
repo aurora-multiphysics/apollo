@@ -1,10 +1,12 @@
 ---
+layout: default
 title: AVFormulation
-layout: template
 filename: AVFormulation.md
+parent: Mixed Formulations
+nav_order: 1
 ---
 # AVFormulation
-The $\vec A-V$ formulation is a $\vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec B = 0$ in the solution. It is a mixed time domain formulation available from Hephaestus, similar to the [AFormulation](AFormulation.md) but with the direct inclusion of the electric scalar potential $V$, which can improve numerical stability for domains containing large variations in resisitivity carrying persistent currents. 
+The $\vec A-V$ formulation is a $\vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec B = 0$ in the solution. It is a mixed time domain formulation available from Hephaestus, similar to the [AFormulation]({% link time_domain/curl_curl/AFormulation.md %}) but with the direct inclusion of the electric scalar potential $V$, which can improve numerical stability for domains containing large variations in resisitivity carrying persistent currents. 
 
 The governing equations for this formulations is given by Ampere's law:
 

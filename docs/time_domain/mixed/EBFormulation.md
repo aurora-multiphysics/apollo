@@ -1,13 +1,15 @@
 ---
+layout: default
 title: EBFormulation
-layout: template
 filename: EBFormulation.md
+parent: Mixed Formulations
+nav_order: 2
 ---
 # EBFormulation
 The governing equations for this formulation are given by Ampere's law and Faraday's law:
 
 $$
-\vec ∇× \left(ν \vec ∇× \vec B\right) -σ\vec E = \vec J^\mathrm{ext}
+\vec ∇× \left(ν \vec B\right) -σ\vec E = \vec J^\mathrm{ext}
 $$
 
 $$
@@ -23,7 +25,7 @@ The material coefficients $σ$ and $ν$ vary spatially and represent the local e
 The $\vec E \vec B$ formulation is solved using the weak form
 
 $$
-\langle ν \vec ∇× \vec B, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle σ \vec E, \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J^\mathrm{ext}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)} = 0
+\langle ν \vec B, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle σ \vec E, \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J^\mathrm{ext}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)} = 0
 $$
 
 $$
@@ -39,7 +41,7 @@ $$
 Substituting into the weak form evaluated at timestep $n+1$;
 
 $$
- \langle  ν \delta t \vec ∇× \vec E_{n+1}, \vec u \rangle_{\vec L^2(\Omega)} + \langle  σ \vec E_{n+1}, \vec u \rangle_{\vec L^2(\Omega)} = \langle ν \vec ∇× \vec B_n, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J_{n+1}^\mathrm{ext}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H_{n+1} × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)}
+ \langle  ν \delta t \vec ∇× \vec E_{n+1}, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} + \langle  σ \vec E_{n+1}, \vec u \rangle_{\vec L^2(\Omega)} = \langle ν \vec B_n, \vec ∇× \vec u \rangle_{\vec L^2(\Omega)} - \langle \vec J_{n+1}^\mathrm{ext}, \vec u\rangle_{\vec L^2(\Omega)} + \langle \vec H_{n+1} × \vec n, \vec u\rangle_{\vec L^2(\partial \Omega)}
 $$
 
 $$
