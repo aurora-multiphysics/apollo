@@ -409,9 +409,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   // If the mesh is distributed and split between more than one processor,
   // we need to call allgather on each processor. This will gather the nodes
   // and elements onto each processor.
-  const bool is_distributed = !getMesh().is_replicated();
-
-  if (is_distributed && getMesh().n_processors() > 1)
+  if (isDistributedMesh())
   {
     getMesh().allgather();
   }
