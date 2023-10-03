@@ -1,7 +1,8 @@
 ---
 title: Home
-layout: template
+layout: home
 filename: index.md
+nav_order: 1
 ---
 
 # Apollo
@@ -54,11 +55,11 @@ Running `make test` after `apollo` is built will run the entire set of tests fou
 /opt/apollo/run_tests --re=CoupledFONodalMFEMVar
 ```
 
-## Electromagnetic Models
+# Electromagnetic Models
 Apollo currently provides access to a range of electromagnetic formulations in MOOSE, for use in different regimes:
 
-- [Definite curl-curl formulations](CurlCurl.md) in the time domain for solving low frequency problems using H(Curl) conforming FEs - [AFormulation](AFormulation.md), [HFormulation](HFormulation.md), [EFormulation](EFormulation.md).
-- [Mixed formulations](Mixed.md) in the time domain using H(Curl) and H1 conforming FEs for the representation of vector and scalar potentials respectively - [AVFormulation](AVFormulation.md), [EBFormulation](EBFormulation.md). 
-- [Indefinite complex Maxwell](ComplexMaxwell.md) problem in the frequency domain using H(Curl) conforming FEs (currently requires use of direct solvers, limiting scalability) - [ComplexEFormulation](ComplexEFormulation.md) and [ComplexAFormulation](ComplexAFormulation.md).
+- [Definite curl-curl formulations]({% link time_domain/curl_curl/CurlCurl.md %}) in the time domain for solving low frequency problems using H(Curl) conforming FEs - [AFormulation]({% link time_domain/curl_curl/AFormulation.md %}), [HFormulation]({% link time_domain/curl_curl/HFormulation.md %}), [EFormulation]({% link time_domain/curl_curl/EFormulation.md %}).
+- [Mixed formulations]({% link time_domain/mixed/Mixed.md %}) in the time domain using H(Curl) and H1 conforming FEs for the representation of vector and scalar potentials respectively - [AVFormulation]({% link time_domain/mixed/AVFormulation.md %}), [EBFormulation]({% link time_domain/mixed/EBFormulation.md %}). 
+- [Indefinite complex Maxwell]({% link frequency_domain/ComplexMaxwell.md %}) problem in the frequency domain using H(Curl) conforming FEs (currently requires use of direct solvers, limiting scalability) - [ComplexEFormulation]({% link frequency_domain/ComplexEFormulation.md %}) and [ComplexAFormulation]({% link frequency_domain/ComplexAFormulation.md %}).
 
 Custom MFEM-based formulations and weak forms can also be developed based on CustomFormulation from Apollo.

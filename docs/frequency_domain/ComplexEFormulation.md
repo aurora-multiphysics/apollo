@@ -1,7 +1,9 @@
 ---
+layout: default
 title: ComplexEFormulation
-layout: template
 filename: ComplexEFormulation.md
+parent: Time Harmonic Curl-Curl Formulations
+nav_order: 1
 ---
 # ComplexEFormulation
 

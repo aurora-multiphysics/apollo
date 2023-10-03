@@ -99,6 +99,11 @@ protected:
   std::vector<int> getSideBoundaryIDs() const;
 
   /**
+   * Returns a pointer to the first element on the processor.
+   */
+  const Elem * getFirstElementOnProcessor() const;
+
+  /**
    * Returns true if mesh is split between two or more processors.
    */
   bool isDistributedMesh() const;

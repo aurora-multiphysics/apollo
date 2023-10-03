@@ -1,7 +1,9 @@
 ---
+layout: default
 title: ComplexAFormulation
-layout: template
 filename: ComplexAFormulation.md
+parent: Time Harmonic Curl-Curl Formulations
+nav_order: 2
 ---
 # ComplexAFormulation
 

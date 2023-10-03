@@ -98,10 +98,9 @@ CoupledMFEMMesh::buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids
 void
 CoupledMFEMMesh::buildLibmesh2DElementInfo()
 {
-  // TODO: - this will not work with distributed. Can we just get the first local element?
-  const Elem * element_ptr = elemPtr(0);
+  auto first_element_ptr = getFirstElementOnProcessor();
 
-  _num_nodes_per_element = element_ptr->n_nodes();
+  _num_nodes_per_element = first_element_ptr->n_nodes();
 
   switch (_num_nodes_per_element)
   {
@@ -144,10 +143,9 @@ CoupledMFEMMesh::buildLibmesh2DElementInfo()
 void
 CoupledMFEMMesh::buildLibmesh3DElementInfo()
 {
-  // TODO: - this will not work with distributed. Can we just get the first local element?
-  const Elem * element_ptr = elemPtr(0);
+  auto first_element_ptr = getFirstElementOnProcessor();
 
-  _num_nodes_per_element = element_ptr->n_nodes();
+  _num_nodes_per_element = first_element_ptr->n_nodes();
 
   switch (_num_nodes_per_element)
   {
@@ -278,6 +276,28 @@ CoupledMFEMMesh::getSideBoundaryIDs() const
   return side_boundary_ids;
 }
 
+const Elem *
+CoupledMFEMMesh::getFirstElementOnProcessor() const
+{
+  Elem * first_element_ptr = nullptr;
+
+  auto local_elements_begin = getMesh().local_elements_begin();
+  auto local_elements_end = getMesh().local_elements_end();
+
+  for (auto iterator = local_elements_begin; iterator != local_elements_end; iterator++)
+  {
+    first_element_ptr = *iterator;
+    break;
+  }
+
+  if (!first_element_ptr)
+  {
+    mooseError("Unable to get the first element on processor ", getMesh().processor_id());
+  }
+
+  return first_element_ptr;
+}
+
 bool
 CoupledMFEMMesh::isDistributedMesh() const
 {
@@ -296,9 +316,9 @@ CoupledMFEMMesh::getLibmeshBlockIDs() const
 {
   auto & libmesh = getMesh();
 
-  // TODO: - may not work with distributed meshes.
+  // Identify all subdomains (blocks) in the entire mesh (global == true).
   std::set<subdomain_id_type> block_ids_set;
-  libmesh.subdomain_ids(block_ids_set);
+  libmesh.subdomain_ids(block_ids_set, true);
 
   std::vector<int> unique_block_ids(block_ids_set.size());
 
@@ -320,8 +340,11 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
   {
     std::vector<int> elements_in_block;
 
-    for (auto element_iterator = getMesh().active_subdomain_elements_begin(block_id);
-         element_iterator != getMesh().active_subdomain_elements_end(block_id);
+    auto active_block_elements_begin = getMesh().active_subdomain_elements_begin(block_id);
+    auto active_block_elements_end = getMesh().active_subdomain_elements_end(block_id);
+
+    for (auto element_iterator = active_block_elements_begin;
+         element_iterator != active_block_elements_end;
          element_iterator++)
     {
       auto element_ptr = *element_iterator;
@@ -383,6 +406,16 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
+  // If the mesh is distributed and split between more than one processor,
+  // we need to call allgather on each processor. This will gather the nodes
+  // and elements onto each processor.
+  const bool is_distributed = !getMesh().is_replicated();
+
+  if (is_distributed && getMesh().n_processors() > 1)
+  {
+    getMesh().allgather();
+  }
+
   // 1. Retrieve information about the elements used within the mesh.
   buildLibmeshElementAndFaceInfo();
 

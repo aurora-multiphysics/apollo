@@ -1,10 +1,12 @@
 ---
+layout: default
 title: AFormulation
-layout: template
 filename: AFormulation.md
+parent: Transient Curl-Curl Formulations
+nav_order: 1
 ---
 # AFormulation
-The $\vec A$ formulation is an $\vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec B = 0$ in the solution. It is one of the time domain [curl-curl formulations](CurlCurl.md) available from Hephaestus.
+The $\vec A$ formulation is an $\vec B$ conformal formulation, which strongly enforces $\vec ∇ \cdot \vec B = 0$ in the solution. It is one of the time domain [curl-curl formulations]({% link time_domain/curl_curl/CurlCurl.md %}) available from Hephaestus.
 
 The governing equation for this formulations is given by Ampere's law:
 
