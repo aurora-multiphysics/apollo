@@ -343,7 +343,16 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
     {
       auto element_ptr = *element_iterator;
 
-      int element_id = element_ptr->id();
+      // Each block can contain a different element type but within a block, all
+      // elements must be identical. Check the first element in each block.
+      if (element_iterator == active_block_elements_begin &&
+          element_ptr->n_nodes() != _num_nodes_per_element)
+      {
+        mooseError("Multiple element types detected.");
+        return;
+      }
+
+      const int element_id = element_ptr->id();
 
       std::vector<int> element_node_ids(_num_nodes_per_element);
 
