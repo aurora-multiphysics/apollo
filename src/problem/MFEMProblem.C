@@ -142,28 +142,13 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
                             const std::string & name,
                             InputParameters & parameters)
 {
-  std::shared_ptr<mfem::ParMesh> mfem_par_mesh_shared_ptr = nullptr;
-
-  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
-  {
-    MooseMesh & mooseMesh = ExternalProblem::mesh();
-
-    CoupledMFEMMesh & coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh &>(mooseMesh);
-
-    MFEMParMesh & mfem_par_mesh = coupledMFEMMesh.getMFEMParMesh();
-    mfem_par_mesh_shared_ptr = std::make_shared<MFEMParMesh>(mfem_par_mesh);
-  }
-  else
-  {
-    MFEMParMesh & mfem_par_mesh = mesh().getMFEMParMesh();
-    mfem_par_mesh_shared_ptr = std::make_shared<MFEMParMesh>(mfem_par_mesh);
-  }
+  mfem::ParMesh & mfem_par_mesh = mesh().getMFEMParMesh();
 
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
   mfem_problem_builder = mfem_formulation->getProblemBuilder();
   mfem_problem_builder->ConstructEquationSystem();
-  mfem_problem_builder->SetMesh(mfem_par_mesh_shared_ptr);
+  mfem_problem_builder->SetMesh(std::make_shared<mfem::ParMesh>(mfem_par_mesh));
 }
 
 void
