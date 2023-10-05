@@ -283,7 +283,7 @@ MFEMMesh::handleQuadraticFESpace(
   const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
   const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
-                                       19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
+                                       19, 20, 13, 14, 15, 16, 22, 26, 25, 27, 24, 23, 21};
 
   const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};
 
