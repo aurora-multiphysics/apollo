@@ -38,12 +38,6 @@ public:
            int refine = 1,
            bool fix_orientation = true);
 
-  /**
-   * Returns a constant reference to the protected _libmesh_to_mfem_node_map
-   * member variable.
-   */
-  const std::map<int, int> & getLibmeshToMFEMNodeMap() const;
-
 protected:
   /**
    * Sets the protected variable array using the provided vector of corner node
@@ -103,8 +97,6 @@ protected:
    * Determines the order from the libmesh element type provided.
    */
   const int getOrderFromLibmeshElementType(int libmesh_element_type) const;
-
-  std::map<int, int> _libmesh_to_mfem_node_map;
 
   enum CubitFaceType
   {

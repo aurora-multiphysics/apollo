@@ -361,10 +361,6 @@ MFEMMesh::handleQuadraticFESpace(
         // Extract node's coordinates:
         auto coordinates = coordinates_for_unique_corner_node_id[global_node_id];
 
-        // Map to help with second order variable transfer.
-        // TODO: - what does this do?
-        _libmesh_to_mfem_node_map[global_node_id] = vdofs[j] / 3;
-
         (*Nodes)(vdofs[j]) = coordinates[0];
         (*Nodes)(vdofs[j] + 1) = coordinates[1];
 
@@ -377,12 +373,6 @@ MFEMMesh::handleQuadraticFESpace(
       ielement++;
     }
   }
-}
-
-const std::map<int, int> &
-MFEMMesh::getLibmeshToMFEMNodeMap() const
-{
-  return _libmesh_to_mfem_node_map;
 }
 
 const int
