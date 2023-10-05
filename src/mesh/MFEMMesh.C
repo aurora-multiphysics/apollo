@@ -280,29 +280,30 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id)
 {
-  const int mfemToLibmeshTet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+  const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
-  const int mfemToLibmeshHex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
-                                    19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
+  const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
+                                       19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
 
-  const int mfemToLibmeshTri6[] = {1, 2, 3, 4, 5, 6};
-  const int mfemToLibmeshQuad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};
 
-  int * mfemToLibmeshMap = nullptr;
+  const int mfem_to_libmesh_quad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+  int * mfem_to_libmesh_map = nullptr;
 
   switch (libmesh_element_type)
   {
     case ELEMENT_TRI6:
-      mfemToLibmeshMap = (int *)mfemToLibmeshTri6;
+      mfem_to_libmesh_map = (int *)mfem_to_libmesh_tri6;
       break;
     case ELEMENT_QUAD9:
-      mfemToLibmeshMap = (int *)mfemToLibmeshQuad9;
+      mfem_to_libmesh_map = (int *)mfem_to_libmesh_quad9;
       break;
     case ELEMENT_TET10:
-      mfemToLibmeshMap = (int *)mfemToLibmeshTet10;
+      mfem_to_libmesh_map = (int *)mfem_to_libmesh_tet10;
       break;
     case ELEMENT_HEX27:
-      mfemToLibmeshMap = (int *)mfemToLibmeshHex27;
+      mfem_to_libmesh_map = (int *)mfem_to_libmesh_hex27;
       break;
     case ELEMENT_TRI3:
     case ELEMENT_QUAD4:
@@ -315,7 +316,7 @@ MFEMMesh::handleQuadraticFESpace(
 
   FinalizeTopology();
 
-  // Define quadratic FE space
+  // Define quadratic FE space.
   mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, 3);
   mfem::FiniteElementSpace * finite_element_space =
       new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
@@ -338,7 +339,8 @@ MFEMMesh::handleQuadraticFESpace(
       // Get vector containing ALL node global IDs for element.
       auto & node_ids = node_ids_for_element_id[element_id];
 
-      // Sets DOF array of element.
+      // Sets DOF array for element. Higher-order (second-order) elements contain
+      // additional nodes between corner nodes.
       mfem::Array<int> dofs;
       finite_element_space->GetElementDofs(ielement, dofs);
 
@@ -348,14 +350,20 @@ MFEMMesh::handleQuadraticFESpace(
 
       finite_element_space->DofsToVDofs(vdofs);
 
+      // Iterate over dofs array.
       for (int j = 0; j < dofs.Size(); j++)
       {
-        int point_id = node_ids[mfemToLibmeshMap[j] - 1];
+        // NB: the map is 1-based to we need to subtract 1.
+        const int libmesh_node_index = mfem_to_libmesh_map[j] - 1;
+
+        const int global_node_id = node_ids[libmesh_node_index];
+
+        // Extract node's coordinates:
+        auto coordinates = coordinates_for_unique_corner_node_id[global_node_id];
 
         // Map to help with second order variable transfer.
-        _libmesh_to_mfem_node_map[point_id] = vdofs[j] / 3;
-
-        auto coordinates = coordinates_for_unique_corner_node_id[point_id];
+        // TODO: - what does this do?
+        _libmesh_to_mfem_node_map[global_node_id] = vdofs[j] / 3;
 
         (*Nodes)(vdofs[j]) = coordinates[0];
         (*Nodes)(vdofs[j] + 1) = coordinates[1];
