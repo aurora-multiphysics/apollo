@@ -1,0 +1,11 @@
+[Tests]
+  design = 'syntax/Problem/index.md'
+  [./CoupledElementalMFEMVar]
+    type = 'Exodiff'
+    input = 'elemental_var_coupled.i'
+    exodiff = 'elemental_var_coupled_out.e'  
+    max_parallel = 2
+    min_parallel = 2
+    requirement = 'Apollo shall have the transfer from distributed MOOSE meshes'
+  []  
+[]
