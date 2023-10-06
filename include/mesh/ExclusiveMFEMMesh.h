@@ -48,8 +48,8 @@ public:
    * not been build, the methods will call the appropriate protected methods to
    * build them.
    */
-  std::shared_ptr<MFEMMesh> getMFEMMesh();
-  std::shared_ptr<MFEMParMesh> getMFEMParMesh();
+  MFEMMesh & getMFEMMesh();
+  MFEMParMesh & getMFEMParMesh();
 
   /**
    * Calls buildDummyMesh.

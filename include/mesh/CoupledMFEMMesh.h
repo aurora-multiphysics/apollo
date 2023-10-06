@@ -29,12 +29,6 @@ public:
    */
   void buildMesh() override;
 
-  /**
-   * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
-   * pointer.
-   */
-  std::unique_ptr<int[]> getMeshPartitioning() const;
-
 protected:
   /**
    * An internal method used to create maps from each boundary ID to vectors of side IDs
@@ -102,6 +96,17 @@ protected:
    * Returns a pointer to the first element on the processor.
    */
   const Elem * getFirstElementOnProcessor() const;
+
+  /**
+   * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
+   * pointer.
+   */
+  std::unique_ptr<int[]> getMeshPartitioning();
+
+  /**
+   * Returns true if mesh is split between two or more processors.
+   */
+  bool isDistributedMesh() const;
 
   /**
    * Override methods in Exclusive MFEMMesh.

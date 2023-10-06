@@ -61,10 +61,11 @@ ExclusiveMFEMMesh::buildMFEMMesh()
 void
 ExclusiveMFEMMesh::buildMFEMParMesh()
 {
-  _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, *getMFEMMesh());
+  _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, getMFEMMesh());
+  _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
 }
 
-std::shared_ptr<MFEMMesh>
+MFEMMesh &
 ExclusiveMFEMMesh::getMFEMMesh()
 {
   if (!_mfem_mesh)
@@ -72,10 +73,10 @@ ExclusiveMFEMMesh::getMFEMMesh()
     buildMFEMMesh();
   }
 
-  return _mfem_mesh;
+  return *_mfem_mesh;
 }
 
-std::shared_ptr<MFEMParMesh>
+MFEMParMesh &
 ExclusiveMFEMMesh::getMFEMParMesh()
 {
   if (!_mfem_par_mesh)
@@ -83,7 +84,7 @@ ExclusiveMFEMMesh::getMFEMParMesh()
     buildMFEMParMesh();
   }
 
-  return _mfem_par_mesh;
+  return *_mfem_par_mesh;
 }
 
 std::unique_ptr<MooseMesh>
