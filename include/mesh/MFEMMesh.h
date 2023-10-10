@@ -31,7 +31,8 @@ public:
            std::map<int, std::vector<int>> & element_ids_for_block_id,
            std::map<int, std::vector<int>> & node_ids_for_element_id,
            std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-           std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
+           std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+           std::map<std::pair<int, int>, int> & mfem_dof_for_libmesh_node_id);
 
   MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
@@ -91,7 +92,8 @@ protected:
       const std::vector<int> & unique_block_ids,
       std::map<int, std::vector<int>> & element_ids_for_block_id,
       std::map<int, std::vector<int>> & node_ids_for_element_id,
-      std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
+      std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+      std::map<std::pair<int, int>, int> & mfem_dof_for_libmesh_node_id);
 
   /**
    * Determines the order from the libmesh element type provided.

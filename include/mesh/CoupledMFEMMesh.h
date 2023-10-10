@@ -35,6 +35,14 @@ public:
    */
   std::unique_ptr<int[]> getMeshPartitioning() const;
 
+  /**
+   * Override method in ExclusiveMFEMMesh.
+   */
+  // inline int getMFEMDOF(const int element_id, const int node_id) override
+  // {
+  //   return _mfem_dof_for_libmesh_node_id[std::make_pair<int, int>(element_id, node_id)];
+  // }
+
 protected:
   /**
    * An internal method used to create maps from each boundary ID to vectors of side IDs
@@ -152,4 +160,9 @@ protected:
     ELEMENT_HEX8,
     ELEMENT_HEX27
   };
+
+  /**
+   * Map required for higher-order mesh element transfers --> mfem dof for (element_id, node_id).
+   */
+  std::map<std::pair<int, int>, int> _mfem_dof_for_libmesh_node_id;
 };

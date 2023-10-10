@@ -2,6 +2,8 @@
 #include "MFEMMesh.h"
 #include "MooseError.h"
 
+static bool CoordinatesMatch(double primary[3], double secondary[3]);
+
 MFEMMesh::MFEMMesh(const int num_dimensions,
                    const int num_elements_in_mesh,
                    const int libmesh_element_type,
@@ -17,7 +19,8 @@ MFEMMesh::MFEMMesh(const int num_dimensions,
                    std::map<int, std::vector<int>> & element_ids_for_block_id,
                    std::map<int, std::vector<int>> & node_ids_for_element_id,
                    std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-                   std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id)
+                   std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+                   std::map<std::pair<int, int>, int> & mfem_dof_for_libmesh_node_id)
 {
   // Set dimensions.
   Dim = num_dimensions;
@@ -53,7 +56,8 @@ MFEMMesh::MFEMMesh(const int num_dimensions,
                            unique_block_ids,
                            element_ids_for_block_id,
                            node_ids_for_element_id,
-                           coordinates_for_unique_corner_node_id);
+                           coordinates_for_unique_corner_node_id,
+                           mfem_dof_for_libmesh_node_id);
   }
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
@@ -278,8 +282,12 @@ MFEMMesh::handleQuadraticFESpace(
     const std::vector<int> & unique_block_ids,
     std::map<int, std::vector<int>> & element_ids_for_block_id,
     std::map<int, std::vector<int>> & node_ids_for_element_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id)
+    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+    std::map<std::pair<int, int>, int> & mfem_dof_for_libmesh_node_id)
 {
+  // Clear the map.
+  mfem_dof_for_libmesh_node_id.clear();
+
   const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
   const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
@@ -318,6 +326,12 @@ MFEMMesh::handleQuadraticFESpace(
 
   // Define quadratic FE space.
   mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, 3);
+
+  // NB: note the specified ordering is byVDIM.
+  // byVDim: XYZ, XYZ, XYZ, XYZ,...
+  // byNode: XXX..., YYY..., ZZZ...
+  // TODO: - add checks when we set the components. If we're using the other
+  // ordering then we must do this differently otherwise bad things will happen.
   mfem::FiniteElementSpace * finite_element_space =
       new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
 
@@ -325,7 +339,14 @@ MFEMMesh::handleQuadraticFESpace(
   Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
                                                // and 'finite_element_space'
 
+  printf(
+      "VDim = %d, NDof = %d\n", finite_element_space->GetVDim(), finite_element_space->GetNDofs());
+
   int ielement = 0;
+
+  std::set<int> libmesh_node_ids_to_print = {13679, 13700, 13800};
+
+  finite_element_space->BuildDofToArrays();
 
   // Loop over blocks.
   for (int block_id : unique_block_ids)
@@ -344,35 +365,134 @@ MFEMMesh::handleQuadraticFESpace(
       mfem::Array<int> dofs;
       finite_element_space->GetElementDofs(ielement, dofs);
 
-      // Deep copy of DOFs array.
-      mfem::Array<int> vdofs = dofs;
-      vdofs.SetSize(dofs.Size());
+      // NB: returned indices are ALWAYS ordered byNodes (ie xxx..., yyy..., zzz...)
+      mfem::Array<int> vdofs;
+      finite_element_space->GetElementVDofs(ielement, vdofs);
 
-      finite_element_space->DofsToVDofs(vdofs);
+      std::set<int> seen_mfem_node_ids;
 
       // Iterate over dofs array.
       for (int j = 0; j < dofs.Size(); j++)
       {
+        const int mfem_node_id = dofs[j];
+
+        // Find the libmesh node ID:
         // NB: the map is 1-based to we need to subtract 1.
         const int libmesh_node_index = mfem_to_libmesh_map[j] - 1;
 
-        const int global_node_id = node_ids[libmesh_node_index];
+        const int libmesh_node_id = node_ids[libmesh_node_index];
+
+        // Map back from the libmesh node ID --> MFEM DOF. This will be required
+        // for the higher-order (second-order) mesh transfers. NB: we need to
+        // use the dofs array for this. The vdofs array is for xyz components!
+        auto element_node_pair = std::pair<int, int>(element_id, libmesh_node_id);
+
+        if (seen_mfem_node_ids.count(mfem_node_id))
+        {
+          printf("Argh!!! We've seen this one before %d\n", mfem_node_id);
+        }
+
+        mfem_dof_for_libmesh_node_id[element_node_pair] = mfem_node_id;
+
+        seen_mfem_node_ids.insert(mfem_node_id);
 
         // Extract node's coordinates:
-        auto coordinates = coordinates_for_unique_corner_node_id[global_node_id];
+        auto coordinates = coordinates_for_unique_corner_node_id[libmesh_node_id];
 
+        // Compare the coordinates we've just set with what we get when we call GetNode():
+        double coordinates_expected[3] = {coordinates[0], coordinates[1], coordinates[2]};
+
+        // Set xyz components using the VDIM ordering:
+        // NB: vdofs using xxx, yyy, zzz ordering now...
         (*Nodes)(vdofs[j]) = coordinates[0];
-        (*Nodes)(vdofs[j] + 1) = coordinates[1];
+        (*Nodes)(vdofs[j + dofs.Size()]) = coordinates[1];
 
         if (Dim == 3)
         {
-          (*Nodes)(vdofs[j] + 2) = coordinates[2];
+          (*Nodes)(vdofs[j + 2 * dofs.Size()]) = coordinates[2];
+        }
+
+        double coordinates_returned[3];
+        GetNode(mfem_node_id, coordinates_returned);
+
+        if (!CoordinatesMatch(coordinates_expected, coordinates_returned) ||
+            libmesh_node_ids_to_print.count(libmesh_node_id))
+        {
+          printf("Element %6d, Node %6d, MFEM Node %6d, (%2.2lf, "
+                 "%2.2lf, %2.2lf)\n",
+                 element_id,
+                 libmesh_node_id,
+                 mfem_node_id,
+                 coordinates_returned[0],
+                 coordinates_returned[1],
+                 coordinates_returned[2]);
         }
       }
 
       ielement++;
     }
   }
+
+  /**
+   * - Here, we've verified taht the node coordinates match the libmesh ones we set them to (NOT
+   * surprising)
+   * - We also know that when we call GetNode, the returned coordinates match the libmesh ones
+   * (Yay)!
+   */
+  printf("-----------------------------------------------------------------\n");
+
+  // Now run this test again but using our map this time:
+  for (int block_id : unique_block_ids)
+  {
+    auto & element_ids = element_ids_for_block_id[block_id];
+
+    for (int element_id : element_ids)
+    {
+      auto & libmesh_node_ids = node_ids_for_element_id[element_id];
+
+      for (auto libmesh_node_id : libmesh_node_ids)
+      {
+        // TODO: - rename map: coordinates_for_node_id
+        auto coordinates = coordinates_for_unique_corner_node_id[libmesh_node_id];
+
+        double coordinates_expected[3] = {coordinates[0], coordinates[1], coordinates[2]};
+
+        auto element_node_pair = std::pair<int, int>(element_id, libmesh_node_id);
+
+        const int mfem_node_id = mfem_dof_for_libmesh_node_id[element_node_pair];
+
+        double coordinates_returned[3];
+        GetNode(mfem_node_id, coordinates_returned);
+
+        // if (!CoordinatesMatch(coordinates_expected, coordinates_returned) ||
+        if (libmesh_node_ids_to_print.count(libmesh_node_id))
+        {
+          printf("Element %6d, Node %6d, MFEM Node %6d, (%2.2lf, "
+                 "%2.2lf, %2.2lf)\n",
+                 element_id,
+                 libmesh_node_id,
+                 mfem_node_id,
+                 coordinates_returned[0],
+                 coordinates_returned[1],
+                 coordinates_returned[2]);
+        }
+      }
+    }
+  }
+}
+
+static bool
+CoordinatesMatch(double primary[3], double secondary[3])
+{
+  for (int i = 0; i < 3; i++)
+  {
+    if (fabs(primary[i] - secondary[i]) > 0.01)
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 const int
