@@ -27,12 +27,13 @@ public:
            const std::vector<int> & unique_side_boundary_ids,
            const std::vector<int> & unique_corner_node_ids,
            std::map<int, int> & num_elements_for_boundary_id,
-           std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
+           std::map<int, std::vector<std::vector<int>>> & global_face_node_ids_for_element_id,
+           //  std::map<int, int> & libmesh_to_mfem_corner_node_id_map,
            std::map<int, std::vector<int>> & element_ids_for_block_id,
            std::map<int, std::vector<int>> & node_ids_for_element_id,
            std::map<int, std::vector<int>> & node_ids_for_boundary_id,
            std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-           std::map<std::pair<int, int>, int> & mfem_dof_for_libmesh_node_id);
+           std::map<int, int> & mfem_dof_for_libmesh_node_id);
 
   MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
@@ -58,8 +59,8 @@ protected:
                          const int num_corner_nodes_per_element,
                          const std::vector<int> & unique_block_ids,
                          std::map<int, std::vector<int>> & element_ids_for_block_id,
-                         std::map<int, std::vector<int>> & node_ids_for_element_id,
-                         std::map<int, int> & index_for_unique_corner_node_id);
+                         std::map<int, std::vector<int>> & node_ids_for_element_id);
+  // std::map<int, int> & index_for_unique_corner_node_id);
 
   /**
    * Construct the boundary array of elements.
@@ -69,8 +70,8 @@ protected:
                                  const int num_face_corner_nodes,
                                  const std::vector<int> & unique_side_boundary_ids,
                                  std::map<int, int> & num_elements_for_boundary_id,
-                                 std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-                                 std::map<int, int> & index_for_unique_corner_node_id);
+                                 std::map<int, std::vector<int>> & node_ids_for_boundary_id);
+  // std::map<int, int> & index_for_unique_corner_node_id);
 
   /**
    * Returns a pointer to an mfem::Element.
@@ -93,7 +94,7 @@ protected:
       std::map<int, std::vector<int>> & element_ids_for_block_id,
       std::map<int, std::vector<int>> & node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-      std::map<std::pair<int, int>, int> & mfem_dof_for_libmesh_node_id);
+      std::map<int, int> & mfem_dof_for_libmesh_node_id);
 
   /**
    * Determines the order from the libmesh element type provided.
@@ -121,4 +122,9 @@ protected:
     ELEMENT_HEX8,
     ELEMENT_HEX27
   };
+
+  // MARK: - Test.
+  std::map<int, int> _libmesh_element_id_for_mfem_element_id;
+  std::map<int, int> _mfem_vertex_index_for_libmesh_corner_node_id;
+  std::map<int, std::vector<std::vector<int>>> _libmesh_global_face_node_ids_for_element_id;
 };

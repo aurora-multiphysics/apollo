@@ -38,10 +38,10 @@ public:
   /**
    * Override method in ExclusiveMFEMMesh.
    */
-  // inline int getMFEMDOF(const int element_id, const int node_id) override
-  // {
-  //   return _mfem_dof_for_libmesh_node_id[std::make_pair<int, int>(element_id, node_id)];
-  // }
+  inline int getMFEMDofForLibmeshNodeID(const int libmesh_node_id) override
+  {
+    return _mfem_dof_for_libmesh_node_id[libmesh_node_id];
+  }
 
 protected:
   /**
@@ -162,7 +162,7 @@ protected:
   };
 
   /**
-   * Map required for higher-order mesh element transfers --> mfem dof for (element_id, node_id).
+   * Map required for higher-order mesh element transfers.
    */
-  std::map<std::pair<int, int>, int> _mfem_dof_for_libmesh_node_id;
+  std::map<int, int> _mfem_dof_for_libmesh_node_id;
 };

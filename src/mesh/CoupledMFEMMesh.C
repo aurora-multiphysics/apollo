@@ -434,14 +434,14 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 5. We now create a map from the unique corner node ID to its index in the
   // vector. This ensures that nodes are numbered contiguously starting at index 0.
   // This will be used in the MFEMMesh initializer to renumber the global node IDs.
-  std::map<int, int> libmesh_to_mfem_corner_node_id_map;
+  // std::map<int, int> libmesh_to_mfem_corner_node_id_map;
 
-  for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
-  {
-    const int node_id = unique_corner_node_ids[node_index];
+  // for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
+  // {
+  //   const int node_id = unique_corner_node_ids[node_index];
 
-    libmesh_to_mfem_corner_node_id_map[node_id] = node_index;
-  }
+  //   libmesh_to_mfem_corner_node_id_map[node_id] = node_index;
+  // }
 
   // 6. Create a map to hold the x, y, z coordinates for each unique node.
   std::map<int, std::array<double, 3>> coordinates_for_node_id;
@@ -479,6 +479,111 @@ CoupledMFEMMesh::buildMFEMMesh()
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
 
+  // TEST: print all node IDs.
+  if (false)
+  {
+    FILE * fp = fopen("/opt/libmesh_corner_node_ids.txt", "w");
+    if (!fp)
+      fprintf(stderr, "Error: failed to open file.\n");
+
+    for (int unique_node_id : unique_corner_node_ids)
+    {
+      auto & coordinates = coordinates_for_node_id[unique_node_id];
+
+      fprintf(fp, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+    }
+
+    fclose(fp);
+  }
+
+  // Test: check boundary nodes:
+  if (false)
+  {
+    FILE * fp = fopen("/opt/libmesh_boundary_nodes.txt", "w");
+    if (!fp)
+      fprintf(stderr, "Error: failed to open file.\n");
+
+    for (int boundary_id : unique_side_boundary_ids)
+    {
+      for (int node_id : node_ids_for_boundary_id[boundary_id])
+      {
+        auto & coordinates = coordinates_for_node_id[node_id];
+
+        fprintf(fp, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+      }
+    }
+
+    fclose(fp);
+  }
+
+  if (true)
+  {
+    FILE * fp = fopen("/opt/libmesh_faces.txt", "w");
+
+    for (int block_id : unique_block_ids)
+    {
+      for (int element_id : element_ids_for_block_id[block_id])
+      {
+        fprintf(fp, "Element %d:\n", element_id);
+
+        libMesh::Elem * the_element = elemPtr(element_id);
+
+        for (int iside = 0; iside < the_element->n_sides(); iside++)
+        {
+          fprintf(fp, "Face %d:\n", iside);
+
+          auto nodes_on_side = the_element->nodes_on_side(iside);
+
+          for (int node_id : nodes_on_side)
+          {
+            const int local_node_id = node_id;
+
+            auto global_node_id = the_element->node_id(local_node_id);
+
+            auto & coordinates = coordinates_for_node_id[global_node_id];
+
+            fprintf(fp, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+          }
+        }
+      }
+    }
+
+    fclose(fp);
+  }
+
+  // Hacky test. Send all side info to MFEMMesh.
+  std::map<int, std::vector<std::vector<int>>> global_face_node_ids_for_element_id;
+
+  for (int block_id : unique_block_ids)
+  {
+    for (int element_id : element_ids_for_block_id[block_id])
+    {
+      libMesh::Elem * the_element = elemPtr(element_id);
+
+      std::vector<std::vector<int>> global_node_ids_for_faces;
+
+      for (int iside = 0; iside < the_element->n_sides(); iside++)
+      {
+        auto nodes_on_side = the_element->nodes_on_side(iside);
+
+        std::vector<int> global_node_ids_for_face;
+
+        for (int node_id : nodes_on_side)
+        {
+          const int local_node_id = node_id;
+
+          auto global_node_id = the_element->node_id(local_node_id);
+
+          global_node_ids_for_face.push_back(global_node_id);
+        }
+
+        global_node_ids_for_faces.push_back(global_node_ids_for_face);
+      }
+
+      global_face_node_ids_for_element_id[element_id] = global_node_ids_for_faces;
+    }
+  }
+
   // 10. Create MFEM mesh using this extremely long but necessary constructor.
   _mfem_mesh = std::make_shared<MFEMMesh>(3,
                                           nElem(),
@@ -491,7 +596,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           unique_side_boundary_ids,
                                           unique_corner_node_ids,
                                           num_elements_for_boundary_id,
-                                          libmesh_to_mfem_corner_node_id_map,
+                                          global_face_node_ids_for_element_id,
+                                          // libmesh_to_mfem_corner_node_id_map,
                                           element_ids_for_block_id,
                                           node_ids_for_element_id,
                                           node_ids_for_boundary_id,
