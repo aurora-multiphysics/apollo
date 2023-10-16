@@ -145,6 +145,23 @@ CoupledMFEMMesh::buildLibmesh3DElementInfo()
 {
   auto first_element_ptr = getFirstElementOnProcessor();
 
+  /**
+   * Test code
+   */
+  for (int i = 0; i < first_element_ptr->n_nodes(); i++)
+  {
+    const int local_node_id = first_element_ptr->local_node(i);
+    const int global_node_id = first_element_ptr->node_id(local_node_id);
+
+    auto node_ptr = getMesh().node_ptr(global_node_id);
+
+    const double x = (*node_ptr)(0);
+    const double y = (*node_ptr)(1);
+    const double z = (*node_ptr)(2);
+
+    printf("(%.2lf, %.2lf, %.2lf)\n", x, y, z);
+  }
+
   _num_nodes_per_element = first_element_ptr->n_nodes();
 
   switch (_num_nodes_per_element)
@@ -179,7 +196,7 @@ CoupledMFEMMesh::buildLibmesh3DElementInfo()
     }
     default:
     {
-      mooseError("Don't know what to do with a ", _num_nodes_per_element, " node 2D element.");
+      mooseError("Don't know what to do with a ", _num_nodes_per_element, " node 3D element.");
       break;
     }
   }

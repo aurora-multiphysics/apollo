@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug.e
+  file = gold/mug-hex27.e
   dim = 3
 []
 
@@ -16,7 +16,7 @@
 [AuxVariables]
   [./mfem_diffused]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   [../]
 []
 

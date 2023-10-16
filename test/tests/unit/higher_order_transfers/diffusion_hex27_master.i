@@ -1,20 +1,20 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug.e
+  file = gold/mug-hex27.e
   dim = 3
 []
 
 [Variables]
   [./moose_diffused]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   [../]
 []
 
 [AuxVariables]
   [./mfem_diffused]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   [../]
 []
 
@@ -65,7 +65,7 @@
   [sub_app]
     type = TransientMultiApp
     positions = '0 0 0'
-    input_files = 'diffusion_mfem.i'
+    input_files = 'diffusion_hex27_mfem.i'
     execute_on = timestep_begin
   []
 []

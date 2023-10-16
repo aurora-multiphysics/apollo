@@ -657,7 +657,7 @@ MFEMMesh::handleQuadraticFESpace(
 
   // Test code:
   // The middle node from each face is incorrect. Attempt to remedy this:
-  bool fix_bollocked_central_face_node = true;
+  bool fix_bollocked_central_face_node = false;
 
   if (fix_bollocked_central_face_node)
   {
@@ -724,7 +724,7 @@ MFEMMesh::handleQuadraticFESpace(
 
   // The only node that is now incorrect is the central node of the hex27 element.
   // For libmesh, this will be the last node in each element.
-  bool fix_bollocked_central_hex27_node = true;
+  bool fix_bollocked_central_hex27_node = false;
 
   if (fix_bollocked_central_hex27_node)
   {
@@ -765,9 +765,64 @@ MFEMMesh::handleQuadraticFESpace(
   mfem_dof_for_libmesh_node_id = mfem_node_id_for_libmesh_node_id;
 
   /**
+   * Test: print the mfem node dofs.
+   */
+  if (false)
+  {
+    for (int ielement = 0; ielement < NumOfElements; ielement++)
+    {
+      mfem::Array<int> all_dofs;
+      finite_element_space->GetElementDofs(ielement, all_dofs);
+
+      std::set<int> unloved_dofs;
+      for (int dof : all_dofs)
+      {
+        unloved_dofs.insert(dof);
+      }
+
+      mfem::Array<int> interior_dofs;
+      finite_element_space->GetElementInteriorDofs(ielement, interior_dofs);
+      for (int interior_dof : interior_dofs)
+      {
+        unloved_dofs.erase(interior_dof);
+      }
+
+      mfem::Array<int> faces;
+      mfem::Array<int> faces_orientation;
+
+      GetElementFaces(ielement, faces, faces_orientation);
+
+      for (int face : faces)
+      {
+        mfem::Array<int> face_dofs;
+        finite_element_space->GetFaceDofs(face, face_dofs);
+
+        for (int face_dof : face_dofs)
+        {
+          unloved_dofs.erase(face_dof);
+        }
+      }
+
+      if (unloved_dofs.size() == 0)
+      {
+        continue;
+      }
+
+      printf("Element %d: ", ielement);
+
+      for (int unloved_dof : unloved_dofs)
+      {
+        printf("%d, ", unloved_dof);
+      }
+
+      printf("\n");
+    }
+  }
+
+  /**
    * Test: print mfem edges of each element.
    */
-  if (true)
+  if (false)
   {
     FILE * fp = fopen("/opt/mfem_edges.txt", "w");
     if (!fp)
@@ -1015,91 +1070,6 @@ MFEMMesh::handleQuadraticFESpace(
       printf("Unrefereneced libmesh node %d\n", node_id);
     }
   }
-
-  // /**
-  //  * Test: old comparirson.
-  //  */
-  // if (false)
-  // {
-  //   std::vector<int> libmesh_elements_to_print = {0, 1, 2, 3, 4, 76};
-
-  //   libmesh_elements_to_print.clear();
-
-  //   FILE * fp = fopen("/opt/mfem_output.txt", "w");
-  //   if (!fp)
-  //   {
-  //     fprintf(stderr, "Error: could not open file.\n");
-  //   }
-
-  //   // Print-out all mfem nodes that have been shared with the coordinates:
-  //   for (int ielement = 0; ielement < NumOfElements; ielement++)
-  //   {
-  //     mfem::Array<int> mfem_node_ids;
-  //     finite_element_space->GetElementDofs(ielement, mfem_node_ids);
-
-  //     for (int mfem_node_id : mfem_node_ids)
-  //     {
-  //       auto & vector_of_libmesh_info = shared_mfem_node_map.at(mfem_node_id);
-
-  //       if (vector_of_libmesh_info.size() < 2)
-  //         continue;
-
-  //       bool non_matching_libmesh_node_ids = false;
-
-  //       for (auto & libmesh_info : vector_of_libmesh_info)
-  //       {
-  //         if (libmesh_info.libmesh_node_id != vector_of_libmesh_info.front().libmesh_node_id)
-  //         {
-  //           non_matching_libmesh_node_ids = true;
-  //           break;
-  //         }
-  //       }
-
-  //       if (!non_matching_libmesh_node_ids)
-  //       {
-  //         continue;
-  //       }
-
-  //       auto & mfem_node_info = mfem_info_for_id.at(mfem_node_id);
-
-  //       // Get the coordinates associated with the shared node.
-  //       double coordinates_returned[3];
-  //       GetNode(mfem_node_id, coordinates_returned);
-
-  //       fprintf(fp,
-  //               "mfem_element_id = %5d (%5d), mfem_node_id = %5d, mfem_node_index = %5d, (%.2lf,
-  //               "
-  //               "%.2lf, "
-  //               "%.2lf)\n",
-  //               mfem_node_info.mfem_element_id,
-  //               ielement,
-  //               mfem_node_info.mfem_node_id,
-  //               mfem_node_info.mfem_node_index,
-  //               coordinates_returned[0],
-  //               coordinates_returned[1],
-  //               coordinates_returned[2]);
-
-  //       for (auto & libmesh_info : vector_of_libmesh_info)
-  //       {
-  //         fprintf(fp,
-  //                 "\tlibmesh_element_id = %5d, libmesh_node_id = %5d, libmesh_node_index = %5d,
-  //                 ", libmesh_info.libmesh_element_id, libmesh_info.libmesh_node_id,
-  //                 libmesh_info.libmesh_node_index);
-
-  //         libmesh_elements_to_print.push_back(libmesh_info.libmesh_element_id);
-
-  //         auto & coordinates =
-  //         coordinates_for_unique_corner_node_id[libmesh_info.libmesh_node_id];
-
-  //         fprintf(fp, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
-  //       }
-
-  //       fprintf(fp, "\n");
-  //     }
-  //   }
-
-  //   fclose(fp);
-  // }
 }
 
 static bool

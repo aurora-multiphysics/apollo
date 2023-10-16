@@ -1,22 +1,29 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug.e
+  file = gold/mug-tet10.e
   dim = 3
 []
 
 [Problem]
   type = MFEMProblem
-  use_glvis=true
 []
 
 [Formulation]
   type = CustomFormulation
 []
 
-[AuxVariables]
+[Variables]
   [./mfem_diffused]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
+  [../]
+[]
+
+[AuxVariables]
+  [./temperature]
+    family = LAGRANGE
+    order = SECOND
+    initial_condition = 0
   [../]
 []
 
