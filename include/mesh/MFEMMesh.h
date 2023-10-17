@@ -110,7 +110,7 @@ protected:
    * Returns a set containing all libmesh node ids.
    */
   std::set<int>
-  buildSetContainingLibmeshNodeIDs(std::vector<int> & unique_block_ids,
+  buildSetContainingLibmeshNodeIDs(const std::vector<int> & unique_block_ids,
                                    std::map<int, std::vector<int>> & element_ids_for_block_id,
                                    std::map<int, std::vector<int>> & node_ids_for_element_id);
 
@@ -121,7 +121,7 @@ protected:
    */
   void verifyUniqueMappingBetweenLibmeshAndMFEMNodeIDs(
       mfem::FiniteElementSpace & finite_element_space,
-      std::vector<int> & unique_block_ids,
+      const std::vector<int> & unique_block_ids,
       std::map<int, std::vector<int>> & element_ids_for_block_id,
       std::map<int, std::vector<int>> & node_ids_for_element_id,
       std::map<int, int> libmesh_node_id_for_mfem_node_id,
