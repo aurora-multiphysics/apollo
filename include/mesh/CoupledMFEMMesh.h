@@ -40,7 +40,7 @@ public:
    */
   inline int getMFEMDofForLibmeshNodeID(const int libmesh_node_id) override
   {
-    return _mfem_dof_for_libmesh_node_id[libmesh_node_id];
+    return _mfem_node_id_for_libmesh_node_id[libmesh_node_id];
   }
 
 protected:
@@ -80,6 +80,11 @@ protected:
                                 const std::vector<int> & unique_block_ids,
                                 std::map<int, std::vector<int>> & element_ids_for_block_id,
                                 std::map<int, std::vector<int>> & node_ids_for_element_id);
+
+  void buildElementFaceNodeIDsMap(
+      const std::vector<int> & unique_block_ids,
+      std::map<int, std::vector<int>> & element_ids_for_block_id,
+      std::map<int, std::vector<std::vector<int>>> & face_node_ids_for_element_id);
 
   /**
    * Sets protected member variables.
@@ -164,5 +169,5 @@ protected:
   /**
    * Map required for higher-order mesh element transfers.
    */
-  std::map<int, int> _mfem_dof_for_libmesh_node_id;
+  std::map<int, int> _mfem_node_id_for_libmesh_node_id;
 };
