@@ -349,7 +349,7 @@ MFEMMesh::handleQuadraticFESpace(
   // Define quadratic FE space.
   mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, 3);
 
-  // NB: note the specified ordering is byVDIM.
+  // NB: the specified ordering is byVDIM.
   // byVDim: XYZ, XYZ, XYZ, XYZ,...
   // byNode: XXX..., YYY..., ZZZ...
   mfem::FiniteElementSpace * finite_element_space =
@@ -420,11 +420,12 @@ MFEMMesh::handleQuadraticFESpace(
    * All coordinates should match. If this does not occur then it suggests that
    * there is a problem with the higher-order transfer.
    */
-  verifyUniqueMappingBetweenLibmeshAndMFEMNodeIDs(*finite_element_space,
-                                                  unique_block_ids,
-                                                  element_ids_for_block_id,
-                                                  node_ids_for_element_id,
-                                                  coordinates_for_unique_corner_node_id);
+  verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
+      *finite_element_space,
+      unique_block_ids,
+      element_ids_for_block_id,
+      node_ids_for_element_id,
+      coordinates_for_unique_corner_node_id);
 }
 
 std::set<int>
@@ -453,10 +454,8 @@ MFEMMesh::buildSetContainingLibmeshNodeIDs(
   return libmesh_node_ids_set;
 }
 
-// TODO: - we can bang this verification step somewhere else worst case scenario!!!
-
 void
-MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodeIDs(
+MFEMMesh::verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
     mfem::FiniteElementSpace & finite_element_space,
     const std::vector<int> & unique_block_ids,
     std::map<int, std::vector<int>> & element_ids_for_block_id,

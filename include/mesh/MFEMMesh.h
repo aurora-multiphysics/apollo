@@ -27,7 +27,8 @@ public:
            const std::vector<int> & unique_side_boundary_ids,
            const std::vector<int> & unique_corner_node_ids,
            std::map<int, int> & num_elements_for_boundary_id,
-           std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id,
+           std::map<int, std::vector<std::vector<int>>> &
+               libmesh_face_node_ids_for_element_id, // TODO: - move argument to bottom.
            std::map<int, std::vector<int>> & element_ids_for_block_id,
            std::map<int, std::vector<int>> & node_ids_for_element_id,
            std::map<int, std::vector<int>> & node_ids_for_boundary_id,
@@ -102,8 +103,10 @@ protected:
       std::map<int, std::vector<int>> & node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
       std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id);
+
   /**
-   * Fixes the node ordering for hex27 second-order mesh elements.
+   * Fixes the node ordering for hex27 second-order mesh elements. This is called
+   * internally in handleQuadraticFESpace.
    */
   void fixHex27MeshNodes(
       mfem::FiniteElementSpace & finite_element_space,
@@ -112,7 +115,8 @@ protected:
       std::map<int, std::vector<int>> & node_ids_for_element_id);
 
   /**
-   * Returns a set containing all libmesh node ids.
+   * Creates a set containing all libmesh node ids. This is used in the verification
+   * method for higher-order mesh nodes to check that all nodes correctly map.
    */
   std::set<int>
   buildSetContainingLibmeshNodeIDs(const std::vector<int> & unique_block_ids,
@@ -124,7 +128,7 @@ protected:
    * coordinates should match and every mfem node id should have a corresponding
    * libmesh node id. Any left-over node ids will be detected.
    */
-  void verifyUniqueMappingBetweenLibmeshAndMFEMNodeIDs(
+  void verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
       mfem::FiniteElementSpace & finite_element_space,
       const std::vector<int> & unique_block_ids,
       std::map<int, std::vector<int>> & element_ids_for_block_id,
@@ -132,8 +136,8 @@ protected:
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
 
   /**
-   * Prints debugging info to specified files for second-order mesh elements. Pass
-   * a NULL argument for any paths to skip.
+   * Writes debugging info to specified files for second-order mesh elements. No
+   * information will be printed if a NULL path is supplied.
    */
   void writeSecondOrderElementInfoToFiles(const char * fpathNodes,
                                           const char * fpathEdges,
@@ -167,10 +171,20 @@ protected:
     ELEMENT_HEX27
   };
 
-  // TODO: - add descriptions.
+  /**
+   * A two-way map between libmesh and mfem node ids. This is only used for
+   * higher-order transfers.
+   */
   std::map<int, int> _libmesh_node_id_for_mfem_node_id;
   std::map<int, int> _mfem_node_id_for_libmesh_node_id;
 
+  /**
+   * Map from the MFEM element id to the libmesh element id internally.
+   */
   std::map<int, int> _libmesh_element_id_for_mfem_element_id;
+
+  /**
+   * Maps from the libmesh corner node id to the mfem vertex id internally.
+   */
   std::map<int, int> _mfem_vertex_index_for_libmesh_corner_node_id;
 };

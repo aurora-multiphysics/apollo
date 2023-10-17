@@ -75,6 +75,9 @@ protected:
                                 std::map<int, std::vector<int>> & element_ids_for_block_id,
                                 std::map<int, std::vector<int>> & node_ids_for_element_id);
 
+  /**
+   * Maps from element_id to a vector containing vectors of node_ids for each face.
+   */
   void buildElementFaceNodeIDsMap(
       const std::vector<int> & unique_block_ids,
       std::map<int, std::vector<int>> & element_ids_for_block_id,

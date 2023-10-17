@@ -560,7 +560,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           coordinates_for_node_id);
 
   // 12. Set the maps from MFEMMesh required for second-order mesh transfer.
-  _mfem_node_id_for_libmesh_node_id = (*_mfem_mesh).getMFEMNodeIDForLibmeshNodeIDMap();
+  _mfem_node_id_for_libmesh_node_id = getMFEMMesh().getMFEMNodeIDForLibmeshNodeIDMap();
 }
 
 std::unique_ptr<int[]>
