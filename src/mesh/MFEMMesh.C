@@ -453,48 +453,10 @@ MFEMMesh::handleQuadraticFESpace(
 
   Nodes = new mfem::GridFunction(finite_element_space);
   Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
-  // and 'finite_element_space'
-  own_nodes = 1; // NB: - just added this!
+  own_nodes = 1;                               // and 'finite_element_space'
 
-  // int ielement = 0;
-
-  std::set<int> libmesh_node_ids_to_print = {13679, 13700, 13800};
-  std::set<int> seen_mfem_node_ids;
-
-  struct NodeInfoRec
-  {
-    union
-    {
-      int libmesh_element_id;
-      int mfem_element_id;
-    };
-
-    union
-    {
-      int libmesh_node_id;
-      int mfem_node_id;
-    };
-
-    union
-    {
-      int libmesh_node_index;
-      int mfem_node_index;
-    };
-
-    union
-    {
-      int libmesh_block_id;
-      int mfem_block_id;
-    };
-  };
-
-  // Test...
   std::map<int, int> mfem_node_id_for_libmesh_node_id;
-  std::map<int, int> libmesh_node_id_for_mfem_node_id;
-
-  // MFEM Node Info --> vector{ Libmesh Node Info }
-  std::map<int, std::vector<NodeInfoRec>> shared_mfem_node_map;
-  std::map<int, NodeInfoRec> mfem_info_for_id;
+  std::map<int, int> libmesh_node_id_for_mfem_node_id; // TODO: - not required.
 
   // Loop over blocks.
   for (int ielement = 0; ielement < NumOfElements; ielement++)
@@ -524,59 +486,17 @@ MFEMMesh::handleQuadraticFESpace(
 
       const int libmesh_node_id = libmesh_node_ids[libmesh_node_index];
 
-      // Map back from the libmesh node ID --> MFEM DOF. This will be required
-      // for the higher-order (second-order) mesh transfers. NB: we need to
-      // use the dofs array for this. The vdofs array is for xyz components!
-      // auto element_node_pair = std::pair<int, int>(libmesh_element_id, libmesh_node_id);
-
-      // mfem_dof_for_libmesh_node_id[element_node_pair] = mfem_node_id;
-
-      // Test: two-way map:
+      // Two-way map:
       mfem_node_id_for_libmesh_node_id[libmesh_node_id] = mfem_node_id;
       libmesh_node_id_for_mfem_node_id[mfem_node_id] = libmesh_node_id;
 
       // Extract node's coordinates:
       auto coordinates = coordinates_for_unique_corner_node_id[libmesh_node_id];
 
-      // Add to testing map:
-      NodeInfoRec libmesh_node_info = {.libmesh_element_id = libmesh_element_id,
-                                       .libmesh_node_id = libmesh_node_id,
-                                       .libmesh_node_index = libmesh_node_index};
-
-      // bool already_seen = false;
-
-      if (seen_mfem_node_ids.count(mfem_node_id))
-      {
-        // TEST: don't set the coordinates again!
-        // already_seen = true;
-        shared_mfem_node_map[mfem_node_id].push_back(libmesh_node_info);
-      }
-      else
-      {
-        seen_mfem_node_ids.insert(mfem_node_id);
-
-        NodeInfoRec mfem_node_info = {
-            .mfem_element_id = ielement, .mfem_node_id = mfem_node_id, .mfem_node_index = j};
-
-        std::vector<NodeInfoRec> new_vector;
-
-        new_vector.push_back(libmesh_node_info);
-
-        shared_mfem_node_map[mfem_node_info.mfem_node_id] = new_vector;
-        mfem_info_for_id[mfem_node_info.mfem_node_id] = mfem_node_info;
-      }
-
-      // TODO: - eventually add sanity checks to make sure that the mfem node ID
-      // doesn't map back to a different libmesh node ID on a different element!
-
       // Compare the coordinates we've just set with what we get when we call GetNode():
       double coordinates_expected[3] = {coordinates[0], coordinates[1], coordinates[2]};
 
-      // Set xyz components using the VDIM ordering:
-      // NB: vdofs using xxx, yyy, zzz ordering now...
-      // if (already_seen)
-      //   continue; // Test --> not setting coordinates.
-
+      // NB: vdofs using xxx, yyy, zzz ordering.
       (*Nodes)(vdofs[j]) = coordinates[0];
       (*Nodes)(vdofs[j + dofs.Size()]) = coordinates[1];
 
@@ -587,19 +507,29 @@ MFEMMesh::handleQuadraticFESpace(
     }
   }
 
-  // TODO: - only if hex27
-  fixHex27MeshNodes(*finite_element_space,
-                    coordinates_for_unique_corner_node_id,
-                    node_ids_for_element_id,
-                    mfem_node_id_for_libmesh_node_id,
-                    libmesh_node_id_for_mfem_node_id);
+  /**
+   * Fix the elements for hex27 only. The centre node of each face is incorrect
+   * in addition to the interior node.
+   */
+  if (libmesh_element_type == ELEMENT_HEX27)
+  {
+    fixHex27MeshNodes(*finite_element_space,
+                      coordinates_for_unique_corner_node_id,
+                      node_ids_for_element_id,
+                      mfem_node_id_for_libmesh_node_id,
+                      libmesh_node_id_for_mfem_node_id);
+  }
+
   /**
    * Set the map:
    */
   mfem_dof_for_libmesh_node_id = mfem_node_id_for_libmesh_node_id;
 
-  // TODO: - if this test fails then raise a mooseError since some of the higher-order
-  // mesh nodes do not match correctly.
+  /**
+   * Ensure that there is a one-to-one mapping between libmesh and mfem node ids.
+   * All coordinates should match. If this does not occur then it suggests that
+   * there is a problem with the higher-order transfer.
+   */
   verifyUniqueMappingBetweenLibmeshAndMFEMNodeIDs(*finite_element_space,
                                                   unique_block_ids,
                                                   element_ids_for_block_id,
@@ -608,161 +538,104 @@ MFEMMesh::handleQuadraticFESpace(
                                                   coordinates_for_unique_corner_node_id);
 }
 
-// void
-// MFEMMesh::printElementFaces()
-// {
-//   // TODO: - extract out to method.
-//   /**
-//    * Test: print faces of elements.
-//    */
-//   std::set<int> interesting_mfem_elements_to_print = {0, 1, 2, 3, 4, 76};
+void
+MFEMMesh::writeSecondOrderElementInfoToFiles(const char * fpathNodes,
+                                             const char * fpathEdges,
+                                             const char * fpathFaces,
+                                             mfem::FiniteElementSpace & finite_element_space)
+{
+  FILE * fpNodes = fpathNodes ? fopen(fpathNodes, "w") : nullptr;
+  FILE * fpEdges = fpathEdges ? fopen(fpathEdges, "w") : nullptr;
+  FILE * fpFaces = fpathFaces ? fopen(fpathFaces, "w") : nullptr;
 
-//   FILE * fp = fopen("/opt/mfem_faces.txt", "w");
-//   if (!fp)
-//   {
-//     fprintf(stderr, "Error: cannot open file!\n");
-//   }
+  if (!fpNodes && !fpEdges && !fpFaces)
+  {
+    return;
+  }
 
-//   for (int ielement = 0; ielement < NumOfElements; ielement++)
-//   // for (int ielement : interesting_mfem_elements_to_print)
-//   {
-//     auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
-//     auto & libmesh_node_ids = node_ids_for_element_id[libmesh_element_id];
+  for (int ielement = 0; ielement < NumOfElements; ielement++)
+  {
+    if (fpNodes)
+    {
+      fprintf(fpNodes, "Element %d:\n", ielement);
 
-//     fprintf(fp, "Element %d:\n", ielement);
+      mfem::Array<int> node_dofs;
+      finite_element_space.GetElementDofs(ielement, node_dofs);
 
-//     mfem::Array<int> faces;
-//     mfem::Array<int> face_orientations;
+      for (int node_dof : node_dofs)
+      {
+        double coordinates[3];
+        GetNode(node_dof, coordinates);
 
-//     GetElementFaces(ielement, faces, face_orientations);
+        fprintf(fpNodes, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+      }
 
-//     // Get all of the element's dofs:
-//     mfem::Array<int> element_dofs;
-//     finite_element_space->GetElementDofs(ielement, element_dofs);
+      fprintf(fpNodes, "\n");
+    }
 
-//     std::map<int, int> index_for_element_dof;
+    if (fpEdges)
+    {
+      fprintf(fpEdges, "Element %d:\n", ielement);
 
-//     for (int i = 0; i < element_dofs.Size(); i++)
-//     {
-//       index_for_element_dof[element_dofs[i]] = i;
-//     }
+      mfem::Array<int> edges;
+      mfem::Array<int> edge_orientations;
 
-//     for (int iface = 0; iface < faces.Size(); iface++)
-//     {
-//       fprintf(fp, "Face %d:\n", iface);
+      GetElementEdges(ielement, edges, edge_orientations);
 
-//       mfem::Array<int> face_dofs;
-//       finite_element_space->GetFaceDofs(faces[iface], face_dofs);
+      for (int iedge = 0; iedge < edges.Size(); iedge++)
+      {
+        fprintf(fpEdges, "Edge %d:\n", iedge);
 
-//       for (int i = 0; i < face_dofs.Size(); i++)
-//       {
-//         const int face_dof = face_dofs[i];
+        mfem::Array<int> edge_dofs;
+        finite_element_space.GetEdgeDofs(edges[iedge], edge_dofs);
 
-//         double coordinates[3];
-//         GetNode(face_dof, coordinates);
+        for (int edge_dof : edge_dofs)
+        {
+          double coordinates[3];
+          GetNode(edge_dof, coordinates);
 
-//         // What's the index of the face_dof? Use this to determine the
-//         // corresponding libmesh node id.
-//         const int index = index_for_element_dof[face_dof];
+          fprintf(
+              fpEdges, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+        }
+      }
+    }
 
-//         const int libmesh_node_index = mfem_to_libmesh_map[index] - 1;
+    if (fpFaces)
+    {
+      fprintf(fpFaces, "Element %d:\n", ielement);
 
-//         const int libmesh_node_id = libmesh_node_ids[libmesh_node_index];
-//         auto & libmesh_coordinates = coordinates_for_unique_corner_node_id[libmesh_node_id];
+      mfem::Array<int> faces;
+      mfem::Array<int> face_orientations;
 
-//         double x = coordinates[0], y = coordinates[1], z = coordinates[2];
+      GetElementFaces(ielement, faces, face_orientations);
 
-//         // fprintf(fp, "(%.2lf, %.2lf, %.2lf)\n", x, y, z);
-//         fprintf(fp, "(%.2lf, %.2lf, %.2lf)\n", x, y, z);
-//       }
-//     }
-//   }
+      for (int iface = 0; iface < faces.Size(); iface++)
+      {
+        fprintf(fpFaces, "Face %d:\n", iface);
 
-//   fclose(fp);
-// }
+        mfem::Array<int> face_dofs;
+        finite_element_space.GetFaceDofs(faces[iface], face_dofs);
 
-// void
-// MFEMMesh::printElementCoordinates()
-// {
-//   // TODO: - extract out to method.
-//   /**
-//    * Test: print nodes of mfem elements.
-//    */
-//   if (true)
-//   {
-//     std::set<int> element_ids_to_print = {0, 1, 2, 3, 4, 76};
+        for (int face_dof : face_dofs)
+        {
+          double coordinates[3];
+          GetNode(face_dof, coordinates);
 
-//     FILE * fp = fopen("/opt/mfem_elements.txt", "w");
-//     if (!fp)
-//     {
-//       fprintf(stderr, "Error: could not open file.\n");
-//     }
+          fprintf(
+              fpFaces, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+        }
+      }
+    }
+  }
 
-//     for (int ielement : element_ids_to_print)
-//     {
-//       fprintf(fp, "MFEM Element %4d:\n", ielement);
-
-//       mfem::Array<int> mfem_node_ids;
-//       finite_element_space->GetElementDofs(ielement, mfem_node_ids);
-
-//       double coordinates_returned[3];
-
-//       for (int mfem_node_id : mfem_node_ids)
-//       {
-//         GetNode(mfem_node_id, coordinates_returned);
-
-//         fprintf(fp,
-//                 "(%.2lf, %.2lf, %.2lf)\n",
-//                 coordinates_returned[0],
-//                 coordinates_returned[1],
-//                 coordinates_returned[2]);
-//       }
-
-//       fprintf(fp, "\n");
-//     }
-
-//     fclose(fp);
-//   }
-// }
-
-// void
-// MFEMMesh::printElementEdges()
-// {
-//   FILE * fp = fopen("/opt/mfem_edges.txt", "w");
-//   if (!fp)
-//   {
-//     fprintf(stderr, "Error: cannot open file!\n");
-//   }
-
-//   for (int ielement = 0; ielement < NumOfElements; ielement++)
-//   {
-//     fprintf(fp, "Element %d:\n", ielement);
-
-//     mfem::Array<int> edges;
-//     mfem::Array<int> edge_orientations; // ???
-
-//     GetElementEdges(ielement, edges, edge_orientations);
-
-//     for (int iedge = 0; iedge < edges.Size(); iedge++)
-//     {
-//       fprintf(fp, "Edge %d:\n", iedge);
-
-//       mfem::Array<int> edge_dofs;
-//       finite_element_space->GetEdgeDofs(edges[iedge], edge_dofs);
-
-//       for (int i = 0; i < edge_dofs.Size(); i++)
-//       {
-//         double coordinates[3];
-//         GetNode(edge_dofs[i], coordinates);
-
-//         double x = coordinates[0], y = coordinates[1], z = coordinates[2];
-//         fprintf(fp, "(%.2lf, %.2lf, %.2lf)\n", x, y, z);
-//       }
-//     }
-//   }
-
-//   fclose(fp);
-// }
+  // Cleanup.
+  if (fpNodes)
+    fclose(fpNodes);
+  if (fpEdges)
+    fclose(fpEdges);
+  if (fpFaces)
+    fclose(fpFaces);
+}
 
 std::set<int>
 MFEMMesh::buildSetContainingLibmeshNodeIDs(
@@ -848,7 +721,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodeIDs(
   {
     mooseError("There are ",
                libmesh_node_ids.size(),
-               " unpaired libmesh node ids. No 1-1 mapping exists!\n");
+               " unpaired libmesh node ids. No one-to-one mapping exists!\n");
     return;
   }
 }

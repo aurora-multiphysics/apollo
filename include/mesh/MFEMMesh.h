@@ -126,6 +126,16 @@ protected:
       std::map<int, std::vector<int>> & node_ids_for_element_id,
       std::map<int, int> libmesh_node_id_for_mfem_node_id,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
+
+  /**
+   * Prints debugging info to specified files for second-order mesh elements. Pass
+   * a NULL argument for any paths to skip.
+   */
+  void writeSecondOrderElementInfoToFiles(const char * fpathNodes,
+                                          const char * fpathEdges,
+                                          const char * fpathFaces,
+                                          mfem::FiniteElementSpace & finite_element_space);
+
   /**
    * Determines the order from the libmesh element type provided.
    */
