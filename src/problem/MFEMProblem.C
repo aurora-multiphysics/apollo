@@ -363,13 +363,6 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
             const int mfem_dof = mesh().getMFEMDofForLibmeshNodeID(node_id);
 
             mfem_local_dofs[mfem_dof] = tempSolutionVector(dof);
-            // mfem_local_nodes[mfem_dof] = tempSolutionVector(dof);
-
-            // const int mfem_dof = mesh().getMFEMDOFForLibmeshNodeID(node_id);
-            // printf("libmeshNodeID = %d --> MFEMNodeID = %d\n", node_id, mfem_dof);
-
-            // mfem_local_dofs[mfem_dof] = tempSolutionVector(dof);
-            // mfem_local_nodes[libmeshToMFEMNode[node_id]] = tempSolutionVector(dof);
           }
           count++;
         }

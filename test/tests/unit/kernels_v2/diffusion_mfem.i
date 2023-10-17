@@ -16,6 +16,7 @@
   [./mfem_diffused]
     family = LAGRANGE
     order = SECOND
+    initial_condition = 1
   [../]
 []
 
@@ -23,7 +24,7 @@
   [./temperature]
     family = LAGRANGE
     order = SECOND
-    initial_condition = 0
+    initial_condition = 1
   [../]
 []
 

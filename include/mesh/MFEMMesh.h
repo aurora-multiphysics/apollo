@@ -97,6 +97,36 @@ protected:
       std::map<int, int> & mfem_dof_for_libmesh_node_id);
 
   /**
+   * Fixes the node ordering for hex27 second-order mesh elements.
+   */
+  void
+  fixHex27MeshNodes(mfem::FiniteElementSpace & finite_element_space,
+                    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+                    std::map<int, std::vector<int>> & node_ids_for_element_id,
+                    std::map<int, int> & mfem_node_id_for_libmesh_node_id,
+                    std::map<int, int> & libmesh_node_id_for_mfem_node_id);
+
+  /**
+   * Returns a set containing all libmesh node ids.
+   */
+  std::set<int>
+  buildSetContainingLibmeshNodeIDs(std::vector<int> & unique_block_ids,
+                                   std::map<int, std::vector<int>> & element_ids_for_block_id,
+                                   std::map<int, std::vector<int>> & node_ids_for_element_id);
+
+  /**
+   * Verifies whether the libmesh and mfem node ids have a unique mapping. All
+   * coordinates should match and every mfem node id should have a corresponding
+   * libmesh node id. Any left-over node ids will be detected.
+   */
+  void verifyUniqueMappingBetweenLibmeshAndMFEMNodeIDs(
+      mfem::FiniteElementSpace & finite_element_space,
+      std::vector<int> & unique_block_ids,
+      std::map<int, std::vector<int>> & element_ids_for_block_id,
+      std::map<int, std::vector<int>> & node_ids_for_element_id,
+      std::map<int, int> libmesh_node_id_for_mfem_node_id,
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
+  /**
    * Determines the order from the libmesh element type provided.
    */
   const int getOrderFromLibmeshElementType(int libmesh_element_type) const;

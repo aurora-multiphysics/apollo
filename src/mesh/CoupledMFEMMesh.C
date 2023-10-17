@@ -145,23 +145,6 @@ CoupledMFEMMesh::buildLibmesh3DElementInfo()
 {
   auto first_element_ptr = getFirstElementOnProcessor();
 
-  /**
-   * Test code
-   */
-  for (int i = 0; i < first_element_ptr->n_nodes(); i++)
-  {
-    const int local_node_id = first_element_ptr->local_node(i);
-    const int global_node_id = first_element_ptr->node_id(local_node_id);
-
-    auto node_ptr = getMesh().node_ptr(global_node_id);
-
-    const double x = (*node_ptr)(0);
-    const double y = (*node_ptr)(1);
-    const double z = (*node_ptr)(2);
-
-    printf("(%.2lf, %.2lf, %.2lf)\n", x, y, z);
-  }
-
   _num_nodes_per_element = first_element_ptr->n_nodes();
 
   switch (_num_nodes_per_element)
@@ -620,91 +603,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           node_ids_for_boundary_id,
                                           coordinates_for_node_id,
                                           _mfem_dof_for_libmesh_node_id);
-
-  // Test whether the coordinates match:
-
-  // MFEMMesh * mesh = _mfem_mesh.get();
-
-  // int nprinted = 0;
-
-  // for (int block_id : unique_block_ids)
-  // {
-  //   if (block_id == unique_block_ids[0])
-  //     continue;
-
-  //   for (int element_id : element_ids_for_block_id[block_id])
-  //   {
-  //     if (element_id < 100)
-  //       continue;
-
-  //     printf("************************* Element %4d: *******************************\n",
-  //            element_id);
-
-  //     for (int node_id : node_ids_for_element_id[element_id])
-  //     {
-  //       const int libmesh_node_id = node_id;
-
-  //       auto & libmesh_coordinates = coordinates_for_node_id[libmesh_node_id];
-
-  //       printf("(%2.2lf, %2.2lf, %2.2lf )\n",
-  //              libmesh_coordinates[0],
-  //              libmesh_coordinates[1],
-  //              libmesh_coordinates[2]);
-  //     }
-
-  //     printf("\n");
-
-  //     for (int node_id : node_ids_for_element_id[element_id])
-  //     {
-  //       const int libmesh_node_id = node_id;
-
-  //       const int mfem_node_id = _mfem_dof_for_libmesh_node_id[libmesh_node_id];
-
-  //       double mfem_coordinates[3];
-
-  //       mesh->GetNode(mfem_node_id, mfem_coordinates);
-
-  //       printf("(%2.2lf, %2.2lf, %2.2lf)\n",
-  //              mfem_coordinates[0],
-  //              mfem_coordinates[1],
-  //              mfem_coordinates[2]);
-  //     }
-
-  //     if (nprinted++ > 20)
-  //     {
-  //       break;
-  //     }
-  //   }
-  // }
-
-  // for (const auto & key_value : _mfem_dof_for_libmesh_node_id)
-  // {
-  //   const int libmesh_node_id = key_value.first;
-
-  //   auto & libmesh_coordinates = coordinates_for_node_id[libmesh_node_id];
-
-  //   printf("\n\n");
-
-  //   printf("libmesh_node %4d: { %.2lf, %.2lf, %.2lf }\n",
-  //          libmesh_node_id,
-  //          libmesh_coordinates[0],
-  //          libmesh_coordinates[1],
-  //          libmesh_coordinates[2]);
-
-  //   const int mfem_node_id = key_value.second;
-
-  //   double mfem_coordinates[3];
-
-  //   mesh->GetNode(mfem_node_id, mfem_coordinates);
-
-  //   printf("mfem_node %4d: { %.2lf, %.2lf, %.2lf }\n",
-  //          mfem_node_id,
-  //          mfem_coordinates[0],
-  //          mfem_coordinates[1],
-  //          mfem_coordinates[2]);
-
-  //   printf("\n\n");
-  // }
 }
 
 std::unique_ptr<int[]>

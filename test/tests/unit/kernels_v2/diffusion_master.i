@@ -8,6 +8,7 @@
   [./moose_diffused]
     family = LAGRANGE
     order = SECOND
+    initial_condition = 1    
   [../]
 []
 
@@ -15,11 +16,13 @@
   [./temperature_moose]
     family = LAGRANGE
     order = SECOND
+    initial_condition = 1    
   [../]
 
   [./temperature_mfem]
     family = LAGRANGE
     order = SECOND
+    initial_condition = 1    
   [../]
 []
 
