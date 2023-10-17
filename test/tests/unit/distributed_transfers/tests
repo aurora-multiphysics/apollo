@@ -6,6 +6,6 @@
     exodiff = 'elemental_var_coupled_out.e'  
     max_parallel = 2
     min_parallel = 2
-    requirement = 'Apollo shall have the transfer from distributed MOOSE meshes'
+    requirement = 'Apollo shall have the ability to transfer distributed MOOSE meshes.'
   []  
 []

@@ -298,6 +298,12 @@ CoupledMFEMMesh::getFirstElementOnProcessor() const
   return first_element_ptr;
 }
 
+bool
+CoupledMFEMMesh::isDistributedMesh() const
+{
+  return (!getMesh().is_replicated() && n_processors() > 1);
+}
+
 void
 CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
 {
@@ -343,7 +349,16 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
     {
       auto element_ptr = *element_iterator;
 
-      int element_id = element_ptr->id();
+      // Each block can contain a different element type but within a block, all
+      // elements must be identical. Check the first element in each block.
+      if (element_iterator == active_block_elements_begin &&
+          element_ptr->n_nodes() != _num_nodes_per_element)
+      {
+        mooseError("Multiple element types detected.");
+        return;
+      }
+
+      const int element_id = element_ptr->id();
 
       std::vector<int> element_node_ids(_num_nodes_per_element);
 
@@ -441,9 +456,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   // If the mesh is distributed and split between more than one processor,
   // we need to call allgather on each processor. This will gather the nodes
   // and elements onto each processor.
-  const bool is_distributed = !getMesh().is_replicated();
-
-  if (is_distributed && getMesh().n_processors() > 1)
+  if (isDistributedMesh())
   {
     getMesh().allgather();
   }
@@ -551,8 +564,17 @@ CoupledMFEMMesh::buildMFEMMesh()
 }
 
 std::unique_ptr<int[]>
-CoupledMFEMMesh::getMeshPartitioning() const
+CoupledMFEMMesh::getMeshPartitioning()
 {
+  // Return NULL if mesh is not distributed.
+  if (!isDistributedMesh())
+  {
+    return nullptr;
+  }
+
+  // Call allgather because we need all element information on each processor.
+  getMesh().allgather();
+
   const MeshBase & lib_mesh = getMesh();
 
   const int num_elements = lib_mesh.n_elem();
@@ -577,15 +599,16 @@ CoupledMFEMMesh::getMeshPartitioning() const
 void
 CoupledMFEMMesh::buildMFEMParMesh()
 {
-  // int * partitioning = new int[getMesh().n_nodes()];
-  // for (auto node : getMesh().node_ptr_range())
-  // {
-  //   unsigned int node_id = node->id();
-  //   partitioning[node_id] = node->processor_id();
-  // }
+  // There are two cases:
+  // 1. construct MFEMParMesh from distributed MOOSE mesh -- partitioning array non-null.
+  // 2. construct MFEMParMesh from serial      MOOSE mesh -- partitioning array null.
+  auto partitioning = getMeshPartitioning();
 
-  _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, *getMFEMMesh());
-  // _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, *getMFEMMesh(), partitoning);
+  int * partitioning_raw_ptr = partitioning ? partitioning.get() : nullptr;
+
+  _mfem_par_mesh =
+      std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, getMFEMMesh(), partitioning_raw_ptr);
+  _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
 }
 
 void

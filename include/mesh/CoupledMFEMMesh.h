@@ -30,12 +30,6 @@ public:
   void buildMesh() override;
 
   /**
-   * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
-   * pointer.
-   */
-  std::unique_ptr<int[]> getMeshPartitioning() const;
-
-  /**
    * Override method in ExclusiveMFEMMesh.
    */
   inline int getMFEMDofForLibmeshNodeID(const int libmesh_node_id) override
@@ -115,6 +109,17 @@ protected:
    * Returns a pointer to the first element on the processor.
    */
   const Elem * getFirstElementOnProcessor() const;
+
+  /**
+   * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
+   * pointer.
+   */
+  std::unique_ptr<int[]> getMeshPartitioning();
+
+  /**
+   * Returns true if mesh is split between two or more processors.
+   */
+  bool isDistributedMesh() const;
 
   /**
    * Override methods in Exclusive MFEMMesh.

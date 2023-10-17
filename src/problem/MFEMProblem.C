@@ -142,30 +142,13 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
                             const std::string & name,
                             InputParameters & parameters)
 {
-  mfem::Mesh & mfem_mesh = *(mesh().getMFEMMesh());
-  mfem_mesh.EnsureNCMesh();
-
-  std::unique_ptr<int[]> partitioning_ptr = nullptr;
-
-  if (ExternalProblem::mesh().type() == "CoupledMFEMMesh")
-  {
-    MooseMesh & mooseMesh = ExternalProblem::mesh();
-
-    CoupledMFEMMesh * coupledMFEMMesh = dynamic_cast<CoupledMFEMMesh *>(&mooseMesh);
-    if (coupledMFEMMesh)
-    {
-      partitioning_ptr = coupledMFEMMesh->getMeshPartitioning();
-    }
-  }
-
-  int * partitioning_raw_ptr = partitioning_ptr ? partitioning_ptr.get() : nullptr;
+  mfem::ParMesh & mfem_par_mesh = mesh().getMFEMParMesh();
 
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
   mfem_problem_builder = mfem_formulation->getProblemBuilder();
   mfem_problem_builder->ConstructEquationSystem();
-  mfem_problem_builder->SetMesh(
-      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mfem_mesh, partitioning_raw_ptr));
+  mfem_problem_builder->SetMesh(std::make_shared<mfem::ParMesh>(mfem_par_mesh));
 }
 
 void
