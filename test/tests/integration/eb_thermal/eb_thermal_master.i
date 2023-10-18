@@ -4,10 +4,6 @@
   dim = 3
 []
 
-[Problem]
-  type = MFEMProblem
-[]
-
 [Variables]
   [temperature]
     family = LAGRANGE

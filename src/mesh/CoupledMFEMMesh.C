@@ -292,6 +292,8 @@ CoupledMFEMMesh::buildElementFaceNodeIDsMap(
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
+  printf("YES\n");
+
   // 1. If the mesh is distributed and split between more than one processor,
   // we need to call allgather on each processor. This will gather the nodes
   // and elements onto each processor.
