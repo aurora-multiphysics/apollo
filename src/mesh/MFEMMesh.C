@@ -5,18 +5,17 @@
 
 static bool CoordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
 
-MFEMMesh::MFEMMesh(
-    const int num_elements_in_mesh,
-    const CubitElementInfo & element_info,
-    const std::vector<int> & unique_block_ids,
-    const std::vector<int> & unique_side_boundary_ids,
-    const std::vector<int> & unique_libmesh_corner_node_ids,
-    std::map<int, int> & num_elements_for_boundary_id,
-    std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
+MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
+                   const CubitElementInfo & element_info,
+                   const std::vector<int> & unique_block_ids,
+                   const std::vector<int> & unique_side_boundary_ids,
+                   const std::vector<int> & unique_libmesh_corner_node_ids,
+                   std::map<int, int> & num_elements_for_boundary_id,
+                   std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+                   std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+                   std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+                   std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+                   std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id)
   : _libmesh_node_id_for_mfem_node_id{},
     _mfem_node_id_for_libmesh_node_id{},
     _libmesh_element_id_for_mfem_element_id{},
@@ -49,7 +48,7 @@ MFEMMesh::MFEMMesh(
                            libmesh_element_ids_for_block_id,
                            libmesh_node_ids_for_element_id,
                            coordinates_for_libmesh_node_id,
-                           libmesh_face_node_ids_for_element_id);
+                           libmesh_center_of_face_node_ids_for_element_id);
   }
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
@@ -286,7 +285,7 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id)
+    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id)
 {
   // Verify that this is indeed a second-order element.
   if (element_info.getOrder() != 2)
@@ -418,7 +417,7 @@ MFEMMesh::handleQuadraticFESpace(
   if (element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
   {
     fixHex27MeshNodes(*finite_element_space,
-                      libmesh_face_node_ids_for_element_id,
+                      libmesh_center_of_face_node_ids_for_element_id,
                       coordinates_for_libmesh_node_id,
                       libmesh_node_ids_for_element_id);
   }
@@ -524,10 +523,16 @@ MFEMMesh::verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
 void
 MFEMMesh::fixHex27MeshNodes(
     mfem::FiniteElementSpace & finite_element_space,
-    std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id,
+    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id)
 {
+  if (!libmesh_center_of_face_node_ids_for_element_id)
+  {
+    mooseError("Cannot apply hex27 element face correction due to NULL map!\n");
+    return;
+  }
+
   /**
    * Assumptions:
    * 1) we have a hex27 mesh
@@ -548,7 +553,8 @@ MFEMMesh::fixHex27MeshNodes(
     auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
     auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
 
-    auto & libmesh_node_ids_for_faces = libmesh_face_node_ids_for_element_id[ielement];
+    auto & libmesh_center_of_face_node_ids =
+        (*libmesh_center_of_face_node_ids_for_element_id)[ielement];
 
     // Sanity check: there should be 27 libmesh node ids.
     if (libmesh_node_ids.size() != 27)
@@ -595,13 +601,11 @@ MFEMMesh::fixHex27MeshNodes(
 
       // The middle node from each face is also the last face node in each libmesh
       // vector of node ids.
-      auto & libmesh_face_node_ids = libmesh_node_ids_for_faces[iface];
-
-      auto libmesh_hex27_face_middle_node_id = libmesh_face_node_ids.back();
+      auto libmesh_hex27_center_of_face_node_id = libmesh_center_of_face_node_ids[iface];
 
       // Extract the correct coordinates:
       auto coordinates_for_hex27_face_middle =
-          coordinates_for_libmesh_node_id[libmesh_hex27_face_middle_node_id];
+          coordinates_for_libmesh_node_id[libmesh_hex27_center_of_face_node_id];
 
       const double x = coordinates_for_hex27_face_middle[0];
       const double y = coordinates_for_hex27_face_middle[1];
@@ -613,8 +617,10 @@ MFEMMesh::fixHex27MeshNodes(
       (*Nodes)(z_node_offset) = z;
 
       // Correct the maps:
-      _libmesh_node_id_for_mfem_node_id[hex27_face_middle_dof] = libmesh_hex27_face_middle_node_id;
-      _mfem_node_id_for_libmesh_node_id[libmesh_hex27_face_middle_node_id] = hex27_face_middle_dof;
+      _libmesh_node_id_for_mfem_node_id[hex27_face_middle_dof] =
+          libmesh_hex27_center_of_face_node_id;
+      _mfem_node_id_for_libmesh_node_id[libmesh_hex27_center_of_face_node_id] =
+          hex27_face_middle_dof;
     }
 
     /**

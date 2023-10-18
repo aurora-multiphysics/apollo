@@ -17,18 +17,18 @@
 class MFEMMesh : public mfem::Mesh
 {
 public:
-  MFEMMesh(const int num_elements_in_mesh,
-           const CubitElementInfo & element_info,
-           const std::vector<int> & unique_block_ids,
-           const std::vector<int> & unique_side_boundary_ids,
-           const std::vector<int> & unique_libmesh_corner_node_ids,
-           std::map<int, int> & num_elements_for_boundary_id,
-           std::map<int, std::vector<std::vector<int>>> &
-               libmesh_face_node_ids_for_element_id, // TODO: - move argument to bottom.
-           std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-           std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-           std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
-           std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
+  MFEMMesh(
+      const int num_elements_in_mesh,
+      const CubitElementInfo & element_info,
+      const std::vector<int> & unique_block_ids,
+      const std::vector<int> & unique_side_boundary_ids,
+      const std::vector<int> & unique_libmesh_corner_node_ids,
+      std::map<int, int> & num_elements_for_boundary_id,
+      std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+      std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id = nullptr);
 
   MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
@@ -94,7 +94,7 @@ protected:
       std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-      std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id);
+      std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id);
 
   /**
    * Fixes the node ordering for hex27 second-order mesh elements. This is called
@@ -102,7 +102,7 @@ protected:
    */
   void fixHex27MeshNodes(
       mfem::FiniteElementSpace & finite_element_space,
-      std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id,
+      std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id);
 

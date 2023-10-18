@@ -79,10 +79,10 @@ protected:
   /**
    * Maps from element_id to a vector containing vectors of node_ids for each face.
    */
-  void buildElementFaceNodeIDsMap(
+  void buildHex27ElementCenterOfFaceNodeIDsMap(
       const std::vector<int> & unique_block_ids,
       std::map<int, std::vector<int>> & element_ids_for_block_id,
-      std::map<int, std::vector<std::vector<int>>> & face_node_ids_for_element_id);
+      std::map<int, std::vector<int>> & center_of_face_hex27_node_ids_for_element_id);
 
   /**
    * Sets protected member variables.
