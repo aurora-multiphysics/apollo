@@ -371,11 +371,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 11. Create MFEM mesh using this extremely long but necessary constructor.
   _mfem_mesh = std::make_shared<MFEMMesh>(3,
                                           nElem(),
-                                          _element_info.getElementType(),
-                                          _element_info.getFaceType(),
-                                          _element_info.getNumFaceNodes(),
-                                          _element_info.getNumFaceCornerNodes(),
-                                          _element_info.getNumCornerNodes(),
+                                          _element_info,
                                           unique_block_ids,
                                           unique_side_boundary_ids,
                                           unique_corner_node_ids,

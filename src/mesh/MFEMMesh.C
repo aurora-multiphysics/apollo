@@ -8,11 +8,7 @@ static bool CoordinatesMatch(double primary[3], double secondary[3], const doubl
 MFEMMesh::MFEMMesh(
     const int num_dimensions,
     const int num_elements_in_mesh,
-    const int libmesh_element_type,
-    const int libmesh_face_type,
-    const int num_face_nodes,
-    const int num_face_corner_nodes,
-    const int num_corner_nodes_per_element,
+    const CubitElementInfo & element_info,
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
     const std::vector<int> & unique_corner_node_ids,
@@ -36,26 +32,21 @@ MFEMMesh::MFEMMesh(
 
   // Create the mesh elements.
   buildMFEMElements(num_elements_in_mesh,
-                    libmesh_element_type,
-                    num_corner_nodes_per_element,
+                    element_info,
                     unique_block_ids,
                     element_ids_for_block_id,
                     node_ids_for_element_id);
 
   // Create the boundary elements.
-  buildMFEMBoundaryElements(libmesh_face_type,
-                            num_face_nodes,
-                            num_face_corner_nodes,
+  buildMFEMBoundaryElements(element_info,
                             unique_side_boundary_ids,
                             num_elements_for_boundary_id,
                             node_ids_for_boundary_id);
 
   // Handle higher-order meshes.
-  const int order = getOrderFromLibmeshElementType(libmesh_element_type);
-
-  if (order == 2)
+  if (element_info.getOrder() == 2)
   {
-    handleQuadraticFESpace(libmesh_element_type,
+    handleQuadraticFESpace(element_info,
                            unique_block_ids,
                            element_ids_for_block_id,
                            node_ids_for_element_id,
@@ -126,8 +117,7 @@ MFEMMesh::buildMFEMVertices(
 
 void
 MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
-                            const int libmesh_element_type,
-                            const int num_corner_nodes_per_element,
+                            const CubitElementInfo & element_info,
                             const std::vector<int> & unique_block_ids,
                             std::map<int, std::vector<int>> & element_ids_for_block_id,
                             std::map<int, std::vector<int>> & node_ids_for_element_id)
@@ -138,7 +128,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
   NumOfElements = num_elements_in_mesh;
   elements.SetSize(num_elements_in_mesh);
 
-  int renumbered_vertex_ids[num_corner_nodes_per_element];
+  int renumbered_vertex_ids[element_info.getNumCornerNodes()];
 
   int ielement = 0;
 
@@ -151,7 +141,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       auto & libmesh_node_ids = node_ids_for_element_id[element_id];
 
       // Iterate over ONLY the corner nodes in the element.
-      for (int ivertex = 0; ivertex < num_corner_nodes_per_element; ivertex++)
+      for (int ivertex = 0; ivertex < element_info.getNumCornerNodes(); ivertex++)
       {
         const int libmesh_node_id = libmesh_node_ids[ivertex];
 
@@ -163,15 +153,13 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       _libmesh_element_id_for_mfem_element_id[ielement] = element_id;
 
       elements[ielement++] =
-          buildMFEMElement(libmesh_element_type, renumbered_vertex_ids, block_id);
+          buildMFEMElement(element_info.getElementType(), renumbered_vertex_ids, block_id);
     }
   }
 }
 
 void
-MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
-                                    const int num_face_nodes,
-                                    const int num_face_corner_nodes,
+MFEMMesh::buildMFEMBoundaryElements(const CubitElementInfo & element_info,
                                     const std::vector<int> & unique_side_boundary_ids,
                                     std::map<int, int> & num_elements_for_boundary_id,
                                     std::map<int, std::vector<int>> & node_ids_for_boundary_id)
@@ -188,7 +176,7 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
 
   int iboundary = 0;
 
-  int renumbered_vertex_ids[num_face_corner_nodes];
+  int renumbered_vertex_ids[element_info.getNumFaceCornerNodes()];
 
   for (int boundary_id : unique_side_boundary_ids)
   {
@@ -196,9 +184,10 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
 
     for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
     {
-      for (int knode = 0; knode < num_face_corner_nodes; knode++)
+      for (int knode = 0; knode < element_info.getNumFaceCornerNodes(); knode++)
       {
-        const int libmesh_node_id = boundary_nodes[jelement * num_face_nodes + knode];
+        const int libmesh_node_id =
+            boundary_nodes[jelement * element_info.getNumFaceNodes() + knode];
 
         // Renumber vertex ("node") IDs so they're contiguous and start from 0.
         renumbered_vertex_ids[knode] =
@@ -206,7 +195,7 @@ MFEMMesh::buildMFEMBoundaryElements(const int libmesh_face_type,
       }
 
       boundary[iboundary++] =
-          buildMFEMFaceElement(libmesh_face_type, renumbered_vertex_ids, boundary_id);
+          buildMFEMFaceElement(element_info.getFaceType(), renumbered_vertex_ids, boundary_id);
     }
   }
 }
@@ -218,20 +207,20 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
 
   switch (element_type)
   {
-    case ELEMENT_TRI3:
-    case ELEMENT_TRI6:
+    case CubitElementInfo::ELEMENT_TRI3:
+    case CubitElementInfo::ELEMENT_TRI6:
     {
       new_element = new mfem::Triangle(vertex_ids, block_id);
       break;
     }
-    case ELEMENT_QUAD4:
-    case ELEMENT_QUAD9:
+    case CubitElementInfo::ELEMENT_QUAD4:
+    case CubitElementInfo::ELEMENT_QUAD9:
     {
       new_element = new mfem::Quadrilateral(vertex_ids, block_id);
       break;
     }
-    case ELEMENT_TET4:
-    case ELEMENT_TET10:
+    case CubitElementInfo::ELEMENT_TET4:
+    case CubitElementInfo::ELEMENT_TET10:
     {
 #ifdef MFEM_USE_MEMALLOC
       new_element = TetMemory.Alloc();
@@ -242,8 +231,8 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
 #endif
       break;
     }
-    case ELEMENT_HEX8:
-    case ELEMENT_HEX27:
+    case CubitElementInfo::ELEMENT_HEX8:
+    case CubitElementInfo::ELEMENT_HEX27:
     {
       new_element = new mfem::Hexahedron(vertex_ids, block_id);
       break;
@@ -265,20 +254,20 @@ MFEMMesh::buildMFEMFaceElement(const int face_type, const int * vertex_ids, cons
 
   switch (face_type)
   {
-    case FACE_EDGE2:
-    case FACE_EDGE3:
+    case CubitElementInfo::FACE_EDGE2:
+    case CubitElementInfo::FACE_EDGE3:
     {
       new_face = new mfem::Segment(vertex_ids, boundary_id);
       break;
     }
-    case FACE_TRI3:
-    case FACE_TRI6:
+    case CubitElementInfo::FACE_TRI3:
+    case CubitElementInfo::FACE_TRI6:
     {
       new_face = new mfem::Triangle(vertex_ids, boundary_id);
       break;
     }
-    case FACE_QUAD4:
-    case FACE_QUAD9:
+    case CubitElementInfo::FACE_QUAD4:
+    case CubitElementInfo::FACE_QUAD9:
     {
       new_face = new mfem::Quadrilateral(vertex_ids, boundary_id);
       break;
@@ -295,13 +284,19 @@ MFEMMesh::buildMFEMFaceElement(const int face_type, const int * vertex_ids, cons
 
 void
 MFEMMesh::handleQuadraticFESpace(
-    const int libmesh_element_type,
+    const CubitElementInfo & element_info,
     const std::vector<int> & unique_block_ids,
     std::map<int, std::vector<int>> & element_ids_for_block_id,
     std::map<int, std::vector<int>> & node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
     std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id)
 {
+  // Verify that this is indeed a second-order element.
+  if (element_info.getOrder() != 2)
+  {
+    return;
+  }
+
   // Clear the maps:
   _mfem_node_id_for_libmesh_node_id.clear();
   _libmesh_node_id_for_mfem_node_id.clear();
@@ -317,24 +312,24 @@ MFEMMesh::handleQuadraticFESpace(
 
   int * mfem_to_libmesh_map = nullptr;
 
-  switch (libmesh_element_type)
+  switch (element_info.getElementType())
   {
-    case ELEMENT_TRI6:
+    case CubitElementInfo::ELEMENT_TRI6:
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_tri6;
       break;
-    case ELEMENT_QUAD9:
+    case CubitElementInfo::ELEMENT_QUAD9:
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_quad9;
       break;
-    case ELEMENT_TET10:
+    case CubitElementInfo::ELEMENT_TET10:
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_tet10;
       break;
-    case ELEMENT_HEX27:
+    case CubitElementInfo::ELEMENT_HEX27:
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_hex27;
       break;
-    case ELEMENT_TRI3:
-    case ELEMENT_QUAD4:
-    case ELEMENT_TET4:
-    case ELEMENT_HEX8:
+    case CubitElementInfo::ELEMENT_TRI3:
+    case CubitElementInfo::ELEMENT_QUAD4:
+    case CubitElementInfo::ELEMENT_TET4:
+    case CubitElementInfo::ELEMENT_HEX8:
     default:
       mooseError("Linear elements detected when order is 2.");
       break;
@@ -407,7 +402,7 @@ MFEMMesh::handleQuadraticFESpace(
    * Fix the elements for hex27 only. The centre node of each face is incorrect
    * in addition to the interior node.
    */
-  if (libmesh_element_type == ELEMENT_HEX27)
+  if (element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
   {
     fixHex27MeshNodes(*finite_element_space,
                       libmesh_face_node_ids_for_element_id,
@@ -674,33 +669,6 @@ CoordinatesMatch(double primary[3], double secondary[3], const double tolerance)
   }
 
   return true;
-}
-
-const int
-MFEMMesh::getOrderFromLibmeshElementType(int libmesh_element_type) const
-{
-  int order;
-
-  switch (libmesh_element_type)
-  {
-    case ELEMENT_TRI3:
-    case ELEMENT_QUAD4:
-    case ELEMENT_TET4:
-    case ELEMENT_HEX8:
-      order = 1;
-      break;
-    case ELEMENT_TRI6:
-    case ELEMENT_QUAD9:
-    case ELEMENT_TET10:
-    case ELEMENT_HEX27:
-      order = 2;
-      break;
-    default:
-      order = 0;
-      break;
-  }
-
-  return order;
 }
 
 /**
