@@ -95,168 +95,6 @@ CoupledMFEMMesh::buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids
   }
 }
 
-void
-CoupledMFEMMesh::buildLibmesh2DElementInfo()
-{
-  auto first_element_ptr = getFirstElementOnProcessor();
-
-  _num_nodes_per_element = first_element_ptr->n_nodes();
-
-  switch (_num_nodes_per_element)
-  {
-    case 3:
-    {
-      _libmesh_element_type = ELEMENT_TRI3;
-      _libmesh_face_type = FACE_EDGE2;
-      _num_corner_nodes_per_element = 3;
-      break;
-    }
-    case 6:
-    {
-      _libmesh_element_type = ELEMENT_TRI6;
-      _libmesh_face_type = FACE_EDGE3;
-      _num_corner_nodes_per_element = 3;
-      break;
-    }
-    case 4:
-    {
-      _libmesh_element_type = ELEMENT_QUAD4;
-      _libmesh_face_type = FACE_EDGE2;
-      _num_corner_nodes_per_element = 4;
-      break;
-    }
-    case 9:
-    {
-      _libmesh_element_type = ELEMENT_QUAD9;
-      _libmesh_face_type = FACE_EDGE3;
-      _num_corner_nodes_per_element = 4;
-      break;
-    }
-    default:
-    {
-      mooseError("Invalid number of nodes (", _num_nodes_per_element, ") for a 2D element.");
-      break;
-    }
-  }
-}
-
-void
-CoupledMFEMMesh::buildLibmesh3DElementInfo()
-{
-  auto first_element_ptr = getFirstElementOnProcessor();
-
-  _num_nodes_per_element = first_element_ptr->n_nodes();
-
-  switch (_num_nodes_per_element)
-  {
-    case (4):
-    {
-      _libmesh_element_type = ELEMENT_TET4;
-      _libmesh_face_type = FACE_TRI3;
-      _num_corner_nodes_per_element = 4;
-      break;
-    }
-    case (10):
-    {
-      _libmesh_element_type = ELEMENT_TET10;
-      _libmesh_face_type = FACE_TRI6;
-      _num_corner_nodes_per_element = 4;
-      break;
-    }
-    case (8):
-    {
-      _libmesh_element_type = ELEMENT_HEX8;
-      _libmesh_face_type = FACE_QUAD4;
-      _num_corner_nodes_per_element = 8;
-      break;
-    }
-    case (27):
-    {
-      _libmesh_element_type = ELEMENT_HEX27;
-      _libmesh_face_type = FACE_QUAD9;
-      _num_corner_nodes_per_element = 8;
-      break;
-    }
-    default:
-    {
-      mooseError("Don't know what to do with a ", _num_nodes_per_element, " node 3D element.");
-      break;
-    }
-  }
-}
-
-void
-CoupledMFEMMesh::buildLibmeshFaceInfo()
-{
-  switch (_libmesh_face_type)
-  {
-    case (FACE_EDGE2):
-    {
-      _num_face_nodes = 2;
-      _num_face_corner_nodes = 2;
-      break;
-    }
-    case (FACE_EDGE3):
-    {
-      _num_face_nodes = 3;
-      _num_face_corner_nodes = 2;
-      break;
-    }
-    case (FACE_TRI3):
-    {
-      _num_face_nodes = 3;
-      _num_face_corner_nodes = 3;
-      break;
-    }
-    case (FACE_TRI6):
-    {
-      _num_face_nodes = 6;
-      _num_face_corner_nodes = 3;
-      break;
-    }
-    case (FACE_QUAD4):
-    {
-      _num_face_nodes = 4;
-      _num_face_corner_nodes = 4;
-      break;
-    }
-    case (FACE_QUAD9):
-    {
-      _num_face_nodes = 9;
-      _num_face_corner_nodes = 4;
-      break;
-    }
-    default:
-    {
-      mooseError("Invalid face type (", _libmesh_face_type, ") specified.");
-      break;
-    }
-  }
-}
-
-void
-CoupledMFEMMesh::buildLibmeshElementInfo()
-{
-  switch (_dim)
-  {
-    case 2:
-    {
-      buildLibmesh2DElementInfo();
-      break;
-    }
-    case 3:
-    {
-      buildLibmesh3DElementInfo();
-      break;
-    }
-    default:
-    {
-      mooseError("Invalid dimension (", _dim, ") specified.");
-      break;
-    }
-  }
-}
-
 std::vector<int>
 CoupledMFEMMesh::getSideBoundaryIDs() const
 {
@@ -307,8 +145,9 @@ CoupledMFEMMesh::isDistributedMesh() const
 void
 CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
 {
-  buildLibmeshElementInfo();
-  buildLibmeshFaceInfo();
+  auto first_element_ptr = getFirstElementOnProcessor();
+
+  _element_info = CubitElementInfo(first_element_ptr->n_nodes(), _dim);
 }
 
 std::vector<int>
@@ -352,7 +191,7 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
       // Each block can contain a different element type but within a block, all
       // elements must be identical. Check the first element in each block.
       if (element_iterator == active_block_elements_begin &&
-          element_ptr->n_nodes() != _num_nodes_per_element)
+          element_ptr->n_nodes() != _element_info.getNumNodes())
       {
         mooseError("Multiple element types detected.");
         return;
@@ -360,11 +199,11 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
 
       const int element_id = element_ptr->id();
 
-      std::vector<int> element_node_ids(_num_nodes_per_element);
+      std::vector<int> element_node_ids(_element_info.getNumNodes());
 
       elements_in_block.push_back(element_id);
 
-      for (int node_counter = 0; node_counter < _num_nodes_per_element; node_counter++)
+      for (int node_counter = 0; node_counter < _element_info.getNumNodes(); node_counter++)
       {
         element_node_ids[node_counter] = element_ptr->node_id(node_counter);
       }
@@ -397,7 +236,7 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
       auto & node_ids = node_ids_for_element_id[element_id];
 
       // Only use the nodes on the edge of the element!
-      for (int knode = 0; knode < _num_corner_nodes_per_element; knode++)
+      for (int knode = 0; knode < _element_info.getNumCornerNodes(); knode++)
       {
         unique_corner_node_ids.push_back(node_ids[knode]);
       }
@@ -523,7 +362,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   // initializer to correct dodgy libmesh node <--> mfem node mapping.
   std::map<int, std::vector<std::vector<int>>> face_node_ids_for_element_id;
 
-  if (_libmesh_element_type == ELEMENT_HEX27)
+  if (_element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
   {
     buildElementFaceNodeIDsMap(
         unique_block_ids, element_ids_for_block_id, face_node_ids_for_element_id);
@@ -532,11 +371,11 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 11. Create MFEM mesh using this extremely long but necessary constructor.
   _mfem_mesh = std::make_shared<MFEMMesh>(3,
                                           nElem(),
-                                          _libmesh_element_type,
-                                          _libmesh_face_type,
-                                          _num_face_nodes,
-                                          _num_face_corner_nodes,
-                                          _num_corner_nodes_per_element,
+                                          _element_info.getElementType(),
+                                          _element_info.getFaceType(),
+                                          _element_info.getNumFaceNodes(),
+                                          _element_info.getNumFaceCornerNodes(),
+                                          _element_info.getNumCornerNodes(),
                                           unique_block_ids,
                                           unique_side_boundary_ids,
                                           unique_corner_node_ids,
@@ -613,7 +452,7 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_bound
     auto & boundary_element_sides = side_ids_for_boundary_id[boundary_id];
 
     // Create vector to hold all nodes on boundary.
-    std::vector<int> boundary_nodes(boundary_element_ids.size() * _num_face_nodes);
+    std::vector<int> boundary_nodes(boundary_element_ids.size() * _element_info.getNumFaceNodes());
 
     // Iterate over elements on boundary.
     for (int jelement = 0; jelement < boundary_element_ids.size(); jelement++)
@@ -628,14 +467,14 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_bound
       auto nodes_of_element_on_side = element_ptr->nodes_on_side(boundary_element_side);
 
       // Iterate over nodes on boundary side of element.
-      for (int knode = 0; knode < _num_face_nodes; knode++)
+      for (int knode = 0; knode < _element_info.getNumFaceNodes(); knode++)
       {
         // Get the global node ID of each node.
         const int local_node_id = nodes_of_element_on_side[knode];
         const int global_node_id = element_ptr->node_id(local_node_id);
 
         // Add to boundary_nodes vector.
-        boundary_nodes[jelement * _num_face_nodes + knode] = global_node_id;
+        boundary_nodes[jelement * _element_info.getNumFaceNodes() + knode] = global_node_id;
       }
     }
 
