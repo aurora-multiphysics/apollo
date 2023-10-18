@@ -6,7 +6,6 @@
 static bool CoordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
 
 MFEMMesh::MFEMMesh(
-    const int num_dimensions,
     const int num_elements_in_mesh,
     const CubitElementInfo & element_info,
     const std::vector<int> & unique_block_ids,
@@ -24,11 +23,10 @@ MFEMMesh::MFEMMesh(
     _mfem_vertex_index_for_libmesh_corner_node_id{}
 {
   // Set dimensions.
-  Dim = num_dimensions;
-  spaceDim = Dim; // Is this always the case?
+  Dim = spaceDim = element_info.getDimension();
 
   // Create the vertices.
-  buildMFEMVertices(unique_corner_node_ids, coordinates_for_unique_corner_node_id, num_dimensions);
+  buildMFEMVertices(unique_corner_node_ids, coordinates_for_unique_corner_node_id, Dim);
 
   // Create the mesh elements.
   buildMFEMElements(num_elements_in_mesh,
@@ -297,15 +295,24 @@ MFEMMesh::handleQuadraticFESpace(
     return;
   }
 
+  // Insert warning for 2d maps since they have not been tested. We know that tet10
+  // and hex27 (with corrections) are working.
+  if (element_info.getDimension() == 2)
+  {
+    mooseWarning("The function '"__func__, "' has not been tested with second-order 2D elements.");
+  }
+
   // Clear the maps:
   _mfem_node_id_for_libmesh_node_id.clear();
   _libmesh_node_id_for_mfem_node_id.clear();
 
+  // 3D maps:
   const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
   const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
                                        19, 20, 13, 14, 15, 16, 22, 26, 25, 27, 24, 23, 21};
 
+  // 2D maps:
   const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};
 
   const int mfem_to_libmesh_quad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -315,24 +322,34 @@ MFEMMesh::handleQuadraticFESpace(
   switch (element_info.getElementType())
   {
     case CubitElementInfo::ELEMENT_TRI6:
+    {
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_tri6;
       break;
+    }
     case CubitElementInfo::ELEMENT_QUAD9:
+    {
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_quad9;
       break;
+    }
     case CubitElementInfo::ELEMENT_TET10:
+    {
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_tet10;
       break;
+    }
     case CubitElementInfo::ELEMENT_HEX27:
+    {
       mfem_to_libmesh_map = (int *)mfem_to_libmesh_hex27;
       break;
-    case CubitElementInfo::ELEMENT_TRI3:
-    case CubitElementInfo::ELEMENT_QUAD4:
-    case CubitElementInfo::ELEMENT_TET4:
-    case CubitElementInfo::ELEMENT_HEX8:
+    }
     default:
-      mooseError("Linear elements detected when order is 2.");
+    {
+      mooseError("No second-order node map available for element type ",
+                 element_info.getElementType(),
+                 " with dimension ",
+                 element_info.getDimension(),
+                 ".\n");
       break;
+    }
   }
 
   /*

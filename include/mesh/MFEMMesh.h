@@ -17,8 +17,7 @@
 class MFEMMesh : public mfem::Mesh
 {
 public:
-  MFEMMesh(const int num_dimensions, // TODO: - verify num_dimensions == element_info.getDimension()
-           const int num_elements_in_mesh,
+  MFEMMesh(const int num_elements_in_mesh,
            const CubitElementInfo & element_info,
            const std::vector<int> & unique_block_ids,
            const std::vector<int> & unique_side_boundary_ids,
