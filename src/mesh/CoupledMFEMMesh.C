@@ -453,7 +453,7 @@ CoupledMFEMMesh::buildElementFaceNodeIDsMap(
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
-  // If the mesh is distributed and split between more than one processor,
+  // 1. If the mesh is distributed and split between more than one processor,
   // we need to call allgather on each processor. This will gather the nodes
   // and elements onto each processor.
   if (isDistributedMesh())
@@ -461,13 +461,13 @@ CoupledMFEMMesh::buildMFEMMesh()
     getMesh().allgather();
   }
 
-  // 1. Retrieve information about the elements used within the mesh.
+  // 2. Retrieve information about the elements used within the mesh.
   buildLibmeshElementAndFaceInfo();
 
-  // 2. Get the unique libmesh IDs of each block in the mesh.
+  // 3. Get the unique libmesh IDs of each block in the mesh.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
-  // 3. Build maps:
+  // 4. Build maps:
   // Map from block ID --> vector of element IDs.
   // Map from element ID --> vector of global node IDs.
   std::map<int, std::vector<int>> element_ids_for_block_id;
@@ -475,24 +475,12 @@ CoupledMFEMMesh::buildMFEMMesh()
 
   buildElementAndNodeIDs(unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
 
-  // 4. Create vector containing the IDs of all nodes that are on the corners of
+  // 5. Create vector containing the IDs of all nodes that are on the corners of
   // elements. MFEM only requires the corner nodes.
   std::vector<int> unique_corner_node_ids;
 
   buildUniqueCornerNodeIDs(
       unique_corner_node_ids, unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
-
-  // 5. We now create a map from the unique corner node ID to its index in the
-  // vector. This ensures that nodes are numbered contiguously starting at index 0.
-  // This will be used in the MFEMMesh initializer to renumber the global node IDs.
-  // std::map<int, int> libmesh_to_mfem_corner_node_id_map;
-
-  // for (int node_index = 0; node_index < unique_corner_node_ids.size(); node_index++)
-  // {
-  //   const int node_id = unique_corner_node_ids[node_index];
-
-  //   libmesh_to_mfem_corner_node_id_map[node_id] = node_index;
-  // }
 
   // 6. Create a map to hold the x, y, z coordinates for each unique node.
   std::map<int, std::array<double, 3>> coordinates_for_node_id;
