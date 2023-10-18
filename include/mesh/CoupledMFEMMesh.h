@@ -77,13 +77,6 @@ protected:
                                 std::map<int, std::vector<int>> & node_ids_for_element_id);
 
   /**
-   * Maps from element_id to a vector containing vectors of node_ids for each face.
-   */
-  std::unique_ptr<std::map<int, std::vector<int>>> getCenterOfFaceNodeIDsForHex27ElementIDMap(
-      const std::vector<int> & unique_block_ids,
-      std::map<int, std::vector<int>> & element_ids_for_block_id);
-
-  /**
    * Sets protected member variables.
    */
   void buildLibmeshElementAndFaceInfo();
@@ -112,6 +105,16 @@ protected:
    * pointer.
    */
   std::unique_ptr<int[]> getMeshPartitioning();
+
+  /**
+   * Returns a map of element id to the vector of node ids of that element which
+   * lie on the center of each of the 6 faces. This is required in MFEMMesh to
+   * fix issues with the Hex27 mesh element. Will return NULL if the element is
+   * not of the correct type. The returned map is wrapped up in a unique pointer.
+   */
+  std::unique_ptr<std::map<int, std::vector<int>>>
+  getHex27CenterOfFaceNodeIDs(const std::vector<int> & unique_block_ids,
+                              std::map<int, std::vector<int>> & element_ids_for_block_id);
 
   /**
    * Returns true if mesh is split between two or more processors.
