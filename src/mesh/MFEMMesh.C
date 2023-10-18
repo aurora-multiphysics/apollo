@@ -299,7 +299,8 @@ MFEMMesh::handleQuadraticFESpace(
   // and hex27 (with corrections) are working.
   if (element_info.getDimension() == 2)
   {
-    mooseWarning("The function '"__func__, "' has not been tested with second-order 2D elements.");
+    mooseWarning(
+        "The function '", __func__, "' has not been tested with second-order 2D elements.");
   }
 
   // Clear the maps:
