@@ -193,7 +193,7 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
       if (element_iterator == active_block_elements_begin &&
           element_ptr->n_nodes() != _element_info.getNumNodes())
       {
-        mooseError("Multiple element types detected.");
+        mooseError("Multiple element types detected.\n");
         return;
       }
 
