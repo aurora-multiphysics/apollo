@@ -10,13 +10,13 @@ MFEMMesh::MFEMMesh(
     const CubitElementInfo & element_info,
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
-    const std::vector<int> & unique_corner_node_ids,
+    const std::vector<int> & unique_libmesh_corner_node_ids,
     std::map<int, int> & num_elements_for_boundary_id,
     std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::vector<int>> & node_ids_for_element_id,
-    std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id)
+    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
   : _libmesh_node_id_for_mfem_node_id{},
     _mfem_node_id_for_libmesh_node_id{},
     _libmesh_element_id_for_mfem_element_id{},
@@ -26,29 +26,29 @@ MFEMMesh::MFEMMesh(
   Dim = spaceDim = element_info.getDimension();
 
   // Create the vertices.
-  buildMFEMVertices(unique_corner_node_ids, coordinates_for_unique_corner_node_id, Dim);
+  buildMFEMVertices(unique_libmesh_corner_node_ids, coordinates_for_libmesh_node_id);
 
   // Create the mesh elements.
   buildMFEMElements(num_elements_in_mesh,
                     element_info,
                     unique_block_ids,
-                    element_ids_for_block_id,
-                    node_ids_for_element_id);
+                    libmesh_element_ids_for_block_id,
+                    libmesh_node_ids_for_element_id);
 
   // Create the boundary elements.
   buildMFEMBoundaryElements(element_info,
                             unique_side_boundary_ids,
                             num_elements_for_boundary_id,
-                            node_ids_for_boundary_id);
+                            libmesh_node_ids_for_boundary_id);
 
   // Handle higher-order meshes.
   if (element_info.getOrder() == 2)
   {
     handleQuadraticFESpace(element_info,
                            unique_block_ids,
-                           element_ids_for_block_id,
-                           node_ids_for_element_id,
-                           coordinates_for_unique_corner_node_id,
+                           libmesh_element_ids_for_block_id,
+                           libmesh_node_ids_for_element_id,
+                           coordinates_for_libmesh_node_id,
                            libmesh_face_node_ids_for_element_id);
   }
 
@@ -76,27 +76,22 @@ MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool 
 }
 
 void
-MFEMMesh::buildMFEMVertices(
-    const std::vector<int> & unique_corner_node_ids,
-    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-    const int num_dimensions)
+MFEMMesh::buildMFEMVertices(const std::vector<int> & unique_libmesh_corner_node_ids,
+                            std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
   _mfem_vertex_index_for_libmesh_corner_node_id.clear();
 
-  NumOfVertices = unique_corner_node_ids.size();
+  NumOfVertices = unique_libmesh_corner_node_ids.size();
   vertices.SetSize(NumOfVertices);
 
   // Iterate over the global IDs of each unqiue corner node from the MOOSE mesh.
-  const bool use_z_component = (num_dimensions == 3);
+  const bool use_z_component = (Dim == 3);
 
   int ivertex = 0;
-
-  // TODO: - are these only corner noddes!!! These must be corner nodes otherwise
-  // this will not work.
-  for (int global_node_id : unique_corner_node_ids)
+  for (int libmesh_node_id : unique_libmesh_corner_node_ids)
   {
-    // Get the xyz coordinates associated with the node.
-    auto & coordinates = coordinates_for_unique_corner_node_id[global_node_id];
+    // Get the xyz coordinates associated with the libmesh corner node.
+    auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
 
     // Set xyz components.
     vertices[ivertex](0) = coordinates[0];
@@ -107,7 +102,7 @@ MFEMMesh::buildMFEMVertices(
       vertices[ivertex](2) = coordinates[2];
     }
 
-    _mfem_vertex_index_for_libmesh_corner_node_id[global_node_id] = ivertex;
+    _mfem_vertex_index_for_libmesh_corner_node_id[libmesh_node_id] = ivertex;
 
     ivertex++;
   }
@@ -126,10 +121,12 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
   NumOfElements = num_elements_in_mesh;
   elements.SetSize(num_elements_in_mesh);
 
-  int renumbered_vertex_ids[element_info.getNumCornerNodes()];
+  // NB: "vertices" and "corner nodes" are equivalent.
+  const int num_vertices = element_info.getNumCornerNodes();
+
+  int renumbered_vertex_ids[num_vertices];
 
   int ielement = 0;
-
   for (int block_id : unique_block_ids) // Iterate over blocks.
   {
     auto & element_ids = element_ids_for_block_id[block_id];
@@ -139,15 +136,16 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       auto & libmesh_node_ids = node_ids_for_element_id[element_id];
 
       // Iterate over ONLY the corner nodes in the element.
-      for (int ivertex = 0; ivertex < element_info.getNumCornerNodes(); ivertex++)
+      for (int ivertex = 0; ivertex < num_vertices; ivertex++)
       {
         const int libmesh_node_id = libmesh_node_ids[ivertex];
 
-        // Map from the global node ID --> index in the unique_corner_node_ids vector.
+        // Map from the corner libmesh node --> corresponding mfem vertex.
         renumbered_vertex_ids[ivertex] =
             _mfem_vertex_index_for_libmesh_corner_node_id[libmesh_node_id];
       }
 
+      // Map from mfem element id to libmesh element id.
       _libmesh_element_id_for_mfem_element_id[ielement] = element_id;
 
       elements[ielement++] =
@@ -172,17 +170,18 @@ MFEMMesh::buildMFEMBoundaryElements(const CubitElementInfo & element_info,
 
   boundary.SetSize(NumOfBdrElements);
 
+  const int num_face_vertices = element_info.getNumFaceCornerNodes();
+
+  int renumbered_vertex_ids[num_face_vertices];
+
   int iboundary = 0;
-
-  int renumbered_vertex_ids[element_info.getNumFaceCornerNodes()];
-
   for (int boundary_id : unique_side_boundary_ids)
   {
     auto boundary_nodes = node_ids_for_boundary_id[boundary_id];
 
     for (int jelement = 0; jelement < num_elements_for_boundary_id[boundary_id]; jelement++)
     {
-      for (int knode = 0; knode < element_info.getNumFaceCornerNodes(); knode++)
+      for (int knode = 0; knode < num_face_vertices; knode++)
       {
         const int libmesh_node_id =
             boundary_nodes[jelement * element_info.getNumFaceNodes() + knode];
@@ -284,9 +283,9 @@ void
 MFEMMesh::handleQuadraticFESpace(
     const CubitElementInfo & element_info,
     const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::vector<int>> & node_ids_for_element_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id)
 {
   // Verify that this is indeed a second-order element.
@@ -295,28 +294,24 @@ MFEMMesh::handleQuadraticFESpace(
     return;
   }
 
-  // Insert warning for 2d maps since they have not been tested. We know that tet10
-  // and hex27 (with corrections) are working.
+  // Add a warning for 2D second-order elements but proceed.
   if (element_info.getDimension() == 2)
   {
-    mooseWarning(
-        "The function '", __func__, "' has not been tested with second-order 2D elements.");
+    mooseWarning("'", __func__, "' has not been tested with second-order 2D elements.");
   }
 
   // Clear the maps:
   _mfem_node_id_for_libmesh_node_id.clear();
   _libmesh_node_id_for_mfem_node_id.clear();
 
-  // 3D maps:
-  const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
-
-  const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
-                                       19, 20, 13, 14, 15, 16, 22, 26, 25, 27, 24, 23, 21};
-
   // 2D maps:
   const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};
-
   const int mfem_to_libmesh_quad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+  // 3D maps:
+  const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+  const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
+                                       19, 20, 13, 14, 15, 16, 22, 26, 25, 27, 24, 23, 21};
 
   int * mfem_to_libmesh_map = nullptr;
 
@@ -344,7 +339,7 @@ MFEMMesh::handleQuadraticFESpace(
     }
     default:
     {
-      mooseError("No second-order node map available for element type ",
+      mooseError("No second-order map available for element type ",
                  element_info.getElementType(),
                  " with dimension ",
                  element_info.getDimension(),
@@ -377,7 +372,7 @@ MFEMMesh::handleQuadraticFESpace(
     const int libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
 
     // Get vector containing ALL node global IDs for element.
-    auto & libmesh_node_ids = node_ids_for_element_id[libmesh_element_id];
+    auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
 
     // Sets DOF array for element. Higher-order (second-order) elements contain
     // additional nodes between corner nodes.
@@ -403,7 +398,7 @@ MFEMMesh::handleQuadraticFESpace(
       _libmesh_node_id_for_mfem_node_id[mfem_node_id] = libmesh_node_id;
 
       // Extract node's coordinates:
-      auto & coordinates = coordinates_for_unique_corner_node_id[libmesh_node_id];
+      auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
 
       // NB: vdofs using xxx, yyy, zzz ordering.
       (*Nodes)(vdofs[j]) = coordinates[0];
@@ -424,8 +419,8 @@ MFEMMesh::handleQuadraticFESpace(
   {
     fixHex27MeshNodes(*finite_element_space,
                       libmesh_face_node_ids_for_element_id,
-                      coordinates_for_unique_corner_node_id,
-                      node_ids_for_element_id);
+                      coordinates_for_libmesh_node_id,
+                      libmesh_node_ids_for_element_id);
   }
 
   /**
@@ -433,29 +428,28 @@ MFEMMesh::handleQuadraticFESpace(
    * All coordinates should match. If this does not occur then it suggests that
    * there is a problem with the higher-order transfer.
    */
-  verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
-      *finite_element_space,
-      unique_block_ids,
-      element_ids_for_block_id,
-      node_ids_for_element_id,
-      coordinates_for_unique_corner_node_id);
+  verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(*finite_element_space,
+                                                               unique_block_ids,
+                                                               libmesh_element_ids_for_block_id,
+                                                               libmesh_node_ids_for_element_id,
+                                                               coordinates_for_libmesh_node_id);
 }
 
 std::set<int>
 MFEMMesh::buildSetContainingLibmeshNodeIDs(
     const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::vector<int>> & node_ids_for_element_id)
+    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id)
 {
   std::set<int> libmesh_node_ids_set;
 
   for (int block_id : unique_block_ids)
   {
-    auto & libmesh_element_ids = element_ids_for_block_id[block_id];
+    auto & libmesh_element_ids = libmesh_element_ids_for_block_id[block_id];
 
-    for (int libmesh_element : libmesh_element_ids)
+    for (int libmesh_element_id : libmesh_element_ids)
     {
-      auto & libmesh_node_ids = node_ids_for_element_id[libmesh_element];
+      auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
 
       for (int libmesh_node_id : libmesh_node_ids)
       {
@@ -471,13 +465,13 @@ void
 MFEMMesh::verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
     mfem::FiniteElementSpace & finite_element_space,
     const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::vector<int>> & node_ids_for_element_id,
+    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
   // Create a set of all unique libmesh node ids.
   auto libmesh_node_ids = buildSetContainingLibmeshNodeIDs(
-      unique_block_ids, element_ids_for_block_id, node_ids_for_element_id);
+      unique_block_ids, libmesh_element_ids_for_block_id, libmesh_node_ids_for_element_id);
 
   double mfem_coordinates[3];
   double libmesh_coordinates[3];
@@ -689,17 +683,11 @@ CoordinatesMatch(double primary[3], double secondary[3], const double tolerance)
   return true;
 }
 
-/**
- * TODO: - add method --> is transfer of these types currently supported
- *
- * --> currently we are not supporting some of the 2D second-order elements.
- */
-
 void
-MFEMMesh::writeSecondOrderElementInfoToFiles(const char * fpathNodes,
-                                             const char * fpathEdges,
-                                             const char * fpathFaces,
-                                             mfem::FiniteElementSpace & finite_element_space)
+MFEMMesh::dumpSecondOrderElementDebuggingInfo(const char * fpathNodes,
+                                              const char * fpathEdges,
+                                              const char * fpathFaces,
+                                              mfem::FiniteElementSpace & finite_element_space)
 {
   FILE * fpNodes = fpathNodes ? fopen(fpathNodes, "w") : nullptr;
   FILE * fpEdges = fpathEdges ? fopen(fpathEdges, "w") : nullptr;

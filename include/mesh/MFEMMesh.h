@@ -21,14 +21,14 @@ public:
            const CubitElementInfo & element_info,
            const std::vector<int> & unique_block_ids,
            const std::vector<int> & unique_side_boundary_ids,
-           const std::vector<int> & unique_corner_node_ids,
+           const std::vector<int> & unique_libmesh_corner_node_ids,
            std::map<int, int> & num_elements_for_boundary_id,
            std::map<int, std::vector<std::vector<int>>> &
                libmesh_face_node_ids_for_element_id, // TODO: - move argument to bottom.
-           std::map<int, std::vector<int>> & element_ids_for_block_id,
-           std::map<int, std::vector<int>> & node_ids_for_element_id,
-           std::map<int, std::vector<int>> & node_ids_for_boundary_id,
-           std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id);
+           std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+           std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+           std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+           std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
 
   MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
@@ -52,10 +52,8 @@ protected:
    * IDs from MOOSE. Note that the vertices (named "nodes" in MOOSE) are ONLY
    * at the corners of elements. These are referred to as "corner nodes" in MOOSE.
    */
-  void
-  buildMFEMVertices(const std::vector<int> & unique_corner_node_ids,
-                    std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-                    const int num_dimensions);
+  void buildMFEMVertices(const std::vector<int> & unique_libmesh_corner_node_ids,
+                         std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
 
   /**
    * Construct the MFEM elements array.
@@ -63,16 +61,17 @@ protected:
   void buildMFEMElements(const int num_elements_in_mesh,
                          const CubitElementInfo & element_info,
                          const std::vector<int> & unique_block_ids,
-                         std::map<int, std::vector<int>> & element_ids_for_block_id,
-                         std::map<int, std::vector<int>> & node_ids_for_element_id);
+                         std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+                         std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id);
 
   /**
    * Construct the boundary array of elements.
    */
-  void buildMFEMBoundaryElements(const CubitElementInfo & element_info,
-                                 const std::vector<int> & unique_side_boundary_ids,
-                                 std::map<int, int> & num_elements_for_boundary_id,
-                                 std::map<int, std::vector<int>> & node_ids_for_boundary_id);
+  void
+  buildMFEMBoundaryElements(const CubitElementInfo & element_info,
+                            const std::vector<int> & unique_side_boundary_ids,
+                            std::map<int, int> & num_elements_for_boundary_id,
+                            std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id);
 
   /**
    * Returns a pointer to an mfem::Element.
@@ -92,9 +91,9 @@ protected:
   void handleQuadraticFESpace(
       const CubitElementInfo & element_info,
       const std::vector<int> & unique_block_ids,
-      std::map<int, std::vector<int>> & element_ids_for_block_id,
-      std::map<int, std::vector<int>> & node_ids_for_element_id,
-      std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
+      std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
       std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id);
 
   /**
@@ -104,17 +103,17 @@ protected:
   void fixHex27MeshNodes(
       mfem::FiniteElementSpace & finite_element_space,
       std::map<int, std::vector<std::vector<int>>> & libmesh_face_node_ids_for_element_id,
-      std::map<int, std::array<double, 3>> & coordinates_for_unique_corner_node_id,
-      std::map<int, std::vector<int>> & node_ids_for_element_id);
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id);
 
   /**
    * Creates a set containing all libmesh node ids. This is used in the verification
    * method for higher-order mesh nodes to check that all nodes correctly map.
    */
-  std::set<int>
-  buildSetContainingLibmeshNodeIDs(const std::vector<int> & unique_block_ids,
-                                   std::map<int, std::vector<int>> & element_ids_for_block_id,
-                                   std::map<int, std::vector<int>> & node_ids_for_element_id);
+  std::set<int> buildSetContainingLibmeshNodeIDs(
+      const std::vector<int> & unique_block_ids,
+      std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id);
 
   /**
    * Verifies whether the libmesh and mfem node ids have a unique mapping. All
@@ -124,18 +123,18 @@ protected:
   void verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
       mfem::FiniteElementSpace & finite_element_space,
       const std::vector<int> & unique_block_ids,
-      std::map<int, std::vector<int>> & element_ids_for_block_id,
-      std::map<int, std::vector<int>> & node_ids_for_element_id,
+      std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
 
   /**
    * Writes debugging info to specified files for second-order mesh elements. No
    * information will be printed if a NULL path is supplied.
    */
-  void writeSecondOrderElementInfoToFiles(const char * fpathNodes,
-                                          const char * fpathEdges,
-                                          const char * fpathFaces,
-                                          mfem::FiniteElementSpace & finite_element_space);
+  void dumpSecondOrderElementDebuggingInfo(const char * fpathNodes,
+                                           const char * fpathEdges,
+                                           const char * fpathFaces,
+                                           mfem::FiniteElementSpace & finite_element_space);
   /**
    * A two-way map between libmesh and mfem node ids. This is only used for
    * higher-order transfers.
