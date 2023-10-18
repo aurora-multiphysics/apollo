@@ -343,7 +343,7 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
           }
           else
           {
-            const int mfem_dof = mesh().getMFEMDofForLibmeshNodeID(node_id);
+            const int mfem_dof = mesh().getMFEMNodeIDForLibmeshNodeID(node_id);
 
             mfem_local_dofs[mfem_dof] = tempSolutionVector(dof);
           }
@@ -404,7 +404,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
         }
         else
         {
-          const int mfem_dof = mesh().getMFEMDofForLibmeshNodeID(node_id);
+          const int mfem_dof = mesh().getMFEMNodeIDForLibmeshNodeID(node_id);
 
           mooseVarRef.sys().solution().set(dof, mfem_local_nodes[mfem_dof]);
         }

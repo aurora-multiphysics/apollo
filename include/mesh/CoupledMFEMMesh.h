@@ -33,7 +33,7 @@ public:
   /**
    * Override method in ExclusiveMFEMMesh.
    */
-  inline int getMFEMDofForLibmeshNodeID(const int libmesh_node_id) override
+  inline int getMFEMNodeIDForLibmeshNodeID(const int libmesh_node_id) override
   {
     return _mfem_node_id_for_libmesh_node_id[libmesh_node_id];
   }
@@ -79,10 +79,9 @@ protected:
   /**
    * Maps from element_id to a vector containing vectors of node_ids for each face.
    */
-  void buildHex27ElementCenterOfFaceNodeIDsMap(
+  std::unique_ptr<std::map<int, std::vector<int>>> getCenterOfFaceNodeIDsForHex27ElementIDMap(
       const std::vector<int> & unique_block_ids,
-      std::map<int, std::vector<int>> & element_ids_for_block_id,
-      std::map<int, std::vector<int>> & center_of_face_hex27_node_ids_for_element_id);
+      std::map<int, std::vector<int>> & element_ids_for_block_id);
 
   /**
    * Sets protected member variables.

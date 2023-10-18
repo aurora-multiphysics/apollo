@@ -251,17 +251,20 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
   unique_corner_node_ids.resize(std::distance(unique_corner_node_ids.begin(), new_end));
 }
 
-void
-CoupledMFEMMesh::buildHex27ElementCenterOfFaceNodeIDsMap(
+std::unique_ptr<std::map<int, std::vector<int>>>
+CoupledMFEMMesh::getCenterOfFaceNodeIDsForHex27ElementIDMap(
     const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::vector<int>> & center_of_face_hex27_node_ids_for_element_id)
+    std::map<int, std::vector<int>> & element_ids_for_block_id)
 {
   if (_element_info.getElementType() != CubitElementInfo::ELEMENT_HEX27)
   {
-    mooseWarning("The element is not of type hex27.\n");
-    return;
+    return nullptr;
   }
+
+  // Define local typedef to improve readability.
+  typedef std::map<int, std::vector<int>> MapFromIntToIntVector;
+
+  MapFromIntToIntVector center_of_face_node_ids_for_hex27_element_id;
 
   for (int block_id : unique_block_ids)
   {
@@ -278,14 +281,14 @@ CoupledMFEMMesh::buildHex27ElementCenterOfFaceNodeIDsMap(
         auto local_node_ids_for_face = the_element->nodes_on_side(iface);
         const int last_local_node_id = local_node_ids_for_face.back();
 
-        const int center_of_face_global_node_id = the_element->node_id(last_local_node_id);
-
-        center_of_face_node_ids[iface] = center_of_face_global_node_id;
+        center_of_face_node_ids[iface] = the_element->node_id(last_local_node_id);
       }
 
-      center_of_face_hex27_node_ids_for_element_id[element_id] = center_of_face_node_ids;
+      center_of_face_node_ids_for_hex27_element_id[element_id] = center_of_face_node_ids;
     }
   }
+
+  return std::make_unique<MapFromIntToIntVector>(center_of_face_node_ids_for_hex27_element_id);
 }
 
 void
@@ -359,14 +362,14 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 10.
   // Generate face info IFF element is hex27. This is required by the MFEMMesh
   // initializer to correct dodgy libmesh node <--> mfem node mapping.
-  // std::map<int, std::vector<std::vector<int>>> face_node_ids_for_element_id;
+  typedef std::unique_ptr<std::map<int, std::vector<int>>> MapFromIntToIntVectorUniquePtr;
 
-  std::map<int, std::vector<int>> center_of_face_hex27_node_ids_for_element_id;
+  MapFromIntToIntVectorUniquePtr center_of_face_node_ids_for_hex27_element_ids = nullptr;
 
   if (_element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
   {
-    buildHex27ElementCenterOfFaceNodeIDsMap(
-        unique_block_ids, element_ids_for_block_id, center_of_face_hex27_node_ids_for_element_id);
+    center_of_face_node_ids_for_hex27_element_ids =
+        getCenterOfFaceNodeIDsForHex27ElementIDMap(unique_block_ids, element_ids_for_block_id);
   }
 
   // 11. Create MFEM mesh using this extremely long but necessary constructor.
@@ -380,10 +383,13 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           node_ids_for_element_id,
                                           node_ids_for_boundary_id,
                                           coordinates_for_node_id,
-                                          &center_of_face_hex27_node_ids_for_element_id);
+                                          center_of_face_node_ids_for_hex27_element_ids.get());
 
-  // 12. Set the maps from MFEMMesh required for second-order mesh transfer.
-  _mfem_node_id_for_libmesh_node_id = getMFEMMesh().getMFEMNodeIDForLibmeshNodeIDMap();
+  // 12. Copy map required for second-order mesh element transfer.
+  if (_element_info.getOrder() > 1)
+  {
+    _mfem_node_id_for_libmesh_node_id = getMFEMMesh().getMFEMNodeIDForLibmeshNodeIDMap();
+  }
 }
 
 std::unique_ptr<int[]>

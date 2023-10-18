@@ -3,19 +3,22 @@
 #include "MooseError.h"
 #include <cstdio>
 
-static bool CoordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
+// Function prototypes:
+static bool coordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
+static void convertToCArray(std::array<double, 3> & array_in, double array_out[3]);
 
-MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
-                   const CubitElementInfo & element_info,
-                   const std::vector<int> & unique_block_ids,
-                   const std::vector<int> & unique_side_boundary_ids,
-                   const std::vector<int> & unique_libmesh_corner_node_ids,
-                   std::map<int, int> & num_elements_for_boundary_id,
-                   std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-                   std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-                   std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
-                   std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-                   std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id)
+MFEMMesh::MFEMMesh(
+    const int num_elements_in_mesh,
+    const CubitElementInfo & element_info,
+    const std::vector<int> & unique_block_ids,
+    const std::vector<int> & unique_side_boundary_ids,
+    const std::vector<int> & unique_libmesh_corner_node_ids,
+    std::map<int, int> & num_elements_for_boundary_id,
+    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
   : _libmesh_node_id_for_mfem_node_id{},
     _mfem_node_id_for_libmesh_node_id{},
     _libmesh_element_id_for_mfem_element_id{},
@@ -48,7 +51,7 @@ MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
                            libmesh_element_ids_for_block_id,
                            libmesh_node_ids_for_element_id,
                            coordinates_for_libmesh_node_id,
-                           libmesh_center_of_face_node_ids_for_element_id);
+                           libmesh_center_of_face_node_ids_for_hex27_element_id);
   }
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
@@ -285,7 +288,7 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id)
+    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
 {
   // Verify that this is indeed a second-order element.
   if (element_info.getOrder() != 2)
@@ -417,9 +420,9 @@ MFEMMesh::handleQuadraticFESpace(
   if (element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
   {
     fixHex27MeshNodes(*finite_element_space,
-                      libmesh_center_of_face_node_ids_for_element_id,
                       coordinates_for_libmesh_node_id,
-                      libmesh_node_ids_for_element_id);
+                      libmesh_node_ids_for_element_id,
+                      libmesh_center_of_face_node_ids_for_hex27_element_id);
   }
 
   /**
@@ -427,11 +430,11 @@ MFEMMesh::handleQuadraticFESpace(
    * All coordinates should match. If this does not occur then it suggests that
    * there is a problem with the higher-order transfer.
    */
-  verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(*finite_element_space,
-                                                               unique_block_ids,
-                                                               libmesh_element_ids_for_block_id,
-                                                               libmesh_node_ids_for_element_id,
-                                                               coordinates_for_libmesh_node_id);
+  verifyUniqueMappingBetweenLibmeshAndMFEMNodes(*finite_element_space,
+                                                unique_block_ids,
+                                                libmesh_element_ids_for_block_id,
+                                                libmesh_node_ids_for_element_id,
+                                                coordinates_for_libmesh_node_id);
 }
 
 std::set<int>
@@ -461,7 +464,7 @@ MFEMMesh::buildSetContainingLibmeshNodeIDs(
 }
 
 void
-MFEMMesh::verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
+MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     mfem::FiniteElementSpace & finite_element_space,
     const std::vector<int> & unique_block_ids,
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
@@ -472,8 +475,7 @@ MFEMMesh::verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
   auto libmesh_node_ids = buildSetContainingLibmeshNodeIDs(
       unique_block_ids, libmesh_element_ids_for_block_id, libmesh_node_ids_for_element_id);
 
-  double mfem_coordinates[3];
-  double libmesh_coordinates[3];
+  double mfem_coordinates[3], libmesh_coordinates[3];
 
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
@@ -485,17 +487,14 @@ MFEMMesh::verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
       GetNode(mfem_dof, mfem_coordinates);
 
       const int libmesh_node_id = _libmesh_node_id_for_mfem_node_id[mfem_dof];
-      auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
 
       // Remove from set.
       libmesh_node_ids.erase(libmesh_node_id);
 
-      for (int i = 0; i < 3; i++)
-      {
-        libmesh_coordinates[i] = coordinates[i];
-      }
+      auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
+      convertToCArray(coordinates, libmesh_coordinates);
 
-      if (!CoordinatesMatch(libmesh_coordinates, mfem_coordinates))
+      if (!coordinatesMatch(libmesh_coordinates, mfem_coordinates))
       {
         mooseError("Non-matching coordinates detected for libmesh node ",
                    libmesh_node_id,
@@ -523,11 +522,11 @@ MFEMMesh::verifyHigherOrderMappingBetweenLibmeshAndMFEMNodeIDsIsUnique(
 void
 MFEMMesh::fixHex27MeshNodes(
     mfem::FiniteElementSpace & finite_element_space,
-    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id)
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
 {
-  if (!libmesh_center_of_face_node_ids_for_element_id)
+  if (!libmesh_center_of_face_node_ids_for_hex27_element_id)
   {
     mooseError("Cannot apply hex27 element face correction due to NULL map!\n");
     return;
@@ -554,7 +553,7 @@ MFEMMesh::fixHex27MeshNodes(
     auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
 
     auto & libmesh_center_of_face_node_ids =
-        (*libmesh_center_of_face_node_ids_for_element_id)[ielement];
+        (*libmesh_center_of_face_node_ids_for_hex27_element_id)[ielement];
 
     // Sanity check: there should be 27 libmesh node ids.
     if (libmesh_node_ids.size() != 27)
@@ -670,30 +669,11 @@ MFEMMesh::fixHex27MeshNodes(
   }
 }
 
-static bool
-CoordinatesMatch(double primary[3], double secondary[3], const double tolerance)
-{
-  if (!primary || !secondary || tolerance < 0.0)
-  {
-    return false;
-  }
-
-  for (int i = 0; i < 3; i++)
-  {
-    if (fabs(primary[i] - secondary[i]) > tolerance)
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 void
-MFEMMesh::dumpSecondOrderElementDebuggingInfo(const char * fpathNodes,
-                                              const char * fpathEdges,
-                                              const char * fpathFaces,
-                                              mfem::FiniteElementSpace & finite_element_space)
+MFEMMesh::writeSecondOrderElementDebuggingInfo(const char * fpathNodes,
+                                               const char * fpathEdges,
+                                               const char * fpathFaces,
+                                               mfem::FiniteElementSpace & finite_element_space)
 {
   FILE * fpNodes = fpathNodes ? fopen(fpathNodes, "w") : nullptr;
   FILE * fpEdges = fpathEdges ? fopen(fpathEdges, "w") : nullptr;
@@ -795,4 +775,37 @@ MFEMMesh::dumpSecondOrderElementDebuggingInfo(const char * fpathNodes,
     fclose(fpEdges);
   if (fpFaces)
     fclose(fpFaces);
+}
+
+static bool
+coordinatesMatch(double primary[3], double secondary[3], const double tolerance)
+{
+  if (!primary || !secondary || tolerance < 0.0)
+  {
+    return false;
+  }
+
+  for (int i = 0; i < 3; i++)
+  {
+    if (fabs(primary[i] - secondary[i]) > tolerance)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static void
+convertToCArray(std::array<double, 3> & array_in, double array_out[3])
+{
+  if (!array_out)
+  {
+    return;
+  }
+
+  for (int i = 0; i < 3; i++)
+  {
+    array_out[i] = array_in[i];
+  }
 }

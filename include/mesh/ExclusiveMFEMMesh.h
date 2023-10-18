@@ -59,7 +59,7 @@ public:
   /**
    * Override in derived classes.
    */
-  virtual inline int getMFEMDofForLibmeshNodeID(const int libmesh_node_id) { return 0; }
+  virtual inline int getMFEMNodeIDForLibmeshNodeID(const int libmesh_node_id) { return 0; }
 
 protected:
   /**
