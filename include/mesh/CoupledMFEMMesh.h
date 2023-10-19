@@ -10,6 +10,7 @@
 #pragma once
 #include "ExclusiveMFEMMesh.h"
 #include "CubitElementInfo.h"
+#include "NodeBiMap.h"
 
 /**
  * CoupledMFEMMesh
@@ -33,9 +34,14 @@ public:
   /**
    * Override method in ExclusiveMFEMMesh.
    */
-  inline int getMFEMNodeIDForLibmeshNodeID(const int libmesh_node_id) override
+  inline int getMFEMNodeID(const int libmesh_node_id) override
   {
-    return _mfem_node_id_for_libmesh_node_id[libmesh_node_id];
+    return _second_order_node_bimap.getMFEMNodeID(libmesh_node_id);
+  }
+
+  inline int getLibmeshNodeID(const int mfem_node_id) override
+  {
+    return _second_order_node_bimap.getLibmeshNodeID(mfem_node_id);
   }
 
 protected:
@@ -135,7 +141,7 @@ protected:
   CubitElementInfo _element_info;
 
   /**
-   * Map required for higher-order mesh element transfers.
+   * MFEM <--> libMesh bimap required for higher-order mesh element transfers.
    */
-  std::map<int, int> _mfem_node_id_for_libmesh_node_id;
+  NodeBiMap _second_order_node_bimap;
 };

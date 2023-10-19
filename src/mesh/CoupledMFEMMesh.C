@@ -377,13 +377,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                                           node_ids_for_element_id,
                                           node_ids_for_boundary_id,
                                           coordinates_for_node_id,
+                                          &_second_order_node_bimap,
                                           &center_of_face_node_ids_for_hex27_element_ids);
-
-  // 12. Copy map required for second-order mesh element transfer.
-  if (_element_info.getOrder() > 1)
-  {
-    _mfem_node_id_for_libmesh_node_id = getMFEMMesh().getMFEMNodeIDForLibmeshNodeIDMap();
-  }
 }
 
 std::unique_ptr<int[]>

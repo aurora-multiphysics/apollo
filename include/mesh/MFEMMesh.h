@@ -7,6 +7,7 @@
 #include "libmesh/node.h"
 #include "libmesh/parallel_mesh.h"
 #include "CubitElementInfo.h"
+#include "NodeBiMap.h"
 #include "mfem.hpp"
 
 /**
@@ -27,6 +28,7 @@ public:
            std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
            std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
            std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+           NodeBiMap * second_order_node_bimap,
            std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id =
                nullptr);
 
@@ -34,16 +36,6 @@ public:
            int generate_edges = 0,
            int refine = 1,
            bool fix_orientation = true);
-
-  inline std::map<int, int> & getLibmeshNodeIDForMFEMNodeIDMap()
-  {
-    return _libmesh_node_id_for_mfem_node_id;
-  }
-
-  inline std::map<int, int> & getMFEMNodeIDForLibmeshNodeIDMap()
-  {
-    return _mfem_node_id_for_libmesh_node_id;
-  }
 
 protected:
   /**
@@ -93,7 +85,9 @@ protected:
       std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-      std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id);
+      NodeBiMap & second_order_node_bimap,
+      std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id =
+          nullptr);
 
   /**
    * Fixes the node ordering for hex27 second-order mesh elements. This is called
@@ -104,7 +98,8 @@ protected:
       mfem::FiniteElementSpace & finite_element_space,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-      std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id);
+      std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+      NodeBiMap & second_order_node_bimap);
 
   /**
    * Verifies whether the libmesh and mfem node ids have a unique mapping. All
@@ -116,7 +111,8 @@ protected:
       const std::vector<int> & unique_block_ids,
       std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+      NodeBiMap & second_order_node_bimap);
 
   /**
    * Writes face, node and edge information for all 2nd order elements to a file
@@ -147,13 +143,6 @@ protected:
   void writeEdgeInfoFor2ndOrderElement(FILE * fp,
                                        mfem::FiniteElementSpace * fe_space,
                                        const int ielement) const;
-
-  /**
-   * A two-way map between libmesh and mfem node ids. This is only used for
-   * higher-order transfers.
-   */
-  std::map<int, int> _libmesh_node_id_for_mfem_node_id;
-  std::map<int, int> _mfem_node_id_for_libmesh_node_id;
 
   /**
    * Map from the MFEM element id to the libmesh element id internally.

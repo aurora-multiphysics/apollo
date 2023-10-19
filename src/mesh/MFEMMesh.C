@@ -18,11 +18,9 @@ MFEMMesh::MFEMMesh(
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    NodeBiMap * second_order_node_bimap,
     std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
-  : _libmesh_node_id_for_mfem_node_id{},
-    _mfem_node_id_for_libmesh_node_id{},
-    _libmesh_element_id_for_mfem_element_id{},
-    _mfem_vertex_index_for_libmesh_corner_node_id{}
+  : _libmesh_element_id_for_mfem_element_id{}, _mfem_vertex_index_for_libmesh_corner_node_id{}
 {
   // Set dimensions.
   Dim = spaceDim = element_info.getDimension();
@@ -46,11 +44,17 @@ MFEMMesh::MFEMMesh(
   // Handle higher-order meshes.
   if (element_info.getOrder() == 2)
   {
+    if (!second_order_node_bimap)
+    {
+      mooseError("The second order node bimap is NULL.\n");
+    }
+
     handleQuadraticFESpace(element_info,
                            unique_block_ids,
                            libmesh_element_ids_for_block_id,
                            libmesh_node_ids_for_element_id,
                            coordinates_for_libmesh_node_id,
+                           *second_order_node_bimap,
                            libmesh_center_of_face_node_ids_for_hex27_element_id);
   }
 
@@ -59,10 +63,7 @@ MFEMMesh::MFEMMesh(
 }
 
 MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool fix_orientation)
-  : _libmesh_node_id_for_mfem_node_id{},
-    _mfem_node_id_for_libmesh_node_id{},
-    _libmesh_element_id_for_mfem_element_id{},
-    _mfem_vertex_index_for_libmesh_corner_node_id{}
+  : _libmesh_element_id_for_mfem_element_id{}, _mfem_vertex_index_for_libmesh_corner_node_id{}
 {
   SetEmpty();
 
@@ -288,6 +289,7 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    NodeBiMap & second_order_node_bimap,
     std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
 {
   // Verify that this is indeed a second-order element.
@@ -301,10 +303,6 @@ MFEMMesh::handleQuadraticFESpace(
   {
     mooseWarning("'", __func__, "' has not been tested with second-order 2D elements.");
   }
-
-  // Clear the maps:
-  _mfem_node_id_for_libmesh_node_id.clear();
-  _libmesh_node_id_for_mfem_node_id.clear();
 
   // 2D maps:
   const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};
@@ -369,6 +367,9 @@ MFEMMesh::handleQuadraticFESpace(
   Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
   own_nodes = 1;                               // and 'finite_element_space'
 
+  // Clear second order node bimap.
+  second_order_node_bimap.clearNodeIDs();
+
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
     const int libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
@@ -395,9 +396,8 @@ MFEMMesh::handleQuadraticFESpace(
       const int libmesh_node_index = mfem_to_libmesh_map[j] - 1;
       const int libmesh_node_id = libmesh_node_ids[libmesh_node_index];
 
-      // Two-way map:
-      _mfem_node_id_for_libmesh_node_id[libmesh_node_id] = mfem_node_id;
-      _libmesh_node_id_for_mfem_node_id[mfem_node_id] = libmesh_node_id;
+      // Update two-way map:
+      second_order_node_bimap.insertNodeIDs(mfem_node_id, libmesh_node_id);
 
       // Extract node's coordinates:
       auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
@@ -424,13 +424,13 @@ MFEMMesh::handleQuadraticFESpace(
     if (!libmesh_center_of_face_node_ids_for_hex27_element_id)
     {
       mooseError("Cannot apply hex27 element correction due to NULL map!\n");
-      return;
     }
 
     fixHex27MeshNodes(*finite_element_space,
                       coordinates_for_libmesh_node_id,
                       libmesh_node_ids_for_element_id,
-                      *libmesh_center_of_face_node_ids_for_hex27_element_id);
+                      *libmesh_center_of_face_node_ids_for_hex27_element_id,
+                      second_order_node_bimap);
   }
 
   /**
@@ -442,7 +442,8 @@ MFEMMesh::handleQuadraticFESpace(
                                                 unique_block_ids,
                                                 libmesh_element_ids_for_block_id,
                                                 libmesh_node_ids_for_element_id,
-                                                coordinates_for_libmesh_node_id);
+                                                coordinates_for_libmesh_node_id,
+                                                second_order_node_bimap);
 }
 
 void
@@ -451,7 +452,8 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     const std::vector<int> & unique_block_ids,
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
+    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    NodeBiMap & second_order_node_bimap)
 {
   // Create a set of all unique libmesh node ids.
   std::set<int> libmesh_node_ids;
@@ -477,7 +479,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     {
       GetNode(mfem_dof, mfem_coordinates);
 
-      const int libmesh_node_id = _libmesh_node_id_for_mfem_node_id[mfem_dof];
+      const int libmesh_node_id = second_order_node_bimap.getLibmeshNodeID(mfem_dof);
 
       // Remove from set.
       libmesh_node_ids.erase(libmesh_node_id);
@@ -515,7 +517,8 @@ MFEMMesh::fixHex27MeshNodes(
     mfem::FiniteElementSpace & finite_element_space,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id)
+    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+    NodeBiMap & second_order_node_bimap)
 {
   /**
    * Problems with hex27 meshes:
@@ -538,7 +541,6 @@ MFEMMesh::fixHex27MeshNodes(
     if (libmesh_node_ids.size() != 27)
     {
       mooseError("There should be 27 nodes per libmesh element for hex27 elements!\n");
-      return;
     }
 
     // Iterate over faces and get the dofs for each face of the element.
@@ -551,7 +553,6 @@ MFEMMesh::fixHex27MeshNodes(
     if (faces.Size() != 6)
     {
       mooseError("There should be 6 faces for hex27 elements!\n");
-      return;
     }
 
     for (int iface = 0; iface < faces.Size(); iface++)
@@ -595,10 +596,8 @@ MFEMMesh::fixHex27MeshNodes(
       (*Nodes)(z_node_offset) = z;
 
       // Correct the maps:
-      _libmesh_node_id_for_mfem_node_id[hex27_face_middle_dof] =
-          libmesh_hex27_center_of_face_node_id;
-      _mfem_node_id_for_libmesh_node_id[libmesh_hex27_center_of_face_node_id] =
-          hex27_face_middle_dof;
+      second_order_node_bimap.insertNodeIDs(hex27_face_middle_dof,
+                                            libmesh_hex27_center_of_face_node_id);
     }
 
     //
@@ -643,8 +642,7 @@ MFEMMesh::fixHex27MeshNodes(
     (*Nodes)(z_node_offset) = z;
 
     // Correct the maps:
-    _libmesh_node_id_for_mfem_node_id[interior_dofs[0]] = libmesh_hex27_interior_node_id;
-    _mfem_node_id_for_libmesh_node_id[libmesh_hex27_interior_node_id] = interior_dofs[0];
+    second_order_node_bimap.insertNodeIDs(interior_dofs[0], libmesh_hex27_interior_node_id);
   }
 }
 
