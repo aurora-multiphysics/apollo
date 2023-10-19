@@ -426,11 +426,11 @@ MFEMMesh::handleQuadraticFESpace(
       mooseError("Cannot apply hex27 element correction due to NULL map!\n");
     }
 
-    fixHex27MeshNodes(*finite_element_space,
-                      coordinates_for_libmesh_node_id,
-                      libmesh_node_ids_for_element_id,
-                      *libmesh_center_of_face_node_ids_for_hex27_element_id,
-                      second_order_node_bimap);
+    applyCorrectionsToHex27Elements(*finite_element_space,
+                                    coordinates_for_libmesh_node_id,
+                                    libmesh_node_ids_for_element_id,
+                                    *libmesh_center_of_face_node_ids_for_hex27_element_id,
+                                    second_order_node_bimap);
   }
 
   /**
@@ -444,6 +444,166 @@ MFEMMesh::handleQuadraticFESpace(
                                                 libmesh_node_ids_for_element_id,
                                                 coordinates_for_libmesh_node_id,
                                                 second_order_node_bimap);
+}
+
+void
+MFEMMesh::applyCorrectionsToHex27Elements(
+    mfem::FiniteElementSpace & finite_element_space,
+    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+    NodeBiMap & second_order_node_bimap)
+{
+  /**
+   * Problems with hex27 meshes:
+   * 1) the middle node from each face (3x3) is incorrect
+   * 2) the interior central node is incorrect
+   */
+  for (int ielement = 0; ielement < NumOfElements; ielement++)
+  {
+    applyCenterOfFacesCorrectionForHex27Element(
+        ielement,
+        finite_element_space,
+        coordinates_for_libmesh_node_id,
+        libmesh_node_ids_for_element_id,
+        libmesh_center_of_face_node_ids_for_hex27_element_id,
+        second_order_node_bimap);
+
+    applyInteriorNodeCorrectionForHex27Element(ielement,
+                                               finite_element_space,
+                                               coordinates_for_libmesh_node_id,
+                                               libmesh_node_ids_for_element_id,
+                                               second_order_node_bimap);
+  }
+}
+
+void
+MFEMMesh::applyCenterOfFacesCorrectionForHex27Element(
+    const int ielement,
+    mfem::FiniteElementSpace & finite_element_space,
+    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+    NodeBiMap & second_order_node_bimap)
+{
+  // Get the corresponding libmesh element.
+  auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
+  auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
+
+  if (libmesh_node_ids.size() != 27)
+  {
+    mooseError("There should be 27 nodes per libmesh element for hex27 elements!\n");
+  }
+
+  // Iterate over faces and get the dofs for each face of the element.
+  mfem::Array<int> faces;
+  mfem::Array<int> face_orientations;
+
+  GetElementFaces(ielement, faces, face_orientations);
+
+  if (faces.Size() != 6)
+  {
+    mooseError("There should be 6 faces for hex27 elements!\n");
+  }
+
+  auto & libmesh_center_of_face_node_ids =
+      libmesh_center_of_face_node_ids_for_hex27_element_id[ielement];
+
+  for (int iface = 0; iface < faces.Size(); iface++)
+  {
+    const int mfem_face = faces[iface];
+
+    mfem::Array<int> face_dofs;
+    finite_element_space.GetFaceDofs(mfem_face, face_dofs);
+
+    // NB: the middle node from each face corresponds to the last dof from the
+    // faces array.
+    const int hex27_face_middle_dof = face_dofs.Last();
+
+    mfem::Array<int> face_vdofs;
+    finite_element_space.GetFaceVDofs(mfem_face, face_vdofs);
+
+    // Get the positions in the vdofs vector for the xyz coordinates:
+    const int x_vdof_offset = face_dofs.Size() - 1;
+    const int y_vdof_offset = x_vdof_offset + face_dofs.Size();
+    const int z_vdof_offset = y_vdof_offset + face_dofs.Size();
+
+    const int x_node_offset = face_vdofs[x_vdof_offset];
+    const int y_node_offset = face_vdofs[y_vdof_offset];
+    const int z_node_offset = face_vdofs[z_vdof_offset];
+
+    // Extract the correct coordinates:
+    auto libmesh_hex27_center_of_face_node_id = libmesh_center_of_face_node_ids[iface];
+
+    auto coordinates_for_hex27_face_middle =
+        coordinates_for_libmesh_node_id[libmesh_hex27_center_of_face_node_id];
+
+    const double x = coordinates_for_hex27_face_middle[0];
+    const double y = coordinates_for_hex27_face_middle[1];
+    const double z = coordinates_for_hex27_face_middle[2];
+
+    // Set the correct coordinates for the Node:
+    (*Nodes)(x_node_offset) = x;
+    (*Nodes)(y_node_offset) = y;
+    (*Nodes)(z_node_offset) = z;
+
+    // Correct the maps:
+    second_order_node_bimap.insertNodeIDs(hex27_face_middle_dof,
+                                          libmesh_hex27_center_of_face_node_id);
+  }
+}
+
+void
+MFEMMesh::applyInteriorNodeCorrectionForHex27Element(
+    const int ielement,
+    mfem::FiniteElementSpace & finite_element_space,
+    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    NodeBiMap & second_order_node_bimap)
+{
+  // Get the corresponding libmesh element.
+  auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
+  auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
+
+  mfem::Array<int> interior_dofs;
+  finite_element_space.GetElementInteriorDofs(ielement, interior_dofs);
+
+  mfem::Array<int> interior_vdofs;
+  finite_element_space.GetElementInteriorVDofs(ielement, interior_vdofs);
+
+  if (interior_dofs.Size() != 1)
+  {
+    mooseError("There should be a single interior node for hex27 elements!\n");
+    return;
+  }
+
+  // Get the positions in the vdofs vector for the xyz coordinates:
+  const int x_vdof_offset = 0;
+  const int y_vdof_offset = x_vdof_offset + interior_dofs.Size();
+  const int z_vdof_offset = y_vdof_offset + interior_dofs.Size();
+
+  const int x_node_offset = interior_vdofs[x_vdof_offset];
+  const int y_node_offset = interior_vdofs[y_vdof_offset];
+  const int z_node_offset = interior_vdofs[z_vdof_offset];
+
+  // NB: the last libmesh node id corresponds to the interior node.
+  const int libmesh_hex27_interior_node_id = libmesh_node_ids.back();
+
+  // Extract the correct coordinates:
+  auto & coordinates_for_hex27_interior =
+      coordinates_for_libmesh_node_id[libmesh_hex27_interior_node_id];
+
+  const double x = coordinates_for_hex27_interior[0];
+  const double y = coordinates_for_hex27_interior[1];
+  const double z = coordinates_for_hex27_interior[2];
+
+  // Set the correct coordinates for the Nodes:
+  (*Nodes)(x_node_offset) = x;
+  (*Nodes)(y_node_offset) = y;
+  (*Nodes)(z_node_offset) = z;
+
+  // Correct the maps:
+  second_order_node_bimap.insertNodeIDs(interior_dofs[0], libmesh_hex27_interior_node_id);
 }
 
 void
@@ -509,140 +669,6 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     mooseError("There are ",
                libmesh_node_ids.size(),
                " unpaired libmesh node ids. No one-to-one mapping exists!\n");
-  }
-}
-
-void
-MFEMMesh::fixHex27MeshNodes(
-    mfem::FiniteElementSpace & finite_element_space,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
-    NodeBiMap & second_order_node_bimap)
-{
-  /**
-   * Problems with hex27 meshes:
-   * 1) the middle node from each face (3x3) is incorrect
-   * 2) the interior central node is incorrect
-   */
-  for (int ielement = 0; ielement < NumOfElements; ielement++)
-  {
-    //
-    // 1) Face correction:
-    //
-    // Get the corresponding libmesh element.
-    auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
-    auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
-
-    auto & libmesh_center_of_face_node_ids =
-        libmesh_center_of_face_node_ids_for_hex27_element_id[ielement];
-
-    // Sanity check: there should be 27 libmesh node ids.
-    if (libmesh_node_ids.size() != 27)
-    {
-      mooseError("There should be 27 nodes per libmesh element for hex27 elements!\n");
-    }
-
-    // Iterate over faces and get the dofs for each face of the element.
-    mfem::Array<int> faces;
-    mfem::Array<int> face_orientations;
-
-    GetElementFaces(ielement, faces, face_orientations);
-
-    // Sanity check: there should be 6 faces:
-    if (faces.Size() != 6)
-    {
-      mooseError("There should be 6 faces for hex27 elements!\n");
-    }
-
-    for (int iface = 0; iface < faces.Size(); iface++)
-    {
-      const int mfem_face = faces[iface];
-
-      mfem::Array<int> face_dofs;
-      finite_element_space.GetFaceDofs(mfem_face, face_dofs);
-
-      // NB: the middle node from each face corresponds to the last dof from the
-      // faces array.
-      const int hex27_face_middle_dof = face_dofs.Last();
-
-      mfem::Array<int> face_vdofs;
-      finite_element_space.GetFaceVDofs(mfem_face, face_vdofs);
-
-      // Get the positions in the vdofs vector for the xyz coordinates:
-      const int x_vdof_offset = face_dofs.Size() - 1;
-      const int y_vdof_offset = x_vdof_offset + face_dofs.Size();
-      const int z_vdof_offset = y_vdof_offset + face_dofs.Size();
-
-      const int x_node_offset = face_vdofs[x_vdof_offset];
-      const int y_node_offset = face_vdofs[y_vdof_offset];
-      const int z_node_offset = face_vdofs[z_vdof_offset];
-
-      // The middle node from each face is also the last face node in each libmesh
-      // vector of node ids.
-      auto libmesh_hex27_center_of_face_node_id = libmesh_center_of_face_node_ids[iface];
-
-      // Extract the correct coordinates:
-      auto coordinates_for_hex27_face_middle =
-          coordinates_for_libmesh_node_id[libmesh_hex27_center_of_face_node_id];
-
-      const double x = coordinates_for_hex27_face_middle[0];
-      const double y = coordinates_for_hex27_face_middle[1];
-      const double z = coordinates_for_hex27_face_middle[2];
-
-      // Set the correct coordinates for the Node:
-      (*Nodes)(x_node_offset) = x;
-      (*Nodes)(y_node_offset) = y;
-      (*Nodes)(z_node_offset) = z;
-
-      // Correct the maps:
-      second_order_node_bimap.insertNodeIDs(hex27_face_middle_dof,
-                                            libmesh_hex27_center_of_face_node_id);
-    }
-
-    //
-    // 2) Interior (central) node correction:
-    //
-    mfem::Array<int> interior_dofs;
-    finite_element_space.GetElementInteriorDofs(ielement, interior_dofs);
-
-    mfem::Array<int> interior_vdofs;
-    finite_element_space.GetElementInteriorVDofs(ielement, interior_vdofs);
-
-    // Sanity check: there should be ONLY 1 interior node.
-    if (interior_dofs.Size() != 1)
-    {
-      mooseError("There should be a single interior node for hex27 elements!\n");
-      return;
-    }
-
-    // Get the positions in the vdofs vector for the xyz coordinates:
-    const int x_vdof_offset = 0;
-    const int y_vdof_offset = x_vdof_offset + interior_dofs.Size();
-    const int z_vdof_offset = y_vdof_offset + interior_dofs.Size();
-
-    const int x_node_offset = interior_vdofs[x_vdof_offset];
-    const int y_node_offset = interior_vdofs[y_vdof_offset];
-    const int z_node_offset = interior_vdofs[z_vdof_offset];
-
-    // NB: the last libmesh node id corresponds to the central node.
-    const int libmesh_hex27_interior_node_id = libmesh_node_ids.back();
-
-    // Extract the correct coordinates:
-    auto & coordinates_for_hex27_interior =
-        coordinates_for_libmesh_node_id[libmesh_hex27_interior_node_id];
-
-    const double x = coordinates_for_hex27_interior[0];
-    const double y = coordinates_for_hex27_interior[1];
-    const double z = coordinates_for_hex27_interior[2];
-
-    // Set the correct coordinates for the Nodes:
-    (*Nodes)(x_node_offset) = x;
-    (*Nodes)(y_node_offset) = y;
-    (*Nodes)(z_node_offset) = z;
-
-    // Correct the maps:
-    second_order_node_bimap.insertNodeIDs(interior_dofs[0], libmesh_hex27_interior_node_id);
   }
 }
 

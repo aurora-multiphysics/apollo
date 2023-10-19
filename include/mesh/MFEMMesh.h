@@ -28,7 +28,7 @@ public:
            std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
            std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
            std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-           NodeBiMap * second_order_node_bimap,
+           NodeBiMap * second_order_node_bimap = nullptr,
            std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id =
                nullptr);
 
@@ -94,11 +94,26 @@ protected:
    * internally in handleQuadraticFESpace. This method should be called only after
    * the Nodes have been created and their coordinates have been set.
    */
-  void fixHex27MeshNodes(
+  void applyCorrectionsToHex27Elements(
       mfem::FiniteElementSpace & finite_element_space,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
       std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+      NodeBiMap & second_order_node_bimap);
+
+  void applyCenterOfFacesCorrectionForHex27Element(
+      const int ielement,
+      mfem::FiniteElementSpace & finite_element_space,
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+      std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+      NodeBiMap & second_order_node_bimap);
+
+  void applyInteriorNodeCorrectionForHex27Element(
+      const int ielement,
+      mfem::FiniteElementSpace & finite_element_space,
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
       NodeBiMap & second_order_node_bimap);
 
   /**
