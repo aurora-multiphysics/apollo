@@ -119,13 +119,35 @@ protected:
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
 
   /**
-   * Writes debugging info to specified files for second-order mesh elements. No
-   * information will be printed if a NULL path is supplied.
+   * Writes face, node and edge information for all 2nd order elements to a file
+   * and closes the file.
    */
-  void writeSecondOrderElementDebuggingInfo(const char * fpathNodes,
-                                            const char * fpathEdges,
-                                            const char * fpathFaces,
-                                            mfem::FiniteElementSpace & finite_element_space);
+  void writeFaceInfoFor2ndOrderElements(const char * fpath,
+                                        mfem::FiniteElementSpace * fe_space) const;
+
+  void writeNodeInfoFor2ndOrderElements(const char * fpath,
+                                        mfem::FiniteElementSpace * fe_space) const;
+
+  void writeEdgeInfoFor2ndOrderElements(const char * fpath,
+                                        mfem::FiniteElementSpace * fe_space) const;
+
+  /**
+   * Write face, node and edge information for the specified 2nd order element
+   * to a file. NB: the file will not be closed after the call. The caller will
+   * have to call fclose() manually.
+   */
+  void writeFaceInfoFor2ndOrderElement(FILE * fp,
+                                       mfem::FiniteElementSpace * fe_space,
+                                       const int ielement) const;
+
+  void writeNodeInfoFor2ndOrderElement(FILE * fp,
+                                       mfem::FiniteElementSpace * fe_space,
+                                       const int ielement) const;
+
+  void writeEdgeInfoFor2ndOrderElement(FILE * fp,
+                                       mfem::FiniteElementSpace * fe_space,
+                                       const int ielement) const;
+
   /**
    * A two-way map between libmesh and mfem node ids. This is only used for
    * higher-order transfers.

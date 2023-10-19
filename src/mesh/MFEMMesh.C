@@ -482,6 +482,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
       // Remove from set.
       libmesh_node_ids.erase(libmesh_node_id);
 
+      // Convert from std::array<double, 3> --> C array for comparison.
       auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
       convertToCArray(coordinates, libmesh_coordinates);
 
@@ -517,16 +518,10 @@ MFEMMesh::fixHex27MeshNodes(
     std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id)
 {
   /**
-   * Assumptions:
-   * 1) we have a hex27 mesh
-   * 2) we have already created the 2nd order nodes
-   *
    * Problems with hex27 meshes:
    * 1) the middle node from each face (3x3) is incorrect
    * 2) the interior central node is incorrect
    */
-
-  // Iterate over all MFEM elements.
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
     //
@@ -654,111 +649,164 @@ MFEMMesh::fixHex27MeshNodes(
 }
 
 void
-MFEMMesh::writeSecondOrderElementDebuggingInfo(const char * fpathNodes,
-                                               const char * fpathEdges,
-                                               const char * fpathFaces,
-                                               mfem::FiniteElementSpace & finite_element_space)
+MFEMMesh::writeFaceInfoFor2ndOrderElements(const char * fpath,
+                                           mfem::FiniteElementSpace * fe_space) const
 {
-  FILE * fpNodes = fpathNodes ? fopen(fpathNodes, "w") : nullptr;
-  FILE * fpEdges = fpathEdges ? fopen(fpathEdges, "w") : nullptr;
-  FILE * fpFaces = fpathFaces ? fopen(fpathFaces, "w") : nullptr;
+  if (!fpath || !fe_space)
+  {
+    return;
+  }
 
-  if (!fpNodes && !fpEdges && !fpFaces)
+  FILE * fp = fopen(fpath, "w");
+  if (!fp)
   {
     return;
   }
 
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
-    //
-    // Node
-    //
-    if (fpNodes)
-    {
-      fprintf(fpNodes, "Element %d:\n", ielement);
-
-      mfem::Array<int> node_dofs;
-      finite_element_space.GetElementDofs(ielement, node_dofs);
-
-      for (int node_dof : node_dofs)
-      {
-        double coordinates[3];
-        GetNode(node_dof, coordinates);
-
-        fprintf(fpNodes, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
-      }
-
-      fprintf(fpNodes, "\n");
-    }
-
-    //
-    // Edge
-    //
-    if (fpEdges)
-    {
-      fprintf(fpEdges, "Element %d:\n", ielement);
-
-      mfem::Array<int> edges;
-      mfem::Array<int> edge_orientations;
-
-      GetElementEdges(ielement, edges, edge_orientations);
-
-      for (int iedge = 0; iedge < edges.Size(); iedge++)
-      {
-        fprintf(fpEdges, "Edge %d:\n", iedge);
-
-        mfem::Array<int> edge_dofs;
-        finite_element_space.GetEdgeDofs(edges[iedge], edge_dofs);
-
-        for (int edge_dof : edge_dofs)
-        {
-          double coordinates[3];
-          GetNode(edge_dof, coordinates);
-
-          fprintf(
-              fpEdges, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
-        }
-      }
-    }
-
-    //
-    // Face
-    //
-    if (fpFaces)
-    {
-      fprintf(fpFaces, "Element %d:\n", ielement);
-
-      mfem::Array<int> faces;
-      mfem::Array<int> face_orientations;
-
-      GetElementFaces(ielement, faces, face_orientations);
-
-      for (int iface = 0; iface < faces.Size(); iface++)
-      {
-        fprintf(fpFaces, "Face %d:\n", iface);
-
-        mfem::Array<int> face_dofs;
-        finite_element_space.GetFaceDofs(faces[iface], face_dofs);
-
-        for (int face_dof : face_dofs)
-        {
-          double coordinates[3];
-          GetNode(face_dof, coordinates);
-
-          fprintf(
-              fpFaces, "(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
-        }
-      }
-    }
+    writeFaceInfoFor2ndOrderElement(fp, fe_space, ielement);
   }
 
-  // Cleanup.
-  if (fpNodes)
-    fclose(fpNodes);
-  if (fpEdges)
-    fclose(fpEdges);
-  if (fpFaces)
-    fclose(fpFaces);
+  fclose(fp);
+}
+
+void
+MFEMMesh::writeNodeInfoFor2ndOrderElements(const char * fpath,
+                                           mfem::FiniteElementSpace * fe_space) const
+{
+  if (!fpath || !fe_space)
+  {
+    return;
+  }
+
+  FILE * fp = fopen(fpath, "w");
+  if (!fp)
+  {
+    return;
+  }
+
+  for (int ielement = 0; ielement < NumOfElements; ielement++)
+  {
+    writeNodeInfoFor2ndOrderElement(fp, fe_space, ielement);
+  }
+
+  fclose(fp);
+}
+
+void
+MFEMMesh::writeEdgeInfoFor2ndOrderElements(const char * fpath,
+                                           mfem::FiniteElementSpace * fe_space) const
+{
+  if (!fpath || !fe_space)
+  {
+    return;
+  }
+
+  FILE * fp = fopen(fpath, "w");
+  if (!fp)
+  {
+    return;
+  }
+
+  for (int ielement = 0; ielement < NumOfElements; ielement++)
+  {
+    writeEdgeInfoFor2ndOrderElement(fp, fe_space, ielement);
+  }
+
+  fclose(fp);
+}
+
+void
+MFEMMesh::writeFaceInfoFor2ndOrderElement(FILE * fp,
+                                          mfem::FiniteElementSpace * fe_space,
+                                          const int ielement) const
+{
+  if (!fp || !fe_space)
+  {
+    return;
+  }
+
+  fprintf(fp, "*** Element %d ***\n", ielement);
+
+  mfem::Array<int> faces;
+  mfem::Array<int> face_orientations;
+
+  GetElementFaces(ielement, faces, face_orientations);
+
+  for (int iface = 0; iface < faces.Size(); iface++)
+  {
+    fprintf(fp, "\t*** Face %d ***\n", iface);
+
+    mfem::Array<int> face_dofs;
+    fe_space->GetFaceDofs(faces[iface], face_dofs);
+
+    for (int face_dof : face_dofs)
+    {
+      double coordinates[3];
+      GetNode(face_dof, coordinates);
+
+      fprintf(fp, "\t\t(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+    }
+  }
+}
+
+void
+MFEMMesh::writeNodeInfoFor2ndOrderElement(FILE * fp,
+                                          mfem::FiniteElementSpace * fe_space,
+                                          const int ielement) const
+{
+  if (!fp || !fe_space)
+  {
+    return;
+  }
+
+  fprintf(fp, "*** Element %d ***\n", ielement);
+
+  mfem::Array<int> node_dofs;
+  fe_space->GetElementDofs(ielement, node_dofs);
+
+  for (int node_dof : node_dofs)
+  {
+    double coordinates[3];
+    GetNode(node_dof, coordinates);
+
+    fprintf(fp, "\t(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+  }
+}
+
+void
+MFEMMesh::writeEdgeInfoFor2ndOrderElement(FILE * fp,
+                                          mfem::FiniteElementSpace * fe_space,
+                                          const int ielement) const
+{
+  if (!fp || !fe_space)
+  {
+    return;
+  }
+
+  fprintf(fp, "*** Element %d ***\n", ielement);
+
+  mfem::Array<int> edges;
+  mfem::Array<int> edge_orientations;
+
+  GetElementEdges(ielement, edges, edge_orientations);
+
+  for (int iedge = 0; iedge < edges.Size(); iedge++)
+  {
+    fprintf(fp, "\t*** Edge %d ***\n", iedge);
+
+    mfem::Array<int> edge_dofs;
+    fe_space->GetEdgeDofs(edges[iedge], edge_dofs);
+
+    for (int edge_dof : edge_dofs)
+    {
+      double coordinates[3];
+      GetNode(edge_dof, coordinates);
+
+      fprintf(fp, "\t\t(%.2lf, %.2lf, %.2lf)\n", coordinates[0], coordinates[1], coordinates[2]);
+    }
+  }
 }
 
 static bool
