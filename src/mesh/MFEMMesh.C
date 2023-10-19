@@ -419,10 +419,18 @@ MFEMMesh::handleQuadraticFESpace(
    */
   if (element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
   {
+    // Verify that we have the map. If not, we cannot apply the correction.
+    // Ensure that we have the face map for hex27 correction.
+    if (!libmesh_center_of_face_node_ids_for_hex27_element_id)
+    {
+      mooseError("Cannot apply hex27 element correction due to NULL map!\n");
+      return;
+    }
+
     fixHex27MeshNodes(*finite_element_space,
                       coordinates_for_libmesh_node_id,
                       libmesh_node_ids_for_element_id,
-                      libmesh_center_of_face_node_ids_for_hex27_element_id);
+                      *libmesh_center_of_face_node_ids_for_hex27_element_id);
   }
 
   /**
@@ -437,32 +445,6 @@ MFEMMesh::handleQuadraticFESpace(
                                                 coordinates_for_libmesh_node_id);
 }
 
-std::set<int>
-MFEMMesh::buildSetContainingLibmeshNodeIDs(
-    const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id)
-{
-  std::set<int> libmesh_node_ids_set;
-
-  for (int block_id : unique_block_ids)
-  {
-    auto & libmesh_element_ids = libmesh_element_ids_for_block_id[block_id];
-
-    for (int libmesh_element_id : libmesh_element_ids)
-    {
-      auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
-
-      for (int libmesh_node_id : libmesh_node_ids)
-      {
-        libmesh_node_ids_set.insert(libmesh_node_id);
-      }
-    }
-  }
-
-  return libmesh_node_ids_set;
-}
-
 void
 MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     mfem::FiniteElementSpace & finite_element_space,
@@ -472,8 +454,17 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
   // Create a set of all unique libmesh node ids.
-  auto libmesh_node_ids = buildSetContainingLibmeshNodeIDs(
-      unique_block_ids, libmesh_element_ids_for_block_id, libmesh_node_ids_for_element_id);
+  std::set<int> libmesh_node_ids;
+
+  for (auto & key_value : libmesh_node_ids_for_element_id)
+  {
+    std::vector<int> & libmesh_node_ids_for_element = key_value.second;
+
+    for (int libmesh_node_id : libmesh_node_ids_for_element)
+    {
+      libmesh_node_ids.insert(libmesh_node_id);
+    }
+  }
 
   double mfem_coordinates[3], libmesh_coordinates[3];
 
@@ -515,7 +506,6 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     mooseError("There are ",
                libmesh_node_ids.size(),
                " unpaired libmesh node ids. No one-to-one mapping exists!\n");
-    return;
   }
 }
 
@@ -524,14 +514,8 @@ MFEMMesh::fixHex27MeshNodes(
     mfem::FiniteElementSpace & finite_element_space,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
+    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id)
 {
-  if (!libmesh_center_of_face_node_ids_for_hex27_element_id)
-  {
-    mooseError("Cannot apply hex27 element face correction due to NULL map!\n");
-    return;
-  }
-
   /**
    * Assumptions:
    * 1) we have a hex27 mesh
@@ -545,15 +529,15 @@ MFEMMesh::fixHex27MeshNodes(
   // Iterate over all MFEM elements.
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
-    /**
-     * 1) Face correction:
-     */
+    //
+    // 1) Face correction:
+    //
     // Get the corresponding libmesh element.
     auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
     auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
 
     auto & libmesh_center_of_face_node_ids =
-        (*libmesh_center_of_face_node_ids_for_hex27_element_id)[ielement];
+        libmesh_center_of_face_node_ids_for_hex27_element_id[ielement];
 
     // Sanity check: there should be 27 libmesh node ids.
     if (libmesh_node_ids.size() != 27)
@@ -622,9 +606,9 @@ MFEMMesh::fixHex27MeshNodes(
           hex27_face_middle_dof;
     }
 
-    /**
-     * 2) Interior (central) node correction:
-     */
+    //
+    // 2) Interior (central) node correction:
+    //
     mfem::Array<int> interior_dofs;
     finite_element_space.GetElementInteriorDofs(ielement, interior_dofs);
 
@@ -686,9 +670,9 @@ MFEMMesh::writeSecondOrderElementDebuggingInfo(const char * fpathNodes,
 
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
-    /**
-     * Node
-     */
+    //
+    // Node
+    //
     if (fpNodes)
     {
       fprintf(fpNodes, "Element %d:\n", ielement);
@@ -707,9 +691,9 @@ MFEMMesh::writeSecondOrderElementDebuggingInfo(const char * fpathNodes,
       fprintf(fpNodes, "\n");
     }
 
-    /**
-     * Edge
-     */
+    //
+    // Edge
+    //
     if (fpEdges)
     {
       fprintf(fpEdges, "Element %d:\n", ielement);
@@ -737,9 +721,9 @@ MFEMMesh::writeSecondOrderElementDebuggingInfo(const char * fpathNodes,
       }
     }
 
-    /**
-     * Face
-     */
+    //
+    // Face
+    //
     if (fpFaces)
     {
       fprintf(fpFaces, "Element %d:\n", ielement);

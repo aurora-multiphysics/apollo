@@ -97,22 +97,14 @@ protected:
 
   /**
    * Fixes the node ordering for hex27 second-order mesh elements. This is called
-   * internally in handleQuadraticFESpace.
+   * internally in handleQuadraticFESpace. This method should be called only after
+   * the Nodes have been created and their coordinates have been set.
    */
   void fixHex27MeshNodes(
       mfem::FiniteElementSpace & finite_element_space,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-      std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id);
-
-  /**
-   * Creates a set containing all libmesh node ids. This is used in the verification
-   * method for higher-order mesh nodes to check that all nodes correctly map.
-   */
-  std::set<int> buildSetContainingLibmeshNodeIDs(
-      const std::vector<int> & unique_block_ids,
-      std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id);
+      std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id);
 
   /**
    * Verifies whether the libmesh and mfem node ids have a unique mapping. All
