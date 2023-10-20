@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-tet10.e
+  file = gold/mug-hex27.e
   dim = 3
 []
 
@@ -8,7 +8,6 @@
   [./moose_diffused]
     family = LAGRANGE
     order = SECOND
-    initial_condition = 1    
   [../]
 []
 
@@ -16,13 +15,11 @@
   [./temperature_moose]
     family = LAGRANGE
     order = SECOND
-    initial_condition = 1    
   [../]
 
   [./temperature_mfem]
     family = LAGRANGE
     order = SECOND
-    initial_condition = 1    
   [../]
 []
 
@@ -61,7 +58,7 @@
   [./temperature_moose_ic]
     type = FunctionIC
     variable = temperature_moose
-    function = 2-x*x
+    function = 42.0+1000.0*x*x
   [../]
 
   [./temperature_mfem_ic]
