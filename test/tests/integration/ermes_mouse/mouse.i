@@ -20,24 +20,43 @@
   dielectric_permittivity_name = dielectric_permittivity
 []
 
+[FESpaces]
+  [HCurlFESpace]
+    type = MFEMFESpace
+    fespace_type = ND
+    order = FIRST
+  []
+[]
+
+[AuxVariables]
+  [electric_field_re]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
+  [electric_field_im]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
+[]
+
 [Functions]
-  [./tangential_E]
+  [tangential_E]
     type = ParsedVectorFunction
     value_x = 0.0
     value_y = 0.0
     value_z = 0.0
-  [../]
+  []
 []
 
 [BCs]
-  [./tangential_E_bdr]
+  [tangential_E_bdr]
     type = MFEMComplexVectorFunctionDirichletBC
     variable = electric_field
     boundary = '2 3 4'
     real_function = tangential_E
     imag_function = tangential_E
-  [../]
-  [./waveguide_port_in]
+  []
+  [waveguide_port_in]
     type = MFEMRWTE10PortRBC
     variable = electric_field
     boundary = '5'
@@ -45,8 +64,8 @@
     port_width_vector = '0 12.38e-2 0'
     frequency = 900e6
     input_port = true
-  [../]
-  [./waveguide_port_out]
+  []
+  [waveguide_port_out]
     type = MFEMRWTE10PortRBC
     variable = electric_field
     boundary = '6'
@@ -54,55 +73,55 @@
     port_width_vector = '0 12.38e-2 0'
     frequency = 900e6
     input_port = false
-  [../]
+  []
 []
 
 [Materials]
-  [./mouse]
+  [mouse]
     type = MFEMConductor
     electrical_conductivity_coeff = MouseEConductivity
     electric_permittivity_coeff = MousePermittivity
     magnetic_permeability_coeff = MousePermeability
     block = 1
-  [../]
-  [./air]
+  []
+  [air]
     type = MFEMConductor
     electrical_conductivity_coeff = AirEConductivity
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
     block = 2
-  [../]
+  []
 []
 
 [Coefficients]
-  [./frequency]
+  [frequency]
     type = MFEMConstantCoefficient
     value = 900e6
-  [../]
-  [./MouseEConductivity]
+  []
+  [MouseEConductivity]
     type = MFEMConstantCoefficient
     value = 0.97
-  [../]
-  [./MousePermeability]
+  []
+  [MousePermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]
-  [./MousePermittivity]
+  []
+  [MousePermittivity]
     type = MFEMConstantCoefficient
     value = 3.807300762e-10
-  [../]
-  [./AirEConductivity]
+  []
+  [AirEConductivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
-  [./AirPermeability]
+  []
+  [AirPermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]
-  [./AirPermittivity]
+  []
+  [AirPermittivity]
     type = MFEMConstantCoefficient
     value = 8.8541878176e-12
-  [../]
+  []
 []
 
 [Executioner]

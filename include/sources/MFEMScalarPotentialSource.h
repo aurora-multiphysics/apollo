@@ -20,6 +20,8 @@ protected:
   std::string source_coef_name;
   std::string potential_name;
   std::string conductivity_coef_name;
+  const MFEMFESpace & hcurl_fespace;
+  const MFEMFESpace & h1_fespace;
 
   mfem::PWVectorCoefficient * _restricted_coef;
 };

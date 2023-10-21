@@ -20,104 +20,114 @@
   dielectric_permittivity_name = dielectric_permittivity
 []
 
-[AuxVariables]
-  [./magnetic_vector_potential_real]
-    type = MFEMVariable
-    fespace_name = _HCurlFESpace
-    fespace_type = ND
-    order = first
-  [../]
-  [./magnetic_vector_potential_imag]
-    type = MFEMVariable
-    fespace_name = _HCurlFESpace
-    fespace_type = ND
-    order = first
-  [../]
-  [./magnetic_flux_density_real]
-    type = MFEMVariable
-    fespace_name = _HDivFESpace
-    fespace_type = RT
-    order = constant
-  [../]
-  [./magnetic_flux_density_imag]
-    type = MFEMVariable
-    fespace_name = _HDivFESpace
-    fespace_type = RT
-    order = constant
-  [../]
-  [./electric_potential]
-    type = MFEMVariable
-    fespace_name = _H1FESpace
+[FESpaces]
+  [H1FESpace]
+    type = MFEMFESpace
     fespace_type = H1
-    order = first
-  [../]
+    order = FIRST
+  []
+  [HCurlFESpace]
+    type = MFEMFESpace
+    fespace_type = ND
+    order = FIRST
+  []
+  [HDivFESpace]
+    type = MFEMFESpace
+    fespace_type = RT
+    order = CONSTANT
+  []
+[]
+
+[AuxVariables]
+  [magnetic_vector_potential_real]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
+  [magnetic_vector_potential_imag]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
+  [magnetic_flux_density_real]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [magnetic_flux_density_imag]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [electric_potential]
+    type = MFEMVariable
+    fespace = H1FESpace
+  []
 []
 
 [Sources]
-  [./SourceCoil]
+  [SourceCoil]
     type = MFEMDivFreeVolumetricSource
     function = RacetrackCoilCurrentFunction
+    hcurl_fespace = HCurlFESpace
+    h1_fespace = H1FESpace
     block = '3 4 5 6'
-  [../]
+  []
 []
 
 [Functions]
-  [./RacetrackCoilCurrentFunction]
+  [RacetrackCoilCurrentFunction]
     type = RacetrackCoilCurrentDensity
     coil_axis_x = 194e-3
     coil_axis_y = 100e-3
     coil_thickness = 50e-3
     coil_current_magnitude = 2742.0
     coil_xsection_area = 2.5e-3
-  [../]
+  []
 []
 
 [Materials]
-  [./air]
+  [air]
     type = MFEMConductor
     electrical_conductivity_coeff = AirEConductivity
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
     block = '1 3 4 5 6'
-  [../]
-  [./plate]
+  []
+  [plate]
     type = MFEMConductor
     electrical_conductivity_coeff = PlateEConductivity
     electric_permittivity_coeff = PlatePermittivity
     magnetic_permeability_coeff = PlatePermeability
     block = 2
-  [../]
+  []
 []
 
 [Coefficients]
-  [./frequency]
+  [frequency]
     type = MFEMConstantCoefficient
     value = 200
-  [../]
-  [./AirEConductivity]
+  []
+  [AirEConductivity]
     type = MFEMConstantCoefficient
     value = 1.0
-  [../]
-  [./AirPermeability]
+  []
+  [AirPermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]
-  [./AirPermittivity]
+  []
+  [AirPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
-  [./PlateEConductivity]
+  []
+  [PlateEConductivity]
     type = MFEMConstantCoefficient
     value = 3.526e7
-  [../]
-  [./PlatePermeability]
+  []
+  [PlatePermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]
-  [./PlatePermittivity]
+  []
+  [PlatePermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
+  []
 []
 
 [Executioner]

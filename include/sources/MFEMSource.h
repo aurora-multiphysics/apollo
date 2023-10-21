@@ -2,6 +2,7 @@
 
 #include "GeneralUserObject.h"
 #include "Function.h"
+#include "MFEMFESpace.h"
 #include "sources.hpp"
 
 libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);

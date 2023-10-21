@@ -6,8 +6,14 @@ InputParameters
 MFEMScalarPotentialSource::validParams()
 {
   InputParameters params = MFEMSource::validParams();
-  params.addParam<FunctionName>(
-      "function", "The vector function providing the source, to be divergence cleaned.");
+  params.addRequiredParam<std::string>(
+      "potential",
+      "Name of the potential used in the solver, necessary to find boundary conditions");
+  params.addRequiredParam<std::string>(
+      "conductivity", "Name of the conductivity coefficient associated with the potential.");
+  params.addRequiredParam<UserObjectName>("hcurl_fespace",
+                                          "The H(Curl) FE space to use in the source.");
+  params.addRequiredParam<UserObjectName>("h1_fespace", "The H1 FE space to use in the source.");
   params.addParam<float>("solver_l_tol",
                          "Tolerance for the linear solver used when performing divergence "
                          "cleaning. Defaults to the same value used by the Executioner.");
@@ -15,12 +21,6 @@ MFEMScalarPotentialSource::validParams()
       "solver_max_its",
       "Maximum number of iterations allowed for the linear solver used when performing divergence "
       "cleaning. Defaults to the same value used by the Executioner.");
-  params.addRequiredParam<std::string>(
-      "potential",
-      "Name of the potential used in the solver, necessary to find boundary conditions");
-  params.addRequiredParam<std::string>(
-      "conductivity", "Name of the conductivity coefficient associated with the potential.");
-
   return params;
 }
 
@@ -28,7 +28,9 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
   : MFEMSource(parameters),
     source_coef_name(std::string("source_") + getParam<std::string>("_object_name")),
     potential_name(getParam<std::string>("potential")),
-    conductivity_coef_name(getParam<std::string>("conductivity"))
+    conductivity_coef_name(getParam<std::string>("conductivity")),
+    hcurl_fespace(getUserObject<MFEMFESpace>("hcurl_fespace")),
+    h1_fespace(getUserObject<MFEMFESpace>("h1_fespace"))
 {
   hephaestus::InputParameters _solver_options;
   EquationSystems & es = getParam<FEProblemBase *>("_fe_problem_base")->es();
@@ -47,8 +49,8 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
   scalar_potential_source_params.SetParam("SourceName", source_coef_name);
   scalar_potential_source_params.SetParam("PotentialName", potential_name);
   scalar_potential_source_params.SetParam("ConductivityCoefName", conductivity_coef_name);
-  scalar_potential_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
-  scalar_potential_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+  scalar_potential_source_params.SetParam("HCurlFESpaceName", hcurl_fespace.name());
+  scalar_potential_source_params.SetParam("H1FESpaceName", h1_fespace.name());
   scalar_potential_source_params.SetParam("SolverOptions", _solver_options);
 
   _source = new hephaestus::ScalarPotentialSource(scalar_potential_source_params);
