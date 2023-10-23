@@ -283,7 +283,6 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 void
 MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 {
-
   auto & mooseVarRef = getVariable(0, var_name);
   MeshBase & libmeshBase = mesh().getMesh();
   unsigned int order = (unsigned int)mooseVarRef.order();

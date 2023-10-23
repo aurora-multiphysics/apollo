@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-tet10.e
+  file = gold/mug-hex27.e
   dim = 3
 []
 
@@ -65,7 +65,7 @@
   [sub_app]
     type = TransientMultiApp
     positions = '0 0 0'
-    input_files = 'diffusion_tet10_mfem.i'
+    input_files = 'one_way_hex27_transfer_mfem.i'
     execute_on = timestep_begin
   []
 []

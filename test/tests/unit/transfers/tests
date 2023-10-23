@@ -17,5 +17,26 @@
   #   input = 'nodal_var_coupled.i'
   #   exodiff = 'nodal_var_coupled_out.e' 
   #   requirement = 'Apollo shall have the ability to couple second order MOOSE LAGRANGE variables to MFEM H1 conforming gridfunctions.'
-  # []  
+  # [] 
+  [./TwoWayHex27Transfer]
+    type = 'CSVDiff'
+    input = 'two_way_hex27_transfer_master.i'
+    csvdiff = 'two_way_hex27_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order hex27 elements.'
+    max_parallel = 1
+  []
+  [./OneWayHex27Transfer]
+    type = 'CSVDiff'
+    input = 'one_way_hex27_transfer_master.i'
+    csvdiff = 'one_way_hex27_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order hex27 elements.'
+    max_parallel = 1
+  []
+  [./OneWayTet10Transfer]
+    type = 'CSVDiff'
+    input = 'one_way_tet10_transfer_master.i'
+    csvdiff = 'one_way_tet10_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order tet10 elements.'
+    max_parallel = 1
+  []
 []
