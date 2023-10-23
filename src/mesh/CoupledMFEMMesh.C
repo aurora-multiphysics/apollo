@@ -415,8 +415,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                                             node_ids_for_element_id,
                                             node_ids_for_boundary_id,
                                             coordinates_for_node_id,
-                                            _second_order_node_bimap,
-                                            center_of_face_node_ids_for_hex27_element_ids);
+                                            center_of_face_node_ids_for_hex27_element_ids,
+                                            _second_order_node_bimap);
   }
   else
   {

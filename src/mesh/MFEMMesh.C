@@ -55,8 +55,8 @@ MFEMMesh::MFEMMesh(
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    NodeBiMap & second_order_node_bimap,
-    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id)
+    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+    NodeBiMap & second_order_node_bimap)
 {
   if (element_info.getOrder() != 2)
   {
@@ -80,8 +80,8 @@ MFEMMesh::MFEMMesh(
                          libmesh_element_ids_for_block_id,
                          libmesh_node_ids_for_element_id,
                          coordinates_for_libmesh_node_id,
-                         second_order_node_bimap,
-                         libmesh_center_of_face_node_ids_for_hex27_element_id);
+                         libmesh_center_of_face_node_ids_for_hex27_element_id,
+                         second_order_node_bimap);
 
   FinalizeMesh();
 }
@@ -346,8 +346,8 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    NodeBiMap & second_order_node_bimap,
-    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id)
+    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+    NodeBiMap & second_order_node_bimap)
 {
   // Verify that this is indeed a second-order element.
   if (element_info.getOrder() != 2)
