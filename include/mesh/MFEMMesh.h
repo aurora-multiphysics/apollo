@@ -56,6 +56,24 @@ public:
 
 protected:
   /**
+   * Calls buildMFEMVertices, buildMFEMElements, buildMFEMBoundaryElements methods
+   * to construct the mesh. NB: - additional methods should be called after this
+   * to handle second-order elements. The Finalize() method must be called at the
+   * end.
+   */
+  void buildMFEMVerticesAndElements(
+      const int num_elements_in_mesh,
+      const CubitElementInfo & element_info,
+      const std::vector<int> & unique_block_ids,
+      const std::vector<int> & unique_side_boundary_ids,
+      const std::vector<int> & unique_libmesh_corner_node_ids,
+      std::map<int, int> & num_elements_for_boundary_id,
+      std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+      std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+      std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
+
+  /**
    * Sets the protected variable array using the provided vector of corner node
    * IDs from MOOSE. Note that the vertices (named "nodes" in MOOSE) are ONLY
    * at the corners of elements. These are referred to as "corner nodes" in MOOSE.

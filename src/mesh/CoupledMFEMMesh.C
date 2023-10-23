@@ -380,10 +380,9 @@ CoupledMFEMMesh::buildMFEMMesh()
                        node_ids_for_boundary_id);
 
   // 10.
-  // Call the correct initializer. Separate initializers are used for 1st and 2nd order elements.
-  _mfem_mesh = nullptr;
-
-  if (_element_info.getOrder() == 1)
+  // Call the correct initializer.
+  const int element_order = _element_info.getOrder();
+  if (element_order == 1)
   {
     _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
                                             _element_info,
@@ -396,7 +395,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                             node_ids_for_boundary_id,
                                             coordinates_for_node_id);
   }
-  else
+  else if (element_order == 2)
   {
     std::map<int, std::array<int, 6>> center_of_face_node_ids_for_hex27_element_ids;
 
@@ -418,6 +417,10 @@ CoupledMFEMMesh::buildMFEMMesh()
                                             coordinates_for_node_id,
                                             _second_order_node_bimap,
                                             center_of_face_node_ids_for_hex27_element_ids);
+  }
+  else
+  {
+    mooseError("Unsupported element type of order ", element_order, ".");
   }
 }
 
