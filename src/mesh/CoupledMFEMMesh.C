@@ -382,45 +382,52 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 10.
   // Call the correct initializer.
   const int element_order = _element_info.getOrder();
-  if (element_order == 1)
-  {
-    _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
-                                            _element_info,
-                                            unique_block_ids,
-                                            unique_side_boundary_ids,
-                                            unique_corner_node_ids,
-                                            num_elements_for_boundary_id,
-                                            element_ids_for_block_id,
-                                            node_ids_for_element_id,
-                                            node_ids_for_boundary_id,
-                                            coordinates_for_node_id);
-  }
-  else if (element_order == 2)
-  {
-    std::map<int, std::array<int, 6>> center_of_face_node_ids_for_hex27_element_ids;
 
-    if (_element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
+  switch (element_order)
+  {
+    case 1:
     {
-      buildHex27CenterOfFaceNodeIDs(element_ids_for_block_id,
-                                    center_of_face_node_ids_for_hex27_element_ids);
+      _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
+                                              _element_info,
+                                              unique_block_ids,
+                                              unique_side_boundary_ids,
+                                              unique_corner_node_ids,
+                                              num_elements_for_boundary_id,
+                                              element_ids_for_block_id,
+                                              node_ids_for_element_id,
+                                              node_ids_for_boundary_id,
+                                              coordinates_for_node_id);
+      break;
     }
+    case 2:
+    {
+      std::map<int, std::array<int, 6>> center_of_face_node_ids_for_hex27_element_ids;
 
-    _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
-                                            _element_info,
-                                            unique_block_ids,
-                                            unique_side_boundary_ids,
-                                            unique_corner_node_ids,
-                                            num_elements_for_boundary_id,
-                                            element_ids_for_block_id,
-                                            node_ids_for_element_id,
-                                            node_ids_for_boundary_id,
-                                            coordinates_for_node_id,
-                                            center_of_face_node_ids_for_hex27_element_ids,
-                                            _second_order_node_bimap);
-  }
-  else
-  {
-    mooseError("Unsupported element type of order ", element_order, ".");
+      if (_element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
+      {
+        buildHex27CenterOfFaceNodeIDs(element_ids_for_block_id,
+                                      center_of_face_node_ids_for_hex27_element_ids);
+      }
+
+      _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
+                                              _element_info,
+                                              unique_block_ids,
+                                              unique_side_boundary_ids,
+                                              unique_corner_node_ids,
+                                              num_elements_for_boundary_id,
+                                              element_ids_for_block_id,
+                                              node_ids_for_element_id,
+                                              node_ids_for_boundary_id,
+                                              coordinates_for_node_id,
+                                              center_of_face_node_ids_for_hex27_element_ids,
+                                              _second_order_node_bimap);
+      break;
+    }
+    default:
+    {
+      mooseError("Unsupported element type of order ", element_order, ".\n");
+      break;
+    }
   }
 }
 

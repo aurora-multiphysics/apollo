@@ -405,10 +405,8 @@ MFEMMesh::handleQuadraticFESpace(
     }
   }
 
-  /*
-  Call FinalizeTopology. If we call this then we must call Finalize later after
-  we've defined the mesh nodes.
-  */
+  // Call FinalizeTopology. If we call this then we must call Finalize later after
+  // we've defined the mesh nodes.
   FinalizeTopology();
 
   // Define quadratic FE space.
@@ -476,8 +474,6 @@ MFEMMesh::handleQuadraticFESpace(
    */
   if (element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
   {
-    // Verify that we have the map. If not, we cannot apply the correction.
-    // Ensure that we have the face map for hex27 correction.
     applyCorrectionsToHex27Elements(*finite_element_space,
                                     coordinates_for_libmesh_node_id,
                                     libmesh_node_ids_for_element_id,
