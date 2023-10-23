@@ -7,6 +7,52 @@
 static bool coordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
 static void convertToCArray(std::array<double, 3> & array_in, double array_out[3]);
 
+/**
+ * Initializer for 1st order elements.
+ */
+MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
+                   const CubitElementInfo & element_info,
+                   const std::vector<int> & unique_block_ids,
+                   const std::vector<int> & unique_side_boundary_ids,
+                   const std::vector<int> & unique_libmesh_corner_node_ids,
+                   std::map<int, int> & num_elements_for_boundary_id,
+                   std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+                   std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+                   std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+                   std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
+  : _libmesh_element_id_for_mfem_element_id{}, _mfem_vertex_index_for_libmesh_corner_node_id{}
+{
+  if (element_info.getOrder() != 1)
+  {
+    mooseError("1st order initializer called for order ", element_info.getOrder(), ".");
+  }
+
+  // Set dimensions.
+  Dim = spaceDim = element_info.getDimension();
+
+  // Create the vertices.
+  buildMFEMVertices(unique_libmesh_corner_node_ids, coordinates_for_libmesh_node_id);
+
+  // Create the mesh elements.
+  buildMFEMElements(num_elements_in_mesh,
+                    element_info,
+                    unique_block_ids,
+                    libmesh_element_ids_for_block_id,
+                    libmesh_node_ids_for_element_id);
+
+  // Create the boundary elements.
+  buildMFEMBoundaryElements(element_info,
+                            unique_side_boundary_ids,
+                            num_elements_for_boundary_id,
+                            libmesh_node_ids_for_boundary_id);
+
+  // Finalize mesh method is needed to fully finish constructing the mesh.
+  FinalizeMesh();
+}
+
+/**
+ * Initializer for 2nd order elements.
+ */
 MFEMMesh::MFEMMesh(
     const int num_elements_in_mesh,
     const CubitElementInfo & element_info,
@@ -18,10 +64,15 @@ MFEMMesh::MFEMMesh(
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    NodeBiMap * second_order_node_bimap,
-    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
+    NodeBiMap & second_order_node_bimap,
+    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id)
   : _libmesh_element_id_for_mfem_element_id{}, _mfem_vertex_index_for_libmesh_corner_node_id{}
 {
+  if (element_info.getOrder() != 2)
+  {
+    mooseError("2nd order initializer called for order ", element_info.getOrder(), ".");
+  }
+
   // Set dimensions.
   Dim = spaceDim = element_info.getDimension();
 
@@ -42,21 +93,13 @@ MFEMMesh::MFEMMesh(
                             libmesh_node_ids_for_boundary_id);
 
   // Handle higher-order meshes.
-  if (element_info.getOrder() == 2)
-  {
-    if (!second_order_node_bimap)
-    {
-      mooseError("The second order node bimap is NULL.\n");
-    }
-
-    handleQuadraticFESpace(element_info,
-                           unique_block_ids,
-                           libmesh_element_ids_for_block_id,
-                           libmesh_node_ids_for_element_id,
-                           coordinates_for_libmesh_node_id,
-                           *second_order_node_bimap,
-                           libmesh_center_of_face_node_ids_for_hex27_element_id);
-  }
+  handleQuadraticFESpace(element_info,
+                         unique_block_ids,
+                         libmesh_element_ids_for_block_id,
+                         libmesh_node_ids_for_element_id,
+                         coordinates_for_libmesh_node_id,
+                         second_order_node_bimap,
+                         libmesh_center_of_face_node_ids_for_hex27_element_id);
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
   FinalizeMesh();
@@ -290,7 +333,7 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     NodeBiMap & second_order_node_bimap,
-    std::map<int, std::vector<int>> * libmesh_center_of_face_node_ids_for_hex27_element_id)
+    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id)
 {
   // Verify that this is indeed a second-order element.
   if (element_info.getOrder() != 2)
@@ -421,15 +464,10 @@ MFEMMesh::handleQuadraticFESpace(
   {
     // Verify that we have the map. If not, we cannot apply the correction.
     // Ensure that we have the face map for hex27 correction.
-    if (!libmesh_center_of_face_node_ids_for_hex27_element_id)
-    {
-      mooseError("Cannot apply hex27 element correction due to NULL map!\n");
-    }
-
     applyCorrectionsToHex27Elements(*finite_element_space,
                                     coordinates_for_libmesh_node_id,
                                     libmesh_node_ids_for_element_id,
-                                    *libmesh_center_of_face_node_ids_for_hex27_element_id,
+                                    libmesh_center_of_face_node_ids_for_hex27_element_id,
                                     second_order_node_bimap);
   }
 
@@ -451,7 +489,7 @@ MFEMMesh::applyCorrectionsToHex27Elements(
     mfem::FiniteElementSpace & finite_element_space,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
     NodeBiMap & second_order_node_bimap)
 {
   /**
@@ -483,7 +521,7 @@ MFEMMesh::applyCenterOfFacesCorrectionForHex27Element(
     mfem::FiniteElementSpace & finite_element_space,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
+    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
     NodeBiMap & second_order_node_bimap)
 {
   // Get the corresponding libmesh element.

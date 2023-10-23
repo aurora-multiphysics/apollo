@@ -251,40 +251,64 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
   unique_corner_node_ids.resize(std::distance(unique_corner_node_ids.begin(), new_end));
 }
 
-void
-CoupledMFEMMesh::buildHex27CenterOfFaceNodeIDs(
-    const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::vector<int>> & center_of_face_node_ids_for_hex27_element_id)
+bool
+CoupledMFEMMesh::buildHex27CenterOfFaceNodeIDsForElement(
+    const int element_id, std::array<int, 6> & center_of_face_node_ids)
 {
-  center_of_face_node_ids_for_hex27_element_id.clear();
-
   if (_element_info.getElementType() != CubitElementInfo::ELEMENT_HEX27)
   {
-    return;
+    return false;
   }
 
-  for (int block_id : unique_block_ids)
+  libMesh::Elem * the_element = elemPtr(element_id);
+  if (!the_element || the_element->n_sides() != 6)
   {
-    for (int element_id : element_ids_for_block_id[block_id])
+    return false;
+  }
+
+  for (int iface = 0; iface < the_element->n_sides(); iface++)
+  {
+    // Last node id corresponds to center of face node.
+    auto local_node_ids_for_face = the_element->nodes_on_side(iface);
+    const int last_local_node_id = local_node_ids_for_face.back();
+
+    // Local --> global node id.
+    center_of_face_node_ids[iface] = the_element->node_id(last_local_node_id);
+  }
+
+  return true;
+}
+
+bool
+CoupledMFEMMesh::buildHex27CenterOfFaceNodeIDs(
+    std::map<int, std::vector<int>> & element_ids_for_block_id,
+    std::map<int, std::array<int, 6>> & center_of_face_node_ids_for_hex27_element_id)
+{
+  if (_element_info.getElementType() != CubitElementInfo::ELEMENT_HEX27)
+  {
+    return false;
+  }
+
+  center_of_face_node_ids_for_hex27_element_id.clear();
+
+  std::array<int, 6> center_of_face_node_ids;
+
+  for (const auto & key_value : element_ids_for_block_id)
+  {
+    auto & element_ids_for_block = key_value.second;
+
+    for (int element_id : element_ids_for_block)
     {
-      libMesh::Elem * the_element = elemPtr(element_id);
-
-      std::vector<int> center_of_face_node_ids(the_element->n_sides());
-
-      for (int iface = 0; iface < the_element->n_sides(); iface++)
+      if (buildHex27CenterOfFaceNodeIDsForElement(element_id, center_of_face_node_ids) != true)
       {
-        // NB: The last node id in each returned vector corresponds to the center
-        // of the face node.
-        auto local_node_ids_for_face = the_element->nodes_on_side(iface);
-        const int last_local_node_id = local_node_ids_for_face.back();
-
-        center_of_face_node_ids[iface] = the_element->node_id(last_local_node_id);
+        return false;
       }
 
       center_of_face_node_ids_for_hex27_element_id[element_id] = center_of_face_node_ids;
     }
   }
+
+  return true;
 }
 
 void
@@ -356,29 +380,45 @@ CoupledMFEMMesh::buildMFEMMesh()
                        node_ids_for_boundary_id);
 
   // 10.
-  // Generate face info IFF element is hex27. This is required by the MFEMMesh
-  // initializer to correct dodgy libmesh node <--> mfem node mapping.
-  std::map<int, std::vector<int>> center_of_face_node_ids_for_hex27_element_ids;
+  // Call the correct initializer. Separate initializers are used for 1st and 2nd order elements.
+  _mfem_mesh = nullptr;
 
-  if (_element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
+  if (_element_info.getOrder() == 1)
   {
-    buildHex27CenterOfFaceNodeIDs(
-        unique_block_ids, element_ids_for_block_id, center_of_face_node_ids_for_hex27_element_ids);
+    _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
+                                            _element_info,
+                                            unique_block_ids,
+                                            unique_side_boundary_ids,
+                                            unique_corner_node_ids,
+                                            num_elements_for_boundary_id,
+                                            element_ids_for_block_id,
+                                            node_ids_for_element_id,
+                                            node_ids_for_boundary_id,
+                                            coordinates_for_node_id);
   }
+  else
+  {
+    std::map<int, std::array<int, 6>> center_of_face_node_ids_for_hex27_element_ids;
 
-  // 11. Create MFEM mesh using this extremely long but necessary constructor.
-  _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
-                                          _element_info,
-                                          unique_block_ids,
-                                          unique_side_boundary_ids,
-                                          unique_corner_node_ids,
-                                          num_elements_for_boundary_id,
-                                          element_ids_for_block_id,
-                                          node_ids_for_element_id,
-                                          node_ids_for_boundary_id,
-                                          coordinates_for_node_id,
-                                          &_second_order_node_bimap,
-                                          &center_of_face_node_ids_for_hex27_element_ids);
+    if (_element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
+    {
+      buildHex27CenterOfFaceNodeIDs(element_ids_for_block_id,
+                                    center_of_face_node_ids_for_hex27_element_ids);
+    }
+
+    _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
+                                            _element_info,
+                                            unique_block_ids,
+                                            unique_side_boundary_ids,
+                                            unique_corner_node_ids,
+                                            num_elements_for_boundary_id,
+                                            element_ids_for_block_id,
+                                            node_ids_for_element_id,
+                                            node_ids_for_boundary_id,
+                                            coordinates_for_node_id,
+                                            _second_order_node_bimap,
+                                            center_of_face_node_ids_for_hex27_element_ids);
+  }
 }
 
 std::unique_ptr<int[]>
