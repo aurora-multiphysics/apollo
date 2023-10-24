@@ -130,7 +130,7 @@ CoupledMFEMMesh::getFirstElementOnProcessor() const
 
   if (!first_element_ptr)
   {
-    mooseError("Unable to get the first element on processor ", getMesh().processor_id());
+    mooseError("Unable to get the first element on processor ", getMesh().processor_id(), ".");
   }
 
   return first_element_ptr;
@@ -193,7 +193,7 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
       if (element_iterator == active_block_elements_begin &&
           element_ptr->n_nodes() != _element_info.getNumNodes())
       {
-        mooseError("Multiple element types detected.\n");
+        mooseError("Multiple element types detected.");
         return;
       }
 
@@ -351,12 +351,13 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               node_ids_for_element_id,
                                               node_ids_for_boundary_id,
                                               coordinates_for_node_id,
-                                              _second_order_node_bimap);
+                                              _libmesh_node_id_for_mfem_node_id,
+                                              _mfem_node_id_for_libmesh_node_id);
       break;
     }
     default:
     {
-      mooseError("Unsupported element type of order ", element_order, ".\n");
+      mooseError("Unsupported element type of order ", element_order, ".");
       break;
     }
   }

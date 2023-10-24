@@ -7,7 +7,6 @@
 #include "libmesh/node.h"
 #include "libmesh/parallel_mesh.h"
 #include "CubitElementInfo.h"
-#include "NodeBiMap.h"
 #include "mfem.hpp"
 
 /**
@@ -45,7 +44,8 @@ public:
            std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
            std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
            std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-           NodeBiMap & second_order_node_bimap);
+           std::map<int, int> & libmesh_node_id_for_mfem_node_id,
+           std::map<int, int> & mfem_node_id_for_libmesh_node_id);
 
   MFEMMesh(std::string mesh_fname,
            int generate_edges = 0,
@@ -118,8 +118,8 @@ protected:
                          std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
                          std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
                          std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-                         NodeBiMap & second_order_node_bimap);
-
+                         std::map<int, int> & libmesh_node_id_for_mfem_node_id,
+                         std::map<int, int> & mfem_node_id_for_libmesh_node_id);
   /**
    * Verifies whether the libmesh and mfem node ids have a unique mapping. All
    * coordinates should match and every mfem node id should have a corresponding
@@ -131,7 +131,7 @@ protected:
       std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-      NodeBiMap & second_order_node_bimap);
+      std::map<int, int> & libmesh_node_id_for_mfem_node_id);
 
   /**
    * Map from the MFEM element id to the libmesh element id internally.

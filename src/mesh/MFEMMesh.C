@@ -54,7 +54,8 @@ MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
                    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
                    std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
                    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-                   NodeBiMap & second_order_node_bimap)
+                   std::map<int, int> & libmesh_node_id_for_mfem_node_id,
+                   std::map<int, int> & mfem_node_id_for_libmesh_node_id)
 {
   if (element_info.getOrder() != 2)
   {
@@ -78,7 +79,8 @@ MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
                          libmesh_element_ids_for_block_id,
                          libmesh_node_ids_for_element_id,
                          coordinates_for_libmesh_node_id,
-                         second_order_node_bimap);
+                         libmesh_node_id_for_mfem_node_id,
+                         mfem_node_id_for_libmesh_node_id);
 
   FinalizeMesh();
 }
@@ -343,7 +345,8 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    NodeBiMap & second_order_node_bimap)
+    std::map<int, int> & libmesh_node_id_for_mfem_node_id,
+    std::map<int, int> & mfem_node_id_for_libmesh_node_id)
 {
   // Verify that this is indeed a second-order element.
   if (element_info.getOrder() != 2)
@@ -399,7 +402,7 @@ MFEMMesh::handleQuadraticFESpace(
                  element_info.getElementType(),
                  " with dimension ",
                  element_info.getDimension(),
-                 ".\n");
+                 ".");
       break;
     }
   }
@@ -421,8 +424,9 @@ MFEMMesh::handleQuadraticFESpace(
   Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
   own_nodes = 1;                               // and 'finite_element_space'
 
-  // Clear second order node bimap.
-  second_order_node_bimap.clearNodeIDs();
+  // Clear second order maps.
+  libmesh_node_id_for_mfem_node_id.clear();
+  mfem_node_id_for_libmesh_node_id.clear();
 
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
@@ -451,7 +455,8 @@ MFEMMesh::handleQuadraticFESpace(
       const int libmesh_node_id = libmesh_node_ids[libmesh_node_index];
 
       // Update two-way map:
-      second_order_node_bimap.insertNodeIDs(mfem_node_id, libmesh_node_id);
+      libmesh_node_id_for_mfem_node_id[mfem_node_id] = libmesh_node_id;
+      mfem_node_id_for_libmesh_node_id[libmesh_node_id] = mfem_node_id;
 
       // Extract node's coordinates:
       auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
@@ -477,7 +482,7 @@ MFEMMesh::handleQuadraticFESpace(
                                                 libmesh_element_ids_for_block_id,
                                                 libmesh_node_ids_for_element_id,
                                                 coordinates_for_libmesh_node_id,
-                                                second_order_node_bimap);
+                                                libmesh_node_id_for_mfem_node_id);
 }
 
 void
@@ -487,7 +492,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    NodeBiMap & second_order_node_bimap)
+    std::map<int, int> & libmesh_node_id_for_mfem_node_id)
 {
   // Create a set of all unique libmesh node ids.
   std::set<int> libmesh_node_ids;
@@ -513,7 +518,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     {
       GetNode(mfem_dof, mfem_coordinates);
 
-      const int libmesh_node_id = second_order_node_bimap.getLibmeshNodeID(mfem_dof);
+      const int libmesh_node_id = libmesh_node_id_for_mfem_node_id[mfem_dof];
 
       // Remove from set.
       libmesh_node_ids.erase(libmesh_node_id);
@@ -530,7 +535,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
                    mfem_dof,
                    " for MFEM element ",
                    ielement,
-                   ".\n");
+                   ".");
       }
     }
   }
@@ -542,7 +547,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
   {
     mooseError("There are ",
                libmesh_node_ids.size(),
-               " unpaired libmesh node ids. No one-to-one mapping exists!\n");
+               " unpaired libmesh node ids. No one-to-one mapping exists!");
   }
 }
 
