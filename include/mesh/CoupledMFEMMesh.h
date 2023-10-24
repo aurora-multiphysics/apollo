@@ -81,22 +81,6 @@ protected:
                                 const std::vector<int> & unique_block_ids,
                                 std::map<int, std::vector<int>> & element_ids_for_block_id,
                                 std::map<int, std::vector<int>> & node_ids_for_element_id);
-  /**
-   * Sets an array with the global node IDs of the six nodes that lie on the
-   * center of each face. This is required for fixing issues with the hex27
-   * element. Returns a boolean.
-   */
-  bool buildHex27CenterOfFaceNodeIDsForElement(const int element_id,
-                                               std::array<int, 6> & center_of_face_node_ids);
-
-  /**
-   * Sets a map from the element id to an array containing the global node IDs
-   * of nodes that lie on the center of each of the element's faces. Returns a
-   * boolean.
-   */
-  bool buildHex27CenterOfFaceNodeIDs(
-      std::map<int, std::vector<int>> & element_ids_for_block_id,
-      std::map<int, std::array<int, 6>> & center_of_face_node_ids_for_hex27_element_id);
 
   /**
    * Sets protected member variables.

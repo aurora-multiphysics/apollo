@@ -44,19 +44,17 @@ MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
 /**
  * Initializer for 2nd order elements.
  */
-MFEMMesh::MFEMMesh(
-    const int num_elements_in_mesh,
-    const CubitElementInfo & element_info,
-    const std::vector<int> & unique_block_ids,
-    const std::vector<int> & unique_side_boundary_ids,
-    const std::vector<int> & unique_libmesh_corner_node_ids,
-    std::map<int, int> & num_elements_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
-    NodeBiMap & second_order_node_bimap)
+MFEMMesh::MFEMMesh(const int num_elements_in_mesh,
+                   const CubitElementInfo & element_info,
+                   const std::vector<int> & unique_block_ids,
+                   const std::vector<int> & unique_side_boundary_ids,
+                   const std::vector<int> & unique_libmesh_corner_node_ids,
+                   std::map<int, int> & num_elements_for_boundary_id,
+                   std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+                   std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+                   std::map<int, std::vector<int>> & libmesh_node_ids_for_boundary_id,
+                   std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+                   NodeBiMap & second_order_node_bimap)
 {
   if (element_info.getOrder() != 2)
   {
@@ -80,7 +78,6 @@ MFEMMesh::MFEMMesh(
                          libmesh_element_ids_for_block_id,
                          libmesh_node_ids_for_element_id,
                          coordinates_for_libmesh_node_id,
-                         libmesh_center_of_face_node_ids_for_hex27_element_id,
                          second_order_node_bimap);
 
   FinalizeMesh();
@@ -346,7 +343,6 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
     NodeBiMap & second_order_node_bimap)
 {
   // Verify that this is indeed a second-order element.
@@ -367,8 +363,11 @@ MFEMMesh::handleQuadraticFESpace(
 
   // 3D maps:
   const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+
+  // NB: different map used for hex27 to ReadCubit. LibMesh uses a different node
+  // ordering to the Exodus/Genesis format.
   const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
-                                       19, 20, 13, 14, 15, 16, 22, 26, 25, 27, 24, 23, 21};
+                                       19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
 
   int * mfem_to_libmesh_map = nullptr;
 
@@ -469,19 +468,6 @@ MFEMMesh::handleQuadraticFESpace(
   }
 
   /**
-   * Fix the elements for hex27 only. The centre node of each face is incorrect
-   * in addition to the interior node.
-   */
-  if (element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
-  {
-    applyCorrectionsToHex27Elements(*finite_element_space,
-                                    coordinates_for_libmesh_node_id,
-                                    libmesh_node_ids_for_element_id,
-                                    libmesh_center_of_face_node_ids_for_hex27_element_id,
-                                    second_order_node_bimap);
-  }
-
-  /**
    * Ensure that there is a one-to-one mapping between libmesh and mfem node ids.
    * All coordinates should match. If this does not occur then it suggests that
    * there is a problem with the higher-order transfer.
@@ -492,166 +478,6 @@ MFEMMesh::handleQuadraticFESpace(
                                                 libmesh_node_ids_for_element_id,
                                                 coordinates_for_libmesh_node_id,
                                                 second_order_node_bimap);
-}
-
-void
-MFEMMesh::applyCorrectionsToHex27Elements(
-    mfem::FiniteElementSpace & finite_element_space,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
-    NodeBiMap & second_order_node_bimap)
-{
-  /**
-   * Problems with hex27 meshes:
-   * 1) the middle node from each face (3x3) is incorrect
-   * 2) the interior central node is incorrect
-   */
-  for (int ielement = 0; ielement < NumOfElements; ielement++)
-  {
-    applyCenterOfFacesCorrectionForHex27Element(
-        ielement,
-        finite_element_space,
-        coordinates_for_libmesh_node_id,
-        libmesh_node_ids_for_element_id,
-        libmesh_center_of_face_node_ids_for_hex27_element_id,
-        second_order_node_bimap);
-
-    applyInteriorNodeCorrectionForHex27Element(ielement,
-                                               finite_element_space,
-                                               coordinates_for_libmesh_node_id,
-                                               libmesh_node_ids_for_element_id,
-                                               second_order_node_bimap);
-  }
-}
-
-void
-MFEMMesh::applyCenterOfFacesCorrectionForHex27Element(
-    const int ielement,
-    mfem::FiniteElementSpace & finite_element_space,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::array<int, 6>> & libmesh_center_of_face_node_ids_for_hex27_element_id,
-    NodeBiMap & second_order_node_bimap)
-{
-  // Get the corresponding libmesh element.
-  auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
-  auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
-
-  if (libmesh_node_ids.size() != 27)
-  {
-    mooseError("There should be 27 nodes per libmesh element for hex27 elements!\n");
-  }
-
-  // Iterate over faces and get the dofs for each face of the element.
-  mfem::Array<int> faces;
-  mfem::Array<int> face_orientations;
-
-  GetElementFaces(ielement, faces, face_orientations);
-
-  if (faces.Size() != 6)
-  {
-    mooseError("There should be 6 faces for hex27 elements!\n");
-  }
-
-  auto & libmesh_center_of_face_node_ids =
-      libmesh_center_of_face_node_ids_for_hex27_element_id[ielement];
-
-  for (int iface = 0; iface < faces.Size(); iface++)
-  {
-    const int mfem_face = faces[iface];
-
-    mfem::Array<int> face_dofs;
-    finite_element_space.GetFaceDofs(mfem_face, face_dofs);
-
-    // NB: the middle node from each face corresponds to the last dof from the
-    // faces array.
-    const int hex27_face_middle_dof = face_dofs.Last();
-
-    mfem::Array<int> face_vdofs;
-    finite_element_space.GetFaceVDofs(mfem_face, face_vdofs);
-
-    // Get the positions in the vdofs vector for the xyz coordinates:
-    const int x_vdof_offset = face_dofs.Size() - 1;
-    const int y_vdof_offset = x_vdof_offset + face_dofs.Size();
-    const int z_vdof_offset = y_vdof_offset + face_dofs.Size();
-
-    const int x_node_offset = face_vdofs[x_vdof_offset];
-    const int y_node_offset = face_vdofs[y_vdof_offset];
-    const int z_node_offset = face_vdofs[z_vdof_offset];
-
-    // Extract the correct coordinates:
-    auto libmesh_hex27_center_of_face_node_id = libmesh_center_of_face_node_ids[iface];
-
-    auto coordinates_for_hex27_face_middle =
-        coordinates_for_libmesh_node_id[libmesh_hex27_center_of_face_node_id];
-
-    const double x = coordinates_for_hex27_face_middle[0];
-    const double y = coordinates_for_hex27_face_middle[1];
-    const double z = coordinates_for_hex27_face_middle[2];
-
-    // Set the correct coordinates for the Node:
-    (*Nodes)(x_node_offset) = x;
-    (*Nodes)(y_node_offset) = y;
-    (*Nodes)(z_node_offset) = z;
-
-    // Correct the maps:
-    second_order_node_bimap.insertNodeIDs(hex27_face_middle_dof,
-                                          libmesh_hex27_center_of_face_node_id);
-  }
-}
-
-void
-MFEMMesh::applyInteriorNodeCorrectionForHex27Element(
-    const int ielement,
-    mfem::FiniteElementSpace & finite_element_space,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    NodeBiMap & second_order_node_bimap)
-{
-  // Get the corresponding libmesh element.
-  auto libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
-  auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
-
-  mfem::Array<int> interior_dofs;
-  finite_element_space.GetElementInteriorDofs(ielement, interior_dofs);
-
-  mfem::Array<int> interior_vdofs;
-  finite_element_space.GetElementInteriorVDofs(ielement, interior_vdofs);
-
-  if (interior_dofs.Size() != 1)
-  {
-    mooseError("There should be a single interior node for hex27 elements!\n");
-    return;
-  }
-
-  // Get the positions in the vdofs vector for the xyz coordinates:
-  const int x_vdof_offset = 0;
-  const int y_vdof_offset = x_vdof_offset + interior_dofs.Size();
-  const int z_vdof_offset = y_vdof_offset + interior_dofs.Size();
-
-  const int x_node_offset = interior_vdofs[x_vdof_offset];
-  const int y_node_offset = interior_vdofs[y_vdof_offset];
-  const int z_node_offset = interior_vdofs[z_vdof_offset];
-
-  // NB: the last libmesh node id corresponds to the interior node.
-  const int libmesh_hex27_interior_node_id = libmesh_node_ids.back();
-
-  // Extract the correct coordinates:
-  auto & coordinates_for_hex27_interior =
-      coordinates_for_libmesh_node_id[libmesh_hex27_interior_node_id];
-
-  const double x = coordinates_for_hex27_interior[0];
-  const double y = coordinates_for_hex27_interior[1];
-  const double z = coordinates_for_hex27_interior[2];
-
-  // Set the correct coordinates for the Nodes:
-  (*Nodes)(x_node_offset) = x;
-  (*Nodes)(y_node_offset) = y;
-  (*Nodes)(z_node_offset) = z;
-
-  // Correct the maps:
-  second_order_node_bimap.insertNodeIDs(interior_dofs[0], libmesh_hex27_interior_node_id);
 }
 
 void

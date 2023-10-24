@@ -251,66 +251,6 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
   unique_corner_node_ids.resize(std::distance(unique_corner_node_ids.begin(), new_end));
 }
 
-bool
-CoupledMFEMMesh::buildHex27CenterOfFaceNodeIDsForElement(
-    const int element_id, std::array<int, 6> & center_of_face_node_ids)
-{
-  if (_element_info.getElementType() != CubitElementInfo::ELEMENT_HEX27)
-  {
-    return false;
-  }
-
-  libMesh::Elem * the_element = elemPtr(element_id);
-  if (!the_element || the_element->n_sides() != 6)
-  {
-    return false;
-  }
-
-  for (int iface = 0; iface < the_element->n_sides(); iface++)
-  {
-    // Last node id corresponds to center of face node.
-    auto local_node_ids_for_face = the_element->nodes_on_side(iface);
-    const int last_local_node_id = local_node_ids_for_face.back();
-
-    // Local --> global node id.
-    center_of_face_node_ids[iface] = the_element->node_id(last_local_node_id);
-  }
-
-  return true;
-}
-
-bool
-CoupledMFEMMesh::buildHex27CenterOfFaceNodeIDs(
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::array<int, 6>> & center_of_face_node_ids_for_hex27_element_id)
-{
-  if (_element_info.getElementType() != CubitElementInfo::ELEMENT_HEX27)
-  {
-    return false;
-  }
-
-  center_of_face_node_ids_for_hex27_element_id.clear();
-
-  std::array<int, 6> center_of_face_node_ids;
-
-  for (const auto & key_value : element_ids_for_block_id)
-  {
-    auto & element_ids_for_block = key_value.second;
-
-    for (int element_id : element_ids_for_block)
-    {
-      if (buildHex27CenterOfFaceNodeIDsForElement(element_id, center_of_face_node_ids) != true)
-      {
-        return false;
-      }
-
-      center_of_face_node_ids_for_hex27_element_id[element_id] = center_of_face_node_ids;
-    }
-  }
-
-  return true;
-}
-
 void
 CoupledMFEMMesh::buildMFEMMesh()
 {
@@ -401,14 +341,6 @@ CoupledMFEMMesh::buildMFEMMesh()
     }
     case 2:
     {
-      std::map<int, std::array<int, 6>> center_of_face_node_ids_for_hex27_element_ids;
-
-      if (_element_info.getElementType() == CubitElementInfo::ELEMENT_HEX27)
-      {
-        buildHex27CenterOfFaceNodeIDs(element_ids_for_block_id,
-                                      center_of_face_node_ids_for_hex27_element_ids);
-      }
-
       _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
                                               _element_info,
                                               unique_block_ids,
@@ -419,7 +351,6 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               node_ids_for_element_id,
                                               node_ids_for_boundary_id,
                                               coordinates_for_node_id,
-                                              center_of_face_node_ids_for_hex27_element_ids,
                                               _second_order_node_bimap);
       break;
     }
