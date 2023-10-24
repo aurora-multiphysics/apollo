@@ -134,36 +134,6 @@ protected:
       NodeBiMap & second_order_node_bimap);
 
   /**
-   * Writes face, node and edge information for all 2nd order elements to a file
-   * and closes the file.
-   */
-  void writeFaceInfoFor2ndOrderElements(const char * fpath,
-                                        mfem::FiniteElementSpace * fe_space) const;
-
-  void writeNodeInfoFor2ndOrderElements(const char * fpath,
-                                        mfem::FiniteElementSpace * fe_space) const;
-
-  void writeEdgeInfoFor2ndOrderElements(const char * fpath,
-                                        mfem::FiniteElementSpace * fe_space) const;
-
-  /**
-   * Write face, node and edge information for the specified 2nd order element
-   * to a file. NB: the file will not be closed after the call. The caller will
-   * have to call fclose() manually.
-   */
-  void writeFaceInfoFor2ndOrderElement(FILE * fp,
-                                       mfem::FiniteElementSpace * fe_space,
-                                       const int ielement) const;
-
-  void writeNodeInfoFor2ndOrderElement(FILE * fp,
-                                       mfem::FiniteElementSpace * fe_space,
-                                       const int ielement) const;
-
-  void writeEdgeInfoFor2ndOrderElement(FILE * fp,
-                                       mfem::FiniteElementSpace * fe_space,
-                                       const int ielement) const;
-
-  /**
    * Map from the MFEM element id to the libmesh element id internally.
    */
   std::map<int, int> _libmesh_element_id_for_mfem_element_id;
