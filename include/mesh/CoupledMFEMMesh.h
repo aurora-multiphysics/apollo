@@ -9,6 +9,7 @@
 
 #pragma once
 #include "ExclusiveMFEMMesh.h"
+#include "CubitElementInfo.h"
 
 /**
  * CoupledMFEMMesh
@@ -28,6 +29,19 @@ public:
    * Builds only the MOOSE mesh from the file.
    */
   void buildMesh() override;
+
+  /**
+   * Override method in ExclusiveMFEMMesh.
+   */
+  inline int getMFEMNodeID(const int libmesh_node_id) override
+  {
+    return _mfem_node_id_for_libmesh_node_id[libmesh_node_id];
+  }
+
+  inline int getLibmeshNodeID(const int mfem_node_id) override
+  {
+    return _libmesh_node_id_for_mfem_node_id[mfem_node_id];
+  }
 
 protected:
   /**
@@ -72,12 +86,6 @@ protected:
    */
   void buildLibmeshElementAndFaceInfo();
 
-  void buildLibmeshElementInfo();
-  void buildLibmesh3DElementInfo();
-  void buildLibmesh2DElementInfo();
-
-  void buildLibmeshFaceInfo();
-
   /**
    * Blocks/subdomains are separate subsets of the mesh that could have different
    * material properties etc. This method returns a vector containing the unique
@@ -119,42 +127,11 @@ protected:
    * a single element type. Support for additional element types in a mesh will
    * be added in the future.
    */
-  int _libmesh_element_type;
-  int _libmesh_face_type;
+  CubitElementInfo _element_info;
 
   /**
-   * The number of nodes used in each element. Again, the assumption is that each
-   * element is identical and so has the same number of nodes.
+   * MFEM <--> libMesh maps required for higher-order mesh element transfers.
    */
-  int _num_nodes_per_element;
-
-  /**
-   * NB: "corner nodes" refer to MOOSE nodes at the corners of an element.
-   */
-  int _num_corner_nodes_per_element;
-
-  int _num_face_nodes;
-  int _num_face_corner_nodes;
-
-  enum CubitFaceType
-  {
-    FACE_EDGE2,
-    FACE_EDGE3,
-    FACE_TRI3,
-    FACE_TRI6,
-    FACE_QUAD4,
-    FACE_QUAD9
-  };
-
-  enum CubitElementType
-  {
-    ELEMENT_TRI3,
-    ELEMENT_TRI6,
-    ELEMENT_QUAD4,
-    ELEMENT_QUAD9,
-    ELEMENT_TET4,
-    ELEMENT_TET10,
-    ELEMENT_HEX8,
-    ELEMENT_HEX27
-  };
+  std::map<int, int> _libmesh_node_id_for_mfem_node_id;
+  std::map<int, int> _mfem_node_id_for_libmesh_node_id;
 };

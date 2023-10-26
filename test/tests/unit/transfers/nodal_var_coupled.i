@@ -6,13 +6,22 @@
 
 [Problem]
   type = MFEMProblem
-  formulation = EBForm
+[]
+
+[Formulation]
+  type = EBFormulation
+  e_field_name = electric_field
+  b_field_name = magnetic_flux_density
+  magnetic_reluctivity_name = magnetic_reluctivity
+  magnetic_permeability_name = magnetic_permeability
+  electric_conductivity_name = electrical_conductivity
 []
 
 [AuxVariables]
   [./dummy_mfem]
     type = MFEMVariable
-    fespace = ND
+    fespace_name = HCurlFESpace
+    fespace_type = ND
     order = SECOND
   [../]
   [./dummy_moose_nodal]
@@ -20,14 +29,6 @@
     order = SECOND
   [../]  
 [../]
-
-[ICs]
-  [./dummy_moose_nodal_ic]
-    type = FunctionIC
-    variable = dummy_moose_nodal
-    function = 2-x*x
-  [../]  
-[]
 
 [Materials]
   [./copper]
@@ -46,7 +47,7 @@
   [../]
 []
 
-[UserObjects]
+[Coefficients]
   [./CopperEConductivity]
     type = MFEMConstantCoefficient
     value = 5.96e7
@@ -72,6 +73,14 @@
     type = MFEMConstantCoefficient
     value = 0.0
   [../]
+[]
+
+[ICs]
+  [./dummy_moose_nodal_ic]
+    type = FunctionIC
+    variable = dummy_moose_nodal
+    function = 2-x*x
+  [../]  
 []
 
 [Executioner]
