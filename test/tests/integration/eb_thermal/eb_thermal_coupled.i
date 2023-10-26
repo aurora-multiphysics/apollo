@@ -18,54 +18,89 @@
   electric_conductivity_name = electrical_conductivity
 []
 
+[FESpaces]
+  [H1FESpace]
+    type = MFEMFESpace
+    fespace_type = H1
+    order = SECOND
+  []
+  [HCurlFESpace]
+    type = MFEMFESpace
+    fespace_type = ND
+    order = SECOND
+  []
+  [HDivFESpace]
+    type = MFEMFESpace
+    fespace_type = RT
+    order = FIRST
+  []
+[]
+
+[AuxVariables]
+  [electric_field]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
+  [magnetic_flux_density]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [electric_potential]
+    type = MFEMVariable
+    fespace = H1FESpace
+  []
+[]
+
 [Functions]
-  [./potential_high]
+  [potential_high]
     type = ParsedFunction
     value = cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
-  [../]
-  [./potential_low]
+  []
+  [potential_low]
     type = ParsedFunction
     value = -cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
-  [../]
-  [./tangential_E]
+  []
+  [tangential_E]
     type = ParsedVectorFunction
     value_x = 0.0
     value_y = 0.0
     value_z = 0.0
-  [../]
+  []
 []
 
 [BCs]
-  [./tangential_E_bdr]
+  [tangential_E_bdr]
     type = MFEMVectorFunctionDirichletBC
     variable = electric_field
     boundary = '1 2 3'
     function = tangential_E
-  [../]
-  [./high_terminal]
+  []
+  [high_terminal]
     type = MFEMFunctionDirichletBC
     variable = electric_potential
     boundary = '1'
     function = potential_high
-  [../]
-  [./low_terminal]
+  []
+  [low_terminal]
     type = MFEMFunctionDirichletBC
     variable = electric_potential
     boundary = '2'
     function = potential_low
-  [../]
+  []
 []
 
 [Sources]
-  [./SourcePotential]
+  [SourcePotential]
     type = MFEMScalarPotentialSource
     potential = electric_potential
     conductivity = electrical_conductivity
-  [../]
+    h1_fespace = H1FESpace
+    hcurl_fespace = HCurlFESpace
+  []
 []
 
 [AuxVariables]
@@ -73,11 +108,11 @@
     family = LAGRANGE
     order = FIRST
   []
-  [./joule_heating]
+  [joule_heating]
     family = MONOMIAL
     order = CONSTANT
     initial_condition = 0.0
-  [../]
+  []
 []
 
 [AuxKernels]
@@ -87,51 +122,51 @@
 []
 
 [Materials]
-  [./copper]
+  [copper]
     type = MFEMConductor
     electrical_conductivity_coeff = CopperEConductivity
     electric_permittivity_coeff = CopperPermittivity
     magnetic_permeability_coeff = CopperPermeability
     block = 1
-  [../]
-  [./air]
+  []
+  [air]
     type = MFEMConductor
     electrical_conductivity_coeff = AirEConductivity
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
     block = 2
-  [../]
+  []
 []
 
 [Coefficients]
-  [./CopperEConductivity]
+  [CopperEConductivity]
     type = MFEMParsedCoefficient
     mfem_gridfunction_names = 'temperature'
     mfem_coefficient_names = ''
-    constant_names        = 'sigma0  alpha0   T0'
-    constant_expressions  = '5.96e7  4.29e-6  273'
+    constant_names = 'sigma0  alpha0   T0'
+    constant_expressions = '5.96e7  4.29e-6  273'
     function = 'sigma0 / (1 + alpha0 * (temperature - T0))' #
-  [../]
-  [./CopperPermeability]
+  []
+  [CopperPermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]
-  [./CopperPermittivity]
+  []
+  [CopperPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
-  [./AirEConductivity]
+  []
+  [AirEConductivity]
     type = MFEMConstantCoefficient
     value = 1.0
-  [../]
-  [./AirPermeability]
+  []
+  [AirPermeability]
     type = MFEMConstantCoefficient
     value = 1.25663706e-6
-  [../]
-  [./AirPermittivity]
+  []
+  [AirPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
+  []
 []
 
 [Executioner]

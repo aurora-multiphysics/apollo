@@ -17,147 +17,161 @@
   electric_conductivity_name = electrical_conductivity
 []
 
-[AuxVariables]
-  [./electric_field]
-    type = MFEMVariable
-    fespace_name = _HCurlFESpace
-    fespace_type = ND
-    order = first
-  [../]
-  [./magnetic_flux_density]
-    type = MFEMVariable
-    fespace_name = _HDivFESpace
-    fespace_type = RT
-    order = constant
-  [../]
-  [./electric_potential]
-    type = MFEMVariable
-    fespace_name = _H1FESpace
+[FESpaces]
+  [H1FESpace]
+    type = MFEMFESpace
     fespace_type = H1
-    order = first
-  [../]
+    order = FIRST
+  []
+  [HCurlFESpace]
+    type = MFEMFESpace
+    fespace_type = ND
+    order = FIRST
+  []
+  [HDivFESpace]
+    type = MFEMFESpace
+    fespace_type = RT
+    order = CONSTANT
+  []
+[]
+
+[AuxVariables]
+  [electric_field]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
+  [magnetic_flux_density]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [electric_potential]
+    type = MFEMVariable
+    fespace = H1FESpace
+  []
 []
 
 [Functions]
-  [./potential_high]
+  [potential_high]
     type = ParsedFunction
     value = cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
-  [../]
-  [./potential_low]
+  []
+  [potential_low]
     type = ParsedFunction
     value = -cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
-  [../]
-  [./tangential_E]
+  []
+  [tangential_E]
     type = ParsedVectorFunction
     value_x = 0.0
     value_y = 0.0
     value_z = 0.0
-  [../]
+  []
 []
 
 [BCs]
-  [./tangential_E_bc]
+  [tangential_E_bc]
     type = MFEMVectorFunctionDirichletBC
     variable = electric_field
     function = tangential_E
     boundary = '1 2 3 4'
-  [../]
-  [./high_terminal]
+  []
+  [high_terminal]
     type = MFEMFunctionDirichletBC
     variable = electric_potential
     boundary = '1'
     function = potential_high
-  [../]
-  [./low_terminal]
+  []
+  [low_terminal]
     type = MFEMFunctionDirichletBC
     variable = electric_potential
     boundary = '2'
     function = potential_low
-  [../]  
+  []
 []
 
 [Materials]
-  [./coil]
+  [coil]
     type = MFEMConductor
     electrical_conductivity_coeff = CoilEConductivity
     electric_permittivity_coeff = CoilPermittivity
     magnetic_permeability_coeff = CoilPermeability
     block = 1
-  [../]  
-  [./air]
+  []
+  [air]
     type = MFEMConductor
     electrical_conductivity_coeff = AirEConductivity
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
     block = 2
-  [../]  
-  [./core]
+  []
+  [core]
     type = MFEMConductor
     electrical_conductivity_coeff = CoreEConductivity
     electric_permittivity_coeff = CorePermittivity
     magnetic_permeability_coeff = CorePermeability
     block = 3
-  [../]
+  []
 []
 
 [Coefficients]
-  [./CoilEConductivity]
+  [CoilEConductivity]
     type = MFEMConstantCoefficient
     value = 62.83185
-  [../]
-  [./CoilPermeability]
+  []
+  [CoilPermeability]
     type = MFEMConstantCoefficient
     value = 1.0
-  [../]
-  [./CoilPermittivity]
+  []
+  [CoilPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
+  []
 
-  [./AirEConductivity]
+  [AirEConductivity]
     type = MFEMConstantCoefficient
     value = 62.83185e-6
-  [../]
-  [./AirPermeability]
+  []
+  [AirPermeability]
     type = MFEMConstantCoefficient
     value = 1.0
-  [../]
-  [./AirPermittivity]
+  []
+  [AirPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
+  []
 
-  [./CoreEConductivity]
+  [CoreEConductivity]
     type = MFEMConstantCoefficient
     value = 62.83185e-6
-  [../]
-  [./CorePermeability]
+  []
+  [CorePermeability]
     type = MFEMConstantCoefficient
     value = 1.0
-  [../]
-  [./CorePermittivity]
+  []
+  [CorePermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
-  [../]
+  []
 
-  [./OneCoef]
+  [OneCoef]
     type = MFEMConstantCoefficient
     value = 1.0e12
-  [../]
+  []
 []
 
 [Sources]
-  [./SourcePotential]
+  [SourcePotential]
     type = MFEMScalarPotentialSource
     potential = electric_potential
     conductivity = electrical_conductivity
+    hcurl_fespace = HCurlFESpace
+    h1_fespace = H1FESpace
     solver_max_its = 1000
     block = 1
-  [../]
+  []
 []
 
 [Executioner]

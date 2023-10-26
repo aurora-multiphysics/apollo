@@ -6,18 +6,28 @@ InputParameters
 EBFormulation::validParams()
 {
   InputParameters params = MFEMFormulation::validParams();
-  params.addParam<std::string>(
+  params.addRequiredParam<std::string>(
       "e_field_name", "Name of H(curl) conforming MFEM gridfunction representing electric field");
-  params.addParam<std::string>(
+  params.addRequiredParam<std::string>(
       "b_field_name",
       "Name of H(div) conforming MFEM gridfunction representing magnetic flux density");
-  params.addParam<std::string>("magnetic_permeability_name",
-                               "Name of MFEM coefficient representing magnetic permeability");
-  params.addParam<std::string>("electric_conductivity_name",
-                               "Name of MFEM coefficient representing electric conductivity");
-  params.addParam<std::string>("magnetic_reluctivity_name",
-                               "Name of MFEM coefficient to be created to represent magnetic "
-                               "reluctivity (reciprocal of permeability)");
+  params.addRequiredParam<std::string>(
+      "magnetic_permeability_name", "Name of MFEM coefficient representing magnetic permeability");
+  params.addRequiredParam<std::string>(
+      "electric_conductivity_name", "Name of MFEM coefficient representing electric conductivity");
+  params.addRequiredParam<std::string>(
+      "magnetic_reluctivity_name",
+      "Name of MFEM coefficient to be created to represent magnetic "
+      "reluctivity (reciprocal of permeability)");
+  params.addParam<std::string>(
+      "current_density_name",
+      "Name of H(Div) conforming MFEM gridfunction to store current density");
+  params.addParam<std::string>(
+      "lorentz_force_density_name",
+      "Name of L2 conforming MFEM gridfunction to store Lorentz force density");
+  params.addParam<std::string>(
+      "joule_heating_density_name",
+      "Name of L2 conforming MFEM gridfunction to store Joule heating density");
   return params;
 }
 
@@ -34,6 +44,16 @@ EBFormulation::EBFormulation(const InputParameters & parameters)
                 e_field_name,
                 b_field_name)
 {
+  if (isParamValid("current_density_name"))
+    formulation.registerCurrentDensityAux(getParam<std::string>("current_density_name"));
+  if (isParamValid("lorentz_force_density_name"))
+    formulation.registerLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
+                                               b_field_name,
+                                               getParam<std::string>("current_density_name"));
+  if (isParamValid("joule_heating_density_name"))
+    formulation.registerJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+                                               e_field_name,
+                                               electric_conductivity_name);
 }
 
 EBFormulation::~EBFormulation() {}

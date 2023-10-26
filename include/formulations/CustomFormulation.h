@@ -17,5 +17,5 @@ public:
   virtual hephaestus::ProblemBuilder * getProblemBuilder() override { return &formulation; };
 
 private:
-  hephaestus::TimeDomainFormulation formulation;
+  hephaestus::TimeDomainEMFormulation formulation;
 };
