@@ -5,5 +5,5 @@
     input = 'diffusion_master.i'
     csvdiff = 'diffusion_master_out.csv'
     requirement = 'Apollo shall have the ability to solve a diffusion problem set up from MOOSE and produce the same result as a native run.'
-  []  
+  []
 []

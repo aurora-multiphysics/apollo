@@ -56,6 +56,12 @@ public:
    */
   void buildMesh() override;
 
+  /**
+   * Override in derived classes.
+   */
+  virtual inline int getMFEMNodeID(const int libmesh_node_id) { return 0; }
+  virtual inline int getLibmeshNodeID(const int mfem_node_id) { return 0; }
+
 protected:
   /**
    * Builds a placeholder mesh when no MOOSE mesh is required.
