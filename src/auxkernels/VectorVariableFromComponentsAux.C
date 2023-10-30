@@ -1,9 +1,9 @@
-#include "BuildVectorVariableAux.h"
+#include "VectorVariableFromComponentsAux.h"
 
-registerMooseObject("MooseApp", BuildVectorVariableAux);
+registerMooseObject("MooseApp", VectorVariableFromComponentsAux);
 
 InputParameters
-BuildVectorVariableAux::validParams()
+VectorVariableFromComponentsAux::validParams()
 {
   InputParameters params = VectorAuxKernel::validParams();
   params.addCoupledVar("component_variables",
@@ -13,7 +13,7 @@ BuildVectorVariableAux::validParams()
   return params;
 }
 
-BuildVectorVariableAux::BuildVectorVariableAux(const InputParameters & parameters)
+VectorVariableFromComponentsAux::VectorVariableFromComponentsAux(const InputParameters & parameters)
   : VectorAuxKernel(parameters), _component_dofs(coupledAllDofValues("component_variables"))
 {
   // Check the number of component variables is equal to 3.
@@ -30,7 +30,7 @@ BuildVectorVariableAux::BuildVectorVariableAux(const InputParameters & parameter
 }
 
 void
-BuildVectorVariableAux::compute()
+VectorVariableFromComponentsAux::compute()
 {
   _local_sol.resize(3);
 
