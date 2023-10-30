@@ -1,3 +1,3 @@
-time,max_x_difference,max_y_difference,max_z_difference
-0,0,0,0
-1,0,0,0
+time,element_l2_difference
+0,0
+1,0
