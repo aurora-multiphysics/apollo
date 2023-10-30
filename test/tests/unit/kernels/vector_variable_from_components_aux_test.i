@@ -52,7 +52,7 @@
 
 [AuxKernels]
   [./set_lagrange_vector]
-    type = BuildVectorVariableAux
+    type = VectorVariableFromComponentsAux
     variable = lagrange_vector
     component_variables = 'x_initial y_initial z_initial'
   [../]

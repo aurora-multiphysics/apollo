@@ -2,12 +2,15 @@
 
 #include "AuxKernel.h"
 
-class BuildVectorVariableAux : public VectorAuxKernel
+/**
+ * Construct a vector variable from 3 standard variables.
+ */
+class VectorVariableFromComponentsAux : public VectorAuxKernel
 {
 public:
   static InputParameters validParams();
 
-  BuildVectorVariableAux(const InputParameters & parameters);
+  VectorVariableFromComponentsAux(const InputParameters & parameters);
 
 protected:
   virtual void compute() override final;
