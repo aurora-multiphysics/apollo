@@ -35,8 +35,14 @@ MFEMFESpace::MFEMFESpace(const InputParameters & parameters)
     order(parameters.get<MooseEnum>("order")),
     vdim(parameters.get<int>("vdim")),
     fespace_type(parameters.get<MooseEnum>("fespace_type")),
-    fec_name(fespace_type + "_3D_P" + std::to_string(order))
+    fec_name(createFECName(fespace_type, order))
 {
+}
+
+const std::string
+MFEMFESpace::createFECName(const std::string & fespace_type, const int order)
+{
+  return fespace_type + "_3D_P" + std::to_string(order);
 }
 
 MFEMFESpace::~MFEMFESpace() {}

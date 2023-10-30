@@ -15,6 +15,7 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
+  static const std::string createFECName(const std::string & fespace_type, const int order);
   const int order;
   const int vdim;
   const std::string fespace_type;

@@ -23,21 +23,25 @@ MFEMComplexVectorFunctionDirichletBC::MFEMComplexVectorFunctionDirichletBC(
     _func_re(getFunction("real_function")),
     _func_im(getFunction("imag_function")),
     _vec_function_coef_re(3,
-                          [&](const mfem::Vector & p, double t, mfem::Vector & u) {
+                          [&](const mfem::Vector & p, double t, mfem::Vector & u)
+                          {
                             libMesh::RealVectorValue vector_value =
                                 _func_re.vectorValue(t, PointFromMFEMVector(p));
                             u[0] = vector_value(0);
                             u[1] = vector_value(1);
                             u[2] = vector_value(2);
                           }),
-    _vec_function_coef_im(3, [&](const mfem::Vector & p, double t, mfem::Vector & u) {
-      libMesh::RealVectorValue vector_value = _func_im.vectorValue(t, PointFromMFEMVector(p));
-      u[0] = vector_value(0);
-      u[1] = vector_value(1);
-      u[2] = vector_value(2);
-    })
+    _vec_function_coef_im(3,
+                          [&](const mfem::Vector & p, double t, mfem::Vector & u)
+                          {
+                            libMesh::RealVectorValue vector_value =
+                                _func_im.vectorValue(t, PointFromMFEMVector(p));
+                            u[0] = vector_value(0);
+                            u[1] = vector_value(1);
+                            u[2] = vector_value(2);
+                          })
 {
-  _boundary_condition = new hephaestus::VectorFunctionDirichletBC(
+  _boundary_condition = new hephaestus::VectorDirichletBC(
       getParam<std::string>("variable"), bdr_attr, &_vec_function_coef_re, &_vec_function_coef_im);
 }
 
