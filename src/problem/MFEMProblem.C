@@ -222,6 +222,7 @@ MFEMProblem::addFESpace(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFESpace & mfem_fespace(getUserObject<MFEMFESpace>(name));
+
   mfem_problem_builder->AddFESpace(name, mfem_fespace.fec_name, mfem_fespace.vdim);
 }
 
@@ -237,10 +238,12 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
   else
   {
     ExternalProblem::addAuxVariable(var_type, var_name, parameters);
+
     InputParameters mfem_var_params(addMFEMFESpaceFromMOOSEVariable(parameters));
     FEProblemBase::addUserObject("MFEMVariable", var_name, mfem_var_params);
   }
   MFEMVariable & var(getUserObject<MFEMVariable>(var_name));
+
   mfem_problem_builder->AddGridFunction(var_name, var.fespace.name());
 }
 
@@ -438,9 +441,15 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
   InputParameters mfem_var_params(_factory.getValidParams("MFEMVariable"));
 
   std::string var_family = moosevar_params.get<MooseEnum>("family");
-  if (var_family == "LAGRANGE")
+
+  if (var_family == "LAGRANGE") // MARK: - Test code. Will need to add error handling here.
     mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
-  if (var_family == "MONOMIAL")
+  else if (var_family == "LAGRANGE_VEC")
+  {
+    mfem_fespace_params.set<int>("vdim") = 3;
+    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+  }
+  else if (var_family == "MONOMIAL")
     mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
 
   mfem_fespace_params.setParameters<MooseEnum>("order", moosevar_params.get<MooseEnum>("order"));
