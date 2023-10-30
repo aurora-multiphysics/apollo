@@ -5,80 +5,46 @@
 []
 
 [Variables]
-  [./moose_diffused]
+  [moose_diffused]
     family = LAGRANGE
     order = FIRST
-  [../]
+  []
 []
 
 [AuxVariables]
-  [./lagrange_vector]
+  [test_vector]
     family = LAGRANGE_VEC
     order = FIRST
-  [../]
+  []
 
-  # xyz target components.
-  [./x_initial]
+  [target_vector]
+    family = LAGRANGE_VEC
+    order = FIRST
+  []
+
+  [target_x]
     family = LAGRANGE
     order = FIRST
-  [../]
+  []
 
-  [./y_initial]
+  [target_y]
     family = LAGRANGE
     order = FIRST
-  [../]
+  []
 
-  [./z_initial]
+  [target_z]
     family = LAGRANGE
     order = FIRST
-  [../]
-
-  # xyz actual components from lagrange_vector.
-  [./x_final]
-    family = LAGRANGE
-    order = FIRST
-  [../]
-
-  [./y_final]
-    family = LAGRANGE
-    order = FIRST
-  [../]
-
-  [./z_final]
-    family = LAGRANGE
-    order = FIRST
-  [../]
+  []
 []
 
 [AuxKernels]
-  [./set_lagrange_vector]
+  [set_test_vector_from_target_components]
     type = VectorVariableFromComponentsAux
-    variable = lagrange_vector
-    component_variables = 'x_initial y_initial z_initial'
-  [../]
-
-# Set lagrange vector from target 
-  # Set xyz components from lagrange vector.
-  [./set_x_final]
-    type = VectorVariableComponentAux
-    variable = x_final
-    vector_variable = lagrange_vector
-    component = 'x'
-  [../]
-
-  [./set_y_final]
-    type = VectorVariableComponentAux
-    variable = y_final
-    vector_variable = lagrange_vector
-    component = 'y'
-  [../]
-
-  [./set_z_final]
-    type = VectorVariableComponentAux
-    variable = z_final
-    vector_variable = lagrange_vector
-    component = 'z'
-  [../]
+    variable = test_vector
+    component_variables = 'target_x target_y target_z'
+    execute_on = timestep_end
+  []
 []
 
 [Kernels]
@@ -89,53 +55,53 @@
 []
 
 [Functions]
-  [function_x_ic]
+  [function_target_x]
     type = ParsedFunction
     expression = '100*x'
   []
 
-  [function_y_ic]
+  [function_target_y]
     type = ParsedFunction
     expression = '100*y'
   []
 
-  [function_z_ic]
+  [function_target_z]
     type = ParsedFunction
     expression = '100*z'
   []
 
-  [function_lagrange_vector_ic]
+  [function_target]
     type = ParsedVectorFunction
-    expression_x = '0'
-    expression_y = '0'
-    expression_z = '0'
+    expression_x = '100*x'
+    expression_y = '100*y'
+    expression_z = '100*z'
   []
 []
 
 [ICs]
-  [./x_ic]
+  [set_target_x]
     type = FunctionIC
-    variable = x_initial
-    function = function_x_ic
-  [../]
+    variable = target_x
+    function = function_target_x
+  []
 
-  [./y_ic]
+  [set_target_y]
     type = FunctionIC
-    variable = y_initial
-    function = function_y_ic
-  [../]
+    variable = target_y
+    function = function_target_y
+  []
 
-  [./z_ic]
+  [set_target_z]
     type = FunctionIC
-    variable = z_initial
-    function = function_z_ic
-  [../]
+    variable = target_z
+    function = function_target_z
+  []
 
-  [/.lagrange_vector_ic]
+  [set_target_vector]
     type = VectorFunctionIC
-    variable = lagrange_vector
-    function = function_lagrange_vector_ic
-  [../]
+    variable = target_vector
+    function = function_target
+  []
 []
 
 [BCs]
@@ -155,23 +121,11 @@
 []
 
 [Postprocessors]
-  [./max_x_difference]
-    type = ElementL2Difference
-    variable = x_initial
-    other_variable = x_final
-  [../]
-
-  [./max_y_difference]
-    type = ElementL2Difference
-    variable = y_initial
-    other_variable = y_final
-  [../]
-
-  [./max_z_difference]
-    type = ElementL2Difference
-    variable = z_initial
-    other_variable = z_final
-  [../]
+  [element_l2_difference]
+    type = ElementVectorL2Difference
+    var = target_vector
+    other_var = test_vector
+  []
 []
 
 [Executioner]
