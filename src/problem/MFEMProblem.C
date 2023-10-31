@@ -242,6 +242,7 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
     InputParameters mfem_var_params(addMFEMFESpaceFromMOOSEVariable(parameters));
     FEProblemBase::addUserObject("MFEMVariable", var_name, mfem_var_params);
   }
+
   MFEMVariable & var(getUserObject<MFEMVariable>(var_name));
 
   mfem_problem_builder->AddGridFunction(var_name, var.fespace.name());
@@ -274,11 +275,22 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
                           const std::string & name,
                           InputParameters & parameters)
 {
-  FEProblemBase::addUserObject(kernel_name, name, parameters);
-  MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
+  // TODO - this is a very crude and fragile test.
+  bool is_mfem_kernel = (strncmp(kernel_name.c_str(), "MFEM", 4) == 0);
 
-  _postprocessors.Register(name, mfem_auxsolver->getAuxSolver(), true);
-  mfem_auxsolver->storeCoefficients(_coefficients);
+  if (is_mfem_kernel) // Add MFEM aux solver.
+  {
+    FEProblemBase::addUserObject(kernel_name, name, parameters);
+
+    MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
+
+    _postprocessors.Register(name, mfem_auxsolver->getAuxSolver(), true);
+    mfem_auxsolver->storeCoefficients(_coefficients);
+  }
+  else  // Add MOOSE auxKernel
+  {
+    FEProblemBase::addAuxKernel(kernel_name, name, parameters);
+  }
 }
 
 void
@@ -443,14 +455,18 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
   std::string var_family = moosevar_params.get<MooseEnum>("family");
 
   if (var_family == "LAGRANGE") // MARK: - Test code. Will need to add error handling here.
-    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
-  else if (var_family == "LAGRANGE_VEC")
   {
+    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+  }
+  else if (var_family == "LAGRANGE_VEC")
+  {    
     mfem_fespace_params.set<int>("vdim") = 3;
     mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
   }
   else if (var_family == "MONOMIAL")
+  {
     mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
+  }
 
   mfem_fespace_params.setParameters<MooseEnum>("order", moosevar_params.get<MooseEnum>("order"));
   int order(moosevar_params.get<MooseEnum>("order"));
@@ -459,8 +475,12 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
   std::string fespace_name(var_family + "_" + fec_name);
 
   if (!hasUserObject(fespace_name))
+  {
     addFESpace("MFEMFESpace", fespace_name, mfem_fespace_params);
+  }
+
   mfem_var_params.set<UserObjectName>("fespace") = fespace_name;
+
   return mfem_var_params;
 }
 
