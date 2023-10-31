@@ -103,12 +103,12 @@ MFEMProblem::initialSetup()
   }
   else if (dynamic_cast<Steady *>(_app.getExecutioner()))
   {
-    mfem_problem = dynamic_cast<hephaestus::FrequencyDomainProblemBuilder *>(mfem_problem_builder)
+    mfem_problem = dynamic_cast<hephaestus::SteadyStateProblemBuilder *>(mfem_problem_builder)
                        ->ReturnProblem();
 
     exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
     exec_params.SetParam("Problem",
-                         dynamic_cast<hephaestus::FrequencyDomainProblem *>(mfem_problem.get()));
+                         dynamic_cast<hephaestus::SteadyStateProblem *>(mfem_problem.get()));
     executioner = new hephaestus::SteadyExecutioner(exec_params);
   }
   else
@@ -210,10 +210,19 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
                             const std::string & name,
                             InputParameters & parameters)
 {
-
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   mfem::Coefficient * mfem_coef(&getUserObject<mfem::Coefficient>(name));
   _coefficients.scalars.Register(name, mfem_coef, true);
+}
+
+void
+MFEMProblem::addFESpace(const std::string & user_object_name,
+                        const std::string & name,
+                        InputParameters & parameters)
+{
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+  MFEMFESpace & mfem_fespace(getUserObject<MFEMFESpace>(name));
+  mfem_problem_builder->AddFESpace(name, mfem_fespace.fec_name, mfem_fespace.vdim);
 }
 
 void
@@ -228,22 +237,11 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
   else
   {
     ExternalProblem::addAuxVariable(var_type, var_name, parameters);
-
-    InputParameters mfemvar_params(getMFEMVarParamsFromMOOSEVarParams(parameters));
-    FEProblemBase::addUserObject("MFEMVariable", var_name, mfemvar_params);
+    InputParameters mfem_var_params(addMFEMFESpaceFromMOOSEVariable(parameters));
+    FEProblemBase::addUserObject("MFEMVariable", var_name, mfem_var_params);
   }
-
   MFEMVariable & var(getUserObject<MFEMVariable>(var_name));
-  var.mfem_params.SetParam("VariableName", var_name);
-  std::string fespace_name = var.mfem_params.GetParam<std::string>("FESpaceName");
-
-  std::stringstream fec_name_stream;
-  fec_name_stream << var.mfem_params.GetParam<std::string>("FESpaceType") << "_3D_P"
-                  << var.mfem_params.GetParam<int>("order");
-  std::string fec_name = fec_name_stream.str();
-
-  mfem_problem_builder->AddFESpace(fespace_name, fec_name);
-  mfem_problem_builder->AddGridFunction(var_name, fespace_name);
+  mfem_problem_builder->AddGridFunction(var_name, var.fespace.name());
 }
 
 void
@@ -434,24 +432,35 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 }
 
 InputParameters
-MFEMProblem::getMFEMVarParamsFromMOOSEVarParams(InputParameters & moosevar_params)
+MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
 {
-  std::string var_family = moosevar_params.get<MooseEnum>("family");
+  InputParameters mfem_fespace_params(_factory.getValidParams("MFEMFESpace"));
+  InputParameters mfem_var_params(_factory.getValidParams("MFEMVariable"));
 
-  InputParameters mfemvar_params = _factory.getValidParams("MFEMVariable");
-  mfemvar_params.setParameters<MooseEnum>("order", moosevar_params.get<MooseEnum>("order"));
-  if (var_family == "LAGRANGE")
+  const FEFamily var_family =
+      Utility::string_to_enum<FEFamily>(moosevar_params.get<MooseEnum>("family"));
+  switch (var_family)
   {
-    mfemvar_params.set<MooseEnum>("fespace_type") = std::string("H1");
-    mfemvar_params.set<std::string>("fespace_name") = std::string("_H1FESpace");
+    case FEFamily::LAGRANGE:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+      break;
+    case FEFamily::MONOMIAL:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
+      break;
+    default:
+      mooseError("Unable to set MFEM FESpace for MOOSE variable");
+      break;
   }
-  if (var_family == "MONOMIAL")
-  {
-    mfemvar_params.set<MooseEnum>("fespace_type") = std::string("L2");
-    mfemvar_params.set<std::string>("fespace_name") = std::string("_L2FESpace");
-  }
+  mfem_fespace_params.setParameters<MooseEnum>("order", moosevar_params.get<MooseEnum>("order"));
+  int order(moosevar_params.get<MooseEnum>("order"));
+  std::string fec_name(
+      MFEMFESpace::createFECName(mfem_fespace_params.get<MooseEnum>("fespace_type"), order));
+  std::string fespace_name(Utility::enum_to_string(var_family) + "_" + fec_name);
 
-  return mfemvar_params;
+  if (!hasUserObject(fespace_name))
+    addFESpace("MFEMFESpace", fespace_name, mfem_fespace_params);
+  mfem_var_params.set<UserObjectName>("fespace") = fespace_name;
+  return mfem_var_params;
 }
 
 std::vector<VariableName>

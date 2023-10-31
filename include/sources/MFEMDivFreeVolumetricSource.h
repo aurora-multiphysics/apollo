@@ -22,6 +22,8 @@ protected:
   mfem::Array<mfem::VectorCoefficient *> sourcecoefs;
   mfem::Array<int> coilsegments;
   std::string source_coef_name;
+  const MFEMFESpace & hcurl_fespace;
+  const MFEMFESpace & h1_fespace;
 
   mfem::PWVectorCoefficient * _restricted_coef;
 };

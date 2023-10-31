@@ -6,8 +6,11 @@ InputParameters
 MFEMDivFreeVolumetricSource::validParams()
 {
   InputParameters params = MFEMSource::validParams();
-  params.addParam<FunctionName>(
+  params.addRequiredParam<FunctionName>(
       "function", "The vector function providing the source, to be divergence cleaned.");
+  params.addRequiredParam<UserObjectName>("hcurl_fespace",
+                                          "The H(Curl) FE space to use in the source.");
+  params.addRequiredParam<UserObjectName>("h1_fespace", "The H1 FE space to use in the source.");
   params.addParam<float>("solver_l_tol",
                          "Tolerance for the linear solver used when performing divergence "
                          "cleaning. Defaults to the same value used by the Executioner.");
@@ -22,7 +25,8 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
   : MFEMSource(parameters),
     _func(getFunction("function")),
     _vec_function_coef(3,
-                       [&](const mfem::Vector & p, double t, mfem::Vector & u) {
+                       [&](const mfem::Vector & p, double t, mfem::Vector & u)
+                       {
                          libMesh::RealVectorValue vector_value =
                              _func.vectorValue(t, PointFromMFEMVector(p));
                          u[0] = vector_value(0);
@@ -31,7 +35,9 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
                        }),
     sourcecoefs(blocks.size()),
     coilsegments(blocks.size()),
-    source_coef_name(std::string("source_") + getParam<std::string>("_object_name"))
+    source_coef_name(std::string("source_") + getParam<std::string>("_object_name")),
+    hcurl_fespace(getUserObject<MFEMFESpace>("hcurl_fespace")),
+    h1_fespace(getUserObject<MFEMFESpace>("h1_fespace"))
 {
   for (unsigned int i = 0; i < blocks.size(); i++)
   {
@@ -55,8 +61,8 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
 
   hephaestus::InputParameters div_free_source_params;
   div_free_source_params.SetParam("SourceName", source_coef_name);
-  div_free_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
-  div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+  div_free_source_params.SetParam("HCurlFESpaceName", hcurl_fespace.name());
+  div_free_source_params.SetParam("H1FESpaceName", h1_fespace.name());
   div_free_source_params.SetParam("SolverOptions", _solver_options);
 
   _source = new hephaestus::DivFreeSource(div_free_source_params);

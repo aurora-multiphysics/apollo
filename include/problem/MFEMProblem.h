@@ -17,6 +17,7 @@
 #include "MFEMAuxSolver.h"
 #include "MFEMSource.h"
 #include "MFEMDataCollection.h"
+#include "MFEMFESpace.h"
 #include "Function.h"
 #include "MooseEnum.h"
 #include "SystemBase.h"
@@ -64,21 +65,24 @@ public:
                    InputParameters & parameters);
 
   /**
-   * Override of ExternalProblem::addUserObject. Uses ExternalProblem::addUserObject to set the
-   * Moose user objects, and contains additional code to create MFEM specific user objects.
+   * Add an MFEM source to the problem.
    */
   void addSource(const std::string & user_object_name,
                  const std::string & name,
                  InputParameters & parameters);
 
   /**
-   * Override of ExternalProblem::addUserObject. Uses ExternalProblem::addUserObject to set the
-   * Moose user objects, and contains additional code to create MFEM specific user objects.
+   * Add an MFEM coefficient to the problem.
    */
   void addCoefficient(const std::string & user_object_name,
                       const std::string & name,
                       InputParameters & parameters);
-
+  /**
+   * Add an MFEM FESpace to the problem.
+   */
+  void addFESpace(const std::string & user_object_name,
+                  const std::string & name,
+                  InputParameters & parameters);
   /**
    * Override of ExternalProblem::addUserObject. Uses ExternalProblem::addUserObject to set the
    * Moose user objects, and contains additional code to create MFEM specific user objects.
@@ -132,7 +136,7 @@ public:
    * This method is used in addAuxVariable to help create the MFEM grid function that corresponds to
    * a given MOOSE aux-variable.
    */
-  InputParameters getMFEMVarParamsFromMOOSEVarParams(InputParameters & moosevar_params);
+  InputParameters addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params);
 
 protected:
   std::string _input_mesh;
