@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-hex27.e
+  file = gold/mug.e
   dim = 3
 []
 
