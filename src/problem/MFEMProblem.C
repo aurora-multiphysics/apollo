@@ -19,13 +19,7 @@ MFEMProblem::validParams()
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
     _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
-    _bc_maps(),
     _coefficients(),
-    _fespaces(),
-    _gridfunctions(),
-    _preprocessors(),
-    _postprocessors(),
-    _sources(),
     _outputs(),
     _exec_params()
 {
@@ -60,14 +54,8 @@ MFEMProblem::initialSetup()
   _solver_options.SetParam("PrintLevel", -1);
 
   std::cout << "Launching MFEM solve\n\n" << std::endl;
-  // mfem_problem_builder->SetFESpaces(_fespaces);
-  // mfem_problem_builder->SetGridFunctions(_gridfunctions);
   _coefficients.AddGlobalCoefficientsFromSubdomains();
-  mfem_problem_builder->SetBoundaryConditions(_bc_maps);
-  mfem_problem_builder->SetAuxSolvers(_preprocessors);
   mfem_problem_builder->SetCoefficients(_coefficients);
-  mfem_problem_builder->SetPostprocessors(_postprocessors);
-  mfem_problem_builder->SetSources(_sources);
   mfem_problem_builder->SetOutputs(_outputs);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
@@ -82,8 +70,6 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->ConstructState();
   mfem_problem_builder->ConstructSolver();
 
-  // hephaestus::ProblemBuildSequencer sequencer(mfem_problem_builder);
-  // sequencer.ConstructEquationSystemProblem();
   hephaestus::InputParameters exec_params;
 
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
@@ -158,7 +144,7 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
 {
   FEProblemBase::addUserObject(bc_name, name, parameters);
   MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
-  _bc_maps.Register(name, mfem_bc->getBC(), false);
+  mfem_problem_builder->AddBoundaryCondition(name, mfem_bc->getBC(), false);
   mfem_bc->storeCoefficients(_coefficients);
 }
 
@@ -186,7 +172,7 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
           dynamic_cast<hephaestus::CoupledCoefficient *>(coef->second);
       if (_coupled_coef != NULL)
       {
-        _preprocessors.Register(coef->first, _coupled_coef, false);
+        mfem_problem_builder->AddAuxSolver(coef->first, _coupled_coef, false);
       }
     }
 
@@ -201,7 +187,7 @@ MFEMProblem::addSource(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
-  _sources.Register(name, mfem_source->getSource(), true);
+  mfem_problem_builder->AddSource(name, mfem_source->getSource(), true);
   mfem_source->storeCoefficients(_coefficients);
 }
 
@@ -273,8 +259,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 {
   FEProblemBase::addUserObject(kernel_name, name, parameters);
   MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
-
-  _postprocessors.Register(name, mfem_auxsolver->getAuxSolver(), true);
+  mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
   mfem_auxsolver->storeCoefficients(_coefficients);
 }
 

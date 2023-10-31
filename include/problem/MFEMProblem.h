@@ -144,13 +144,7 @@ protected:
   int _order;
   hephaestus::ProblemBuilder * mfem_problem_builder;
   std::unique_ptr<hephaestus::Problem> mfem_problem;
-  hephaestus::BCMap _bc_maps;
   hephaestus::Coefficients _coefficients;
-  hephaestus::FESpaces _fespaces;
-  hephaestus::GridFunctions _gridfunctions;
-  hephaestus::AuxSolvers _preprocessors;
-  hephaestus::AuxSolvers _postprocessors;
-  hephaestus::Sources _sources;
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _exec_params;
