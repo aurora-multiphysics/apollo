@@ -437,17 +437,25 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
   InputParameters mfem_fespace_params(_factory.getValidParams("MFEMFESpace"));
   InputParameters mfem_var_params(_factory.getValidParams("MFEMVariable"));
 
-  std::string var_family = moosevar_params.get<MooseEnum>("family");
-  if (var_family == "LAGRANGE")
-    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
-  if (var_family == "MONOMIAL")
-    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
-
+  const FEFamily var_family =
+      Utility::string_to_enum<FEFamily>(moosevar_params.get<MooseEnum>("family"));
+  switch (var_family)
+  {
+    case FEFamily::LAGRANGE:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+      break;
+    case FEFamily::MONOMIAL:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
+      break;
+    default:
+      mooseError("Unable to set MFEM FESpace for MOOSE variable");
+      break;
+  }
   mfem_fespace_params.setParameters<MooseEnum>("order", moosevar_params.get<MooseEnum>("order"));
   int order(moosevar_params.get<MooseEnum>("order"));
   std::string fec_name(
       MFEMFESpace::createFECName(mfem_fespace_params.get<MooseEnum>("fespace_type"), order));
-  std::string fespace_name(var_family + "_" + fec_name);
+  std::string fespace_name(Utility::enum_to_string(var_family) + "_" + fec_name);
 
   if (!hasUserObject(fespace_name))
     addFESpace("MFEMFESpace", fespace_name, mfem_fespace_params);
