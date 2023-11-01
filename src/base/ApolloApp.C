@@ -51,6 +51,12 @@ associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
   addTaskDependency("add_elemental_field_variable", "add_mfem_fespaces");
   addTaskDependency("add_kernel", "add_mfem_fespaces");
   addTaskDependency("add_mfem_sources", "add_mfem_fespaces");
+
+  // add lagrange vector
+  registerTask("add_transfer_lagrange_vec", false);
+  registerSyntaxTask(
+      "AddTransferLagrangeVecAction", "TransferLagrangeVec/*", "add_transfer_lagrange_vec");
+  addTaskDependency("add_aux_variable", "add_transfer_lagrange_vec");
 }
 
 void
