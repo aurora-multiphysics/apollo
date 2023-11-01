@@ -13,44 +13,19 @@
   type = CustomFormulation
 []
 
+[TransferLagrangeVec]
+  [mfem_lagrange_vector_in]
+    order = FIRST
+  []
+
+  [mfem_lagrange_vector_out]
+    order = FIRST
+  []
+[]
+
 [AuxVariables]
   [mfem_diffused]
     family = LAGRANGE
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_x_out]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_y_out]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_z_out]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_x_in]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_y_in]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_z_in]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector]
-    family = LAGRANGE_VEC
     order = FIRST
   []
 []
@@ -58,28 +33,28 @@
 [AuxKernels]
   [test_aux_kernel]
     type = VectorVariableFromComponentsAux
-    variable = mfem_lagrange_vector
-    component_variables = 'mfem_lagrange_vector_component_x_in mfem_lagrange_vector_component_y_in mfem_lagrange_vector_component_z_in'
+    variable = mfem_lagrange_vector_in
+    component_variables = 'mfem_lagrange_vector_in_x mfem_lagrange_vector_in_y mfem_lagrange_vector_in_z'
   []
 
   [set_x_out]
     type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector
-    variable = mfem_lagrange_vector_component_x_out
+    vector_variable = mfem_lagrange_vector_in
+    variable = mfem_lagrange_vector_out_x
     component = 'x'
   []
 
   [set_y_out]
     type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector
-    variable = mfem_lagrange_vector_component_y_out
+    vector_variable = mfem_lagrange_vector_in
+    variable = mfem_lagrange_vector_out_y
     component = 'y'
   []
 
   [set_z_out]
     type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector
-    variable = mfem_lagrange_vector_component_z_out
+    vector_variable = mfem_lagrange_vector_in
+    variable = mfem_lagrange_vector_out_z
     component = 'z'
   []
 []

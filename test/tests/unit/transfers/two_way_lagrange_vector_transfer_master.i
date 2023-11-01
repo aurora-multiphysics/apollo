@@ -11,34 +11,12 @@
   []
 []
 
-[AuxVariables]
-  [moose_lagrange_vector_component_x]
-    family = LAGRANGE 
+[TransferLagrangeVec]
+  [moose_lagrange_vector]
     order = FIRST
   []
 
-  [moose_lagrange_vector_component_y]
-    family = LAGRANGE 
-    order = FIRST
-  []
-
-  [moose_lagrange_vector_component_z]
-    family = LAGRANGE 
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_x]
-    family = LAGRANGE 
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_y]
-    family = LAGRANGE 
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_component_z]
-    family = LAGRANGE 
+  [mfem_lagrange_vector]
     order = FIRST
   []
 []
@@ -70,19 +48,19 @@
 [ICs]
   [set_moose_x]
     type = FunctionIC
-    variable = moose_lagrange_vector_component_x
+    variable = moose_lagrange_vector_x
     function = function_x
   []
 
   [set_moose_y]
     type = FunctionIC
-    variable = moose_lagrange_vector_component_y
+    variable = moose_lagrange_vector_y
     function = function_y
   []
 
   [set_moose_z]
     type = FunctionIC
-    variable = moose_lagrange_vector_component_z
+    variable = moose_lagrange_vector_z
     function = function_z
   []
 []
@@ -106,20 +84,20 @@
 [Postprocessors]
   [max_x_difference]
     type = ElementL2Difference
-    variable = mfem_lagrange_vector_component_x
-    other_variable = moose_lagrange_vector_component_x
+    variable = mfem_lagrange_vector_x
+    other_variable = moose_lagrange_vector_x
   []
 
   [max_y_difference]
     type = ElementL2Difference
-    variable = mfem_lagrange_vector_component_y
-    other_variable = moose_lagrange_vector_component_y
+    variable = mfem_lagrange_vector_y
+    other_variable = moose_lagrange_vector_y
   []
 
   [max_z_difference]
     type = ElementL2Difference
-    variable = mfem_lagrange_vector_component_z
-    other_variable = moose_lagrange_vector_component_z
+    variable = mfem_lagrange_vector_z
+    other_variable = moose_lagrange_vector_z
   []
 []
 
@@ -137,16 +115,16 @@
     type = MultiAppGeneralFieldNearestLocationTransfer
     to_multi_app = sub_app
     source_type = 'variable_default variable_default variable_default'
-    source_variable = 'moose_lagrange_vector_component_x moose_lagrange_vector_component_y moose_lagrange_vector_component_z'
-    variable = 'mfem_lagrange_vector_component_x_in mfem_lagrange_vector_component_y_in mfem_lagrange_vector_component_z_in'
+    source_variable = 'moose_lagrange_vector_x moose_lagrange_vector_y moose_lagrange_vector_z'
+    variable = 'mfem_lagrange_vector_in_x mfem_lagrange_vector_in_y mfem_lagrange_vector_in_z'
   []
 
   [pull]
     type = MultiAppGeneralFieldNearestLocationTransfer
     from_multi_app = sub_app
     source_type = 'variable_default variable_default variable_default'
-    source_variable = 'mfem_lagrange_vector_component_x_out mfem_lagrange_vector_component_y_out mfem_lagrange_vector_component_z_out'
-    variable = 'mfem_lagrange_vector_component_x mfem_lagrange_vector_component_y mfem_lagrange_vector_component_z'
+    source_variable = 'mfem_lagrange_vector_out_x mfem_lagrange_vector_out_y mfem_lagrange_vector_out_z'
+    variable = 'mfem_lagrange_vector_x mfem_lagrange_vector_y mfem_lagrange_vector_z'
   []
 []
 
