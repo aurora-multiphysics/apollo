@@ -32,6 +32,13 @@
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order hex27 elements.'
     max_parallel = 1
   []
+  [./TwoWayTet10Transfer]
+    type = 'CSVDiff'
+    input = 'two_way_tet10_transfer_master.i'
+    csvdiff = 'two_way_tet10_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order tet10 elements.'
+    max_parallel = 1
+  []
   [./OneWayTet10Transfer]
     type = 'CSVDiff'
     input = 'one_way_tet10_transfer_master.i'

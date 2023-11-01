@@ -19,13 +19,7 @@ MFEMProblem::validParams()
 MFEMProblem::MFEMProblem(const InputParameters & params)
   : ExternalProblem(params),
     _input_mesh(_mesh.parameters().get<MeshFileName>("file")),
-    _bc_maps(),
     _coefficients(),
-    _fespaces(),
-    _gridfunctions(),
-    _preprocessors(),
-    _postprocessors(),
-    _sources(),
     _outputs(),
     _exec_params()
 {
@@ -60,14 +54,8 @@ MFEMProblem::initialSetup()
   _solver_options.SetParam("PrintLevel", -1);
 
   std::cout << "Launching MFEM solve\n\n" << std::endl;
-  // mfem_problem_builder->SetFESpaces(_fespaces);
-  // mfem_problem_builder->SetGridFunctions(_gridfunctions);
   _coefficients.AddGlobalCoefficientsFromSubdomains();
-  mfem_problem_builder->SetBoundaryConditions(_bc_maps);
-  mfem_problem_builder->SetAuxSolvers(_preprocessors);
   mfem_problem_builder->SetCoefficients(_coefficients);
-  mfem_problem_builder->SetPostprocessors(_postprocessors);
-  mfem_problem_builder->SetSources(_sources);
   mfem_problem_builder->SetOutputs(_outputs);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
@@ -82,8 +70,6 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->ConstructState();
   mfem_problem_builder->ConstructSolver();
 
-  // hephaestus::ProblemBuildSequencer sequencer(mfem_problem_builder);
-  // sequencer.ConstructEquationSystemProblem();
   hephaestus::InputParameters exec_params;
 
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
@@ -158,7 +144,7 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
 {
   FEProblemBase::addUserObject(bc_name, name, parameters);
   MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
-  _bc_maps.Register(name, mfem_bc->getBC(), false);
+  mfem_problem_builder->AddBoundaryCondition(name, mfem_bc->getBC(), false);
   mfem_bc->storeCoefficients(_coefficients);
 }
 
@@ -186,7 +172,7 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
           dynamic_cast<hephaestus::CoupledCoefficient *>(coef->second);
       if (_coupled_coef != NULL)
       {
-        _preprocessors.Register(coef->first, _coupled_coef, false);
+        mfem_problem_builder->AddAuxSolver(coef->first, _coupled_coef, false);
       }
     }
 
@@ -201,7 +187,7 @@ MFEMProblem::addSource(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMSource * mfem_source(&getUserObject<MFEMSource>(name));
-  _sources.Register(name, mfem_source->getSource(), true);
+  mfem_problem_builder->AddSource(name, mfem_source->getSource(), true);
   mfem_source->storeCoefficients(_coefficients);
 }
 
@@ -279,19 +265,16 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
                           const std::string & name,
                           InputParameters & parameters)
 {
-  // NB: this is a crude check. We will need a better check in the future.
   bool is_mfem_auxkernel = (strncmp(kernel_name.c_str(), "MFEM", 4) == 0);
 
-  if (is_mfem_auxkernel) // Add MFEM AuxSolver.
+  if (is_mfem_aux_kernel)
   {
     FEProblemBase::addUserObject(kernel_name, name, parameters);
-
     MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
-
-    _postprocessors.Register(name, mfem_auxsolver->getAuxSolver(), true);
+    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
-  else  // Add MOOSE AuxKernel.
+  else 
   {
     FEProblemBase::addAuxKernel(kernel_name, name, parameters);
   }
@@ -456,27 +439,29 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
   InputParameters mfem_fespace_params(_factory.getValidParams("MFEMFESpace"));
   InputParameters mfem_var_params(_factory.getValidParams("MFEMVariable"));
 
-  std::string var_family = moosevar_params.get<MooseEnum>("family");
-
-  if (var_family == "LAGRANGE") // MARK: - Test code. Will need to add error handling here.
+  const FEFamily var_family =
+      Utility::string_to_enum<FEFamily>(moosevar_params.get<MooseEnum>("family"));
+  switch (var_family)
   {
-    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+    case FEFamily::LAGRANGE:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+      break;
+    CASE FEFamily::LAGRANGE_VEC:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+      mfem_fespace_params.set<int>("vdim") = 3;
+      break;
+    case FEFamily::MONOMIAL:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
+      break;
+    default:
+      mooseError("Unable to set MFEM FESpace for MOOSE variable");
+      break;
   }
-  else if (var_family == "LAGRANGE_VEC")
-  {    
-    mfem_fespace_params.set<int>("vdim") = 3;
-    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
-  }
-  else if (var_family == "MONOMIAL")
-  {
-    mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
-  }
-
   mfem_fespace_params.setParameters<MooseEnum>("order", moosevar_params.get<MooseEnum>("order"));
   int order(moosevar_params.get<MooseEnum>("order"));
   std::string fec_name(
       MFEMFESpace::createFECName(mfem_fespace_params.get<MooseEnum>("fespace_type"), order));
-  std::string fespace_name(var_family + "_" + fec_name);
+  std::string fespace_name(Utility::enum_to_string(var_family) + "_" + fec_name);
 
   if (!hasUserObject(fespace_name))
   {
