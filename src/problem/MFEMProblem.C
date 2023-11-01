@@ -254,7 +254,7 @@ MFEMProblem::addKernel(const std::string & kernel_name,
     mfem_problem_builder->AddKernel<mfem::ParBilinearForm>(parameters.get<std::string>("variable"),
                                                            blf_kernel->getKernel());
   }
-  else 
+  else
   {
     mooseError("Unsupported kernel of type '", kernel_name, "' and name '", name, "' detected.");
   }
@@ -265,6 +265,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
                           const std::string & name,
                           InputParameters & parameters)
 {
+  // NB: - slightly crude test.
   bool is_mfem_auxkernel = (strncmp(kernel_name.c_str(), "MFEM", 4) == 0);
 
   if (is_mfem_auxkernel)
@@ -274,7 +275,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
     mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
-  else 
+  else
   {
     FEProblemBase::addAuxKernel(kernel_name, name, parameters);
   }
