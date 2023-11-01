@@ -267,7 +267,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 {
   bool is_mfem_auxkernel = (strncmp(kernel_name.c_str(), "MFEM", 4) == 0);
 
-  if (is_mfem_aux_kernel)
+  if (is_mfem_auxkernel)
   {
     FEProblemBase::addUserObject(kernel_name, name, parameters);
     MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
@@ -446,7 +446,7 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
     case FEFamily::LAGRANGE:
       mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
       break;
-    CASE FEFamily::LAGRANGE_VEC:
+    case FEFamily::LAGRANGE_VEC:
       mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
       mfem_fespace_params.set<int>("vdim") = 3;
       break;
