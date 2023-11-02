@@ -3,8 +3,8 @@
 #include "FunctionParserUtils.h"
 #include "MFEMCoefficient.h"
 #include "auxsolvers.hpp"
-
 #include "libmesh/fparser_ad.hh"
+#include "libmesh/quadrature.h"
 
 #define usingMFEMParsedCoefficientHelperMembers()                                                  \
   usingFunctionParserUtilsMembers();                                                               \
@@ -55,6 +55,8 @@ public:
             hephaestus::Coefficients & coefficients) override;
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
+
+  virtual mfem::Coefficient * getCoefficient() override { return this; };
 
 protected:
   usingFunctionParserUtilsMembers(false);

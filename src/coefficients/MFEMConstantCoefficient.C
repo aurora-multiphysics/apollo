@@ -11,7 +11,7 @@ MFEMConstantCoefficient::validParams()
 }
 
 MFEMConstantCoefficient::MFEMConstantCoefficient(const InputParameters & parameters)
-  : MFEMCoefficient(parameters), mfem::ConstantCoefficient(getParam<double>("value"))
+  : MFEMCoefficient(parameters), coefficient(getParam<double>("value"))
 {
 }
 

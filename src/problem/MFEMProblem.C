@@ -64,7 +64,7 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->RegisterAuxSolvers();
   mfem_problem_builder->RegisterCoefficients();
 
-  mfem_problem_builder->InitializePostprocessors();
+  mfem_problem_builder->InitializeAuxSolvers();
   mfem_problem_builder->InitializeKernels();
   mfem_problem_builder->ConstructOperator();
   mfem_problem_builder->ConstructState();
@@ -197,8 +197,8 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
                             InputParameters & parameters)
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
-  mfem::Coefficient * mfem_coef(&getUserObject<mfem::Coefficient>(name));
-  _coefficients.scalars.Register(name, mfem_coef, true);
+  MFEMCoefficient * mfem_coef(&getUserObject<MFEMCoefficient>(name));
+  _coefficients.scalars.Register(name, mfem_coef->getCoefficient(), false);
 }
 
 void

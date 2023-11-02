@@ -1,5 +1,4 @@
 #include "MFEMFunctionDirichletBC.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMFunctionDirichletBC);
 
@@ -15,8 +14,8 @@ MFEMFunctionDirichletBC::validParams()
 MFEMFunctionDirichletBC::MFEMFunctionDirichletBC(const InputParameters & parameters)
   : MFEMBoundaryCondition(parameters),
     _func(getFunction("function")),
-    _function_coeff(
-        [&](const mfem::Vector & p, double t) { return _func.value(t, PointFromMFEMVector(p)); })
+    _function_coeff([&](const mfem::Vector & p, double t)
+                    { return _func.value(t, PointFromMFEMVector(p)); })
 {
   _boundary_condition = new hephaestus::FunctionDirichletBC(
       getParam<std::string>("variable"), bdr_attr, &_function_coeff);

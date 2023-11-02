@@ -1,5 +1,4 @@
 #include "MFEMComplexVectorFunctionDirichletBC.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMComplexVectorFunctionDirichletBC);
 

@@ -8,7 +8,6 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "ExclusiveMFEMMesh.h"
-#include "libmesh/face_quad4.h"
 
 registerMooseObject("MooseApp", ExclusiveMFEMMesh);
 

@@ -1,5 +1,4 @@
 #include "MFEMVectorNormalIntegratedBC.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMVectorNormalIntegratedBC);
 
@@ -16,12 +15,15 @@ MFEMVectorNormalIntegratedBC::validParams()
 MFEMVectorNormalIntegratedBC::MFEMVectorNormalIntegratedBC(const InputParameters & parameters)
   : MFEMBoundaryCondition(parameters),
     _func(getFunction("function")),
-    _vec_function_coef(3, [&](const mfem::Vector & p, double t, mfem::Vector & u) {
-      libMesh::RealVectorValue vector_value = _func.vectorValue(t, PointFromMFEMVector(p));
-      u[0] = vector_value(0);
-      u[1] = vector_value(1);
-      u[2] = vector_value(2);
-    })
+    _vec_function_coef(3,
+                       [&](const mfem::Vector & p, double t, mfem::Vector & u)
+                       {
+                         libMesh::RealVectorValue vector_value =
+                             _func.vectorValue(t, PointFromMFEMVector(p));
+                         u[0] = vector_value(0);
+                         u[1] = vector_value(1);
+                         u[2] = vector_value(2);
+                       })
 {
   _boundary_condition =
       new hephaestus::IntegratedBC(getParam<std::string>("variable"),

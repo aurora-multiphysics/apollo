@@ -1,5 +1,4 @@
 #include "MFEMConductor.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMConductor);
 
@@ -30,9 +29,9 @@ MFEMConductor::MFEMConductor(const InputParameters & parameters)
     // Get the parameters from the input file
     // Create mfem::Coefficients to represent materials
     _electrical_conductivity_coeff(
-        getUserObject<mfem::Coefficient>("electrical_conductivity_coeff")),
-    _permittivity_coeff(getUserObject<mfem::Coefficient>("electric_permittivity_coeff")),
-    _permeability_coeff(getUserObject<mfem::Coefficient>("magnetic_permeability_coeff"))
+        &getUserObject<MFEMCoefficient>("electrical_conductivity_coeff")),
+    _permittivity_coeff(&getUserObject<MFEMCoefficient>("electric_permittivity_coeff")),
+    _permeability_coeff(&getUserObject<MFEMCoefficient>("magnetic_permeability_coeff"))
 {
 }
 
@@ -41,12 +40,16 @@ MFEMConductor::storeCoefficients(hephaestus::Subdomain & subdomain)
 {
   subdomain.scalar_coefficients.Register(
       "electrical_conductivity",
-      const_cast<mfem::Coefficient *>(&_electrical_conductivity_coeff),
-      true);
+      const_cast<MFEMCoefficient *>(_electrical_conductivity_coeff)->getCoefficient(),
+      false);
   subdomain.scalar_coefficients.Register(
-      "magnetic_permeability", const_cast<mfem::Coefficient *>(&_permeability_coeff), true);
+      "magnetic_permeability",
+      const_cast<MFEMCoefficient *>(_permeability_coeff)->getCoefficient(),
+      false);
   subdomain.scalar_coefficients.Register(
-      "dielectric_permittivity", const_cast<mfem::Coefficient *>(&_permittivity_coeff), true);
+      "dielectric_permittivity",
+      const_cast<MFEMCoefficient *>(_permittivity_coeff)->getCoefficient(),
+      false);
 }
 
 MFEMConductor::~MFEMConductor() {}

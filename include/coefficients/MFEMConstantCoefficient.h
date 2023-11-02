@@ -3,7 +3,7 @@
 #include "MFEMCoefficient.h"
 #include "gridfunctions.hpp"
 
-class MFEMConstantCoefficient : public MFEMCoefficient, public mfem::ConstantCoefficient
+class MFEMConstantCoefficient : public MFEMCoefficient
 {
 public:
   static InputParameters validParams();
@@ -14,4 +14,8 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
+  virtual mfem::Coefficient * getCoefficient() override { return &coefficient; };
+
+private:
+  mfem::ConstantCoefficient coefficient;
 };

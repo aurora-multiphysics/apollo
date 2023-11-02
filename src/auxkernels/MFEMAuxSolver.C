@@ -1,5 +1,4 @@
 #include "MFEMAuxSolver.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMAuxSolver);
 

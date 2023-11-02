@@ -1,5 +1,4 @@
 #include "MFEMBoundaryCondition.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMBoundaryCondition);
 

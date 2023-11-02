@@ -15,6 +15,7 @@
 #include "libmesh/elem.h"
 #include "libmesh/enum_io_package.h"
 #include "libmesh/equation_systems.h"
+#include "libmesh/face_quad4.h"
 #include "libmesh/ignore_warnings.h"
 #include "libmesh/libmesh_config.h"
 #include "libmesh/mesh_base.h"

@@ -1,7 +1,5 @@
 #include "MFEMParsedCoefficientHelper.h"
 
-#include "libmesh/quadrature.h"
-
 InputParameters
 MFEMParsedCoefficientHelper::validParams()
 {

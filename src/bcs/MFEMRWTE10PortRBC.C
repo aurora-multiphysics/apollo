@@ -1,5 +1,4 @@
 #include "MFEMRWTE10PortRBC.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMRWTE10PortRBC);
 

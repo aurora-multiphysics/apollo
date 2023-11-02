@@ -4,6 +4,7 @@
 #include "boundary_conditions.hpp"
 #include "gridfunctions.hpp"
 #include "coefficients.hpp"
+#include "Function.h"
 
 libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
 

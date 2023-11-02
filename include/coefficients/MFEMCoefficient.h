@@ -2,6 +2,7 @@
 
 #include "GeneralUserObject.h"
 #include "coefficients.hpp"
+#include "Function.h"
 
 class MFEMCoefficient : public GeneralUserObject
 {
@@ -14,4 +15,8 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
+  virtual mfem::Coefficient * getCoefficient()
+  {
+    mooseError("Base class MFEMCoefficient cannot return a valid Coefficient. Use a child class.");
+  }
 };
