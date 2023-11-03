@@ -6,6 +6,7 @@
 
 [Problem]
   type = MFEMProblem
+  use_glvis = true
 []
 
 [Formulation]
@@ -14,6 +15,7 @@
   magnetic_reluctivity_name = magnetic_reluctivity
   magnetic_permeability_name = magnetic_permeability
   electric_conductivity_name = electrical_conductivity
+  magnetic_flux_density_name = magnetic_flux_density
 []
 
 [FESpaces]
@@ -43,6 +45,10 @@
     type = MFEMVariable
     fespace = HDivFESpace
   []
+  [source_current_density]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
   [electric_potential]
     type = MFEMVariable
     fespace = H1FESpace
@@ -50,15 +56,9 @@
 []
 
 [Functions]
-  [potential_high]
+  [current_magnitude]
     type = ParsedFunction
     value = cos(2.0*pi*freq*t)
-    vars = 'freq'
-    vals = '0.01666667'
-  []
-  [potential_low]
-    type = ParsedFunction
-    value = -cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
   []
@@ -70,18 +70,6 @@
     variable = dmagnetic_vector_potential_dt
     vector_coefficient = TangentialECoef
     boundary = '1 2 3 4'
-  []
-  [high_terminal]
-    type = MFEMScalarDirichletBC
-    variable = electric_potential
-    boundary = '1'
-    function = potential_high
-  []
-  [low_terminal]
-    type = MFEMScalarDirichletBC
-    variable = electric_potential
-    boundary = '2'
-    function = potential_low
   []
 []
 
@@ -158,20 +146,20 @@
     value = 0.0
   []
 
-  [OneCoef]
-    type = MFEMConstantCoefficient
-    value = 1.0e12
+  [CurrentCoef]
+    type = MFEMFunctionCoefficient
+    function = current_magnitude
   []
 []
 
 [Sources]
   [SourcePotential]
-    type = MFEMScalarPotentialSource
-    potential = electric_potential
-    conductivity = electrical_conductivity
-    hcurl_fespace = HCurlFESpace
-    h1_fespace = H1FESpace
-    solver_max_its = 1000
+    type = MFEMOpenCoilSource
+    total_current_coef = CurrentCoef
+    source_current_density_gridfunction = source_current_density
+    source_potential_gridfunction = electric_potential
+    coil_in_boundary = 1
+    coil_out_boundary = 2
     block = 1
   []
 []
