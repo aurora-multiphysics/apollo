@@ -37,16 +37,16 @@
 
 [BCs]
   [bottom]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = mfem_diffused
     boundary = '1'
-    function_coef = BottomValue
+    coefficient = BottomValue
   []
   [low_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = mfem_diffused
     boundary = '2'
-    function_coef = TopValue
+    coefficient = TopValue
   []
 []
 

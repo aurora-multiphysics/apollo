@@ -79,13 +79,13 @@
     boundary = '1 2 3 4'
   []
   [high_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '1'
     function = potential_high
   []
   [low_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '2'
     function = potential_low

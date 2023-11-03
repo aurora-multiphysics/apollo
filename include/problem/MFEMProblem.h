@@ -8,7 +8,7 @@
 #include "MFEMMesh.h"
 #include "MFEMMaterial.h"
 #include "MFEMVariable.h"
-#include "MFEMFunctionDirichletBC.h"
+#include "MFEMScalarDirichletBC.h"
 #include "MFEMConstantCoefficient.h"
 #include "MFEMBoundaryCondition.h"
 #include "MFEMBilinearFormKernel.h"

@@ -79,16 +79,16 @@
     function = tangential_E
   []
   [high_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '1'
-    function_coef = HighPotential
+    coefficient = HighPotential
   []
   [low_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '2'
-    function_coef = LowPotential
+    coefficient = LowPotential
   []
 []
 
