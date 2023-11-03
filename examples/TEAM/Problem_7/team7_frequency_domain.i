@@ -64,7 +64,7 @@
 [Sources]
   [SourceCoil]
     type = MFEMDivFreeVolumetricSource
-    function = RacetrackCoilCurrentFunction
+    vector_coefficient = SourceCurrentCoef
     hcurl_fespace = HCurlFESpace
     h1_fespace = H1FESpace
     block = '3 4 5 6'
@@ -96,6 +96,13 @@
     electric_permittivity_coeff = PlatePermittivity
     magnetic_permeability_coeff = PlatePermeability
     block = 2
+  []
+[]
+
+[VectorCoefficients]
+  [SourceCurrentCoef]
+    type = MFEMVectorFunctionCoefficient
+    function = RacetrackCoilCurrentFunction
   []
 []
 

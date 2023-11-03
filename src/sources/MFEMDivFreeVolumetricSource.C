@@ -6,8 +6,8 @@ InputParameters
 MFEMDivFreeVolumetricSource::validParams()
 {
   InputParameters params = MFEMSource::validParams();
-  params.addRequiredParam<FunctionName>(
-      "function", "The vector function providing the source, to be divergence cleaned.");
+  params.addRequiredParam<UserObjectName>(
+      "vector_coefficient", "The vector MFEM coefficient providing the source to be divergence cleaned");  
   params.addRequiredParam<UserObjectName>("hcurl_fespace",
                                           "The H(Curl) FE space to use in the source.");
   params.addRequiredParam<UserObjectName>("h1_fespace", "The H1 FE space to use in the source.");
@@ -23,16 +23,8 @@ MFEMDivFreeVolumetricSource::validParams()
 
 MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters & parameters)
   : MFEMSource(parameters),
-    _func(getFunction("function")),
-    _vec_function_coef(3,
-                       [&](const mfem::Vector & p, double t, mfem::Vector & u)
-                       {
-                         libMesh::RealVectorValue vector_value =
-                             _func.vectorValue(t, PointFromMFEMVector(p));
-                         u[0] = vector_value(0);
-                         u[1] = vector_value(1);
-                         u[2] = vector_value(2);
-                       }),
+    _vec_coef(const_cast<MFEMVectorCoefficient *>(
+        &getUserObject<MFEMVectorCoefficient>("vector_coefficient"))),
     sourcecoefs(blocks.size()),
     coilsegments(blocks.size()),
     source_coef_name(std::string("source_") + getParam<std::string>("_object_name")),
@@ -41,7 +33,7 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
 {
   for (unsigned int i = 0; i < blocks.size(); i++)
   {
-    sourcecoefs[i] = &_vec_function_coef;
+    sourcecoefs[i] = _vec_coef->getVectorCoefficient();
     coilsegments[i] = int(blocks[i]);
   }
   _restricted_coef = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);

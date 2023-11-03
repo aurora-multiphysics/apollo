@@ -8,6 +8,7 @@
 #include "libmesh/parallel_mesh.h"
 #include "CubitElementInfo.h"
 #include "mfem.hpp"
+#include "MooseError.h"
 
 /**
  * MFEMMesh

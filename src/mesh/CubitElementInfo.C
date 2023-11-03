@@ -1,5 +1,4 @@
 #include "CubitElementInfo.h"
-#include "MooseError.h"
 
 CubitElementInfo::CubitElementInfo(int num_nodes_per_element, int dimension)
 {

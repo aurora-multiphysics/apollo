@@ -1,14 +1,15 @@
 #pragma once
-
 #include "AuxiliarySystem.h"
 #include "DisplacedProblem.h"
 #include "ExternalProblem.h"
 #include "ExclusiveMFEMMesh.h"
 #include "CoupledMFEMMesh.h"
 #include "MFEMMesh.h"
+#include "MFEMCoefficient.h"
+#include "MFEMVectorCoefficient.h"
 #include "MFEMMaterial.h"
 #include "MFEMVariable.h"
-#include "MFEMFunctionDirichletBC.h"
+#include "MFEMScalarDirichletBC.h"
 #include "MFEMConstantCoefficient.h"
 #include "MFEMBoundaryCondition.h"
 #include "MFEMBilinearFormKernel.h"
@@ -77,6 +78,13 @@ public:
   void addCoefficient(const std::string & user_object_name,
                       const std::string & name,
                       InputParameters & parameters);
+
+  /**
+   * Add an MFEM vector coefficient to the problem.
+   */
+  void addVectorCoefficient(const std::string & user_object_name,
+                            const std::string & name,
+                            InputParameters & parameters);
   /**
    * Add an MFEM FESpace to the problem.
    */

@@ -2,6 +2,12 @@
 
 registerMooseObject("ApolloApp", MFEMCoefficient);
 
+libMesh::Point
+PointFromMFEMVector(const mfem::Vector & vec)
+{
+  return libMesh::Point(vec.Elem(0), vec.Elem(1), vec.Elem(2));
+}
+
 InputParameters
 MFEMCoefficient::validParams()
 {

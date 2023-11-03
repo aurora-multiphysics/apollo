@@ -1,7 +1,5 @@
 #pragma once
 #include "MFEMMesh.h"
-#include "MooseError.h"
-#include <cstdio>
 
 // Function prototypes:
 static bool coordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);

@@ -64,7 +64,7 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->RegisterAuxSolvers();
   mfem_problem_builder->RegisterCoefficients();
 
-  mfem_problem_builder->InitializePostprocessors();
+  mfem_problem_builder->InitializeAuxSolvers();
   mfem_problem_builder->InitializeKernels();
   mfem_problem_builder->ConstructOperator();
   mfem_problem_builder->ConstructState();
@@ -145,7 +145,6 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
   FEProblemBase::addUserObject(bc_name, name, parameters);
   MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
   mfem_problem_builder->AddBoundaryCondition(name, mfem_bc->getBC(), false);
-  mfem_bc->storeCoefficients(_coefficients);
 }
 
 void
@@ -197,8 +196,18 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
                             InputParameters & parameters)
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
-  mfem::Coefficient * mfem_coef(&getUserObject<mfem::Coefficient>(name));
-  _coefficients.scalars.Register(name, mfem_coef, true);
+  MFEMCoefficient * mfem_coef(&getUserObject<MFEMCoefficient>(name));
+  _coefficients.scalars.Register(name, mfem_coef->getCoefficient(), false);
+}
+
+void
+MFEMProblem::addVectorCoefficient(const std::string & user_object_name,
+                                  const std::string & name,
+                                  InputParameters & parameters)
+{
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+  MFEMVectorCoefficient * mfem_vec_coef(&getUserObject<MFEMVectorCoefficient>(name));
+  _coefficients.vectors.Register(name, mfem_vec_coef->getVectorCoefficient(), false);
 }
 
 void

@@ -1,5 +1,4 @@
 #include "MFEMJouleHeatingAux.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMJouleHeatingAux);
 

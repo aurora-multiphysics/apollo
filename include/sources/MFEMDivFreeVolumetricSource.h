@@ -1,5 +1,6 @@
 #pragma once
 #include "MFEMSource.h"
+#include "MFEMVectorFunctionCoefficient.h"
 
 class MFEMDivFreeVolumetricSource : public MFEMSource
 {
@@ -17,8 +18,7 @@ public:
   virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:
-  const Function & _func;
-  mfem::VectorFunctionCoefficient _vec_function_coef;
+  MFEMVectorCoefficient * _vec_coef;
   mfem::Array<mfem::VectorCoefficient *> sourcecoefs;
   mfem::Array<int> coilsegments;
   std::string source_coef_name;

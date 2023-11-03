@@ -14,6 +14,6 @@ public:
   void storeCoefficients(hephaestus::Subdomain & subdomain) override;
 
 protected:
-  const mfem::Coefficient & _heat_capacity_coeff;
-  const mfem::Coefficient & _thermal_conductivity_coeff;
+  const MFEMCoefficient * _heat_capacity_coeff;
+  const MFEMCoefficient * _thermal_conductivity_coeff;
 };

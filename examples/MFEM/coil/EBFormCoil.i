@@ -63,29 +63,23 @@
     vars = 'freq'
     vals = '0.01666667'
   []
-  [tangential_E]
-    type = ParsedVectorFunction
-    value_x = 0.0
-    value_y = 0.0
-    value_z = 0.0
-  []
 []
 
 [BCs]
   [tangential_E_bc]
-    type = MFEMVectorFunctionDirichletBC
+    type = MFEMVectorDirichletBC
     variable = electric_field
-    function = tangential_E
+    vector_coefficient = TangentialECoef
     boundary = '1 2 3 4'
   []
   [high_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '1'
     function = potential_high
   []
   [low_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '2'
     function = potential_low
@@ -113,6 +107,15 @@
     electric_permittivity_coeff = CorePermittivity
     magnetic_permeability_coeff = CorePermeability
     block = 3
+  []
+[]
+
+[VectorCoefficients]
+  [TangentialECoef]
+    type = MFEMVectorConstantCoefficient
+    value_x = 0.0
+    value_y = 0.0
+    value_z = 0.0
   []
 []
 

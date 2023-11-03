@@ -1,5 +1,4 @@
 #include "MFEMMaterial.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMMaterial);
 

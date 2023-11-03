@@ -18,7 +18,6 @@
     family = LAGRANGE
     order = SECOND
   []
-
   [test_variable_on_mfem_side]
     family = LAGRANGE
     order = SECOND
@@ -30,7 +29,6 @@
     type = ParsedFunction
     value = 1.0
   []
-
   [value_top]
     type = ParsedFunction
     value = 0.0
@@ -39,16 +37,16 @@
 
 [BCs]
   [bottom]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = mfem_diffused
     boundary = '1'
-    function = value_bottom
+    coefficient = BottomValue
   []
   [low_terminal]
-    type = MFEMFunctionDirichletBC
+    type = MFEMScalarDirichletBC
     variable = mfem_diffused
     boundary = '2'
-    function = value_top
+    coefficient = TopValue
   []
 []
 
@@ -56,6 +54,14 @@
   [one]
     type = MFEMConstantCoefficient
     value = 1.0
+  []
+  [TopValue]
+    type = MFEMFunctionCoefficient
+    function = value_top
+  []
+  [BottomValue]
+    type = MFEMFunctionCoefficient
+    function = value_bottom
   []
 []
 
