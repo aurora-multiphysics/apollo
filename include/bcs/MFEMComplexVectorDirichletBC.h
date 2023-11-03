@@ -4,8 +4,6 @@
 #include "MFEMVectorFunctionCoefficient.h"
 #include "boundary_conditions.hpp"
 
-libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
-
 class MFEMComplexVectorDirichletBC : public MFEMBoundaryCondition
 {
 public:
