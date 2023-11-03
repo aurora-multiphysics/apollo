@@ -202,6 +202,16 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
 }
 
 void
+MFEMProblem::addVectorCoefficient(const std::string & user_object_name,
+                                  const std::string & name,
+                                  InputParameters & parameters)
+{
+  FEProblemBase::addUserObject(user_object_name, name, parameters);
+  MFEMVectorCoefficient * mfem_vec_coef(&getUserObject<MFEMVectorCoefficient>(name));
+  _coefficients.vectors.Register(name, mfem_vec_coef->getVectorCoefficient(), false);
+}
+
+void
 MFEMProblem::addFESpace(const std::string & user_object_name,
                         const std::string & name,
                         InputParameters & parameters)
