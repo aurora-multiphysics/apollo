@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-hex27.e
+  file = gold/simple-cube-hex27.e
   dim = 3
 []
 
@@ -62,7 +62,7 @@
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = MFEMDiffusionKernel
     variable = mfem_diffused
     coefficient = one

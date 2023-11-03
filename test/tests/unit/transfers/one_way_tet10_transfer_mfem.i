@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-tet10.e
+  file = gold/simple-cube-tet10.e
   dim = 3
 []
 
@@ -62,7 +62,7 @@
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = MFEMDiffusionKernel
     variable = mfem_diffused
     coefficient = one

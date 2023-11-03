@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-hex27.e
+  file = gold/simple-cube-hex27.e
   dim = 3
 []
 
@@ -18,7 +18,7 @@
     family = LAGRANGE
     order = SECOND
   []
-  [temperature]
+  [test_variable_on_mfem_side]
     family = LAGRANGE
     order = SECOND
   []
@@ -66,7 +66,7 @@
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = MFEMDiffusionKernel
     variable = mfem_diffused
     coefficient = one
