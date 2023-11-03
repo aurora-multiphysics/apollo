@@ -1,17 +1,16 @@
 #pragma once
 
 #include "MFEMBoundaryCondition.h"
+#include "MFEMVectorFunctionCoefficient.h"
 #include "boundary_conditions.hpp"
 
-libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
-
-class MFEMVectorFunctionDirichletBC : public MFEMBoundaryCondition
+class MFEMVectorDirichletBC : public MFEMBoundaryCondition
 {
 public:
   static InputParameters validParams();
 
-  MFEMVectorFunctionDirichletBC(const InputParameters & parameters);
-  virtual ~MFEMVectorFunctionDirichletBC();
+  MFEMVectorDirichletBC(const InputParameters & parameters);
+  virtual ~MFEMVectorDirichletBC();
 
   virtual hephaestus::BoundaryCondition * getBC() override;
   virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
@@ -20,6 +19,6 @@ public:
   virtual void finalize() override {}
 
 protected:
-  const Function & _func;
-  mfem::VectorFunctionCoefficient _vec_function_coef;
+  MFEMVectorCoefficient * _vec_coef;
+  hephaestus::VectorDirichletBC _boundary_condition;
 };

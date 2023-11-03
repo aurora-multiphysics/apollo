@@ -73,9 +73,9 @@
 
 [BCs]
   [tangential_E_bc]
-    type = MFEMVectorFunctionDirichletBC
+    type = MFEMVectorDirichletBC
     variable = electric_field
-    function = tangential_E
+    vector_coefficient = TangentialECoef
     boundary = '1 2 3 4'
   []
   [high_terminal]
@@ -113,6 +113,13 @@
     electric_permittivity_coeff = CorePermittivity
     magnetic_permeability_coeff = CorePermeability
     block = 3
+  []
+[]
+
+[VectorCoefficients]
+  [TangentialECoef]
+    type = MFEMVectorFunctionCoefficient
+    function = tangential_E
   []
 []
 

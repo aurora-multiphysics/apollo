@@ -1,0 +1,35 @@
+#include "MFEMVectorDirichletBC.h"
+
+registerMooseObject("ApolloApp", MFEMVectorDirichletBC);
+
+InputParameters
+MFEMVectorDirichletBC::validParams()
+{
+  InputParameters params = MFEMBoundaryCondition::validParams();
+  params.addRequiredParam<UserObjectName>(
+      "vector_coefficient", "The vector MFEM coefficient to use in the Dirichlet condition");
+  return params;
+}
+
+// TODO: Currently assumes the vector function coefficient is 3D
+MFEMVectorDirichletBC::MFEMVectorDirichletBC(const InputParameters & parameters)
+  : MFEMBoundaryCondition(parameters),
+    _vec_coef(const_cast<MFEMVectorCoefficient *>(
+        &getUserObject<MFEMVectorCoefficient>("vector_coefficient"))),
+    _boundary_condition(
+        getParam<std::string>("variable"), bdr_attr, _vec_coef->getVectorCoefficient())
+{
+}
+
+hephaestus::BoundaryCondition *
+MFEMVectorDirichletBC::getBC()
+{
+  return &_boundary_condition;
+}
+
+void
+MFEMVectorDirichletBC::storeCoefficients(hephaestus::Coefficients & coefficients)
+{
+}
+
+MFEMVectorDirichletBC::~MFEMVectorDirichletBC() {}
