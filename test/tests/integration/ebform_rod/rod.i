@@ -63,12 +63,6 @@
     vars = 'freq'
     vals = '0.01666667'
   []
-  [tangential_E]
-    type = ParsedVectorFunction
-    value_x = 0.0
-    value_y = 0.0
-    value_z = 0.0
-  []
 []
 
 [BCs]
@@ -122,8 +116,10 @@
 
 [VectorCoefficients]
   [TangentialECoef]
-    type = MFEMVectorFunctionCoefficient
-    function = tangential_E
+    type = MFEMVectorConstantCoefficient
+    value_x = 0.0
+    value_y = 0.0
+    value_z = 0.0
   []
 []
 

@@ -39,15 +39,6 @@
   []
 []
 
-[Functions]
-  [tangential_E]
-    type = ParsedVectorFunction
-    value_x = 0.0
-    value_y = 0.0
-    value_z = 0.0
-  []
-[]
-
 [BCs]
   [tangential_E_bdr]
     type = MFEMComplexVectorDirichletBC
@@ -88,8 +79,10 @@
 
 [VectorCoefficients]
   [TangentialECoef]
-    type = MFEMVectorFunctionCoefficient
-    function = tangential_E
+    type = MFEMVectorConstantCoefficient
+    value_x = 0.0
+    value_y = 0.0
+    value_z = 0.0
   []
 []
 
