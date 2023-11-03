@@ -1,30 +1,30 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-tet10.e
+  file = gold/simple-cube-tet10.e
   dim = 3
 []
 
 [Variables]
-  [./moose_diffused]
+  [moose_diffused]
     family = LAGRANGE
     order = SECOND
-  [../]
+  []
 []
 
 [AuxVariables]
-  [./temperature_moose]
+  [test_variable_sent]
     family = LAGRANGE
     order = SECOND
-  [../]
+  []
 
-  [./temperature_mfem]
+  [test_variable_received]
     family = LAGRANGE
     order = SECOND
-  [../]
+  []
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = Diffusion
     variable = moose_diffused
   []
@@ -46,26 +46,26 @@
   []
 []
 
-[Postprocessors]
-  [./l2_difference]
-    type = ElementL2Difference
-    variable = temperature_mfem
-    other_variable = temperature_moose
-  [../]
+[ICs]
+  [set_test_variable_sent]
+    type = FunctionIC
+    variable = test_variable_sent
+    function = 42.0+1000.0*x*x
+  []
+
+  [zero_test_variable_received]
+    type = ConstantIC
+    variable = test_variable_received
+    value = 0.0
+  []
 []
 
-[ICs]
-  [./temperature_moose_ic]
-    type = FunctionIC
-    variable = temperature_moose
-    function = 42.0+1000.0*x*x
-  [../]
-
-  [./temperature_mfem_ic]
-    type = ConstantIC
-    variable = temperature_mfem
-    value = 0.0
-  [../]
+[Postprocessors]
+  [l2_difference]
+    type = ElementL2Difference
+    variable = test_variable_sent
+    other_variable = test_variable_received
+  []
 []
 
 [MultiApps]
@@ -78,30 +78,30 @@
 []
 
 [Transfers]
-  [push_temperature]
+  [push_test_variable]
     type = MultiAppNearestNodeTransfer
 
     # Transfer to the sub-app from this app.
     to_multi_app = sub_app
 
     # The name of the variable in this app to transfer.
-    source_variable = temperature_moose
+    source_variable = test_variable_sent
 
     # The name of the auxiliary variable in the sub-app.
-    variable = temperature
+    variable = test_variable_on_mfem_side
   []
 
-  [pull_temperature]
+  [pull_test_variable]
     type = MultiAppNearestNodeTransfer
 
     # Transfer from the sub-app to this app.
     from_multi_app = sub_app
 
     # The name of the variable in the sub-app.
-    source_variable = temperature
+    source_variable = test_variable_on_mfem_side
 
     # The name of the auxiliary variable in this app.
-    variable = temperature_mfem
+    variable = test_variable_received
   []
 []
 
@@ -114,5 +114,5 @@
 
 [Outputs]
   csv = true
-  exodus = true
+  exodus = false
 []
