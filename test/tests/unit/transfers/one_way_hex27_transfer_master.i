@@ -1,25 +1,25 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-hex27.e
+  file = gold/simple-cube-hex27.e
   dim = 3
 []
 
 [Variables]
-  [./moose_diffused]
+  [moose_diffused]
     family = LAGRANGE
     order = SECOND
-  [../]
+  []
 []
 
 [AuxVariables]
-  [./mfem_diffused]
+  [mfem_diffused]
     family = LAGRANGE
     order = SECOND
-  [../]
+  []
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = Diffusion
     variable = moose_diffused
   []
@@ -42,11 +42,11 @@
 []
 
 [Postprocessors]
-  [./l2_difference]
+  [l2_difference]
     type = ElementL2Difference
     variable = moose_diffused
     other_variable = mfem_diffused
-  [../]
+  []
 []
 
 [Executioner]
@@ -58,7 +58,7 @@
 
 [Outputs]
   csv = true
-  exodus = true
+  exodus = false
 []
 
 [MultiApps]

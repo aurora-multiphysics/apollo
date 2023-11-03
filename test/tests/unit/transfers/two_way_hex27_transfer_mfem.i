@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/mug-hex27.e
+  file = gold/simple-cube-hex27.e
   dim = 3
 []
 
@@ -14,51 +14,53 @@
 []
 
 [AuxVariables]
-  [./mfem_diffused]
+  [mfem_diffused]
     family = LAGRANGE
     order = SECOND
-  [../]
-  [./temperature]
+  []
+
+  [test_variable_on_mfem_side]
     family = LAGRANGE
     order = SECOND
-  [../]
+  []
 []
 
 [Functions]
-  [./value_bottom]
+  [value_bottom]
     type = ParsedFunction
     value = 1.0
-  [../]
-  [./value_top]
+  []
+
+  [value_top]
     type = ParsedFunction
     value = 0.0
-  [../]
+  []
 []
 
 [BCs]
-  [./bottom]
+  [bottom]
     type = MFEMFunctionDirichletBC
     variable = mfem_diffused
     boundary = '1'
     function = value_bottom
-  [../]
-  [./low_terminal]
+  []
+  [low_terminal]
     type = MFEMFunctionDirichletBC
     variable = mfem_diffused
     boundary = '2'
     function = value_top
-  [../]
+  []
 []
 
 [Coefficients]
-  [./one]
+  [one]
     type = MFEMConstantCoefficient
     value = 1.0
-  [../]
+  []
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = MFEMDiffusionKernel
     variable = mfem_diffused
     coefficient = one
