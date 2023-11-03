@@ -25,8 +25,23 @@ VectorVariableFromComponentsAux::VectorVariableFromComponentsAux(const InputPara
                " component variables were specified.");
   }
 
-  // TODO: - ensure that the FE families are appropriate. i.e. LAGRANGE if _vec is LAGRANGE_vec
-  // TODO: - ensure that the orders match.
+  // Ensure that the variable is a lagrange vector. Later this can be extended
+  // to monomials.
+  const FEType & the_fetype = _var.feType();
+  if (the_fetype.family != LAGRANGE_VEC)
+  {
+    mooseError("'", _var.name(), "' should be a lagrange vector!");
+  }
+
+  // Check components. NB: later we can be smarter and check orders and FE types.
+  for (int icomponent = 0; icomponent < 3; icomponent++)
+  {
+    const VariableValue * the_variable_component = _component_dofs[icomponent];
+    if (!the_variable_component)
+    {
+      mooseError("Component ", icomponent + 1, " is NULL!");
+    }
+  }
 }
 
 void

@@ -11,7 +11,7 @@ AddTransferLagrangeVecAction::validParams()
 {
   InputParameters params = Action::validParams();
   params.addClassDescription(
-      "Creates an Auxiliary Lagrange vector and three hidden standard Lagrange variables for the "
+      "Creates an auxiliary Lagrange vector and three hidden standard Lagrange variables for the "
       "components. This allows for MultiApp transfer.");
 
   MooseEnum orders("CONSTANT FIRST SECOND THIRD FOURTH", "FIRST", true);
@@ -28,15 +28,15 @@ AddTransferLagrangeVecAction::AddTransferLagrangeVecAction(const InputParameters
 void
 AddTransferLagrangeVecAction::act()
 {
-  // Get the Lagrange vector order from the input.
+  // 1. Get the Lagrange vector order from the input.
   auto the_order = getParam<MooseEnum>("order");
 
-  // Construct the parameters for the Lagrange vector.
+  // 2. Construct the parameters for the Lagrange vector.
   auto vector_params = _factory.getValidParams("VectorMooseVariable");
   vector_params.set<MooseEnum>("family") = "LAGRANGE_VEC";
   vector_params.set<MooseEnum>("order") = the_order;
 
-  // Construct the parameters for the xyz components of the Lagrange vector.
+  // 3. Construct the parameters for the xyz components of the Lagrange vector.
   // NB: They should be of the same order.
   auto component_params = _factory.getValidParams("MooseVariable");
 
