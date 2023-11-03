@@ -145,7 +145,6 @@ MFEMProblem::addBoundaryCondition(const std::string & bc_name,
   FEProblemBase::addUserObject(bc_name, name, parameters);
   MFEMBoundaryCondition * mfem_bc(&getUserObject<MFEMBoundaryCondition>(name));
   mfem_problem_builder->AddBoundaryCondition(name, mfem_bc->getBC(), false);
-  mfem_bc->storeCoefficients(_coefficients);
 }
 
 void

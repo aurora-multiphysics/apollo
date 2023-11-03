@@ -18,7 +18,6 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) {}
 
 protected:
   std::vector<BoundaryName> _boundary_names;

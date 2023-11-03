@@ -23,8 +23,3 @@ MFEMScalarDirichletBC::getBC()
 {
   return &_boundary_condition;
 }
-
-void
-MFEMScalarDirichletBC::storeCoefficients(hephaestus::Coefficients & coefficients)
-{
-}

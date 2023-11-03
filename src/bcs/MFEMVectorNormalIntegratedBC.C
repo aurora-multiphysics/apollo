@@ -29,9 +29,4 @@ MFEMVectorNormalIntegratedBC::getBC()
   return &_boundary_condition;
 }
 
-void
-MFEMVectorNormalIntegratedBC::storeCoefficients(hephaestus::Coefficients & coefficients)
-{
-}
-
 MFEMVectorNormalIntegratedBC::~MFEMVectorNormalIntegratedBC() {}

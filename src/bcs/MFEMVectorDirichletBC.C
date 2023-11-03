@@ -27,9 +27,4 @@ MFEMVectorDirichletBC::getBC()
   return &_boundary_condition;
 }
 
-void
-MFEMVectorDirichletBC::storeCoefficients(hephaestus::Coefficients & coefficients)
-{
-}
-
 MFEMVectorDirichletBC::~MFEMVectorDirichletBC() {}

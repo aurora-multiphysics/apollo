@@ -13,7 +13,6 @@ public:
   virtual ~MFEMVectorDirichletBC();
 
   virtual hephaestus::BoundaryCondition * getBC() override;
-  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
