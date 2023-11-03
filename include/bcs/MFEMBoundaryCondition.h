@@ -6,8 +6,6 @@
 #include "coefficients.hpp"
 #include "Function.h"
 
-libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
-
 class MFEMBoundaryCondition : public GeneralUserObject
 {
 public:
