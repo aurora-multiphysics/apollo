@@ -50,11 +50,11 @@
 
 [BCs]
   [tangential_E_bdr]
-    type = MFEMComplexVectorFunctionDirichletBC
+    type = MFEMComplexVectorDirichletBC
     variable = electric_field
     boundary = '1'
-    real_function = tangential_E
-    imag_function = tangential_E
+    real_vector_coefficient = TangentialECoef
+    imag_vector_coefficient = TangentialECoef
   []
   [waveguide_port_in]
     type = MFEMRWTE10PortRBC
@@ -83,6 +83,13 @@
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
     block = 1
+  []
+[]
+
+[VectorCoefficients]
+  [TangentialECoef]
+    type = MFEMVectorFunctionCoefficient
+    function = tangential_E
   []
 []
 
