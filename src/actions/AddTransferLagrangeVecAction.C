@@ -48,6 +48,4 @@ AddTransferLagrangeVecAction::act()
   _problem->addAuxVariable("MooseVariable", name() + "_x", component_params);
   _problem->addAuxVariable("MooseVariable", name() + "_y", component_params);
   _problem->addAuxVariable("MooseVariable", name() + "_z", component_params);
-
-  std::cout << "Yes, I've added the AuxVariable..." << std::endl;
 }

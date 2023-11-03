@@ -13,16 +13,6 @@
   type = CustomFormulation
 []
 
-[TransferLagrangeVec]
-  [mfem_lagrange_vector_in]
-    order = FIRST
-  []
-
-  [mfem_lagrange_vector_out]
-    order = FIRST
-  []
-[]
-
 [AuxVariables]
   [mfem_diffused]
     family = LAGRANGE
@@ -30,44 +20,64 @@
   []
 []
 
-[AuxKernels]
-  [test_aux_kernel]
-    type = VectorVariableFromComponentsAux
-    variable = mfem_lagrange_vector_in
-    component_variables = 'mfem_lagrange_vector_in_x mfem_lagrange_vector_in_y mfem_lagrange_vector_in_z'
-  []
-
-  [set_x_out]
-    type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector_in
-    variable = mfem_lagrange_vector_out_x
-    component = 'x'
-  []
-
-  [set_y_out]
-    type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector_in
-    variable = mfem_lagrange_vector_out_y
-    component = 'y'
-  []
-
-  [set_z_out]
-    type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector_in
-    variable = mfem_lagrange_vector_out_z
-    component = 'z'
+[TransferLagrangeVec]
+  [mfem_lagrange_vector]
+    order = FIRST
   []
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = MFEMDiffusionKernel
     variable = mfem_diffused
     coefficient = one
   []
 []
 
+[ICs]
+  # 1. Setup the MFEM lagrange vector.
+  [do_something_with_lagrange_vector]
+    type = VectorFunctionIC
+    variable = mfem_lagrange_vector
+    function = update_lagrange_vector
+  []
+[]
+
+[AuxKernels]
+  # 2. Prepare for transfer back to master app. Need to update x y z hidden components.
+  [set_x_out]
+    type = VectorVariableComponentAux
+    vector_variable = mfem_lagrange_vector
+    variable = mfem_lagrange_vector_x
+    component = 'x'
+    execute_on = timestep_end
+  []
+
+  [set_y_out]
+    type = VectorVariableComponentAux
+    vector_variable = mfem_lagrange_vector
+    variable = mfem_lagrange_vector_y
+    component = 'y'
+    execute_on = timestep_end
+  []
+
+  [set_z_out]
+    type = VectorVariableComponentAux
+    vector_variable = mfem_lagrange_vector
+    variable = mfem_lagrange_vector_z
+    component = 'z'
+    execute_on = timestep_end
+  []
+[]
+
 [Functions]
+  [update_lagrange_vector]
+    type = ParsedVectorFunction
+    expression_x = '100 * x * x'
+    expression_y = '100 * y * y'
+    expression_z = '100 * z * z'
+  []
+
   [value_bottom]
     type = ParsedFunction
     expression = 1.0

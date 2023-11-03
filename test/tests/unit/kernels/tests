@@ -7,7 +7,7 @@
     requirement = 'Apollo shall have the ability to solve a diffusion problem set up from MOOSE and produce the same result as a native run.'
   []
 
-  [./VectorVariableFromComponentsAuxTest]
+  [./VectorVariableFromComponentsAux
     type = 'CSVDiff'
     input = 'vector_variable_from_components_aux_test.i'
     csvdiff = 'vector_variable_from_components_aux_test_out.csv'
