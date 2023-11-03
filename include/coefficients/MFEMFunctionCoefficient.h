@@ -14,7 +14,7 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual mfem::Coefficient * getCoefficient() override { return &_coefficient; };
+  virtual mfem::FunctionCoefficient * getCoefficient() override { return &_coefficient; };
 
 private:
   const Function & _func;

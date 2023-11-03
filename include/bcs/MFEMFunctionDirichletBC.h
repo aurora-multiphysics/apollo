@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MFEMBoundaryCondition.h"
+#include "MFEMFunctionCoefficient.h"
 #include "boundary_conditions.hpp"
 
 class MFEMFunctionDirichletBC : public MFEMBoundaryCondition
@@ -17,6 +18,6 @@ public:
   virtual void finalize() override {}
 
 protected:
-  const Function & _func;
-  mfem::FunctionCoefficient _function_coeff;
+  MFEMFunctionCoefficient * _function_coef;
+  hephaestus::FunctionDirichletBC _boundary_condition;
 };

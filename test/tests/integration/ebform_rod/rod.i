@@ -82,13 +82,13 @@
     type = MFEMFunctionDirichletBC
     variable = electric_potential
     boundary = '1'
-    function = potential_high
+    function_coef = HighPotential
   []
   [low_terminal]
     type = MFEMFunctionDirichletBC
     variable = electric_potential
     boundary = '2'
-    function = potential_low
+    function_coef = LowPotential
   []
 []
 
@@ -145,6 +145,14 @@
   [AirPermittivity]
     type = MFEMConstantCoefficient
     value = 0.0
+  []
+  [HighPotential]
+    type = MFEMFunctionCoefficient
+    function = potential_high
+  []
+  [LowPotential]
+    type = MFEMFunctionCoefficient
+    function = potential_low
   []
 []
 
