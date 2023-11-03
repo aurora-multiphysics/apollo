@@ -4,13 +4,13 @@
 #include "MFEMVectorFunctionCoefficient.h"
 #include "boundary_conditions.hpp"
 
-class MFEMVectorNormalIntegratedBC : public MFEMBoundaryCondition
+class MFEMVectorDirichletBC : public MFEMBoundaryCondition
 {
 public:
   static InputParameters validParams();
 
-  MFEMVectorNormalIntegratedBC(const InputParameters & parameters);
-  virtual ~MFEMVectorNormalIntegratedBC();
+  MFEMVectorDirichletBC(const InputParameters & parameters);
+  virtual ~MFEMVectorDirichletBC();
 
   virtual hephaestus::BoundaryCondition * getBC() override;
   virtual void execute() override {}
@@ -19,5 +19,5 @@ public:
 
 protected:
   MFEMVectorCoefficient * _vec_coef;
-  hephaestus::IntegratedBC _boundary_condition;
+  hephaestus::VectorDirichletBC _boundary_condition;
 };

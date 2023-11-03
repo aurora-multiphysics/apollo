@@ -1,5 +1,4 @@
 #include "MFEMThermalMaterial.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMThermalMaterial);
 
@@ -21,8 +20,8 @@ MFEMThermalMaterial::MFEMThermalMaterial(const InputParameters & parameters)
   : MFEMMaterial(parameters),
     // Get the parameters from the input file
     // Create mfem::Coefficients to represent materials
-    _heat_capacity_coeff(getUserObject<mfem::Coefficient>("thermal_conductivity_coeff")),
-    _thermal_conductivity_coeff(getUserObject<mfem::Coefficient>("heat_capacity_coeff"))
+    _heat_capacity_coeff(&getUserObject<MFEMCoefficient>("thermal_conductivity_coeff")),
+    _thermal_conductivity_coeff(&getUserObject<MFEMCoefficient>("heat_capacity_coeff"))
 {
 }
 
@@ -30,9 +29,13 @@ void
 MFEMThermalMaterial::storeCoefficients(hephaestus::Subdomain & subdomain)
 {
   subdomain.scalar_coefficients.Register(
-      "thermal_conductivity", const_cast<mfem::Coefficient *>(&_thermal_conductivity_coeff), true);
+      "thermal_conductivity",
+      const_cast<MFEMCoefficient *>(_thermal_conductivity_coeff)->getCoefficient(),
+      false);
   subdomain.scalar_coefficients.Register(
-      "heat_capacity", const_cast<mfem::Coefficient *>(&_heat_capacity_coeff), true);
+      "heat_capacity",
+      const_cast<MFEMCoefficient *>(_heat_capacity_coeff)->getCoefficient(),
+      false);
 }
 
 MFEMThermalMaterial::~MFEMThermalMaterial() {}

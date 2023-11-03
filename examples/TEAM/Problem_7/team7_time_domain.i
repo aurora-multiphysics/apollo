@@ -5,6 +5,7 @@
 
 [Problem]
   type = MFEMProblem
+  use_glvis = true
 []
 
 [Formulation]
@@ -13,6 +14,9 @@
   magnetic_reluctivity_name = magnetic_reluctivity
   magnetic_permeability_name = magnetic_permeability
   electric_conductivity_name = electrical_conductivity
+
+  magnetic_flux_density_name = magnetic_flux_density
+  current_density_name = current_density
 []
 
 [FESpaces]
@@ -51,7 +55,7 @@
 [Sources]
   [SourceCoil]
     type = MFEMDivFreeVolumetricSource
-    function = RacetrackCoilCurrentFunction
+    vector_coefficient = SourceCurrentCoef
     hcurl_fespace = HCurlFESpace
     h1_fespace = H1FESpace
     block = '3 4 5 6'
@@ -84,6 +88,13 @@
     electric_permittivity_coeff = PlatePermittivity
     magnetic_permeability_coeff = PlatePermeability
     block = 2
+  []
+[]
+
+[VectorCoefficients]
+  [SourceCurrentCoef]
+    type = MFEMVectorFunctionCoefficient
+    function = RacetrackCoilCurrentFunction
   []
 []
 

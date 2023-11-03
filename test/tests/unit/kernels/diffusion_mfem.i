@@ -6,7 +6,7 @@
 
 [Problem]
   type = MFEMProblem
-  use_glvis=true
+  use_glvis = true
 []
 
 [Formulation]
@@ -14,43 +14,51 @@
 []
 
 [AuxVariables]
-  [./mfem_diffused]
+  [mfem_diffused]
     family = LAGRANGE
     order = FIRST
-  [../]
+  []
 []
 
 [Functions]
-  [./value_bottom]
+  [value_bottom]
     type = ParsedFunction
     value = 1.0
-  [../]
-  [./value_top]
+  []
+  [value_top]
     type = ParsedFunction
     value = 0.0
-  [../]
+  []
 []
 
 [BCs]
-  [./bottom]
-    type = MFEMFunctionDirichletBC
+  [bottom]
+    type = MFEMScalarDirichletBC
     variable = mfem_diffused
     boundary = '1'
-    function = value_bottom
-  [../]
-  [./low_terminal]
-    type = MFEMFunctionDirichletBC
+    coefficient = BottomValue
+  []
+  [low_terminal]
+    type = MFEMScalarDirichletBC
     variable = mfem_diffused
     boundary = '2'
-    function = value_top
-  [../]
+    coefficient = TopValue
+  []
 []
 
 [Coefficients]
-  [./one]
+  [one]
     type = MFEMConstantCoefficient
     value = 1.0
-  [../]
+  []
+  [TopValue]
+    type = MFEMFunctionCoefficient
+    function = value_top
+  []
+  [BottomValue]
+    type = MFEMFunctionCoefficient
+    function = value_bottom
+  []
 []
 
 [Kernels]

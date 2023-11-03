@@ -4,8 +4,7 @@
 #include "boundary_conditions.hpp"
 #include "gridfunctions.hpp"
 #include "coefficients.hpp"
-
-libMesh::Point PointFromMFEMVector(const mfem::Vector & vec);
+#include "Function.h"
 
 class MFEMBoundaryCondition : public GeneralUserObject
 {
@@ -19,7 +18,6 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) {}
 
 protected:
   std::vector<BoundaryName> _boundary_names;

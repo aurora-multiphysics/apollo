@@ -1,13 +1,6 @@
 #include "MFEMBoundaryCondition.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMBoundaryCondition);
-
-libMesh::Point
-PointFromMFEMVector(const mfem::Vector & vec)
-{
-  return libMesh::Point(vec.Elem(0), vec.Elem(1), vec.Elem(2));
-}
 
 InputParameters
 MFEMBoundaryCondition::validParams()

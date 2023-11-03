@@ -1,5 +1,4 @@
 #include "MFEMBilinearFormKernel.h"
-#include "Function.h"
 
 registerMooseObject("ApolloApp", MFEMBilinearFormKernel);
 

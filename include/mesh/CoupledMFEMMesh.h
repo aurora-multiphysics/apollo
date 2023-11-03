@@ -10,6 +10,7 @@
 #pragma once
 #include "ExclusiveMFEMMesh.h"
 #include "CubitElementInfo.h"
+#include "libmesh/face_quad4.h"
 
 /**
  * CoupledMFEMMesh
