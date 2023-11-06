@@ -274,19 +274,23 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
                           const std::string & name,
                           InputParameters & parameters)
 {
-  // NB: - slightly crude test.
-  bool is_mfem_auxkernel = (strncmp(kernel_name.c_str(), "MFEM", 4) == 0);
+  std::string base_auxkernel = parameters.get<std::string>("_moose_base");
 
-  if (is_mfem_auxkernel)
+  if (base_auxkernel == "MFEMAuxKernel") // MFEM auxsolver.
   {
     FEProblemBase::addUserObject(kernel_name, name, parameters);
     MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
+
     mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
-  else
+  else if (base_auxkernel == "AuxKernel") // MOOSE auxkernel.
   {
     FEProblemBase::addAuxKernel(kernel_name, name, parameters);
+  }
+  else
+  {
+    mooseError("Unrecognized auxkernel base class '", base_auxkernel, "' detected.");
   }
 }
 
