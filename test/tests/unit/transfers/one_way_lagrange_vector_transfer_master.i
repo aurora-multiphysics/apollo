@@ -12,14 +12,31 @@
 []
 
 [AuxVariables]
+  # Lagrange vector on MOOSE side.
   [moose_lagrange_vector]
     family = LAGRANGE_VEC
     order = FIRST
   []
-[]
 
-[TransferLagrangeVec]
+  # Lagrange vector from MFEM side.
   [mfem_lagrange_vector]
+    family = LAGRANGE_VEC
+    order = FIRST
+  []
+
+  # MFEM Lagrange vector components.
+  [mfem_lagrange_vector_x]
+    family = LAGRANGE
+    order = FIRST
+  []
+
+  [mfem_lagrange_vector_y]
+    family = LAGRANGE
+    order = FIRST
+  []
+
+  [mfem_lagrange_vector_z]
+    family = LAGRANGE
     order = FIRST
   []
 []
@@ -41,7 +58,7 @@
 []
 
 [AuxKernels]
-  # 2. Rebuild received MFEM lagrange vector from hidden components after transfer finished.
+  # 2. Rebuild received MFEM lagrange vector from components after transfer finished.
   [rebuild_mfem_lagrange_vector]
     type = VectorVariableFromComponentsAux
     variable = mfem_lagrange_vector
@@ -76,7 +93,7 @@
 []
 
 [Postprocessors]
-  # Compare moose and mfem lagrange vectors.
+  # Compare MOOSE and MFEM lagrange vectors.
   [vector_l2_difference]
     type = ElementVectorL2Difference
     var = moose_lagrange_vector

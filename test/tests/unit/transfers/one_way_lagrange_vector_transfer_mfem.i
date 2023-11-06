@@ -18,10 +18,25 @@
     family = LAGRANGE
     order = FIRST
   []
-[]
 
-[TransferLagrangeVec]
   [mfem_lagrange_vector]
+    family = LAGRANGE_VEC
+    order = FIRST
+  []
+
+  # Components of MFEM Lagrange vector.
+  [mfem_lagrange_vector_x]
+    family = LAGRANGE
+    order = FIRST
+  []
+
+  [mfem_lagrange_vector_y]
+    family = LAGRANGE
+    order = FIRST
+  []
+
+  [mfem_lagrange_vector_z]
+    family = LAGRANGE
     order = FIRST
   []
 []
@@ -44,7 +59,7 @@
 []
 
 [AuxKernels]
-  # 2. Prepare for transfer back to master app. Need to update x y z hidden components.
+  # 2. Prepare for transfer back to master app. Need to update x y z components.
   [set_x_out]
     type = VectorVariableComponentAux
     vector_variable = mfem_lagrange_vector
