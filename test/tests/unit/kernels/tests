@@ -6,4 +6,11 @@
     csvdiff = 'diffusion_master_out.csv'
     requirement = 'Apollo shall have the ability to solve a diffusion problem set up from MOOSE and produce the same result as a native run.'
   []
+
+  [./VectorVariableFromComponentsAux]
+    type = 'CSVDiff'
+    input = 'vector_variable_from_components_aux_test.i'
+    csvdiff = 'vector_variable_from_components_aux_test_out.csv'
+    requirement = 'Apollo shall have the ability to build a vector variable from three standard variables.'
+  []
 []
