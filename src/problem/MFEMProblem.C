@@ -467,6 +467,10 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
     case FEFamily::MONOMIAL:
       mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
       break;
+    case FEFamily::MONOMIAL_VEC:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2"); // Create L2 only for now.
+      mfem_fespace_params.set<int>("vdim") = 3;
+      break;
     default:
       mooseError("Unable to set MFEM FESpace for MOOSE variable");
       break;
