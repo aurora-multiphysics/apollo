@@ -13,27 +13,27 @@
 
 [AuxVariables]
   [test_vector]
-    family = LAGRANGE_VEC
+    family = MONOMIAL_VEC
     order = FIRST
   []
 
   [target_vector]
-    family = LAGRANGE_VEC
+    family = MONOMIAL_VEC
     order = FIRST
   []
 
   [target_x]
-    family = LAGRANGE
+    family = MONOMIAL
     order = FIRST
   []
 
   [target_y]
-    family = LAGRANGE
+    family = MONOMIAL
     order = FIRST
   []
 
   [target_z]
-    family = LAGRANGE
+    family = MONOMIAL
     order = FIRST
   []
 []
@@ -48,7 +48,7 @@
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = Diffusion
     variable = moose_diffused
   []
