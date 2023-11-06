@@ -17,7 +17,7 @@
     order = FIRST
   []
 
-  [./secondary_lagrange_vector]
+  [secondary_lagrange_vector]
     family = LAGRANGE_VEC
     order = FIRST
   []
@@ -29,7 +29,7 @@
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = Diffusion
     variable = moose_diffused
   []
