@@ -16,8 +16,9 @@ public:
 protected:
   virtual Real computeQpIntegral() override;
 
-  const VectorVariableValue & _uvw;
+  const VectorVariableValue & _vector_variable;
+  const VectorVariableValue & _other_vector_variable;
 
-  /// The vector variable to compare to.
-  const VectorVariableValue & _other_uvw;
+private:
+  void checkVectorVariables() const;
 };
