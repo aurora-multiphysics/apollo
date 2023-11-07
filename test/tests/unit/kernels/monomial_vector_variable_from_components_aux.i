@@ -14,27 +14,27 @@
 [AuxVariables]
   [test_vector]
     family = MONOMIAL_VEC
-    order = FIRST
+    order = CONSTANT
   []
 
   [target_vector]
     family = MONOMIAL_VEC
-    order = FIRST
+    order = CONSTANT
   []
 
   [target_x]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
 
   [target_y]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
 
   [target_z]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
 []
 
@@ -42,7 +42,9 @@
   [set_test_vector_from_target_components]
     type = VectorVariableFromComponentsAux
     variable = test_vector
-    component_variables = 'target_x target_y target_z'
+    component_x = target_x
+    component_y = target_y
+    component_z = target_z
     execute_on = timestep_end
   []
 []
@@ -69,7 +71,7 @@
     type = ParsedFunction
     expression = '100*z'
   []
-
+  
   [function_target]
     type = ParsedVectorFunction
     expression_x = '100*x'
