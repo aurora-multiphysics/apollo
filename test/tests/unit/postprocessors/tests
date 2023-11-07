@@ -1,0 +1,9 @@
+[Tests]
+  design = 'syntax/Problem/index.md'
+  [./ElementVectorL2Difference]
+    type = 'CSVDiff'
+    input = 'element_vector_l2_difference_test.i'
+    csvdiff = 'element_vector_l2_difference_test_out.csv'
+    requirement = 'Apollo shall have the ability to compute the element-wise l2 difference between vector variables.'
+  []
+[]

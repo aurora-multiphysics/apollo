@@ -217,6 +217,7 @@ MFEMProblem::addFESpace(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFESpace & mfem_fespace(getUserObject<MFEMFESpace>(name));
+
   mfem_problem_builder->AddFESpace(name, mfem_fespace.fec_name, mfem_fespace.vdim);
 }
 
@@ -232,10 +233,13 @@ MFEMProblem::addAuxVariable(const std::string & var_type,
   else
   {
     ExternalProblem::addAuxVariable(var_type, var_name, parameters);
+
     InputParameters mfem_var_params(addMFEMFESpaceFromMOOSEVariable(parameters));
     FEProblemBase::addUserObject("MFEMVariable", var_name, mfem_var_params);
   }
+
   MFEMVariable & var(getUserObject<MFEMVariable>(var_name));
+
   mfem_problem_builder->AddGridFunction(var_name, var.fespace.name());
 }
 
@@ -259,6 +263,10 @@ MFEMProblem::addKernel(const std::string & kernel_name,
     mfem_problem_builder->AddKernel<mfem::ParBilinearForm>(parameters.get<std::string>("variable"),
                                                            blf_kernel->getKernel());
   }
+  else
+  {
+    mooseError("Unsupported kernel of type '", kernel_name, "' and name '", name, "' detected.");
+  }
 }
 
 void
@@ -266,10 +274,24 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
                           const std::string & name,
                           InputParameters & parameters)
 {
-  FEProblemBase::addUserObject(kernel_name, name, parameters);
-  MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
-  mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
-  mfem_auxsolver->storeCoefficients(_coefficients);
+  std::string base_auxkernel = parameters.get<std::string>("_moose_base");
+
+  if (base_auxkernel == "MFEMAuxKernel") // MFEM auxsolver.
+  {
+    FEProblemBase::addUserObject(kernel_name, name, parameters);
+    MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
+
+    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
+    mfem_auxsolver->storeCoefficients(_coefficients);
+  }
+  else if (base_auxkernel == "AuxKernel") // MOOSE auxkernel.
+  {
+    FEProblemBase::addAuxKernel(kernel_name, name, parameters);
+  }
+  else
+  {
+    mooseError("Unrecognized auxkernel base class '", base_auxkernel, "' detected.");
+  }
 }
 
 void
@@ -438,6 +460,10 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
     case FEFamily::LAGRANGE:
       mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
       break;
+    case FEFamily::LAGRANGE_VEC:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("H1");
+      mfem_fespace_params.set<int>("vdim") = 3;
+      break;
     case FEFamily::MONOMIAL:
       mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
       break;
@@ -452,8 +478,12 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
   std::string fespace_name(Utility::enum_to_string(var_family) + "_" + fec_name);
 
   if (!hasUserObject(fespace_name))
+  {
     addFESpace("MFEMFESpace", fespace_name, mfem_fespace_params);
+  }
+
   mfem_var_params.set<UserObjectName>("fespace") = fespace_name;
+
   return mfem_var_params;
 }
 
