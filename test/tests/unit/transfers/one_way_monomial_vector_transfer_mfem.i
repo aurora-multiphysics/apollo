@@ -15,29 +15,29 @@
 
 [AuxVariables]
   [mfem_diffused]
-    family = MONOMIAL
+    family = LAGRANGE
     order = FIRST
   []
 
   [mfem_monomial_vector]
     family = MONOMIAL_VEC
-    order = FIRST
+    order = CONSTANT
   []
 
   # Components of MFEM Monomial vector.
   [mfem_monomial_vector_x]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
 
   [mfem_monomial_vector_y]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
 
   [mfem_monomial_vector_z]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
 []
 
