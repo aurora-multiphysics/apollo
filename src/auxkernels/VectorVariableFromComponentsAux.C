@@ -6,53 +6,48 @@ InputParameters
 VectorVariableFromComponentsAux::validParams()
 {
   InputParameters params = VectorAuxKernel::validParams();
-  params.addCoupledVar("component_variables",
-                       "The variables that make up each component of the output vector variable.");
+
+  params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
+  params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
+  params.addRequiredCoupledVar("component_z", "The z-component of the vector variable.");
+
   params.addClassDescription("Combines three standard variables into a vector variable.");
 
   return params;
 }
 
 VectorVariableFromComponentsAux::VectorVariableFromComponentsAux(const InputParameters & parameters)
-  : VectorAuxKernel(parameters), _component_dofs(coupledAllDofValues("component_variables"))
+  : VectorAuxKernel(parameters),
+    _component_x(coupledValue("component_x")),
+    _component_y(coupledValue("component_y")),
+    _component_z(coupledValue("component_z"))
 {
-  // Check the number of component variables is equal to 3.
-  if (_component_dofs.size() != 3)
+  // Sanity check 1: the variable we are constructing from the components must be
+  // a lagrange vector or a monomial vector.
+  const auto the_vector_family = _var.feType().family;
+  const auto the_vector_order = _var.feType().order.get_order();
+
+  if (the_vector_family != LAGRANGE_VEC && the_vector_family != MONOMIAL_VEC)
   {
-    paramError("variable",
-               "component variables should have 3 components, but ",
-               _component_dofs.size(),
-               " component variables were specified.");
+    mooseError("Only Lagrange vectors and Monomial vectors are supported.");
   }
 
-  // Ensure that the variable is a lagrange vector. Later this can be extended
-  // to monomials.
-  const FEType & the_fetype = _var.feType();
-  if (the_fetype.family != LAGRANGE_VEC)
+  // Sanity check 2: if we have a monomial vector we only support constant order for now.
+  if (the_vector_family == MONOMIAL_VEC && the_vector_order != Order::CONSTANT)
   {
-    mooseError("'", _var.name(), "' should be a lagrange vector!");
+    mooseError("Monomial vectors are only supported to constant order.");
   }
 
-  // Check components. NB: later we can be smarter and check orders and FE types.
-  for (int icomponent = 0; icomponent < 3; icomponent++)
+  // Sanity check 3: Ensure that component variables are of the correct family and same
+  // order as the vector.
   {
-    const VariableValue * the_variable_component = _component_dofs[icomponent];
-    if (!the_variable_component)
-    {
-      mooseError("Component ", icomponent + 1, " is NULL!");
-    }
   }
 }
 
 void
 VectorVariableFromComponentsAux::compute()
 {
-  _local_sol.resize(3);
-
-  for (int icomponent = 0; icomponent < 3; icomponent++)
-  {
-    _local_sol(icomponent) = (*_component_dofs[icomponent])[0];
-  }
-
-  _var.setDofValues(_local_sol);
+  _variable->setDofValue(_component_x[0], 0);
+  _variable->setDofValue(_component_y[0], 1);
+  _variable->setDofValue(_component_z[0], 2);
 }

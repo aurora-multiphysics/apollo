@@ -62,7 +62,9 @@
   [rebuild_mfem_lagrange_vector]
     type = VectorVariableFromComponentsAux
     variable = mfem_lagrange_vector
-    component_variables = 'mfem_lagrange_vector_x mfem_lagrange_vector_y mfem_lagrange_vector_z'
+    component_x = mfem_lagrange_vector_x
+    component_y = mfem_lagrange_vector_y
+    component_z = mfem_lagrange_vector_z
     execute_on = timestep_end
   []
 []

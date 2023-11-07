@@ -42,7 +42,9 @@
   [set_test_vector_from_target_components]
     type = VectorVariableFromComponentsAux
     variable = test_vector
-    component_variables = 'target_x target_y target_z'
+    component_x = target_x
+    component_y = target_y
+    component_z = target_z
     execute_on = timestep_end
   []
 []

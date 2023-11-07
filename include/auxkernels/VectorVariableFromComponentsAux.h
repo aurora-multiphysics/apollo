@@ -18,5 +18,7 @@ protected:
   // NB: not used.
   virtual RealVectorValue computeValue() override final { mooseError("Unused"); }
 
-  const std::vector<const VariableValue *> _component_dofs;
+  const VariableValue & _component_x;
+  const VariableValue & _component_y;
+  const VariableValue & _component_z;
 };
