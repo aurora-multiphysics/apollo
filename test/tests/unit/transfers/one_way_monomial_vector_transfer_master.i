@@ -6,7 +6,7 @@
 
 [Variables]
   [moose_diffused]
-    family = monomial
+    family = LAGRANGE
     order = FIRST
   []
 []
@@ -14,30 +14,30 @@
 [AuxVariables]
   # Monomial vector on MOOSE side.
   [moose_monomial_vector]
-    family = monomial_VEC
-    order = FIRST
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
   # Monomial vector from MFEM side.
   [mfem_monomial_vector]
     family = MONOMIAL_VEC
-    order = FIRST
+    order = CONSTANT
   []
 
   # MFEM monomial vector components.
   [mfem_monomial_vector_x]
-    family = monomial
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 
   [mfem_monomial_vector_y]
-    family = monomial
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 
   [mfem_monomial_vector_z]
-    family = monomial
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 
@@ -62,7 +62,9 @@
   [rebuild_mfem_monomial_vector]
     type = VectorVariableFromComponentsAux
     variable = mfem_monomial_vector
-    component_variables = 'mfem_monomial_vector_x mfem_monomial_vector_y mfem_monomial_vector_z'
+    component_x = mfem_monomial_vector_x
+    component_y = mfem_monomial_vector_y
+    component_z = mfem_monomial_vector_z
     execute_on = timestep_end
   []
 []
@@ -96,8 +98,8 @@
   # Compare MOOSE and MFEM monomial vectors.
   [vector_l2_difference]
     type = ElementVectorL2Difference
-    var = moose_monomial_vector
-    other_var = mfem_monomial_vector
+    variable = moose_monomial_vector
+    other_variable = mfem_monomial_vector
   []
 []
 

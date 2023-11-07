@@ -58,10 +58,10 @@
     requirement = 'Apollo shall have the ability to transfer Lagrange vectors between MFEM and MOOSE.'
   []
 
-  #[./OneWayMonomialVectorTransfer]
-  #  type = 'CSVDiff'
-  #  input = 'one_way_monomial_vector_transfer_master.i'
-  #  csvdiff = 'one_way_monomial_vector_transfer_master_out.csv'
-  #  requirement = 'Apollo shall have the ability to transfer Monomial vectors between MFEM and MOOSE.'
-  #[]
+  [./OneWayMonomialVectorTransfer]
+    type = 'CSVDiff'
+    input = 'one_way_monomial_vector_transfer_master.i'
+    csvdiff = 'one_way_monomial_vector_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer Monomial vectors between MFEM and MOOSE.'
+  []
 []
