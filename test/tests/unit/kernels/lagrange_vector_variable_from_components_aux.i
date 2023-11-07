@@ -125,8 +125,8 @@
 [Postprocessors]
   [element_l2_difference]
     type = ElementVectorL2Difference
-    var = target_vector
-    other_var = test_vector
+    variable = target_vector
+    other_variable = test_vector
   []
 []
 

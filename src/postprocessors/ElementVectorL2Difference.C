@@ -7,17 +7,19 @@ ElementVectorL2Difference::validParams()
 {
   InputParameters params = ElementIntegralPostprocessor::validParams();
 
-  params.addRequiredCoupledVar("var", "The name of the vector variable");
-  params.addRequiredCoupledVar("other_var", "The name of the other vector variable to compare against");
+  params.addRequiredCoupledVar("variable", "The name of the vector variable");
+  params.addRequiredCoupledVar("other_variable",
+                               "The name of the other vector variable to compare against");
 
-  params.addClassDescription("Computes the element-wise L2 difference between two coupled vector fields.");
+  params.addClassDescription(
+      "Computes the element-wise L2 difference between two coupled vector fields.");
   return params;
 }
 
 ElementVectorL2Difference::ElementVectorL2Difference(const InputParameters & parameters)
   : ElementIntegralPostprocessor(parameters),
-    _uvw(coupledVectorValue("var")),
-    _other_uvw(coupledVectorValue("other_var"))
+    _uvw(coupledVectorValue("variable")),
+    _other_uvw(coupledVectorValue("other_variable"))
 {
 }
 
@@ -33,14 +35,13 @@ ElementVectorL2Difference::computeQpIntegral()
   RealVectorValue solution_value(0.0, 0.0, 0.0);
   RealVectorValue other_value(0.0, 0.0, 0.0);
 
-  for (int i = 0; i < 3; i++)
+  for (int icomponent = 0; icomponent < 3; icomponent++)
   {
-    solution_value(i) = _uvw[_qp](i);
-    other_value(i) = _other_uvw[_qp](i);
+    solution_value(icomponent) = _uvw[_qp](icomponent);
+    other_value(icomponent) = _other_uvw[_qp](icomponent);
   }
 
   RealVectorValue difference_vector = (solution_value - other_value);
 
-  return difference_vector.norm_sq();  // dot product of difference vector.
+  return difference_vector.norm_sq(); // dot product of difference vector.
 }
-
