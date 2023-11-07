@@ -97,14 +97,14 @@
 [Postprocessors]
   [primary_secondary_difference]
     type = ElementVectorL2Difference
-    var = primary_monomial_vector
-    other_var = secondary_monomial_vector
+    variable = primary_monomial_vector
+    other_variable = secondary_monomial_vector
   []
 
   [primary_tertiary_difference]
     type = ElementVectorL2Difference
-    var = primary_monomial_vector
-    other_var = tertiary_monomial_vector
+    variable = primary_monomial_vector
+    other_variable = tertiary_monomial_vector
   []
 []
 

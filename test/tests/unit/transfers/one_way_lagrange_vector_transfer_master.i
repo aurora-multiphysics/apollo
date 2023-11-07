@@ -98,8 +98,8 @@
   # Compare MOOSE and MFEM lagrange vectors.
   [vector_l2_difference]
     type = ElementVectorL2Difference
-    var = moose_lagrange_vector
-    other_var = mfem_lagrange_vector
+    variable = moose_lagrange_vector
+    other_variable = mfem_lagrange_vector
   []
 []
 

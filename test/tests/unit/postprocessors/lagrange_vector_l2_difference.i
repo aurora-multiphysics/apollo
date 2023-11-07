@@ -97,14 +97,14 @@
 [Postprocessors]
   [primary_secondary_difference]
     type = ElementVectorL2Difference
-    var = primary_lagrange_vector
-    other_var = secondary_lagrange_vector
+    variable = primary_lagrange_vector
+    other_variable = secondary_lagrange_vector
   []
 
   [primary_tertiary_difference]
     type = ElementVectorL2Difference
-    var = primary_lagrange_vector
-    other_var = tertiary_lagrange_vector
+    variable = primary_lagrange_vector
+    other_variable = tertiary_lagrange_vector
   []
 []
 
