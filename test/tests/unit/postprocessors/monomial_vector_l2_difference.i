@@ -14,17 +14,17 @@
 [AuxVariables]
   [primary_monomial_vector]
     family = MONOMIAL_VEC
-    order = FIRST
+    order = CONSTANT
   []
 
   [secondary_monomial_vector]
     family = MONOMIAL_VEC
-    order = FIRST
+    order = CONSTANT
   []
 
   [tertiary_monomial_vector]
     family = MONOMIAL_VEC
-    order = FIRST
+    order = CONSTANT
   []
 []
 
