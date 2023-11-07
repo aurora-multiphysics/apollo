@@ -21,4 +21,12 @@ protected:
   const VariableValue & _component_x;
   const VariableValue & _component_y;
   const VariableValue & _component_z;
+
+  const Order & _vector_order;
+  const FEFamily _vector_family;
+
+private:
+  void checkVectorVariable() const;
+  void checkVectorComponents() const;
+  void checkVectorComponent(const MooseVariable & component_variable) const;
 };
