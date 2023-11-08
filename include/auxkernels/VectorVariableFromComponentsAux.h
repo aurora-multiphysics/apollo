@@ -13,11 +13,11 @@ public:
   VectorVariableFromComponentsAux(const InputParameters & parameters);
 
 protected:
-  virtual void compute() override final;
+  virtual void compute() override;
 
-  const VariableValue & _component_x;
-  const VariableValue & _component_y;
-  const VariableValue & _component_z;
+  MooseVariable & _component_x;
+  MooseVariable & _component_y;
+  MooseVariable & _component_z;
 
   const Order & _vector_order;
   const FEFamily _vector_family;

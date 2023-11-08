@@ -5,11 +5,7 @@ registerMooseObject("MooseApp", VectorVariableComponentsAux);
 InputParameters
 VectorVariableComponentsAux::validParams()
 {
-  InputParameters params = ApolloVectorAuxKernel::validParams();
-
-  params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
-  params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
-  params.addRequiredCoupledVar("component_z", "The z-component of the vector variable.");
+  InputParameters params = VectorVariableFromComponentsAux::validParams();
 
   params.addClassDescription("Extract the components of a vector.");
 
@@ -17,10 +13,7 @@ VectorVariableComponentsAux::validParams()
 }
 
 VectorVariableComponentsAux::VectorVariableComponentsAux(const InputParameters & parameters)
-  : ApolloVectorAuxKernel(parameters),
-    _component_x(writableVariable("component_x")),
-    _component_y(writableVariable("component_y")),
-    _component_z(writableVariable("component_z"))
+  : VectorVariableFromComponentsAux(parameters)
 {
 }
 
