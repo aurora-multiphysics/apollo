@@ -60,27 +60,12 @@
 
 [AuxKernels]
   # 2. Prepare for transfer back to master app. Need to update x y z components.
-  [set_x_out]
-    type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector
-    variable = mfem_lagrange_vector_x
-    component = 'x'
-    execute_on = timestep_end
-  []
-
-  [set_y_out]
-    type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector
-    variable = mfem_lagrange_vector_y
-    component = 'y'
-    execute_on = timestep_end
-  []
-
-  [set_z_out]
-    type = VectorVariableComponentAux
-    vector_variable = mfem_lagrange_vector
-    variable = mfem_lagrange_vector_z
-    component = 'z'
+  [prepare_for_transfer_back]
+    type = VectorVariableComponentsAux
+    variable = mfem_lagrange_vector
+    component_x = mfem_lagrange_vector_x
+    component_y = mfem_lagrange_vector_y
+    component_z = mfem_lagrange_vector_z
     execute_on = timestep_end
   []
 []
