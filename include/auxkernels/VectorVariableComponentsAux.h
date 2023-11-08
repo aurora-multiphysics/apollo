@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ApolloVectorAuxKernel.h"
+#include "VectorVariableFromComponentsAux.h"
 
 /**
- * Construct a vector variable from 3 standard variables.
+ * Set 3 standard variables from a vector variable.
  */
-class VectorVariableComponentsAux : public ApolloVectorAuxKernel
+class VectorVariableComponentsAux : public VectorVariableFromComponentsAux
 {
 public:
   static InputParameters validParams();
@@ -13,12 +13,5 @@ public:
   VectorVariableComponentsAux(const InputParameters & parameters);
 
 protected:
-  virtual void compute() override final;
-
-  /**
-   * The component variables. These are set internally from the vector variable.
-   */
-  MooseVariable & _component_x;
-  MooseVariable & _component_y;
-  MooseVariable & _component_z;
+  virtual void compute() override;
 };

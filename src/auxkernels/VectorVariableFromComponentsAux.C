@@ -11,16 +11,16 @@ VectorVariableFromComponentsAux::validParams()
   params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
   params.addRequiredCoupledVar("component_z", "The z-component of the vector variable.");
 
-  params.addClassDescription("Combines three standard variables into a vector variable.");
+  params.addClassDescription("Combine three standard variables into a vector variable.");
 
   return params;
 }
 
 VectorVariableFromComponentsAux::VectorVariableFromComponentsAux(const InputParameters & parameters)
   : ApolloVectorAuxKernel(parameters),
-    _component_x(coupledValue("component_x")),
-    _component_y(coupledValue("component_y")),
-    _component_z(coupledValue("component_z")),
+    _component_x(writableVariable("component_x")),
+    _component_y(writableVariable("component_y")),
+    _component_z(writableVariable("component_z")),
     _vector_order(_var.order()),
     _vector_family(_var.feType().family)
 {
@@ -31,9 +31,9 @@ VectorVariableFromComponentsAux::VectorVariableFromComponentsAux(const InputPara
 void
 VectorVariableFromComponentsAux::compute()
 {
-  _variable->setDofValue(_component_x[0], 0);
-  _variable->setDofValue(_component_y[0], 1);
-  _variable->setDofValue(_component_z[0], 2);
+  _variable->setDofValue(_component_x.dofValues()[0], 0);
+  _variable->setDofValue(_component_y.dofValues()[0], 1);
+  _variable->setDofValue(_component_z.dofValues()[0], 2);
 }
 
 void
@@ -53,22 +53,9 @@ VectorVariableFromComponentsAux::checkVectorVariable() const
 void
 VectorVariableFromComponentsAux::checkVectorComponents() const
 {
-  auto & component_variables = getCoupledStandardMooseVars();
-
-  if (component_variables.size() != 3)
-  {
-    mooseError("There are ", component_variables.size(), " component variables. Expected 3.");
-  }
-
-  for (auto component_variable : component_variables)
-  {
-    if (!component_variable)
-    {
-      mooseError("The component variable was NULL.");
-    }
-
-    checkVectorComponent(*component_variable);
-  }
+  checkVectorComponent(_component_x);
+  checkVectorComponent(_component_y);
+  checkVectorComponent(_component_z);
 }
 
 void
