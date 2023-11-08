@@ -1,9 +1,9 @@
-#include "VectorVariableComponentsAuxV2.h"
+#include "VectorVariableComponentsAux.h"
 
-registerMooseObject("MooseApp", VectorVariableComponentsAuxV2);
+registerMooseObject("MooseApp", VectorVariableComponentsAux);
 
 InputParameters
-VectorVariableComponentsAuxV2::validParams()
+VectorVariableComponentsAux::validParams()
 {
   InputParameters params = VectorAuxKernel::validParams();
 
@@ -16,7 +16,7 @@ VectorVariableComponentsAuxV2::validParams()
   return params;
 }
 
-VectorVariableComponentsAuxV2::VectorVariableComponentsAuxV2(const InputParameters & parameters)
+VectorVariableComponentsAux::VectorVariableComponentsAux(const InputParameters & parameters)
   : VectorAuxKernel(parameters),
     _component_x(writableVariable("component_x")),
     _component_y(writableVariable("component_y")),
@@ -25,7 +25,7 @@ VectorVariableComponentsAuxV2::VectorVariableComponentsAuxV2(const InputParamete
 }
 
 void
-VectorVariableComponentsAuxV2::compute()
+VectorVariableComponentsAux::compute()
 {
   Real value_x = _variable->dofValues()[0];
   Real value_y = _variable->dofValues()[1];
@@ -37,7 +37,7 @@ VectorVariableComponentsAuxV2::compute()
 }
 
 MooseVariable &
-VectorVariableComponentsAuxV2::writableVariable(const std::string & var_name, unsigned int comp)
+VectorVariableComponentsAux::writableVariable(const std::string & var_name, unsigned int comp)
 {
   auto * var = dynamic_cast<MooseVariable *>(getVar(var_name, comp));
 
