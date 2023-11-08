@@ -95,7 +95,7 @@
 
   # 3. Set x y z test components in one step using custom AuxKernel.
   [set_components_from_target_vector]
-    type = VectorVariableComponentsAuxV2
+    type = VectorVariableComponentsAux
     variable = target_vector
     component_x = test_x
     component_y = test_y

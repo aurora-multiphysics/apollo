@@ -5,12 +5,12 @@
 /**
  * Construct a vector variable from 3 standard variables.
  */
-class VectorVariableComponentsAuxV2 : public VectorAuxKernel
+class VectorVariableComponentsAux : public VectorAuxKernel
 {
 public:
   static InputParameters validParams();
 
-  VectorVariableComponentsAuxV2(const InputParameters & parameters);
+  VectorVariableComponentsAux(const InputParameters & parameters);
 
 protected:
   virtual void compute() override final;
