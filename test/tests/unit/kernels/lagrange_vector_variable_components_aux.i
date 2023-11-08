@@ -46,20 +46,14 @@
     family = LAGRANGE
     order = FIRST
   []
-
-  # Unfortunately, a dummy variable is required for the custom AuxKernel to work.
-  [dummy]
-    family = LAGRANGE
-    order = FIRST
-  []
 []
 
 [Functions]
   [function_target]
     type = ParsedVectorFunction
-    expression_x = '100'
-    expression_y = '200'
-    expression_z = '300'
+    expression_x = '100*x'
+    expression_y = '100*y'
+    expression_z = '100*z'
   []
 []
 
@@ -101,9 +95,8 @@
 
   # 3. Set x y z test components in one step using custom AuxKernel.
   [set_components_from_target_vector]
-    type = VectorVariableComponentsAux
-    variable = dummy
-    vector_variable = target_vector
+    type = VectorVariableComponentsAuxV2
+    variable = target_vector
     component_x = test_x
     component_y = test_y
     component_z = test_z
