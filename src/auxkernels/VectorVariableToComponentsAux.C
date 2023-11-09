@@ -1,9 +1,9 @@
-#include "VectorVariableComponentsAux.h"
+#include "VectorVariableToComponentsAux.h"
 
-registerMooseObject("MooseApp", VectorVariableComponentsAux);
+registerMooseObject("MooseApp", VectorVariableToComponentsAux);
 
 InputParameters
-VectorVariableComponentsAux::validParams()
+VectorVariableToComponentsAux::validParams()
 {
   InputParameters params = VectorVariableFromComponentsAux::validParams();
 
@@ -12,13 +12,13 @@ VectorVariableComponentsAux::validParams()
   return params;
 }
 
-VectorVariableComponentsAux::VectorVariableComponentsAux(const InputParameters & parameters)
+VectorVariableToComponentsAux::VectorVariableToComponentsAux(const InputParameters & parameters)
   : VectorVariableFromComponentsAux(parameters)
 {
 }
 
 void
-VectorVariableComponentsAux::compute()
+VectorVariableToComponentsAux::compute()
 {
   Real value_x = _variable->dofValues()[0];
   Real value_y = _variable->dofValues()[1];
