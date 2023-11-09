@@ -3,8 +3,10 @@
 #include "AuxKernel.h"
 
 /**
- * This class is required to circumvent an issue with the VectorAuxKernel class.
- * The issue was that it was not possible to call the "writableVariable" method.
+ * Apollo wrapper around VectorAuxKernel.
+ *
+ * Enables subclasses to call "writableVariable". This is not possible for VectorAuxKernel derived
+ * classes due to a MOOSE limitation.
  */
 class ApolloVectorAuxKernel : public VectorAuxKernel
 {
@@ -17,11 +19,6 @@ protected:
   // NB: not used.
   virtual RealVectorValue computeValue() override { mooseError("Unused"); }
 
-  /**
-   * Returns a *writable* MooseVariable object for a nodal or elemental variable. Use
-   * var.setNodalValue(val[, idx]) in both cases (!) to set the solution DOF values. See
-   * identically-named method in "Coupleable.h". The reason for this version is that
-   * the latter method refuses to work with VectorAuxKernels.
-   */
+  // NB: see "writableVariable" method defined in "Coupleable.h".
   MooseVariable & writableVariable(const std::string & var_name, unsigned int comp = 0);
 };
