@@ -21,17 +21,17 @@
     requirement = 'Apollo shall have the ability to build a Monomial vector variable from three standard Monomial variables.'
   []
 
-  [./LagrangeVectorVariableComponentsAux]
+  [./LagrangeVectorVariableToComponentsAux]
     type = 'CSVDiff'
-    input = 'lagrange_vector_variable_components_aux.i'
-    csvdiff = 'lagrange_vector_variable_components_aux_out.csv'
+    input = 'lagrange_vector_variable_to_components_aux.i'
+    csvdiff = 'lagrange_vector_variable_to_components_aux_out.csv'
     requirement = 'Apollo shall have the ability to extract the components from a Lagrange vector variable.'
   []
 
-  [./MonomialVectorVariableComponentsAux]
+  [./MonomialVectorVariableToComponentsAux]
     type = 'CSVDiff'
-    input = 'monomial_vector_variable_components_aux.i'
-    csvdiff = 'monomial_vector_variable_components_aux_out.csv'
-    requirement = 'Apollo shall have the ability to extract the components from a Monomial vector variable.'
+    input = 'monomial_vector_variable_to_components_aux.i'
+    csvdiff = 'monomial_vector_variable_to_components_aux_out.csv'
+    requirement = 'Apollo shall have the ability to extract the components from a constant-order Monomial vector variable.'
   []
 []
