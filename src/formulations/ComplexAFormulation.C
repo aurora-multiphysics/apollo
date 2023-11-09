@@ -26,6 +26,28 @@ ComplexAFormulation::validParams()
   params.addParam<std::string>("magnetic_reluctivity_name",
                                "Name of MFEM coefficient to be created to represent magnetic "
                                "reluctivity (reciprocal of permeability)");
+  params.addParam<std::string>(
+      "current_density_re_name",
+      "Name of H(Div) conforming MFEM gridfunction to store real component of current density");
+  params.addParam<std::string>("current_density_im_name",
+                               "Name of H(Div) conforming MFEM gridfunction to store imaginary "
+                               "component of current density");
+  params.addParam<std::string>("magnetic_flux_density_re_name",
+                               "Name of H(Div) conforming MFEM gridfunction to store real "
+                               "component of magnetic flux density");
+  params.addParam<std::string>("magnetic_flux_density_im_name",
+                               "Name of H(Div) conforming MFEM gridfunction to store imaginary "
+                               "component of magnetic flux density");
+  params.addParam<std::string>("electric_field_re_name",
+                               "Name of H(Curl) conforming MFEM gridfunction to store real "
+                               "component of electric field");
+  params.addParam<std::string>("electric_field_im_name",
+                               "Name of H(Curl) conforming MFEM gridfunction to store imaginary "
+                               "component of electric field");
+  params.addParam<std::string>(
+      "joule_heating_density_name",
+      "Name of L2 conforming MFEM gridfunction to store time averaged Joule heating density");
+
   return params;
 }
 
@@ -43,8 +65,26 @@ ComplexAFormulation::ComplexAFormulation(const InputParameters & parameters)
                 electric_conductivity_name,
                 dielectric_permittivity_name,
                 frequency_name,
-                magnetic_vector_potential_name)
+                magnetic_vector_potential_name,
+                magnetic_vector_potential_re_name,
+                magnetic_vector_potential_im_name)
 {
+  if (isParamValid("current_density_re_name") && isParamValid("current_density_im_name"))
+    formulation.registerCurrentDensityAux(getParam<std::string>("current_density_re_name"),
+                                          getParam<std::string>("current_density_im_name"));
+  if (isParamValid("magnetic_flux_density_re_name") &&
+      isParamValid("magnetic_flux_density_im_name"))
+    formulation.registerMagneticFluxDensityAux(
+        getParam<std::string>("magnetic_flux_density_re_name"),
+        getParam<std::string>("magnetic_flux_density_im_name"));
+  if (isParamValid("electric_field_re_name") && isParamValid("electric_field_im_name"))
+    formulation.registerElectricFieldAux(getParam<std::string>("electric_field_re_name"),
+                                         getParam<std::string>("electric_field_im_name"));
+  if (isParamValid("joule_heating_density_name"))
+    formulation.registerJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+                                               getParam<std::string>("electric_field_re_name"),
+                                               getParam<std::string>("electric_field_im_name"),
+                                               electric_conductivity_name);
 }
 
 ComplexAFormulation::~ComplexAFormulation() {}
