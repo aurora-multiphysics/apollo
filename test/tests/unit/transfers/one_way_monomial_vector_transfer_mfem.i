@@ -61,7 +61,7 @@
 [AuxKernels]
   # 2. Prepare for transfer back to master app. Need to update x y z components.
   [prepare_for_transfer_back]
-    type = VectorVariableComponentsAux
+    type = VectorVariableToComponentsAux
     variable = mfem_monomial_vector
     component_x = mfem_monomial_vector_x
     component_y = mfem_monomial_vector_y
