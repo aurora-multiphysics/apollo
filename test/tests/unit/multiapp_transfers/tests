@@ -27,4 +27,11 @@
     csvdiff = 'two_way_monomial_vector_multiapp_vector_copy_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer constant order Monomial vectors to/from a subapp for identical meshes.'
   []
+
+  [./TwoWayTwinVectorsMultiAppTransfer]
+    type = 'CSVDiff'
+    input = 'two_way_twin_vectors_multiapp_vector_copy_transfer_master.i'
+    csvdiff = 'two_way_twin_vectors_multiapp_vector_copy_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer multiple vectors to/from a subapp for identical meshes.'
+  []
 []
