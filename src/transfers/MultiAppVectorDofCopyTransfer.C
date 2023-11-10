@@ -57,36 +57,6 @@ MultiAppVectorDofCopyTransfer::transfer(FEProblemBase & to_problem, FEProblemBas
     checkVariable(from_problem, from_variable);
   }
 
-  // Initial version: only allow a single variable name. This restriction can be easily lifted.
-  if (getFromVarNames().size() != 1)
-  {
-    mooseError("Only a single vector variable is permitted.");
-  }
-
-  // Check variable types match. For this initial version, we are only going to support LagrangeVec
-  // and MonomialVec vector variables.
-  const VariableName from_variable_name = getFromVarNames().front();
-  const AuxVariableName to_variable_name = getToVarNames().front();
-
-  // NB: for this initial version, only allow vector variables.
-  MooseVariableFEBase & from_variable = from_problem.getVariable(
-      0, from_variable_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_VECTOR);
-
-  MooseVariableFEBase & to_variable = to_problem.getVariable(
-      0, to_variable_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_VECTOR);
-
-  // Check FE types match (same order and family).
-  if (from_variable.feType() != to_variable.feType())
-  {
-    mooseError("The vector variables must be of the same order and family.");
-  }
-
-  // Check it is either a LagrangeVec or MonomialVec.
-  if (!isSupportedVectorVariable(from_variable) || !isSupportedVectorVariable(to_variable))
-  {
-    mooseError("Only LagrangeVec and constant order MonomialVec vectors are supported.");
-  }
-
   // Get meshes.
   MeshBase & from_mesh = from_problem.mesh().getMesh();
   MeshBase & to_mesh = to_problem.mesh().getMesh();
@@ -96,31 +66,59 @@ MultiAppVectorDofCopyTransfer::transfer(FEProblemBase & to_problem, FEProblemBas
     mooseError("The meshes must be identical.");
   }
 
-  // Get solutions.
-  auto & from_solution = from_variable.sys().solution();
-  auto & to_solution = to_variable.sys().solution();
-  
-  // Transfer node dofs.
-  for (auto * to_node : as_range(to_mesh.local_nodes_begin(), to_mesh.local_nodes_end()))
+  // Iterate over variable pairs.
+  for (int ivariable = 0; ivariable < getToVarNames().size(); ivariable++)
   {
-    auto * from_node = from_mesh.node_ptr(to_node->id());
+    // Check variable types match. For this initial version, we are only going to support
+    // LagrangeVec and MonomialVec vector variables.
+    const VariableName from_variable_name = getFromVarNames()[ivariable];
+    const AuxVariableName to_variable_name = getToVarNames()[ivariable];
 
-    transferVectorDofs(
-        *to_node, *from_node, to_variable, from_variable, to_solution, from_solution);
+    // NB: for this initial version, only allow vector variables.
+    MooseVariableFEBase & from_variable = from_problem.getVariable(
+        0, from_variable_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_VECTOR);
+
+    MooseVariableFEBase & to_variable = to_problem.getVariable(
+        0, to_variable_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_VECTOR);
+
+    // Check FE types match (same order and family).
+    if (from_variable.feType() != to_variable.feType())
+    {
+      mooseError("The vector variables must be of the same order and family.");
+    }
+
+    // Check it is either a LagrangeVec or MonomialVec.
+    if (!isSupportedVectorVariable(from_variable) || !isSupportedVectorVariable(to_variable))
+    {
+      mooseError("Only LagrangeVec and constant order MonomialVec vectors are supported.");
+    }
+
+    // Get solutions.
+    auto & from_solution = from_variable.sys().solution();
+    auto & to_solution = to_variable.sys().solution();
+
+    // Transfer node dofs.
+    for (auto * to_node : as_range(to_mesh.local_nodes_begin(), to_mesh.local_nodes_end()))
+    {
+      auto * from_node = from_mesh.node_ptr(to_node->id());
+
+      transferVectorDofs(
+          *to_node, *from_node, to_variable, from_variable, to_solution, from_solution);
+    }
+
+    // Transfer element dofs.
+    for (auto * to_element : as_range(to_mesh.local_elements_begin(), to_mesh.elements_end()))
+    {
+      auto * from_element = from_mesh.elem_ptr(to_element->id());
+
+      transferVectorDofs(
+          *to_element, *from_element, to_variable, from_variable, to_solution, from_solution);
+    }
+
+    // Update.
+    to_solution.close();
+    to_variable.sys().update();
   }
-
-  // Transfer element dofs.
-  for (auto * to_element : as_range(to_mesh.local_elements_begin(), to_mesh.elements_end()))
-  {
-    auto * from_element = from_mesh.elem_ptr(to_element->id());
-
-    transferVectorDofs(
-        *to_element, *from_element, to_variable, from_variable, to_solution, from_solution);
-  }
-
-  // Update.
-  to_solution.close();
-  to_variable.sys().update();
 }
 
 void
@@ -155,7 +153,7 @@ MultiAppVectorDofCopyTransfer::transferVectorDofs(libMesh::DofObject & to_object
 
   // Iterate over dofs at the node.
   for (int icomponent = 0; icomponent < num_to_var_dofs; icomponent++)
-  {    
+  {
     dof_id_type to_dof = to_object.dof_number(to_var.sys().number(), to_var.number(), icomponent);
     dof_id_type from_dof =
         from_object.dof_number(from_var.sys().number(), from_var.number(), icomponent);
