@@ -171,5 +171,5 @@ MultiAppVectorDofCopyTransfer::isSupportedVectorVariable(MooseVariableFEBase & v
   const auto family = variable.feType().family;
   const auto order = variable.order();
 
-  return (family == LAGRANGE_VEC || (family == LAGRANGE_VEC && order == CONSTANT));
+  return (family == LAGRANGE_VEC || (family == MONOMIAL_VEC && order == CONSTANT));
 }
