@@ -65,8 +65,8 @@ MultiAppVectorDofCopyTransfer::transfer(FEProblemBase & to_problem, FEProblemBas
 
   // Check variable types match. For this initial version, we are only going to support LagrangeVec
   // and MonomialVec vector variables.
-  const auto & from_variable_name = getFromVarNames().front();
-  const auto & to_variable_name = getToVarNames().front();
+  const VariableName from_variable_name = getFromVarNames().front();
+  const AuxVariableName to_variable_name = getToVarNames().front();
 
   // NB: for this initial version, only allow vector variables.
   MooseVariableFEBase & from_variable = from_problem.getVariable(
@@ -99,7 +99,7 @@ MultiAppVectorDofCopyTransfer::transfer(FEProblemBase & to_problem, FEProblemBas
   // Get solutions.
   auto & from_solution = from_variable.sys().solution();
   auto & to_solution = to_variable.sys().solution();
-
+  
   // Transfer node dofs.
   for (auto * to_node : as_range(to_mesh.local_nodes_begin(), to_mesh.local_nodes_end()))
   {
@@ -126,8 +126,8 @@ MultiAppVectorDofCopyTransfer::transfer(FEProblemBase & to_problem, FEProblemBas
 void
 MultiAppVectorDofCopyTransfer::transferVectorDofs(libMesh::DofObject & to_object,
                                                   libMesh::DofObject & from_object,
-                                                  MooseVariableFEBase & to_var,
-                                                  MooseVariableFEBase & from_var,
+                                                  MooseVariableFieldBase & to_var,
+                                                  MooseVariableFieldBase & from_var,
                                                   NumericVector<Number> & to_solution,
                                                   NumericVector<Number> & from_solution)
 {
@@ -155,7 +155,7 @@ MultiAppVectorDofCopyTransfer::transferVectorDofs(libMesh::DofObject & to_object
 
   // Iterate over dofs at the node.
   for (int icomponent = 0; icomponent < num_to_var_dofs; icomponent++)
-  {
+  {    
     dof_id_type to_dof = to_object.dof_number(to_var.sys().number(), to_var.number(), icomponent);
     dof_id_type from_dof =
         from_object.dof_number(from_var.sys().number(), from_var.number(), icomponent);
