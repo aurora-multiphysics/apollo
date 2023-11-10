@@ -141,7 +141,7 @@ MultiAppVectorDofCopyTransfer::transferVectorDofs(libMesh::DofObject & to_object
 
   // Find the number of dofs at the node for the from and to variables.
   const auto num_to_var_dofs = to_object.n_dofs(to_var.sys().number(), to_var.number());
-  const auto num_from_var_dofs = to_object.n_dofs(from_var.sys().number(), from_var.number());
+  const auto num_from_var_dofs = from_object.n_dofs(from_var.sys().number(), from_var.number());
 
   if (num_to_var_dofs != num_from_var_dofs)
   {
