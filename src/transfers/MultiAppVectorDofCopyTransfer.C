@@ -8,7 +8,7 @@
 #include "libmesh/dof_object.h"
 #include "libmesh/id_types.h"
 
-registerMooseObject("MooseApp", MultiAppVectorDofCopyTransfer);
+// NB: - do not include "registerMooseObject". This class should not be used in the input file.
 
 InputParameters
 MultiAppVectorDofCopyTransfer::validParams()
