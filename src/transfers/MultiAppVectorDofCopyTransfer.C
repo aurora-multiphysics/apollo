@@ -112,7 +112,7 @@ MultiAppVectorDofCopyTransfer::transfer(FEProblemBase & to_problem, FEProblemBas
   // Transfer element dofs.
   for (auto * to_element : as_range(to_mesh.local_elements_begin(), to_mesh.elements_end()))
   {
-    auto * from_element = from_mesh.node_ptr(to_element->id());
+    auto * from_element = from_mesh.elem_ptr(to_element->id());
 
     transferVectorDofs(
         *to_element, *from_element, to_variable, from_variable, to_solution, from_solution);
