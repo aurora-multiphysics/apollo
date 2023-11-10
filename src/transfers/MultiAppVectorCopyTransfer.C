@@ -65,6 +65,6 @@ MultiAppVectorCopyTransfer::execute()
   }
   else
   {
-    mooseError("The direction is not supported.");
+    mooseError("The direction is not currently implemented.");
   }
 }

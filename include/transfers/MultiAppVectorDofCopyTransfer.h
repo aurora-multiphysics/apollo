@@ -33,13 +33,13 @@ protected:
    */
   void transferVectorDofs(libMesh::DofObject & to_object,
                           libMesh::DofObject & from_object,
-                          MooseVariableFEBase & to_var,
-                          MooseVariableFEBase & from_var,
+                          MooseVariableFieldBase & to_var,
+                          MooseVariableFieldBase & from_var,
                           NumericVector<Number> & to_solutin,
                           NumericVector<Number> & from_solution);
 
   /**
    * Checks vector variable is of correct family and order.
    */
-  bool isSupportedVectorVariable(MooseVariableFEBase & variable) const;
+  bool isSupportedVectorVariable(MooseVariableFieldBase & variable) const;
 };
