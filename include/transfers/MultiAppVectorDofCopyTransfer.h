@@ -41,5 +41,5 @@ protected:
   /**
    * Checks vector variable is of correct family and order.
    */
-  bool isSupportedVectorVariable(MooseVariableFieldBase & variable) const;
+  bool isSupportedVectorVariable(MooseVariableFEBase & variable) const;
 };
