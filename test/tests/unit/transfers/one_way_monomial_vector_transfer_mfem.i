@@ -128,10 +128,3 @@
   l_tol = 1e-16
   l_max_its = 1000
 []
-
-[Outputs]
-  [VisItDataCollection]
-    type = MFEMVisItDataCollection
-    file_base = OutputData/Diffusion
-  []
-[]
