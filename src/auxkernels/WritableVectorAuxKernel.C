@@ -1,9 +1,9 @@
-#include "ApolloVectorAuxKernel.h"
+#include "WritableVectorAuxKernel.h"
 
-registerMooseObject("MooseApp", ApolloVectorAuxKernel);
+registerMooseObject("MooseApp", WritableVectorAuxKernel);
 
 MooseVariable &
-ApolloVectorAuxKernel::writableVariable(const std::string & var_name, unsigned int comp)
+WritableVectorAuxKernel::writableVariable(const std::string & var_name, unsigned int comp)
 {
   auto * var = dynamic_cast<MooseVariable *>(getVar(var_name, comp));
 

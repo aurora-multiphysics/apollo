@@ -5,7 +5,7 @@ registerMooseObject("MooseApp", VectorVariableFromComponentsAux);
 InputParameters
 VectorVariableFromComponentsAux::validParams()
 {
-  InputParameters params = ApolloVectorAuxKernel::validParams();
+  InputParameters params = WritableVectorAuxKernel::validParams();
 
   params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
   params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
@@ -17,7 +17,7 @@ VectorVariableFromComponentsAux::validParams()
 }
 
 VectorVariableFromComponentsAux::VectorVariableFromComponentsAux(const InputParameters & parameters)
-  : ApolloVectorAuxKernel(parameters),
+  : WritableVectorAuxKernel(parameters),
     _component_x(writableVariable("component_x")),
     _component_y(writableVariable("component_y")),
     _component_z(writableVariable("component_z")),
