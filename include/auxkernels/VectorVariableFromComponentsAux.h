@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ApolloVectorAuxKernel.h"
+#include "WritableVectorAuxKernel.h"
 
 /**
  * Construct a vector variable from 3 standard variables.
  */
-class VectorVariableFromComponentsAux : public ApolloVectorAuxKernel
+class VectorVariableFromComponentsAux : public WritableVectorAuxKernel
 {
 public:
   static InputParameters validParams();

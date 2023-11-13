@@ -8,12 +8,12 @@
  * Enables subclasses to call "writableVariable". This is not possible for VectorAuxKernel derived
  * classes due to a MOOSE limitation.
  */
-class ApolloVectorAuxKernel : public VectorAuxKernel
+class WritableVectorAuxKernel : public VectorAuxKernel
 {
 public:
   static InputParameters validParams() { return VectorAuxKernel::validParams(); }
 
-  ApolloVectorAuxKernel(const InputParameters & parameters) : VectorAuxKernel(parameters) {}
+  WritableVectorAuxKernel(const InputParameters & parameters) : VectorAuxKernel(parameters) {}
 
 protected:
   // NB: not used.
