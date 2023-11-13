@@ -35,28 +35,42 @@ MFEMProblem::~MFEMProblem()
 }
 
 void
+MFEMProblem::outputStep(ExecFlagType type)
+{
+  // Needed to ensure outputs from successive runs when using MultiApps are stored in
+  // directories with iterated names
+  if (type == EXEC_INITIAL)
+  {
+    std::vector<OutputName> mfem_data_collections =
+        _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
+    for (const auto & name : mfem_data_collections)
+    {
+      auto dc = _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name);
+      int filenum(dc->getFileNumber());
+      std::string filename("/Run" + std::to_string(filenum));
+
+      mfem_problem->outputs.Register(name, dc->createDataCollection(filename), true);
+      mfem_problem->outputs.SetGridFunctions(mfem_problem->gridfunctions);
+      mfem_problem->outputs.Reset();
+      dc->setFileNumber(filenum + 1);
+    }
+  }
+  FEProblemBase::outputStep(type);
+}
+
+void
 MFEMProblem::initialSetup()
 {
   FEProblemBase::initialSetup();
-
-  std::vector<OutputName> mfem_data_collections =
-      _app.getOutputWarehouse().getOutputNames<MFEMDataCollection>();
-  for (const auto & name : mfem_data_collections)
-  {
-    _outputs.data_collections[name] =
-        _app.getOutputWarehouse().getOutput<MFEMDataCollection>(name)->_data_collection;
-  }
-
   EquationSystems & es = FEProblemBase::es();
   _solver_options.SetParam("Tolerance", float(es.parameters.get<Real>("linear solver tolerance")));
   _solver_options.SetParam("MaxIter",
                            es.parameters.get<unsigned int>("linear solver maximum iterations"));
   _solver_options.SetParam("PrintLevel", -1);
 
-  std::cout << "Launching MFEM solve\n\n" << std::endl;
+  std::cout << "Building MFEM problem\n\n" << std::endl;
   _coefficients.AddGlobalCoefficientsFromSubdomains();
   mfem_problem_builder->SetCoefficients(_coefficients);
-  mfem_problem_builder->SetOutputs(_outputs);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
   mfem_problem_builder->RegisterFESpaces();
@@ -101,7 +115,6 @@ MFEMProblem::initialSetup()
   {
     mooseError("Executioner used that is not currently supported by MFEMProblem");
   }
-  executioner->Init();
 }
 
 void
@@ -119,7 +132,6 @@ MFEMProblem::externalSolve()
   {
     transient_mfem_exec->t_step = dt();
   }
-
   executioner->Solve();
 }
 
@@ -129,7 +141,6 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
                             InputParameters & parameters)
 {
   mfem::ParMesh & mfem_par_mesh = mesh().getMFEMParMesh();
-
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
   mfem_problem_builder = mfem_formulation->getProblemBuilder();

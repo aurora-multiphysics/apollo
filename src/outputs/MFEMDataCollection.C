@@ -12,5 +12,4 @@ MFEMDataCollection::validParams()
 
 MFEMDataCollection::MFEMDataCollection(const InputParameters & parameters) : FileOutput(parameters)
 {
-  _data_collection = new mfem::DataCollection(_file_base.c_str());
 }

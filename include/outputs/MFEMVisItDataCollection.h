@@ -11,9 +11,10 @@ public:
   static InputParameters validParams();
 
   MFEMVisItDataCollection(const InputParameters & parameters);
+  virtual mfem::VisItDataCollection *
+  createDataCollection(const std::string & collection_name) override;
 
 protected:
-  mfem::VisItDataCollection _visit_dc;
   bool _high_order_output;
   unsigned int _refinements;
 };

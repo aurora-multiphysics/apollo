@@ -1,0 +1,9 @@
+[Tests]
+  design = 'syntax/Problem/index.md'
+  [MFEMDiffusion]
+    type = 'CSVDiff'
+    input = 'output_master.i'
+    csvdiff = 'output_master_out.csv'
+    requirement = 'Apollo shall have the ability to create DataCollections saved to enumerated folders when called in a FullSolveMultiApps.'
+  []
+[]

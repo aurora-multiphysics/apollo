@@ -38,8 +38,8 @@ public:
 
   virtual void init() override;
   virtual void initialSetup() override;
-
   virtual void externalSolve() override;
+  virtual void outputStep(ExecFlagType type) override;
 
   virtual bool converged() override { return true; };
 
@@ -106,7 +106,7 @@ public:
    */
   void addAuxVariable(const std::string & var_type,
                       const std::string & var_name,
-                      InputParameters & parameters);
+                      InputParameters & parameters) override;
 
   /**
    * Override of ExternalProblem::addKernel. Uses ExternalProblem::addKernel to create a
@@ -115,7 +115,7 @@ public:
    */
   void addKernel(const std::string & kernel_name,
                  const std::string & name,
-                 InputParameters & parameters);
+                 InputParameters & parameters) override;
   /**
    * Override of ExternalProblem::addAuxKernel. Uses ExternalProblem::addAuxKernel to create a
    * GeneralUserObject representing the auxkernel in MOOSE, and creates corresponding MFEM auxsolver
@@ -123,7 +123,7 @@ public:
    */
   void addAuxKernel(const std::string & kernel_name,
                     const std::string & name,
-                    InputParameters & parameters);
+                    InputParameters & parameters) override;
   /**
    * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve
    * data from one of the variable types (either Moose AuxVar or MFEM grid function), and

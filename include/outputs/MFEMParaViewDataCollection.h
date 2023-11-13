@@ -11,9 +11,10 @@ public:
   static InputParameters validParams();
 
   MFEMParaViewDataCollection(const InputParameters & parameters);
+  virtual mfem::ParaViewDataCollection *
+  createDataCollection(const std::string & collection_name) override;
 
 protected:
-  mfem::ParaViewDataCollection _pv_dc;
   bool _high_order_output;
   unsigned int _refinements;
 };
