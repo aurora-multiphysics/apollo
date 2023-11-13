@@ -4,10 +4,8 @@
 #include "MooseVariableFEBase.h"
 
 /**
- * Copy the fields directly from one application to another.
- *
- * Similar to "MultiAppDofCopyTransfer" but for vectors. This class
- * should not be called directly.
+ * Similar to "MultiAppCopyTransfer" but inherits from MultiAppVectorDofCopyTransfer. This enables
+ * vector transfer between a master app and a subapp.
  */
 class MultiAppVectorCopyTransfer : public MultiAppVectorDofCopyTransfer
 {

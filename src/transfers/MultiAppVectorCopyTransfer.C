@@ -10,10 +10,10 @@ MultiAppVectorCopyTransfer::validParams()
   InputParameters params = MultiAppVectorDofCopyTransfer::validParams();
 
   params.addRequiredParam<std::vector<AuxVariableName>>(
-      "variable", "The auxiliary variable to store the transferred value in.");
+      "variable", "The auxiliary vector variables to store the transferred values in.");
 
   params.addRequiredParam<std::vector<VariableName>>("source_variable",
-                                                     "The variable to transfer from.");
+                                                     "The vector variables to transfer from.");
 
   params.addClassDescription(
       "Copies vector variables between multiapps that have identical meshes.");
@@ -65,6 +65,6 @@ MultiAppVectorCopyTransfer::execute()
   }
   else
   {
-    mooseError("The direction is not currently implemented.");
+    mooseError("The transfer direction has not been implemented.");
   }
 }

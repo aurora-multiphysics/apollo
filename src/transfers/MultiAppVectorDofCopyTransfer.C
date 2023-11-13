@@ -158,7 +158,7 @@ MultiAppVectorDofCopyTransfer::transferVectorDofs(libMesh::DofObject & to_object
     dof_id_type from_dof =
         from_object.dof_number(from_var.sys().number(), from_var.number(), icomponent);
 
-    Real from_value = from_solution(from_dof); // TODO: - think about this.
+    Real from_value = from_solution(from_dof);
     to_solution.set(to_dof, from_value);
   }
 }
