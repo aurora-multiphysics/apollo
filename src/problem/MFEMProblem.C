@@ -23,7 +23,6 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
-  std::cout << "Problem initialised\n\n" << std::endl;
 }
 
 MFEMProblem::~MFEMProblem()
@@ -50,7 +49,6 @@ MFEMProblem::outputStep(ExecFlagType type)
       std::string filename("/Run" + std::to_string(filenum));
 
       mfem_problem->outputs.Register(name, dc->createDataCollection(filename), true);
-      mfem_problem->outputs.SetGridFunctions(mfem_problem->gridfunctions);
       mfem_problem->outputs.Reset();
       dc->setFileNumber(filenum + 1);
     }
@@ -68,7 +66,6 @@ MFEMProblem::initialSetup()
                            es.parameters.get<unsigned int>("linear solver maximum iterations"));
   _solver_options.SetParam("PrintLevel", -1);
 
-  std::cout << "Building MFEM problem\n\n" << std::endl;
   _coefficients.AddGlobalCoefficientsFromSubdomains();
   mfem_problem_builder->SetCoefficients(_coefficients);
   mfem_problem_builder->SetSolverOptions(_solver_options);
@@ -80,6 +77,7 @@ MFEMProblem::initialSetup()
 
   mfem_problem_builder->InitializeAuxSolvers();
   mfem_problem_builder->InitializeKernels();
+  mfem_problem_builder->InitializeOutputs();
   mfem_problem_builder->ConstructOperator();
   mfem_problem_builder->ConstructState();
   mfem_problem_builder->ConstructSolver();
@@ -96,7 +94,6 @@ MFEMProblem::initialSetup()
     exec_params.SetParam("TimeStep", float(dt()));
     exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
     exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
-    exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::TimeDomainProblem *>(mfem_problem.get()));
     executioner = new hephaestus::TransientExecutioner(exec_params);
@@ -105,8 +102,6 @@ MFEMProblem::initialSetup()
   {
     mfem_problem = dynamic_cast<hephaestus::SteadyStateProblemBuilder *>(mfem_problem_builder)
                        ->ReturnProblem();
-
-    exec_params.SetParam("UseGLVis", getParam<bool>("use_glvis"));
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::SteadyStateProblem *>(mfem_problem.get()));
     executioner = new hephaestus::SteadyExecutioner(exec_params);
@@ -115,6 +110,7 @@ MFEMProblem::initialSetup()
   {
     mooseError("Executioner used that is not currently supported by MFEMProblem");
   }
+  mfem_problem->outputs.EnableGLVis(getParam<bool>("use_glvis"));
 }
 
 void
@@ -544,13 +540,9 @@ MFEMProblem::syncSolutions(Direction direction)
 ExclusiveMFEMMesh &
 MFEMProblem::mesh()
 {
-  if (ExternalProblem::mesh().type() != "ExclusiveMFEMMesh" &&
-      ExternalProblem::mesh().type() != "CoupledMFEMMesh")
-  {
-    std::cout << "Please choose a valid mesh type for an MFEMProblem\n(Either CoupledMFEMMesh or "
-                 "ExclusiveMFEMMesh)"
-              << std::endl;
-    ExternalProblem::mesh().mooseError();
-  }
+  mooseAssert(ExternalProblem::mesh().type() == "ExclusiveMFEMMesh" ||
+                  ExternalProblem::mesh().type() == "CoupledMFEMMesh",
+              "Please choose a valid mesh type for an MFEMProblem\n(Either CoupledMFEMMesh or "
+              "ExclusiveMFEMMesh)");
   return (ExclusiveMFEMMesh &)_mesh;
 }
