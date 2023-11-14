@@ -13,28 +13,28 @@
 
 [AuxVariables]
   [test_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
   [target_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
   [target_x]
-    family = LAGRANGE
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 
   [target_y]
-    family = LAGRANGE
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 
   [target_z]
-    family = LAGRANGE
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 
@@ -42,13 +42,15 @@
   [set_test_vector_from_target_components]
     type = VectorVariableFromComponentsAux
     variable = test_vector
-    component_variables = 'target_x target_y target_z'
+    component_x = target_x
+    component_y = target_y
+    component_z = target_z
     execute_on = timestep_end
   []
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = Diffusion
     variable = moose_diffused
   []
@@ -69,7 +71,7 @@
     type = ParsedFunction
     expression = '100*z'
   []
-
+  
   [function_target]
     type = ParsedVectorFunction
     expression_x = '100*x'
@@ -123,8 +125,8 @@
 [Postprocessors]
   [element_l2_difference]
     type = ElementVectorL2Difference
-    var = target_vector
-    other_var = test_vector
+    variable = target_vector
+    other_variable = test_vector
   []
 []
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "AuxKernel.h"
+#include "WritableVectorAuxKernel.h"
 
 /**
  * Construct a vector variable from 3 standard variables.
  */
-class VectorVariableFromComponentsAux : public VectorAuxKernel
+class VectorVariableFromComponentsAux : public WritableVectorAuxKernel
 {
 public:
   static InputParameters validParams();
@@ -13,10 +13,17 @@ public:
   VectorVariableFromComponentsAux(const InputParameters & parameters);
 
 protected:
-  virtual void compute() override final;
+  virtual void compute() override;
 
-  // NB: not used.
-  virtual RealVectorValue computeValue() override final { mooseError("Unused"); }
+  MooseVariable & _component_x;
+  MooseVariable & _component_y;
+  MooseVariable & _component_z;
 
-  const std::vector<const VariableValue *> _component_dofs;
+  const Order & _vector_order;
+  const FEFamily _vector_family;
+
+private:
+  void checkVectorVariable() const;
+  void checkVectorComponents() const;
+  void checkVectorComponent(const MooseVariable & component_variable) const;
 };

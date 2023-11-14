@@ -12,24 +12,24 @@
 []
 
 [AuxVariables]
-  [primary_lagrange_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+  [primary_monomial_vector]
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
-  [./secondary_lagrange_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+  [secondary_monomial_vector]
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
-  [tertiary_lagrange_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+  [tertiary_monomial_vector]
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 []
 
 [Kernels]
-  [diff]
+  [diffusion]
     type = Diffusion
     variable = moose_diffused
   []
@@ -61,19 +61,19 @@
 [ICs]
   [primary_ic]
     type = VectorFunctionIC
-    variable = primary_lagrange_vector
+    variable = primary_monomial_vector
     function = primary_function
   []
 
   [secondary_ic]
     type = VectorFunctionIC
-    variable = secondary_lagrange_vector
+    variable = secondary_monomial_vector
     function = secondary_function  
   []
 
   [tertiary_ic]
     type = VectorFunctionIC
-    variable = tertiary_lagrange_vector
+    variable = tertiary_monomial_vector
     function = tertiary_function  
   []
 []
@@ -97,14 +97,14 @@
 [Postprocessors]
   [primary_secondary_difference]
     type = ElementVectorL2Difference
-    var = primary_lagrange_vector
-    other_var = secondary_lagrange_vector
+    variable = primary_monomial_vector
+    other_variable = secondary_monomial_vector
   []
 
   [primary_tertiary_difference]
     type = ElementVectorL2Difference
-    var = primary_lagrange_vector
-    other_var = tertiary_lagrange_vector
+    variable = primary_monomial_vector
+    other_variable = tertiary_monomial_vector
   []
 []
 

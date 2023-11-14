@@ -19,25 +19,25 @@
     order = FIRST
   []
 
-  [mfem_lagrange_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+  [mfem_monomial_vector]
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
-  # Components of MFEM Lagrange vector.
-  [mfem_lagrange_vector_x]
-    family = LAGRANGE
-    order = FIRST
+  # Components of MFEM Monomial vector.
+  [mfem_monomial_vector_x]
+    family = MONOMIAL
+    order = CONSTANT
   []
 
-  [mfem_lagrange_vector_y]
-    family = LAGRANGE
-    order = FIRST
+  [mfem_monomial_vector_y]
+    family = MONOMIAL
+    order = CONSTANT
   []
 
-  [mfem_lagrange_vector_z]
-    family = LAGRANGE
-    order = FIRST
+  [mfem_monomial_vector_z]
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 
@@ -50,11 +50,11 @@
 []
 
 [ICs]
-  # 1. Setup the MFEM lagrange vector.
-  [do_something_with_lagrange_vector]
+  # 1. Setup the MFEM monomial vector.
+  [do_something_with_monomial_vector]
     type = VectorFunctionIC
-    variable = mfem_lagrange_vector
-    function = update_lagrange_vector
+    variable = mfem_monomial_vector
+    function = update_monomial_vector
   []
 []
 
@@ -62,16 +62,16 @@
   # 2. Prepare for transfer back to master app. Need to update x y z components.
   [prepare_for_transfer_back]
     type = VectorVariableToComponentsAux
-    variable = mfem_lagrange_vector
-    component_x = mfem_lagrange_vector_x
-    component_y = mfem_lagrange_vector_y
-    component_z = mfem_lagrange_vector_z
+    variable = mfem_monomial_vector
+    component_x = mfem_monomial_vector_x
+    component_y = mfem_monomial_vector_y
+    component_z = mfem_monomial_vector_z
     execute_on = timestep_end
   []
 []
 
 [Functions]
-  [update_lagrange_vector]
+  [update_monomial_vector]
     type = ParsedVectorFunction
     expression_x = '100 * x * x'
     expression_y = '100 * y * y'

@@ -291,7 +291,8 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
     mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
-  else if (base_auxkernel == "AuxKernel") // MOOSE auxkernel.
+  else if (base_auxkernel == "AuxKernel" || base_auxkernel == "VectorAuxKernel" ||
+           base_auxkernel == "ArrayAuxKernel") // MOOSE auxkernels.
   {
     FEProblemBase::addAuxKernel(kernel_name, name, parameters);
   }
@@ -473,6 +474,11 @@ MFEMProblem::addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params)
       break;
     case FEFamily::MONOMIAL:
       mfem_fespace_params.set<MooseEnum>("fespace_type") = std::string("L2");
+      break;
+    case FEFamily::MONOMIAL_VEC:
+      mfem_fespace_params.set<MooseEnum>("fespace_type") =
+          std::string("L2"); // Create L2 only for now.
+      mfem_fespace_params.set<int>("vdim") = 3;
       break;
     default:
       mooseError("Unable to set MFEM FESpace for MOOSE variable");
