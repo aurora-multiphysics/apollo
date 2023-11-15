@@ -16,10 +16,15 @@ MFEMVisItDataCollection::validParams()
 }
 
 MFEMVisItDataCollection::MFEMVisItDataCollection(const InputParameters & parameters)
-  : MFEMDataCollection(parameters),
-    _visit_dc(_file_base.c_str()),
-    _refinements(getParam<unsigned int>("refinements"))
+  : MFEMDataCollection(parameters), _refinements(getParam<unsigned int>("refinements"))
 {
-  _visit_dc.SetLevelsOfDetail(_refinements + 1);
-  _data_collection = &_visit_dc;
+}
+
+mfem::VisItDataCollection *
+MFEMVisItDataCollection::createDataCollection(const std::string & collection_name)
+{
+  mfem::VisItDataCollection * visit_dc(
+      new mfem::VisItDataCollection(_file_base.c_str() + collection_name));
+  visit_dc->SetLevelsOfDetail(_refinements + 1);
+  return visit_dc;
 }

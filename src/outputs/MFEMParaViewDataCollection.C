@@ -23,11 +23,17 @@ MFEMParaViewDataCollection::validParams()
 
 MFEMParaViewDataCollection::MFEMParaViewDataCollection(const InputParameters & parameters)
   : MFEMDataCollection(parameters),
-    _pv_dc(_file_base.c_str()),
     _high_order_output(getParam<bool>("high_order_output")),
     _refinements(getParam<unsigned int>("refinements"))
 {
-  _pv_dc.SetHighOrderOutput(_high_order_output);
-  _pv_dc.SetLevelsOfDetail(_refinements + 1);
-  _data_collection = &_pv_dc;
+}
+
+mfem::ParaViewDataCollection *
+MFEMParaViewDataCollection::createDataCollection(const std::string & collection_name)
+{
+  mfem::ParaViewDataCollection * pv_dc(
+      new mfem::ParaViewDataCollection(_file_base.c_str() + collection_name));
+  pv_dc->SetHighOrderOutput(_high_order_output);
+  pv_dc->SetLevelsOfDetail(_refinements + 1);
+  return pv_dc;
 }

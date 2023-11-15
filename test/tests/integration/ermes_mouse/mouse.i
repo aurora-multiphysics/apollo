@@ -18,6 +18,12 @@
   magnetic_permeability_name = magnetic_permeability
   electric_conductivity_name = electrical_conductivity
   dielectric_permittivity_name = dielectric_permittivity
+
+  current_density_re_name = current_density_re
+  current_density_im_name = current_density_im
+  magnetic_flux_density_re_name = magnetic_flux_density_re
+  magnetic_flux_density_im_name = magnetic_flux_density_im
+  joule_heating_density_name = joule_heating_density
 []
 
 [FESpaces]
@@ -25,6 +31,16 @@
     type = MFEMFESpace
     fespace_type = ND
     order = FIRST
+  []
+  [HDivFESpace]
+    type = MFEMFESpace
+    fespace_type = RT
+    order = CONSTANT
+  []
+  [L2FESpace]
+    type = MFEMFESpace
+    fespace_type = L2
+    order = CONSTANT
   []
 []
 
@@ -36,6 +52,26 @@
   [electric_field_im]
     type = MFEMVariable
     fespace = HCurlFESpace
+  []
+  [current_density_re]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [current_density_im]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [magnetic_flux_density_re]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [magnetic_flux_density_im]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [joule_heating_density]
+    type = MFEMVariable
+    fespace = L2FESpace
   []
 []
 
