@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/simple-cube-hex27.e
+  file = gold/mug.e
   dim = 3
 []
 
@@ -16,22 +16,48 @@
 [AuxVariables]
   [mfem_diffused]
     family = LAGRANGE
-    order = SECOND
+    order = FIRST
   []
-  [test_variable_on_mfem_side]
-    family = LAGRANGE
-    order = SECOND
+
+  [mfem_monomial_vector]
+    family = MONOMIAL_VEC
+    order = CONSTANT
+  []
+[]
+
+[Kernels]
+  [diffusion]
+    type = MFEMDiffusionKernel
+    variable = mfem_diffused
+    coefficient = one
+  []
+[]
+
+[ICs]
+  # 1. Setup the MFEM monomial vector.
+  [do_something_with_monomial_vector]
+    type = VectorFunctionIC
+    variable = mfem_monomial_vector
+    function = update_monomial_vector
   []
 []
 
 [Functions]
+  [update_monomial_vector]
+    type = ParsedVectorFunction
+    expression_x = '100 * x * x'
+    expression_y = '100 * y * y'
+    expression_z = '100 * z * z'
+  []
+
   [value_bottom]
     type = ParsedFunction
-    value = 1.0
+    expression = 1.0
   []
+
   [value_top]
     type = ParsedFunction
-    value = 0.0
+    expression = 0.0
   []
 []
 
@@ -62,14 +88,6 @@
   [BottomValue]
     type = MFEMFunctionCoefficient
     function = value_bottom
-  []
-[]
-
-[Kernels]
-  [diffusion]
-    type = MFEMDiffusionKernel
-    variable = mfem_diffused
-    coefficient = one
   []
 []
 
