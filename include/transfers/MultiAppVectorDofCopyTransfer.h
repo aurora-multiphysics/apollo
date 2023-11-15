@@ -35,7 +35,7 @@ protected:
                           libMesh::DofObject & from_object,
                           MooseVariableFieldBase & to_var,
                           MooseVariableFieldBase & from_var,
-                          NumericVector<Number> & to_solutin,
+                          NumericVector<Number> & to_solution,
                           NumericVector<Number> & from_solution);
 
   /**
