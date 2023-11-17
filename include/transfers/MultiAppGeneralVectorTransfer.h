@@ -14,6 +14,9 @@
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate;
 
+class VectorVariableFromComponentsAux;
+class VectorVariableToComponentsAux;
+
 /**
  * Create all transfer types using template here. Don't forget to register them in .C file.
  */
@@ -61,6 +64,10 @@ protected:
    */
   FEProblemBase & getFromProblem() const;
   FEProblemBase & getToProblem() const;
+
+  template <class VectorAuxKernelClassType>
+  VectorAuxKernelClassType & getVectorAuxKernel(FEProblemBase & problem,
+                                                const std::string & name) const;
 
   /**
    * TODO: - Edward: Add documentation here please.
@@ -160,6 +167,11 @@ protected:
 private:
   std::vector<VariableName> _from_var_names_converted;
   std::vector<AuxVariableName> _to_var_names_converted;
+
+  // Build vectors containing pointers to all pre/post transfer auxkernels. These will need to be
+  // called within the execute() block of this transfer template.
+  // std::vector<VectorVariableToComponentsAux *> _pre_transfer_vector_auxkernels;
+  // std::vector<VectorVariableFromComponentsAux *> _post_transfer_vector_auxkernels;
 
   bool _has_converted_variables;
   Factory & _factory;
