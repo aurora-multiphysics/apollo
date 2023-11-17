@@ -3,6 +3,9 @@
 #include "SystemBase.h"
 #include "VectorVariableFromComponentsAux.h"
 #include "VectorVariableToComponentsAux.h"
+#include "Moose.h"
+#include "AuxiliarySystem.h"
+#include "ExecuteMooseObjectWarehouse.h"
 
 /**
  * Register all Moose objects that we would like here.
@@ -39,42 +42,22 @@ template <typename MultiAppTransferClassType>
 void
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
 {
-  // Do stuff before we execute.
-  std::cout << "Stuff to do before we execute..." << std::endl;
+  // Run through the pre-transfer vector aux-kernels and call the compute() methods. This will
+  // ensure that vector components are updated pre-transfer.
+  // for (auto * vector_aux_kernel_ptr : _pre_transfer_vector_auxkernels)
+  // {
+  //   vector_aux_kernel_ptr->compute();
+  // }
 
-  // TODO: - copy values to any new scalar variables from their equivalent vector variables.
-
-  std::cout << "The specifed from variables:" << std::endl;
-  for (std::string variable_name : MultiAppTransferClassType::getFromVarNames())
-  {
-    std::cout << variable_name << std::endl;
-  }
-
-  std::cout << "The specifed to variables:" << std::endl;
-  for (std::string variable_name : MultiAppTransferClassType::getToVarNames())
-  {
-    std::cout << variable_name << std::endl;
-  }
-
-  std::cout << "Stuff to do before we execute NEW" << std::endl;
-  for (std::string variable_name : getFromVarNames())
-  {
-    std::cout << variable_name << std::endl;
-  }
-
-  std::cout << "Stuff to do after we execute NEW" << std::endl;
-  for (std::string variable_name : getToVarNames())
-  {
-    std::cout << variable_name << std::endl;
-  }
-
-  // Call execute method on the class we're wrapping around.
+  // Call execute on inherited class which will work on standard variables.
   MultiAppTransferClassType::execute();
 
-  // TODO: - copy values from any scalar variables to their equivalent vector variables.
-
-  // Do stuff after we've finished executing.
-  std::cout << "Stuff to do after we execute ..." << std::endl;
+  // Run through the post-transfer vector aux-kernels and call the compute() methods. This will
+  // rebuild the vectors from their components.
+  // for (auto * vector_aux_kernel_ptr : _post_transfer_vector_auxkernels)
+  // {
+  //   vector_aux_kernel_ptr->compute();
+  // }
 }
 
 template <typename MultiAppTransferClassType>
@@ -248,6 +231,40 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getToProblem() const
 }
 
 template <typename MultiAppTransferClassType>
+template <class VectorAuxKernelClassType>
+VectorAuxKernelClassType &
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getVectorAuxKernel(
+    FEProblemBase & problem, const std::string & name) const
+{
+  auto & auxiliary_system = problem.getAuxiliarySystem();
+
+  // The auxiliary system will store the VectorAuxKernel derived auxkernels in the
+  // nodal_vec_aux_storage or the _elemental_vec_aux_storage.
+  auto & nodal_vector_aux_warehouse = auxiliary_system.nodalVectorAuxWarehouse();
+
+  // auto & elemental_vector_aux_warehouse = auxiliary_system.getElementalVectorAuxWarehouse();
+
+  // Attempt to locate.
+  auto object_shared_ptr = nodal_vector_aux_warehouse.getObject(name);
+  if (!object_shared_ptr)
+  {
+    mooseError("Failed to find VectorAuxKernel derived object with name '", name, "'.");
+  }
+
+  // Now attempt to cast.
+  VectorAuxKernelClassType * aux_kernel =
+      dynamic_cast<VectorAuxKernelClassType *>(object_shared_ptr.get());
+  if (aux_kernel)
+  {
+    return *aux_kernel; // Reference.
+  }
+  else
+  {
+    mooseError("Failed to cast from VectorAuxKernel to derived class.");
+  }
+}
+
+template <typename MultiAppTransferClassType>
 void
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorAuxKernel(
     FEProblemBase & problem, std::string & vector_name, VectorAuxKernelType type)
@@ -288,11 +305,11 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorAuxKernel(
    */
   if (isPushTransfer())
   {
-    params.set<ExecFlagEnum>("execute_on") = EXEC_MULTIAPP_FIXED_POINT_BEGIN;
+    params.set<ExecFlagEnum>("execute_on") = "timestep_begin MULTIAPP_FIXED_POINT_BEGIN";
   }
-  else if (isPullTransfer())
+  else if (isPullTransfer()) // MARK - works!
   {
-    params.set<ExecFlagEnum>("execute_on") = EXEC_MULTIAPP_FIXED_POINT_END;
+    params.set<ExecFlagEnum>("execute_on") = "timestep_end";
   }
   else
   {
@@ -300,6 +317,23 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorAuxKernel(
   }
 
   problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
+
+  // Locate auxkernel we've just added and add a pointer to the appropriate array. This will be
+  // used to call the execute method.
+  // if (type == VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER)
+  // {
+  //   auto & vector_aux_kernel =
+  //       getVectorAuxKernel<VectorVariableFromComponentsAux>(problem, unique_aux_kernel_name);
+
+  //   _post_transfer_vector_auxkernels.push_back(&vector_aux_kernel);
+  // }
+  // else
+  // {
+  //   auto & vector_aux_kernel =
+  //       getVectorAuxKernel<VectorVariableToComponentsAux>(problem, unique_aux_kernel_name);
+
+  //   _pre_transfer_vector_auxkernels.push_back(&vector_aux_kernel);
+  // }
 }
 
 template <typename MultiAppTransferClassType>
