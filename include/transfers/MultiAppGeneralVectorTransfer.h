@@ -17,9 +17,9 @@ class MultiAppVectorTransferTemplate;
 /**
  * Create all transfer types using template here. Don't forget to register them in .C file.
  */
-typedef MultiAppVectorTransferTemplate<MultiAppCopyTransfer> MultiAppVectorCopyTransferTest;
+typedef MultiAppVectorTransferTemplate<MultiAppCopyTransfer> MultiAppGeneralVectorCopyTransfer;
 typedef MultiAppVectorTransferTemplate<MultiAppNearestNodeTransfer>
-    MultiAppVectorNearestNodeTransfer;
+    MultiAppGeneralVectorNearestNodeTransfer;
 
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate : public MultiAppTransferClassType

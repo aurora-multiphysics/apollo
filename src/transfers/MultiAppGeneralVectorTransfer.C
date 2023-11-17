@@ -7,8 +7,8 @@
 /**
  * Register all Moose objects that we would like here.
  */
-registerMooseObject("MooseApp", MultiAppVectorCopyTransferTest);
-registerMooseObject("MooseApp", MultiAppVectorNearestNodeTransfer);
+registerMooseObject("MooseApp", MultiAppGeneralVectorCopyTransfer);
+registerMooseObject("MooseApp", MultiAppGeneralVectorNearestNodeTransfer);
 
 template <typename MultiAppTransferClassType>
 InputParameters
