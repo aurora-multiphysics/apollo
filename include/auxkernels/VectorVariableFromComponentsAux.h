@@ -12,9 +12,9 @@ public:
 
   VectorVariableFromComponentsAux(const InputParameters & parameters);
 
-protected:
-  virtual void compute() override;
+  void compute() override;
 
+protected:
   MooseVariable & _component_x;
   MooseVariable & _component_y;
   MooseVariable & _component_z;

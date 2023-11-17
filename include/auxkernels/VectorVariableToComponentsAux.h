@@ -12,6 +12,5 @@ public:
 
   VectorVariableToComponentsAux(const InputParameters & parameters);
 
-protected:
-  virtual void compute() override;
+  void compute() override;
 };
