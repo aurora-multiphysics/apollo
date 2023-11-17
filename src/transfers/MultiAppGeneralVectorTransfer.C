@@ -249,31 +249,28 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getToProblem() const
 
 template <typename MultiAppTransferClassType>
 void
-MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorVariableToComponentsAuxKernel(
-    FEProblemBase & problem, std::string & vector_name)
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorAuxKernel(
+    FEProblemBase & problem, std::string & vector_name, VectorAuxKernelType type)
 {
-  auto params = _factory.getValidParams("VectorVariableToComponentsAux");
+  std::string aux_kernel_name;
+  std::string unique_aux_kernel_name;
 
-  params.set<AuxVariableName>("variable") = vector_name; // TODO: - set correctly.
-  params.set<std::vector<VariableName>>("component_x") = {
-      buildVectorComponentName(vector_name, VectorComponent::X)};
-  params.set<std::vector<VariableName>>("component_y") = {
-      buildVectorComponentName(vector_name, VectorComponent::Y)};
-  params.set<std::vector<VariableName>>("component_z") = {
-      buildVectorComponentName(vector_name, VectorComponent::Z)};
-  params.set<ExecFlagEnum>("execute_on") =
-      EXEC_MULTIAPP_FIXED_POINT_BEGIN; // Need to execute at start to transfer vector variables to
-                                       // component variables.
+  switch (type)
+  {
+    case VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER:
+      aux_kernel_name = "VectorVariableFromComponentsAux";
+      unique_aux_kernel_name = vector_name + "_from_components";
+      break;
+    case VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER:
+      aux_kernel_name = "VectorVariableToComponentsAux";
+      unique_aux_kernel_name = vector_name + "_to_components";
+      break;
+    default:
+      mooseError("Unsupported vector auxkernel type.");
+      break;
+  }
 
-  problem.addAuxKernel("VectorVariableToComponentsAux", vector_name + "_to_components", params);
-}
-
-template <typename MultiAppTransferClassType>
-void
-MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorVariableFromComponentsAuxKernel(
-    FEProblemBase & problem, std::string & vector_name)
-{
-  auto params = _factory.getValidParams("VectorVariableFromComponentsAux");
+  auto params = _factory.getValidParams(aux_kernel_name);
 
   params.set<AuxVariableName>("variable") = vector_name;
   params.set<std::vector<VariableName>>("component_x") = {
@@ -282,11 +279,27 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorVariableFrom
       buildVectorComponentName(vector_name, VectorComponent::Y)};
   params.set<std::vector<VariableName>>("component_z") = {
       buildVectorComponentName(vector_name, VectorComponent::Z)};
-  params.set<ExecFlagEnum>("execute_on") =
-      EXEC_MULTIAPP_FIXED_POINT_BEGIN; // Need to execute at end to transfer component variables to
-                                     // vector variables.
 
-  problem.addAuxKernel("VectorVariableFromComponentsAux", vector_name + "_from_components", params);
+  /**
+   * Note on execution times:
+   *
+   * Case 1: "Push problem" --> we need to execute just before we start running the subapp.
+   * Case 2: "Pull problem" --> we need to execute when we've finished running the subapp.
+   */
+  if (isPushTransfer())
+  {
+    params.set<ExecFlagEnum>("execute_on") = EXEC_MULTIAPP_FIXED_POINT_BEGIN;
+  }
+  else if (isPullTransfer())
+  {
+    params.set<ExecFlagEnum>("execute_on") = EXEC_MULTIAPP_FIXED_POINT_END;
+  }
+  else
+  {
+    mooseError("Unsupported transfer direction specified.");
+  }
+
+  problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
 }
 
 template <typename MultiAppTransferClassType>
@@ -389,8 +402,8 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::convertAllVariables()
   FEProblemBase & from_problem = getFromProblem();
   FEProblemBase & to_problem = getToProblem();
 
-  _from_var_names_converted = convertVariables<VariableName>(from_problem, from_var_names, true);
-  _to_var_names_converted = convertVariables<AuxVariableName>(to_problem, to_var_names, false);
+  _to_var_names_converted = convertVariables<AuxVariableName>(to_problem, to_var_names);
+  _from_var_names_converted = convertVariables<VariableName>(from_problem, from_var_names);
 
   for (auto var_name : _from_var_names_converted)
   {
@@ -404,12 +417,32 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::convertAllVariables()
 }
 
 template <typename MultiAppTransferClassType>
+bool
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::isPushTransfer() const
+{
+  return (MultiAppTransferClassType::_current_direction == MultiAppTransferClassType::TO_MULTIAPP);
+}
+
+template <typename MultiAppTransferClassType>
+bool
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::isPullTransfer() const
+{
+  return (MultiAppTransferClassType::_current_direction ==
+          MultiAppTransferClassType::FROM_MULTIAPP);
+}
+
+template <typename MultiAppTransferClassType>
+bool
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::isSupportedTransfer() const
+{
+  return (isPushTransfer() || isPullTransfer());
+}
+
+template <typename MultiAppTransferClassType>
 template <class VariableNameClassType>
 std::vector<VariableNameClassType>
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::convertVariables(
-    FEProblemBase & problem,
-    std::vector<VariableNameClassType> & input_variable_names,
-    bool is_from_problem) // MARk: - very dodgy and fragile.
+    FEProblemBase & problem, std::vector<VariableNameClassType> & input_variable_names)
 {
   std::vector<VariableNameClassType> output_variable_names;
 
@@ -435,14 +468,21 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::convertVariables(
     output_variable_names.push_back(component_y_name);
     output_variable_names.push_back(component_z_name);
 
-    // Add our auxkernels.
-    if (is_from_problem)
-    { // from_problem --> set components from vector.
-      addVectorVariableToComponentsAuxKernel(problem, variable_name);
+    /**
+     * Case 1: "from problem" --> Update vector components. These will be transferred.
+     * Case 2: "to problem" --> Received vector components. Rebuild vector from components.
+     */
+    if (&problem == &getFromProblem())
+    {
+      addVectorAuxKernel(problem, variable_name, VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER);
+    }
+    else if (&problem == &getToProblem())
+    {
+      addVectorAuxKernel(problem, variable_name, VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER);
     }
     else
-    { // to_problem --> recover from components.
-      addVectorVariableFromComponentsAuxKernel(problem, variable_name);
+    {
+      mooseError("Unknown FEProblemBase.");
     }
   }
 

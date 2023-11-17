@@ -50,6 +50,12 @@ protected:
     Z
   };
 
+  enum class VectorAuxKernelType
+  {
+    PREPARE_VECTOR_FOR_TRANSFER,
+    RECOVER_VECTOR_POST_TRANSFER
+  };
+
   /**
    * Finds the FEProblemBase depending on the direction.
    */
@@ -59,8 +65,9 @@ protected:
   /**
    * TODO: - Edward: Add documentation here please.
    */
-  void addVectorVariableFromComponentsAuxKernel(FEProblemBase & problem, std::string & vector_name);
-  void addVectorVariableToComponentsAuxKernel(FEProblemBase & problem, std::string & vector_name);
+  void addVectorAuxKernel(FEProblemBase & problem,
+                          std::string & vector_name,
+                          VectorAuxKernelType vector_mode);
 
   /**
    * This method is called internally to locate all vector variables. For each vector variable it
@@ -79,8 +86,7 @@ protected:
   template <class VariableNameClassType>
   std::vector<VariableNameClassType>
   convertVariables(FEProblemBase & problem,
-                   std::vector<VariableNameClassType> & input_variable_names,
-                   bool is_from_problem);
+                   std::vector<VariableNameClassType> & input_variable_names);
 
   /**
    * Creates component standard variables for the x, y and z components of a vector variable.
@@ -111,6 +117,10 @@ protected:
    */
   bool areCompatibleVariables(MooseVariableFEBase & vector_variable,
                               MooseVariableFEBase & component_variable) const;
+
+  bool isPushTransfer() const;
+  bool isPullTransfer() const;
+  bool isSupportedTransfer() const;
 
   /**
    * Helper methods.
