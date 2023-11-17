@@ -1,0 +1,451 @@
+#include "MultiAppGeneralVectorTransfer.h"
+#include "FEProblemBase.h"
+#include "SystemBase.h"
+#include "VectorVariableFromComponentsAux.h"
+#include "VectorVariableToComponentsAux.h"
+
+/**
+ * Register all Moose objects that we would like here.
+ */
+registerMooseObject("MooseApp", MultiAppVectorCopyTransferTest);
+registerMooseObject("MooseApp", MultiAppVectorNearestNodeTransfer);
+
+template <typename MultiAppTransferClassType>
+InputParameters
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::validParams()
+{
+  InputParameters params = MultiAppTransferClassType::validParams();
+
+  // Combine class description for original class with template class.
+  params.addClassDescription(params.getClassDescription() + " (allows vector variables).");
+
+  return params;
+}
+
+template <typename MultiAppTransferClassType>
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::MultiAppVectorTransferTemplate(
+    const InputParameters & parameters)
+  : MultiAppTransferClassType(parameters),
+    _has_converted_variables(false),
+    _factory(MultiAppTransferClassType::_app.getFactory())
+{
+  // TODO: - add safety check to ensure template class inherits from correct base.
+
+  // Add all standard component variables.
+  convertAllVariables();
+}
+
+template <typename MultiAppTransferClassType>
+void
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
+{
+  // Do stuff before we execute.
+  std::cout << "Stuff to do before we execute..." << std::endl;
+
+  // TODO: - copy values to any new scalar variables from their equivalent vector variables.
+
+  std::cout << "The specifed from variables:" << std::endl;
+  for (std::string variable_name : MultiAppTransferClassType::getFromVarNames())
+  {
+    std::cout << variable_name << std::endl;
+  }
+
+  std::cout << "The specifed to variables:" << std::endl;
+  for (std::string variable_name : MultiAppTransferClassType::getToVarNames())
+  {
+    std::cout << variable_name << std::endl;
+  }
+
+  // Call execute method on the class we're wrapping around.
+  MultiAppTransferClassType::execute();
+
+  std::cout << "Stuff to do before we execute NEW" << std::endl;
+  for (std::string variable_name : getFromVarNames())
+  {
+    std::cout << variable_name << std::endl;
+  }
+
+  std::cout << "Stuff to do after we execute NEW" << std::endl;
+  for (std::string variable_name : getToVarNames())
+  {
+    std::cout << variable_name << std::endl;
+  }
+
+  // TODO: - copy values from any scalar variables to their equivalent vector variables.
+
+  // Do stuff after we've finished executing.
+  std::cout << "Stuff to do after we execute ..." << std::endl;
+}
+
+template <typename MultiAppTransferClassType>
+void
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::initialSetup()
+{
+  // Write methods to check integrity.
+}
+
+template <typename MultiAppTransferClassType>
+std::vector<VariableName>
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getFromVarNames() const
+{
+  // return MultiAppTransferClassType::getFromVarNames();
+  return _from_var_names_converted;
+}
+
+template <typename MultiAppTransferClassType>
+std::vector<AuxVariableName>
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getToVarNames() const
+{
+  // return MultiAppTransferClassType::getToVarNames();
+  return _to_var_names_converted;
+}
+
+template <typename MultiAppTransferClassType>
+bool
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::isSupportedVectorVariable(
+    MooseVariableFEBase & variable) const
+{
+  const auto family = variable.feType().family;
+  const auto order = variable.order();
+
+  return (family == LAGRANGE_VEC || (family == MONOMIAL_VEC && order == CONSTANT));
+}
+
+template <typename MultiAppTransferClassType>
+bool
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::isSupportedComponentVariable(
+    MooseVariableFEBase & variable) const
+{
+  const auto family = variable.feType().family;
+  const auto order = variable.order();
+
+  return (family == LAGRANGE || (family == MONOMIAL && order == CONSTANT));
+}
+
+template <typename MultiAppTransferClassType>
+bool
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::areCompatibleVariables(
+    MooseVariableFEBase & vector_variable, MooseVariableFEBase & component_variable) const
+{
+  bool supported_vector = isSupportedVectorVariable(vector_variable);
+  bool supported_component = isSupportedComponentVariable(component_variable);
+
+  if (!supported_vector || !supported_component)
+  {
+    return false;
+  }
+
+  const auto component_family = component_variable.feType().family;
+  const auto component_order = component_variable.order();
+
+  const auto vector_family = vector_variable.feType().family;
+  const auto vector_order = vector_variable.order();
+
+  bool compatibleFamilies = (component_family == LAGRANGE && vector_family == LAGRANGE_VEC) ||
+                            (component_family == MONOMIAL && vector_family == MONOMIAL_VEC);
+
+  bool compatibleOrders = (component_order == vector_order);
+
+  return (compatibleFamilies && compatibleOrders);
+}
+
+template <typename MultiAppTransferClassType>
+InputParameters
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::buildInputParametersForComponents(
+    MooseVariableFEBase & vector_variable) const
+{
+  if (!isSupportedVectorVariable(vector_variable))
+  {
+    mooseError("'", vector_variable.name(), "' is not a supported vector variable.");
+  }
+
+  const FEType & vector_type = vector_variable.feType();
+
+  InputParameters params = _factory.getValidParams("MooseVariable");
+
+  // Should be same order as vector variable but obviously of a different family.
+  params.set<MooseEnum>("order") = vector_type.order.get_order();
+  params.set<MooseEnum>("family") = vector_type.family == LAGRANGE_VEC ? "LAGRANGE" : "MONOMIAL";
+
+  return params;
+}
+
+template <typename MultiAppTransferClassType>
+std::string
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::buildVectorComponentExtension(
+    VectorComponent component) const
+{
+  std::string extension;
+
+  switch (component)
+  {
+    case VectorComponent::X:
+      extension = "_x";
+      break;
+    case VectorComponent::Y:
+      extension = "_y";
+      break;
+    case VectorComponent::Z:
+      extension = "_z";
+      break;
+    default:
+      mooseError("An unsupported vector component was detected.");
+      break;
+  }
+
+  return extension;
+}
+
+template <typename MultiAppTransferClassType>
+FEProblemBase &
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getFromProblem() const
+{
+  if (MultiAppTransferClassType::_current_direction == MultiAppTransferClassType::TO_MULTIAPP)
+  {
+    return MultiAppTransferClassType::getToMultiApp()->problemBase();
+  }
+  else if (MultiAppTransferClassType::_current_direction ==
+           MultiAppTransferClassType::FROM_MULTIAPP)
+  {
+    for (int iApp = 0; iApp < MultiAppTransferClassType::getFromMultiApp()->numGlobalApps(); iApp++)
+    {
+      if (!MultiAppTransferClassType::getFromMultiApp()->hasLocalApp(iApp))
+      {
+        continue;
+      }
+
+      return MultiAppTransferClassType::getFromMultiApp()->appProblemBase(iApp);
+    }
+  }
+
+  mooseError("The FEProblemBase could not be located.");
+}
+
+template <typename MultiAppTransferClassType>
+FEProblemBase &
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getToProblem() const
+{
+  if (MultiAppTransferClassType::_current_direction == MultiAppTransferClassType::TO_MULTIAPP)
+  {
+    for (int iApp = 0; iApp < MultiAppTransferClassType::getToMultiApp()->numGlobalApps(); iApp++)
+    {
+      if (!MultiAppTransferClassType::getToMultiApp()->hasLocalApp(iApp))
+      {
+        continue;
+      }
+
+      return MultiAppTransferClassType::getToMultiApp()->appProblemBase(iApp);
+    }
+  }
+  else if (MultiAppTransferClassType::_current_direction ==
+           MultiAppTransferClassType::FROM_MULTIAPP)
+  {
+    return MultiAppTransferClassType::getFromMultiApp()->problemBase();
+  }
+
+  mooseError("The FEProblemBase could not be located.");
+}
+
+template <typename MultiAppTransferClassType>
+void
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorVariableToComponentsAuxKernel(
+    FEProblemBase & problem, std::string & vector_name)
+{
+  auto params = _factory.getValidParams("VectorVariableToComponentsAux");
+
+  params.set<AuxVariableName>("variable") = vector_name; // TODO: - set correctly.
+  params.set<std::vector<VariableName>>("component_x") = {
+      buildVectorComponentName(vector_name, VectorComponent::X)};
+  params.set<std::vector<VariableName>>("component_y") = {
+      buildVectorComponentName(vector_name, VectorComponent::Y)};
+  params.set<std::vector<VariableName>>("component_z") = {
+      buildVectorComponentName(vector_name, VectorComponent::Z)};
+  params.set<ExecFlagEnum>("execute_on") =
+      EXEC_MULTIAPP_FIXED_POINT_BEGIN; // Need to execute at start to transfer vector variables to
+                                       // component variables.
+
+  problem.addAuxKernel("VectorVariableToComponentsAux", vector_name + "_to_components", params);
+}
+
+template <typename MultiAppTransferClassType>
+void
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorVariableFromComponentsAuxKernel(
+    FEProblemBase & problem, std::string & vector_name)
+{
+  auto params = _factory.getValidParams("VectorVariableFromComponentsAux");
+
+  params.set<AuxVariableName>("variable") = vector_name;
+  params.set<std::vector<VariableName>>("component_x") = {
+      buildVectorComponentName(vector_name, VectorComponent::X)};
+  params.set<std::vector<VariableName>>("component_y") = {
+      buildVectorComponentName(vector_name, VectorComponent::Y)};
+  params.set<std::vector<VariableName>>("component_z") = {
+      buildVectorComponentName(vector_name, VectorComponent::Z)};
+  params.set<ExecFlagEnum>("execute_on") =
+      EXEC_MULTIAPP_FIXED_POINT_BEGIN; // Need to execute at end to transfer component variables to
+                                     // vector variables.
+
+  problem.addAuxKernel("VectorVariableFromComponentsAux", vector_name + "_from_components", params);
+}
+
+template <typename MultiAppTransferClassType>
+void
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::buildVectorComponents(
+    FEProblemBase & problem, MooseVariableFEBase & vector_variable)
+{
+  // Safety check.
+  if (!isSupportedVectorVariable(vector_variable))
+  {
+    mooseError("The variable '", vector_variable.name(), "' is not a supported vector variable.");
+  }
+
+  // Iterate over all components.
+  for (auto component : getAllComponents())
+  {
+    // Create vector variable component name.
+    std::string component_name = buildVectorComponentName(vector_variable.name(), component);
+
+    // Does the component exist? If so, is it of the correct type. If it is not compatible then we
+    // have a problem.
+    bool component_already_exists = problem.hasScalarVariable(component_name);
+
+    if (problem.hasScalarVariable(component_name))
+    {
+      // Component already exists! Check that it is compatible with the vector variable and emit a
+      // warning that the variable already exists so we don't blindly overwrite the user's values.
+      MooseVariableFEBase & component_variable = getVariable(problem, component_name);
+
+      if (areCompatibleVariables(vector_variable, component_variable))
+      {
+        mooseWarning("Found existing variable '",
+                     component_name,
+                     "' which is compatible with vector '",
+                     vector_variable.name(),
+                     "'.");
+      }
+      else
+      {
+        mooseError("Found existing variable '",
+                   component_name,
+                   "' which is incompatible with vector '",
+                   vector_variable.name(),
+                   "'.");
+      }
+    }
+    else
+    {
+      auto component_parameters = buildInputParametersForComponents(vector_variable);
+
+      // Add to system.
+      problem.addAuxVariable("MooseVariable", component_name, component_parameters);
+    }
+  }
+}
+
+template <typename MultiAppTransferClassType>
+MooseVariableFEBase &
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getVariable(
+    FEProblemBase & problem, std::string & variable_name, Moose::VarFieldType type) const
+{
+  return problem.getVariable(0, variable_name, Moose::VarKindType::VAR_ANY, type);
+}
+
+template <typename MultiAppTransferClassType>
+MooseVariableFEBase &
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getStandardVariable(
+    FEProblemBase & problem, std::string & variable_name) const
+{
+  return getVariable(problem, variable_name, Moose::VAR_FIELD_STANDARD);
+}
+
+template <typename MultiAppTransferClassType>
+MooseVariableFEBase &
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::getVectorVariable(
+    FEProblemBase & problem, std::string & variable_name) const
+{
+  return getVariable(problem, variable_name, Moose::VarFieldType::VAR_FIELD_VECTOR);
+}
+
+template <typename MultiAppTransferClassType>
+void
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::convertAllVariables()
+{
+  // Check if this method has been called before.
+  if (_has_converted_variables)
+  {
+    return;
+  }
+
+  _has_converted_variables = true;
+
+  // Extract the to/from variable names from the base class.
+  std::vector<VariableName> from_var_names = MultiAppTransferClassType::getFromVarNames();
+  std::vector<AuxVariableName> to_var_names = MultiAppTransferClassType::getToVarNames();
+
+  // Locate any vector variables. For these variables, create the corrresponding standard
+  // variables for their components. Return updated vector strings which contain the new
+  // standard variables but exclude the vector variables.
+  FEProblemBase & from_problem = getFromProblem();
+  FEProblemBase & to_problem = getToProblem();
+
+  _from_var_names_converted = convertVariables<VariableName>(from_problem, from_var_names, true);
+  _to_var_names_converted = convertVariables<AuxVariableName>(to_problem, to_var_names, false);
+
+  for (auto var_name : _from_var_names_converted)
+  {
+    std::cout << var_name << std::endl;
+  }
+
+  for (auto var_name : _to_var_names_converted)
+  {
+    std::cout << var_name << std::endl;
+  }
+}
+
+template <typename MultiAppTransferClassType>
+template <class VariableNameClassType>
+std::vector<VariableNameClassType>
+MultiAppVectorTransferTemplate<MultiAppTransferClassType>::convertVariables(
+    FEProblemBase & problem,
+    std::vector<VariableNameClassType> & input_variable_names,
+    bool is_from_problem) // MARk: - very dodgy and fragile.
+{
+  std::vector<VariableNameClassType> output_variable_names;
+
+  for (auto & variable_name : input_variable_names)
+  {
+    MooseVariableFEBase & variable = getVariable(problem, variable_name);
+
+    if (!isSupportedVectorVariable(variable))
+    {
+      // Nothing to do here. Pushback variable.
+      output_variable_names.push_back(variable_name);
+      continue;
+    }
+
+    // Create corresponding standard variables for components. Add to output array.
+    buildVectorComponents(problem, variable);
+
+    auto component_x_name = buildVectorComponentName(variable_name, VectorComponent::X);
+    auto component_y_name = buildVectorComponentName(variable_name, VectorComponent::Y);
+    auto component_z_name = buildVectorComponentName(variable_name, VectorComponent::Z);
+
+    output_variable_names.push_back(component_x_name);
+    output_variable_names.push_back(component_y_name);
+    output_variable_names.push_back(component_z_name);
+
+    // Add our auxkernels.
+    if (is_from_problem)
+    { // from_problem --> set components from vector.
+      addVectorVariableToComponentsAuxKernel(problem, variable_name);
+    }
+    else
+    { // to_problem --> recover from components.
+      addVectorVariableFromComponentsAuxKernel(problem, variable_name);
+    }
+  }
+
+  output_variable_names.shrink_to_fit();
+
+  return output_variable_names;
+}
