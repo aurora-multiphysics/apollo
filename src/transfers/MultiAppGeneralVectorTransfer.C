@@ -8,7 +8,7 @@
  * Register all Moose objects that we would like here.
  */
 registerMooseObject("MooseApp", MultiAppGeneralVectorCopyTransfer);
-registerMooseObject("MooseApp", MultiAppGeneralVectorNearestNodeTransfer);
+registerMooseObject("MooseApp", MultiAppGeneralVectorNearestLocationTransfer);
 
 template <typename MultiAppTransferClassType>
 InputParameters
@@ -56,9 +56,6 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
     std::cout << variable_name << std::endl;
   }
 
-  // Call execute method on the class we're wrapping around.
-  MultiAppTransferClassType::execute();
-
   std::cout << "Stuff to do before we execute NEW" << std::endl;
   for (std::string variable_name : getFromVarNames())
   {
@@ -71,6 +68,9 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
     std::cout << variable_name << std::endl;
   }
 
+  // Call execute method on the class we're wrapping around.
+  MultiAppTransferClassType::execute();
+
   // TODO: - copy values from any scalar variables to their equivalent vector variables.
 
   // Do stuff after we've finished executing.
@@ -82,6 +82,7 @@ void
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::initialSetup()
 {
   // Write methods to check integrity.
+  MultiAppTransferClassType::initialSetup();
 }
 
 template <typename MultiAppTransferClassType>

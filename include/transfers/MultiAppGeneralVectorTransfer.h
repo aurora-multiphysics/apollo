@@ -6,8 +6,8 @@
 #include "MultiAppFieldTransfer.h"
 #include "MultiAppTransfer.h"
 #include "MultiAppCopyTransfer.h"
-#include "MultiAppNearestNodeTransfer.h"
 #include "MooseVariableFEBase.h"
+#include "MultiAppGeneralFieldNearestLocationTransfer.h"
 #include "Factory.h"
 
 // Forwards declaration.
@@ -18,8 +18,8 @@ class MultiAppVectorTransferTemplate;
  * Create all transfer types using template here. Don't forget to register them in .C file.
  */
 typedef MultiAppVectorTransferTemplate<MultiAppCopyTransfer> MultiAppGeneralVectorCopyTransfer;
-typedef MultiAppVectorTransferTemplate<MultiAppNearestNodeTransfer>
-    MultiAppGeneralVectorNearestNodeTransfer;
+typedef MultiAppVectorTransferTemplate<MultiAppGeneralFieldNearestLocationTransfer>
+    MultiAppGeneralVectorNearestLocationTransfer;
 
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate : public MultiAppTransferClassType
