@@ -6,4 +6,11 @@
     csvdiff = 'push_lagrange_vector_copy_transfer_master_out_sub_app0.csv'
     requirement = 'Apollo shall have the ability to transfer a Lagrange vector to a subapp for identical meshes using the MultiAppCopyTransfer.'
   []
+
+  [./PullLagrangeVectorCopyTransfer]
+    type = 'CSVDiff'
+    input = 'pull_lagrange_vector_copy_transfer_master.i'
+    csvdiff = 'pull_lagrange_vector_copy_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer a Lagrange vector from a subapp for identical meshes using the MultiAppCopyTransfer.'
+  []
 []
