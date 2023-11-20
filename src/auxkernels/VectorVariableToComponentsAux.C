@@ -5,7 +5,11 @@ registerMooseObject("MooseApp", VectorVariableToComponentsAux);
 InputParameters
 VectorVariableToComponentsAux::validParams()
 {
-  InputParameters params = VectorVariableFromComponentsAux::validParams();
+  InputParameters params = WritableVectorAuxKernel::validParams();
+
+  params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
+  params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
+  params.addRequiredCoupledVar("component_z", "The z-component of the vector variable.");
 
   params.addClassDescription("Extract the components of a vector.");
 
@@ -13,8 +17,12 @@ VectorVariableToComponentsAux::validParams()
 }
 
 VectorVariableToComponentsAux::VectorVariableToComponentsAux(const InputParameters & parameters)
-  : VectorVariableFromComponentsAux(parameters)
+  : WritableVectorAuxKernel(parameters),
+    _component_x(getCoupledVariable("component_x", 0)),
+    _component_y(getCoupledVariable("component_y", 0)),
+    _component_z(getCoupledVariable("component_z", 0))
 {
+  checkVectorComponents();
 }
 
 void
@@ -27,4 +35,18 @@ VectorVariableToComponentsAux::compute()
   _component_x.setNodalValue(value_x, 0);
   _component_y.setNodalValue(value_y, 0);
   _component_z.setNodalValue(value_z, 0);
+}
+
+MooseVariable &
+VectorVariableToComponentsAux::getCoupledVariable(const std::string & var_name, unsigned int comp)
+{
+  return getWritableCoupledVariable(var_name, comp);
+}
+
+void
+VectorVariableToComponentsAux::checkVectorComponents() const
+{
+  checkVectorComponent(_component_x);
+  checkVectorComponent(_component_y);
+  checkVectorComponent(_component_z);
 }
