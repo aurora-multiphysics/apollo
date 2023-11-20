@@ -1,11 +1,11 @@
 #pragma once
 
-#include "WritableVectorAuxKernel.h"
+#include "VectorVariableToComponentsAux.h"
 
 /**
  * Construct a vector variable from 3 standard variables.
  */
-class VectorVariableFromComponentsAux : public WritableVectorAuxKernel
+class VectorVariableFromComponentsAux : public VectorVariableToComponentsAux
 {
 public:
   static InputParameters validParams();
@@ -15,15 +15,9 @@ public:
   void compute() override;
 
 protected:
-  MooseVariable & _component_x;
-  MooseVariable & _component_y;
-  MooseVariable & _component_z;
-
-  const Order & _vector_order;
-  const FEFamily _vector_family;
-
-private:
-  void checkVectorVariable() const;
-  void checkVectorComponents() const;
-  void checkVectorComponent(const MooseVariable & component_variable) const;
+  /**
+   * Override getCoupledVariable. We want non-writable vector variables in this class since we
+   * just want to read their values.
+   */
+  MooseVariable & getCoupledVariable(const std::string & var_name, unsigned int comp) override;
 };
