@@ -41,7 +41,7 @@ public:
   virtual void externalSolve() override;
   virtual void outputStep(ExecFlagType type) override;
 
-  virtual bool converged() override { return true; };
+  virtual bool nlConverged(const unsigned int nl_sys_num) override { return true; };
 
   virtual void syncSolutions(Direction direction) override;
 

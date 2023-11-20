@@ -24,6 +24,10 @@ RUN export MOOSE_JOBS="$compile_cores" && \
     METHODS='opt' ./scripts/update_and_rebuild_libmesh.sh --with-mpi && \
     ./configure --with-derivative-size=200 --with-ad-indexing-type=global
 
+# Build WASP
+RUN cd /$WORKDIR/moose/scripts && \
+    METHODS='opt' ./update_and_rebuild_wasp.sh
+
 # Build MOOSE
 RUN cd /$WORKDIR/moose/framework && \
     METHOD=opt make -j"$compile_cores"
