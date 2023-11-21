@@ -20,4 +20,11 @@
     csvdiff = 'push_pull_lagrange_vector_copy_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer a Lagrange vector to and from a subapp for identical meshes using the MultiAppCopyTransfer.'
   [] 
+
+  [./PullMonomialVectorCopyTransfer]
+    type = 'CSVDiff'
+    input = 'pull_monomial_vector_copy_transfer_master.i'
+    csvdiff = 'pull_monomial_vector_copy_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer a constant-order Monomial vector from a subapp for identical meshes using the MultiAppCopyTransfer.'
+  []
 []
