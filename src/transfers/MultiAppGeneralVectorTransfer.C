@@ -307,7 +307,7 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::addVectorAuxKernel(
   {
     params.set<ExecFlagEnum>("execute_on") = "timestep_begin MULTIAPP_FIXED_POINT_BEGIN";
   }
-  else if (isPullTransfer()) // MARK - works!
+  else if (isPullTransfer())
   {
     params.set<ExecFlagEnum>("execute_on") = "timestep_end";
   }
