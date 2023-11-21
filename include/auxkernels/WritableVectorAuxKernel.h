@@ -30,11 +30,24 @@ protected:
    * problem for transfers where we need to push and pull the same variable using the auxkernels
    * inheriting from this class.
    *
-   * For VectorVariableFromComponentsAux, we do not need to obtain writable references to each
-   * component. However for VectorVariableToComponentsAux, we require writable references.
+   * For VectorVariableToComponentsAux, we require writable references.
    */
   MooseVariable & getWritableCoupledVariable(const std::string & var_name, unsigned int comp = 0);
 
+  /**
+   * Returns a const-qualified reference to the coupled variable. This is required for
+   * VectorVariableFromComponentsAux since we don't need to update the values of the component
+   * variables.
+   */
+  const MooseVariable & getNonWritableCoupledVariable(const std::string & var_name,
+                                                      unsigned int comp = 0);
+
+  /**
+   * Check component variables are consistent with the vector variable.
+   */
   void checkVectorVariable() const;
   void checkVectorComponent(const MooseVariable & component_variable) const;
+  void checkVectorComponents(const MooseVariable & component_x,
+                             const MooseVariable & component_y,
+                             const MooseVariable & component_z) const;
 };

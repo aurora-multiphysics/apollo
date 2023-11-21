@@ -8,6 +8,19 @@ WritableVectorAuxKernel::WritableVectorAuxKernel(const InputParameters & paramet
   checkVectorVariable();
 }
 
+const MooseVariable &
+WritableVectorAuxKernel::getNonWritableCoupledVariable(const std::string & var_name,
+                                                       unsigned int comp)
+{
+  const MooseVariable * var = getVar(var_name, comp);
+  if (!var)
+  {
+    mooseError("Could not find coupled variable with name '", var_name, "'.");
+  }
+
+  return *var;
+}
+
 MooseVariable &
 WritableVectorAuxKernel::getWritableCoupledVariable(const std::string & var_name, unsigned int comp)
 {
@@ -51,4 +64,14 @@ WritableVectorAuxKernel::checkVectorComponent(const MooseVariable & component_va
   {
     mooseError("Component '", component_variable.name(), "' has a different order to the vector.");
   }
+}
+
+void
+WritableVectorAuxKernel::checkVectorComponents(const MooseVariable & component_x,
+                                               const MooseVariable & component_y,
+                                               const MooseVariable & component_z) const
+{
+  checkVectorComponent(component_x);
+  checkVectorComponent(component_y);
+  checkVectorComponent(component_z);
 }

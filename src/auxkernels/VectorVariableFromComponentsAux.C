@@ -5,7 +5,11 @@ registerMooseObject("MooseApp", VectorVariableFromComponentsAux);
 InputParameters
 VectorVariableFromComponentsAux::validParams()
 {
-  InputParameters params = VectorVariableToComponentsAux::validParams();
+  InputParameters params = WritableVectorAuxKernel::validParams();
+
+  params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
+  params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
+  params.addRequiredCoupledVar("component_z", "The z-component of the vector variable.");
 
   params.addClassDescription("Combine three standard variables into a vector variable.");
 
@@ -13,22 +17,22 @@ VectorVariableFromComponentsAux::validParams()
 }
 
 VectorVariableFromComponentsAux::VectorVariableFromComponentsAux(const InputParameters & parameters)
-  : VectorVariableToComponentsAux(parameters)
+  : WritableVectorAuxKernel(parameters),
+    _component_x(getNonWritableCoupledVariable("component_x")),
+    _component_y(getNonWritableCoupledVariable("component_y")),
+    _component_z(getNonWritableCoupledVariable("component_z"))
 {
+  checkVectorComponents(_component_x, _component_y, _component_z);
 }
 
 void
 VectorVariableFromComponentsAux::compute()
 {
-  _variable->setDofValue(_component_x.dofValues()[0], 0);
-  _variable->setDofValue(_component_y.dofValues()[0], 1);
-  _variable->setDofValue(_component_z.dofValues()[0], 2);
-}
+  Real value_x = _component_x.dofValues()[0];
+  Real value_y = _component_y.dofValues()[0];
+  Real value_z = _component_z.dofValues()[0];
 
-MooseVariable &
-VectorVariableFromComponentsAux::getCoupledVariable(const std::string & var_name, unsigned int comp)
-{
-  auto * var = getVar(var_name, comp);
-
-  return *var;
+  _variable->setDofValue(value_x, 0);
+  _variable->setDofValue(value_y, 1);
+  _variable->setDofValue(value_z, 2);
 }
