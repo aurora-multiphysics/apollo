@@ -6,6 +6,7 @@
 
 [Problem]
   type = MFEMProblem
+  use_glvis = true
 []
 
 [Formulation]
@@ -66,26 +67,25 @@
 []
 
 [BCs]
-  [tangential_E_bc]
+  [tangential_E_bdr]
     type = MFEMVectorDirichletBC
     variable = electric_field
+    boundary = '1 2 3'
     vector_coefficient = TangentialECoef
-    boundary = '1 2 3 4'
   []
   [high_terminal]
     type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '1'
-    function = potential_high
+    coefficient = HighPotential
   []
   [low_terminal]
     type = MFEMScalarDirichletBC
     variable = electric_potential
     boundary = '2'
-    function = potential_low
+    coefficient = LowPotential
   []
 []
-
 [Materials]
   [coil]
     type = MFEMConductor
@@ -159,9 +159,13 @@
     value = 0.0
   []
 
-  [OneCoef]
-    type = MFEMConstantCoefficient
-    value = 1.0e12
+  [HighPotential]
+    type = MFEMFunctionCoefficient
+    function = potential_high
+  []
+  [LowPotential]
+    type = MFEMFunctionCoefficient
+    function = potential_low
   []
 []
 
@@ -172,8 +176,6 @@
     conductivity = electrical_conductivity
     hcurl_fespace = HCurlFESpace
     h1_fespace = H1FESpace
-    solver_max_its = 1000
-    block = 1
   []
 []
 

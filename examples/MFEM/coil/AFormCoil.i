@@ -56,20 +56,38 @@
 []
 
 [Functions]
-  [current_magnitude]
+  [potential_high]
     type = ParsedFunction
-    value = cos(2.0*pi*freq*t)
+    value = 1000*cos(2.0*pi*freq*t)
+    vars = 'freq'
+    vals = '0.01666667'
+  []
+  [potential_low]
+    type = ParsedFunction
+    value = -1000*cos(2.0*pi*freq*t)
     vars = 'freq'
     vals = '0.01666667'
   []
 []
 
 [BCs]
-  [tangential_E_bc]
+  [tangential_E_bdr]
     type = MFEMVectorDirichletBC
     variable = dmagnetic_vector_potential_dt
+    boundary = '1 2 3'
     vector_coefficient = TangentialECoef
-    boundary = '1 2 3 4'
+  []
+  [high_terminal]
+    type = MFEMScalarDirichletBC
+    variable = electric_potential
+    boundary = '1'
+    coefficient = HighPotential
+  []
+  [low_terminal]
+    type = MFEMScalarDirichletBC
+    variable = electric_potential
+    boundary = '2'
+    coefficient = LowPotential
   []
 []
 
@@ -146,21 +164,23 @@
     value = 0.0
   []
 
-  [CurrentCoef]
+  [HighPotential]
     type = MFEMFunctionCoefficient
-    function = current_magnitude
+    function = potential_high
+  []
+  [LowPotential]
+    type = MFEMFunctionCoefficient
+    function = potential_low
   []
 []
 
 [Sources]
   [SourcePotential]
-    type = MFEMOpenCoilSource
-    total_current_coef = CurrentCoef
-    source_current_density_gridfunction = source_current_density
-    source_potential_gridfunction = electric_potential
-    coil_in_boundary = 1
-    coil_out_boundary = 2
-    block = 1
+    type = MFEMScalarPotentialSource
+    potential = electric_potential
+    conductivity = electrical_conductivity
+    h1_fespace = H1FESpace
+    hcurl_fespace = HCurlFESpace
   []
 []
 
