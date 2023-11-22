@@ -165,6 +165,9 @@ protected:
   }
 
 private:
+  // Names of all vector variables discovered.
+  std::set<std::string> _vector_source_names;
+
   std::vector<VariableName> _from_var_names_converted;
   std::vector<AuxVariableName> _to_var_names_converted;
 

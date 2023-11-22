@@ -6,6 +6,7 @@
 #include "Moose.h"
 #include "AuxiliarySystem.h"
 #include "ExecuteMooseObjectWarehouse.h"
+#include "MooseObject.h"
 
 /**
  * Register all Moose objects that we would like here.
@@ -64,6 +65,65 @@ template <typename MultiAppTransferClassType>
 void
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::initialSetup()
 {
+  /**
+   * Special case: source_type parameter.
+   *
+   * If we have vector variables, we will need to supply source types for each component.
+   */
+  // if (MooseObject::isParamValid("source_type") && _vector_source_names.size() > 0)
+  // {
+  //   // Extract the source types.
+  //   const std::vector<MooseEnum> & source_types =
+  //       MooseObject::getParam<std::vector<MooseEnum>>("source_type");
+
+  //   std::cout << "original source types: ";
+  //   for (auto & var_name : source_types)
+  //   {
+  //     std::cout << var_name << " ";
+  //   }
+  //   std::cout << std::endl;
+
+  //   // Iterate over original variable names.
+  //   std::vector<MooseEnum> new_source_types;
+
+  //   int iSource = 0;
+
+  //   for (std::string & var_name : MultiAppTransferClassType::getFromVarNames())
+  //   {
+  //     if (_vector_source_names.count(var_name)) // Is a vector variable.
+  //     {
+  //       new_source_types.push_back(source_types[iSource]); // x, y, z components.
+  //       new_source_types.push_back(source_types[iSource]); // x, y, z components.
+  //       new_source_types.push_back(source_types[iSource]); // x, y, z components.
+  //     }
+  //     else
+  //     {
+  //       new_source_types.push_back(source_types[iSource]); // Non-vector.
+  //     }
+
+  //     iSource++;
+  //   }
+
+  //   new_source_types.shrink_to_fit();
+
+  //   std::cout << "new source types: ";
+  //   for (auto & var_name : new_source_types)
+  //   {
+  //     std::cout << var_name << " ";
+  //   }
+  //   std::cout << std::endl;
+
+  //   // Slightly dodgy but we need to be able to set parameters.
+  //   std::cout << MultiAppTransferClassType::type() << std::endl;
+
+  //   // InputParameters inputParameters = InputParameters(parameters);
+  //   // inputParameters.set<std::vector<MooseEnum>>("source_type") = new_source_types;
+
+  //   // MultiAppTransferClassType test_class(new_params);
+  //   // Argh!!! This is not possible.
+  //   // parameters.set<std::vector<MooseEnum>>("source_type") = new_source_types;
+  // }
+
   // Write methods to check integrity.
   MultiAppTransferClassType::initialSetup();
 }
@@ -508,6 +568,9 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::convertVariables(
      */
     if (&problem == &getFromProblem())
     {
+      // Add vector to set for checking later.
+      _vector_source_names.insert(variable_name);
+
       addVectorAuxKernel(problem, variable_name, VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER);
     }
     else if (&problem == &getToProblem())
