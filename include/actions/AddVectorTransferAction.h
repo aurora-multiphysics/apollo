@@ -55,6 +55,10 @@ protected:
     RECOVER_VECTOR_POST_TRANSFER
   };
 
+  bool isPushTransfer() const;
+  bool isPullTransfer() const;
+  bool isSupportedTransfer() const;
+
   bool isSupportedVectorVariable(MooseVariableFEBase & variable) const;
   bool isSupportedComponentVariable(MooseVariableFEBase & variable) const;
   bool areCompatibleVariables(MooseVariableFEBase & vector_variable,

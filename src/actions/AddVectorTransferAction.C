@@ -207,3 +207,21 @@ AddVectorTransferAction::buildVectorComponentExtension(VectorComponent component
 
   return extension;
 }
+
+bool
+AddVectorTransferAction::isPushTransfer() const
+{
+  mooseError("Not implemented.");
+}
+
+bool
+AddVectorTransferAction::isPullTransfer() const
+{
+  mooseError("Not implemented.");
+}
+
+bool
+AddVectorTransferAction::isSupportedTransfer() const
+{
+  return (isPushTransfer() || isPullTransfer());
+}
