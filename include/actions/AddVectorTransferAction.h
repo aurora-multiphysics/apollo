@@ -36,7 +36,6 @@ protected:
                                           std::string & variable_name) const;
   void initializeMultiApps();
 
-private:
   /**
    * An enumeration used internally to specify the component of a vector variable.
    */
@@ -56,6 +55,36 @@ private:
     RECOVER_VECTOR_POST_TRANSFER
   };
 
+  bool isSupportedVectorVariable(MooseVariableFEBase & variable) const;
+  bool isSupportedComponentVariable(MooseVariableFEBase & variable) const;
+  bool areCompatibleVariables(MooseVariableFEBase & vector_variable,
+                              MooseVariableFEBase & component_variable) const;
+
+  std::string buildVectorComponentExtension(VectorComponent component) const;
+  InputParameters buildInputParametersForComponents(MooseVariableFEBase & vector_variable) const;
+
+  /**
+   * Returns components of the enum class. This allows iterating over the components.
+   */
+  inline std::array<VectorComponent, 3> getAllComponents() const
+  {
+
+    std::array<VectorComponent, 3> components = {
+        VectorComponent::X, VectorComponent::Y, VectorComponent::Z};
+
+    return components;
+  }
+
+  /**
+   * Creates the name of the variable corresponding to a component of a vector variable.
+   */
+  inline std::string buildVectorComponentName(const std::string vector_name,
+                                              VectorComponent component) const
+  {
+    return (vector_name + buildVectorComponentExtension(component));
+  }
+
+private:
   /**
    * MultiApps the transfer is transferring data to or from.
    */
