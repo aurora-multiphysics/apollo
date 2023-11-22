@@ -27,6 +27,13 @@ protected:
   FEProblemBase & getFromProblem() const;
   FEProblemBase & getToProblem() const;
 
+  MooseVariableFEBase &
+  getVariable(FEProblemBase & problem, std::string & variable_name, Moose::VarFieldType type) const;
+
+  MooseVariableFEBase & getStandardVariable(FEProblemBase & problem,
+                                            std::string & variable_name) const;
+  MooseVariableFEBase & getVectorVariable(FEProblemBase & problem,
+                                          std::string & variable_name) const;
   void initializeMultiApps();
 
 private:

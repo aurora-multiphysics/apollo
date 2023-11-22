@@ -97,3 +97,25 @@ AddVectorTransferAction::getToMultiApp() const
 
   return _to_multi_app;
 }
+
+MooseVariableFEBase &
+AddVectorTransferAction::getVariable(FEProblemBase & problem,
+                                     std::string & variable_name,
+                                     Moose::VarFieldType type) const
+{
+  return problem.getVariable(0, variable_name, Moose::VarKindType::VAR_ANY, type);
+}
+
+MooseVariableFEBase &
+AddVectorTransferAction::getStandardVariable(FEProblemBase & problem,
+                                             std::string & variable_name) const
+{
+  return getVariable(problem, variable_name, Moose::VAR_FIELD_STANDARD);
+}
+
+MooseVariableFEBase &
+AddVectorTransferAction::getVectorVariable(FEProblemBase & problem,
+                                           std::string & variable_name) const
+{
+  return getVariable(problem, variable_name, Moose::VarFieldType::VAR_FIELD_VECTOR);
+}
