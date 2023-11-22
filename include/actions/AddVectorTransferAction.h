@@ -35,6 +35,7 @@ protected:
   MooseVariableFEBase & getVectorVariable(FEProblemBase & problem,
                                           std::string & variable_name) const;
   void initializeMultiApps();
+  void convertAllVariables();
 
   /**
    * An enumeration used internally to specify the component of a vector variable.
@@ -64,6 +65,11 @@ protected:
   bool areCompatibleVariables(MooseVariableFEBase & vector_variable,
                               MooseVariableFEBase & component_variable) const;
 
+  template <class VariableNameClassType>
+  std::vector<VariableNameClassType>
+  convertVariables(FEProblemBase & problem,
+                   std::vector<VariableNameClassType> & input_variable_names);
+
   std::string buildVectorComponentExtension(VectorComponent component) const;
   InputParameters buildInputParametersForComponents(MooseVariableFEBase & vector_variable) const;
 
@@ -89,9 +95,14 @@ protected:
   }
 
 private:
+  std::vector<VariableName> _from_var_names_converted;
+  std::vector<AuxVariableName> _to_var_names_converted;
+
   /**
    * MultiApps the transfer is transferring data to or from.
    */
   std::shared_ptr<MultiApp> _from_multi_app;
   std::shared_ptr<MultiApp> _to_multi_app;
+
+  bool _has_converted_variables;
 };

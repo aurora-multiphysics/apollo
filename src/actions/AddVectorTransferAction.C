@@ -208,6 +208,44 @@ AddVectorTransferAction::buildVectorComponentExtension(VectorComponent component
   return extension;
 }
 
+void
+AddVectorTransferAction::convertAllVariables()
+{
+  // Check if this method has been called before.
+  if (_has_converted_variables)
+  {
+    return;
+  }
+
+  _has_converted_variables = true;
+
+  // Extract the to/from variable names from the base class.
+  std::vector<VariableName> from_var_names = getFromVarNames();
+  std::vector<AuxVariableName> to_var_names = getToVarNames();
+
+  // Locate any vector variables. For these variables, create the corrresponding standard
+  // variables for their components. Return updated vector strings which contain the new
+  // standard variables but exclude the vector variables.
+  FEProblemBase & from_problem = getFromProblem();
+  FEProblemBase & to_problem = getToProblem();
+
+  _to_var_names_converted = convertVariables<AuxVariableName>(to_problem, to_var_names);
+  _from_var_names_converted = convertVariables<VariableName>(from_problem, from_var_names);
+
+  /**
+   * Mark: - Testing...
+   */
+  for (auto var_name : _from_var_names_converted)
+  {
+    std::cout << var_name << std::endl;
+  }
+
+  for (auto var_name : _to_var_names_converted)
+  {
+    std::cout << var_name << std::endl;
+  }
+}
+
 bool
 AddVectorTransferAction::isPushTransfer() const
 {
@@ -224,4 +262,59 @@ bool
 AddVectorTransferAction::isSupportedTransfer() const
 {
   return (isPushTransfer() || isPullTransfer());
+}
+
+template <class VariableNameClassType>
+std::vector<VariableNameClassType>
+AddVectorTransferAction::convertVariables(FEProblemBase & problem,
+                                          std::vector<VariableNameClassType> & input_variable_names)
+{
+  std::vector<VariableNameClassType> output_variable_names;
+
+  for (auto & variable_name : input_variable_names)
+  {
+    MooseVariableFEBase & variable = getVariable(problem, variable_name);
+
+    if (!isSupportedVectorVariable(variable))
+    {
+      // Nothing to do here. Pushback variable.
+      output_variable_names.push_back(variable_name);
+      continue;
+    }
+
+    // Create corresponding standard variables for components. Add to output array.
+    buildVectorComponents(problem, variable);
+
+    auto component_x_name = buildVectorComponentName(variable_name, VectorComponent::X);
+    auto component_y_name = buildVectorComponentName(variable_name, VectorComponent::Y);
+    auto component_z_name = buildVectorComponentName(variable_name, VectorComponent::Z);
+
+    output_variable_names.push_back(component_x_name);
+    output_variable_names.push_back(component_y_name);
+    output_variable_names.push_back(component_z_name);
+
+    /**
+     * Case 1: "from problem" --> Update vector components. These will be transferred.
+     * Case 2: "to problem" --> Received vector components. Rebuild vector from components.
+     */
+    if (&problem == &getFromProblem())
+    {
+      // Add vector to set for checking later.
+      _vector_source_names.insert(variable_name);
+
+      addVectorAuxKernel(problem, variable_name, VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER);
+    }
+    else if (&problem == &getToProblem())
+    {
+      addVectorAuxKernel(problem, variable_name, VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER);
+    }
+    else
+    {
+      mooseError("Unknown FEProblemBase.");
+    }
+  }
+
+  output_variable_names.shrink_to_fit();
+
+  return output_variable_names;
 }
