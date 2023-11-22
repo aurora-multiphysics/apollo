@@ -12,9 +12,6 @@ public:
   virtual void act() override;
 
 protected:
-  const std::vector<VariableName> & getFromVarNames() const;
-  const std::vector<AuxVariableName> & getToVarNames() const;
-
   /**
    * Returns a shared pointer to or from the multiapp.
    */
@@ -22,20 +19,10 @@ protected:
   const std::shared_ptr<MultiApp> getToMultiApp() const;
 
   /**
-   * Finds the FEProblemBase depending on the direction.
+   * Returns to/from problem variable names.
    */
-  FEProblemBase & getFromProblem() const;
-  FEProblemBase & getToProblem() const;
-
-  MooseVariableFEBase &
-  getVariable(FEProblemBase & problem, std::string & variable_name, Moose::VarFieldType type) const;
-
-  MooseVariableFEBase & getStandardVariable(FEProblemBase & problem,
-                                            std::string & variable_name) const;
-  MooseVariableFEBase & getVectorVariable(FEProblemBase & problem,
-                                          std::string & variable_name) const;
-  void initializeMultiApps();
-  void convertAllVariables();
+  const std::vector<VariableName> & getFromVarNames() const;
+  const std::vector<AuxVariableName> & getToVarNames() const;
 
   /**
    * An enumeration used internally to specify the component of a vector variable.
@@ -56,22 +43,88 @@ protected:
     RECOVER_VECTOR_POST_TRANSFER
   };
 
-  bool isPushTransfer() const;
-  bool isPullTransfer() const;
-  bool isSupportedTransfer() const;
+  /**
+   * Finds the FEProblemBase depending on the direction.
+   */
+  FEProblemBase & getFromProblem() const;
+  FEProblemBase & getToProblem() const;
 
-  bool isSupportedVectorVariable(MooseVariableFEBase & variable) const;
-  bool isSupportedComponentVariable(MooseVariableFEBase & variable) const;
-  bool areCompatibleVariables(MooseVariableFEBase & vector_variable,
-                              MooseVariableFEBase & component_variable) const;
+  /**
+   * Adds a vector auxkernel to the problem.
+   */
+  void
+  addVectorAuxKernel(FEProblemBase & problem, std::string & vector_name, VectorAuxKernelType type);
 
+  /**
+   * Call this method to setup multiapp info.
+   */
+  void initializeMultiApps();
+
+  /**
+   * This method is called internally to locate all vector variables. For each vector variable it
+   * locates, it will create standard scalar variables. When the methods getFromVarNames() and
+   * getToVarNames() are called, they will return a vector containing only the standard variable
+   * names.
+   */
+  void convertAllVariables();
+
+  /**
+   * This method will iterate through the variable names. If the variable associated with the name
+   * happens to be a vector variable, the standard variables for its components will be created.
+   * Returns a vector containing the updated varaible names (adding all new standard variables and
+   * removing any vector variables).
+   */
   template <class VariableNameClassType>
   std::vector<VariableNameClassType>
   convertVariables(FEProblemBase & problem,
                    std::vector<VariableNameClassType> & input_variable_names);
 
+  /**
+   * Creates component standard variables for the x, y and z components of a vector variable.
+   */
+  void buildVectorComponents(FEProblemBase & problem, MooseVariableFEBase & vector_variable);
+
+  /**
+   * Returns the extension for a given vector component.
+   */
   std::string buildVectorComponentExtension(VectorComponent component) const;
+  /**
+   * Creates the FEType of a variable corresponding to a component of a vector variable.
+   */
   InputParameters buildInputParametersForComponents(MooseVariableFEBase & vector_variable) const;
+
+  /**
+   * Check whether the variable is a vector variable of the supported family/order.
+   */
+  bool isSupportedVectorVariable(MooseVariableFEBase & vector_variable) const;
+
+  /**
+   * Check whether the component variable is of a valid family.
+   */
+  bool isSupportedComponentVariable(MooseVariableFEBase & variable) const;
+
+  /**
+   * Checks whether a vector variable is compatible with a component variable.
+   */
+  bool areCompatibleVariables(MooseVariableFEBase & vector_variable,
+                              MooseVariableFEBase & component_variable) const;
+
+  bool isPushTransfer() const;
+  bool isPullTransfer() const;
+  bool isSupportedTransfer() const;
+
+  /**
+   * Helper methods.
+   */
+  MooseVariableFEBase &
+  getVariable(FEProblemBase & problem,
+              std::string & variable_name,
+              Moose::VarFieldType type = Moose::VarFieldType::VAR_FIELD_ANY) const;
+
+  MooseVariableFEBase & getStandardVariable(FEProblemBase & problem,
+                                            std::string & variable_name) const;
+  MooseVariableFEBase & getVectorVariable(FEProblemBase & problem,
+                                          std::string & variable_name) const;
 
   /**
    * Returns components of the enum class. This allows iterating over the components.
@@ -95,14 +148,15 @@ protected:
   }
 
 private:
+  // Names of all source vector variables.
+  std::set<std::string> _vector_source_names;
+
+  // New variable names.
   std::vector<VariableName> _from_var_names_converted;
   std::vector<AuxVariableName> _to_var_names_converted;
 
-  /**
-   * MultiApps the transfer is transferring data to or from.
-   */
+  bool _has_converted_variables;
+
   std::shared_ptr<MultiApp> _from_multi_app;
   std::shared_ptr<MultiApp> _to_multi_app;
-
-  bool _has_converted_variables;
 };
