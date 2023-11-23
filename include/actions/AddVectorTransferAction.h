@@ -56,11 +56,6 @@ protected:
   addVectorAuxKernel(FEProblemBase & problem, std::string & vector_name, VectorAuxKernelType type);
 
   /**
-   * Call this method to setup multiapp info.
-   */
-  void initializeMultiApps();
-
-  /**
    * This method is called internally to locate all vector variables. For each vector variable it
    * locates, it will create standard scalar variables. When the methods getFromVarNames() and
    * getToVarNames() are called, they will return a vector containing only the standard variable
@@ -156,7 +151,4 @@ private:
   std::vector<AuxVariableName> _to_var_names_converted;
 
   bool _has_converted_variables;
-
-  std::shared_ptr<MultiApp> _from_multi_app;
-  std::shared_ptr<MultiApp> _to_multi_app;
 };

@@ -14,9 +14,6 @@ AddVectorTransferAction::validParams()
 AddVectorTransferAction::AddVectorTransferAction(const InputParameters & params)
   : MooseObjectAction(params)
 {
-  initializeMultiApps();
-
-  // MARK: - convertAllVariables() should be put here...
 }
 
 void
@@ -29,45 +26,58 @@ AddVectorTransferAction::act()
    */
   InputParameters & input_params = getObjectParams();
 
-  // Print source variables.
-  // std::cout << "fromVarNames: ";
-  // for (auto & source_variable : getFromVarNames())
-  // {
-  //   std::cout << source_variable << ", ";
-  // }
-  // std::cout << std::endl;
+  std::cout << "from_problem = ";
+  for (auto & var_name : getFromProblem().getVariableNames())
+  {
+    std::cout << var_name << ", ";
+  }
 
-  // std::cout << "toVarNames: ";
-  // for (auto & source_variable : getToVarNames())
-  // {
-  //   std::cout << source_variable << ", ";
-  // }
-  // std::cout << std::endl;
+  std::cout << std::endl;
 
+  std::cout << "to_problem = ";
+  for (auto & var_name : getToProblem().getVariableNames())
+  {
+    std::cout << var_name << ", ";
+  }
+
+  std::cout << std::endl;
+
+  std::cout << "is push transfer? " << (isPushTransfer() ? "YES" : "NO") << std::endl;
+  std::cout << "is pull transfer? " << (isPullTransfer() ? "YES" : "NO") << std::endl;
+
+  convertAllVariables();
+  std::cout << "finished converting all variables..." << std::endl;
+
+  // TODO: - set input variable names here
+
+  // TODO: - set "source_types" here if required.
+
+  // Modify source variables and variables parameters here...
+
+  // TODO: - add transfer here...
   // _problem->addTransfer(_type, _name, input_params);
 }
 
 const std::shared_ptr<MultiApp>
 AddVectorTransferAction::getFromMultiApp() const
 {
-  if (!_from_multi_app)
+  if (getObjectParams().isParamValid("from_multi_app"))
   {
-    mooseError(
-        "A from_multiapp was requested but is unavailable. Check the from_multi_app parameter");
+    return _problem->getMultiApp(getObjectParams().get<MultiAppName>("from_multi_app"));
   }
 
-  return _from_multi_app;
+  return nullptr;
 }
 
 const std::shared_ptr<MultiApp>
 AddVectorTransferAction::getToMultiApp() const
 {
-  if (!_to_multi_app)
+  if (getObjectParams().isParamValid("to_multi_app"))
   {
-    mooseError("A to_multiapp was requested but is unavailable. Check the to_multi_app parameter");
+    return _problem->getMultiApp(getObjectParams().get<MultiAppName>("to_multi_app"));
   }
 
-  return _to_multi_app;
+  return nullptr;
 }
 
 const std::vector<VariableName> &
@@ -83,15 +93,54 @@ AddVectorTransferAction::getToVarNames() const
 }
 
 FEProblemBase &
-AddVectorTransferAction::getFromProblem() const
-{
-  mooseError("Not implemented");
-}
-
-FEProblemBase &
 AddVectorTransferAction::getToProblem() const
 {
-  mooseError("Not implemented");
+  if (isPullTransfer()) // subapp (FROM) --> master.
+  {
+    auto & subapp = getFromMultiApp();
+
+    return subapp->problemBase();
+  }
+  else if (isPushTransfer()) // master (FROM) --> subapp
+  {
+    auto & subapp = getToMultiApp();
+
+    for (int iapp = 0; iapp < subapp->numGlobalApps(); iapp++)
+    {
+      if (subapp->hasLocalApp(iapp))
+      {
+        return subapp->appProblemBase(iapp);
+      }
+    }
+  }
+
+  mooseError("The FEProblemBase could not be located.");
+}
+
+// TODO: - why is it this way around?
+FEProblemBase &
+AddVectorTransferAction::getFromProblem() const
+{
+  if (isPullTransfer()) // subapp --> master (TO).
+  {
+    auto & subapp = getFromMultiApp();
+
+    for (int iapp = 0; iapp < subapp->numGlobalApps(); iapp++)
+    {
+      if (subapp->hasLocalApp(iapp))
+      {
+        return subapp->appProblemBase(iapp);
+      }
+    }
+  }
+  else if (isPushTransfer()) // master --> subapp (TO).
+  {
+    auto & subapp = getToMultiApp();
+
+    return subapp->problemBase();
+  }
+
+  mooseError("The FEProblemBase could not be located.");
 }
 
 void
@@ -167,12 +216,6 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
 }
 
 void
-AddVectorTransferAction::initializeMultiApps()
-{
-  mooseError("Not implemented");
-}
-
-void
 AddVectorTransferAction::convertAllVariables()
 {
   // Check if this method has been called before.
@@ -199,11 +242,13 @@ AddVectorTransferAction::convertAllVariables()
   /**
    * Mark: - Testing...
    */
+  std::cout << "from_var_names_converted: " << std::endl;
   for (auto var_name : _from_var_names_converted)
   {
     std::cout << var_name << std::endl;
   }
 
+  std::cout << "to_var_names_converted: " << std::endl;
   for (auto var_name : _to_var_names_converted)
   {
     std::cout << var_name << std::endl;
@@ -409,13 +454,13 @@ AddVectorTransferAction::areCompatibleVariables(MooseVariableFEBase & vector_var
 bool
 AddVectorTransferAction::isPushTransfer() const
 {
-  mooseError("Not implemented.");
+  return getObjectParams().isParamValid("to_multi_app");
 }
 
 bool
 AddVectorTransferAction::isPullTransfer() const
 {
-  mooseError("Not implemented.");
+  return getObjectParams().isParamValid("from_multi_app");
 }
 
 bool

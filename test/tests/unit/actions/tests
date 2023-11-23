@@ -1,0 +1,9 @@
+[Tests]
+  design = 'syntax/Problem/index.md'
+  [./PullLagrangeVectorCopyTransfer]
+    type = 'CSVDiff'
+    input = 'pull_lagrange_vector_copy_transfer_master.i'
+    csvdiff = 'pull_lagrange_vector_copy_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer Lagrange vectors from a subapp for identical meshes.'
+  []
+[]
