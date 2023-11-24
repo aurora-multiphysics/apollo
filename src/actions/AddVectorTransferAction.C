@@ -172,23 +172,6 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
   }
 
   problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
-
-  // Locate auxkernel we've just added and add a pointer to the appropriate array. This will be
-  // used to call the execute method.
-  // if (type == VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER)
-  // {
-  //   auto & vector_aux_kernel =
-  //       getVectorAuxKernel<VectorVariableFromComponentsAux>(problem, unique_aux_kernel_name);
-
-  //   _post_transfer_vector_auxkernels.push_back(&vector_aux_kernel);
-  // }
-  // else
-  // {
-  //   auto & vector_aux_kernel =
-  //       getVectorAuxKernel<VectorVariableToComponentsAux>(problem, unique_aux_kernel_name);
-
-  //   _pre_transfer_vector_auxkernels.push_back(&vector_aux_kernel);
-  // }
 }
 
 void
