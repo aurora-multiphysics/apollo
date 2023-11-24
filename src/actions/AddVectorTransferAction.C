@@ -25,6 +25,59 @@ AddVectorTransferAction::act()
   convertAllVariables();
 
   /**
+   * Special case: source_type parameter.
+   *
+   * If we have vector variables, we will need to supply source types for each component.
+   */
+  // TODO: - extract-out to method.
+  if (getObjectParams().isParamValid("source_type") && _vector_source_names.size() > 0)
+  {
+    // Extract the source types.
+    const std::vector<MooseEnum> & source_types =
+        getObjectParams().get<std::vector<MooseEnum>>("source_type");
+
+    std::cout << "original source types: ";
+    for (auto & var_name : source_types)
+    {
+      std::cout << var_name << " ";
+    }
+    std::cout << std::endl;
+
+    // Iterate over original variable names.
+    std::vector<MooseEnum> new_source_types;
+
+    int iSource = 0;
+
+    for (const std::string & var_name : getFromVarNames())
+    {
+      if (_vector_source_names.count(var_name)) // Is a vector variable.
+      {
+        new_source_types.push_back(source_types[iSource]); // x, y, z components.
+        new_source_types.push_back(source_types[iSource]); // x, y, z components.
+        new_source_types.push_back(source_types[iSource]); // x, y, z components.
+      }
+      else
+      {
+        new_source_types.push_back(source_types[iSource]); // Non-vector.
+      }
+
+      iSource++;
+    }
+
+    new_source_types.shrink_to_fit();
+
+    std::cout << "new source types: ";
+    for (auto & var_name : new_source_types)
+    {
+      std::cout << var_name << " ";
+    }
+    std::cout << std::endl;
+
+    // Set these parameters.
+    getObjectParams().set<std::vector<MooseEnum>>("source_type") = new_source_types;
+  }
+
+  /**
    * Set source_variable and variable to new names. TODO: - Write this better.
    */
   getObjectParams().set<std::vector<VariableName>>("source_variable") = _from_var_names_converted;

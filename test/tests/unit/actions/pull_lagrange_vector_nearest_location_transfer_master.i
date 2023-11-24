@@ -67,7 +67,6 @@
   [pull]
     type = MultiAppGeneralFieldNearestLocationTransfer
     from_multi_app = sub_app
-    source_type = 'variable_default variable_default variable_default'
     source_variable = sent_vector
     variable = received_vector
   []
