@@ -20,42 +20,24 @@ void
 AddVectorTransferAction::act()
 {
   /**
-   * Okay, we have the MOOSE object parameters. This is good! And we have already created the
-   * parameters for the transfer type that the user has specified. We will need to modify some of
-   * these input parameters.
+   * Does the heavy lifting.
    */
-  InputParameters & input_params = getObjectParams();
-
-  std::cout << "from_problem = ";
-  for (auto & var_name : getFromProblem().getVariableNames())
-  {
-    std::cout << var_name << ", ";
-  }
-
-  std::cout << std::endl;
-
-  std::cout << "to_problem = ";
-  for (auto & var_name : getToProblem().getVariableNames())
-  {
-    std::cout << var_name << ", ";
-  }
-
-  std::cout << std::endl;
-
-  std::cout << "is push transfer? " << (isPushTransfer() ? "YES" : "NO") << std::endl;
-  std::cout << "is pull transfer? " << (isPullTransfer() ? "YES" : "NO") << std::endl;
-
   convertAllVariables();
-  std::cout << "finished converting all variables..." << std::endl;
 
-  // TODO: - set input variable names here
+  /**
+   * Set source_variable and variable to new names. TODO: - Write this better.
+   */
+  getObjectParams().set<std::vector<VariableName>>("source_variable") = _from_var_names_converted;
+  getObjectParams().set<std::vector<AuxVariableName>>("variable") = _to_var_names_converted;
 
-  // TODO: - set "source_types" here if required.
+  /**
+   * TODO: - check if "source_types" exists and fix this for vector variable components.
+   */
 
-  // Modify source variables and variables parameters here...
-
-  // TODO: - add transfer here...
-  // _problem->addTransfer(_type, _name, input_params);
+  /**
+   * Add transfer to problem with the modified input parameters.
+   */
+  _problem->addTransfer(_type, _name, getObjectParams());
 }
 
 const std::shared_ptr<MultiApp>
@@ -238,6 +220,8 @@ AddVectorTransferAction::convertAllVariables()
 
   _to_var_names_converted = convertVariables<AuxVariableName>(to_problem, to_var_names);
   _from_var_names_converted = convertVariables<VariableName>(from_problem, from_var_names);
+
+  // TODO: - create the variables.f
 
   /**
    * Mark: - Testing...
