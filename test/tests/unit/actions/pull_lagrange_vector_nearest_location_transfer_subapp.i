@@ -30,11 +30,6 @@
     family = LAGRANGE
     order = FIRST
   []
-
-  [dummy]
-    family = LAGRANGE
-    order = FIRST
-  []
 []
 
 

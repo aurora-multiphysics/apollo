@@ -69,6 +69,7 @@ associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
   registerMooseObjectTask("add_vector_transfer", Transfer, false);
   appendMooseObjectTask("add_vector_transfer", MultiAppTransfer);
   appendMooseObjectTask("add_vector_transfer", MultiAppCopyTransfer);
+  addTaskDependency("add_transfer", "add_vector_transfer");
 }
 
 void

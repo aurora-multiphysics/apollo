@@ -320,10 +320,12 @@ AddVectorTransferAction::buildVectorComponents(FEProblemBase & problem,
 
     // Does the component exist? If so, is it of the correct type. If it is not compatible then we
     // have a problem.
-    bool component_already_exists = problem.hasScalarVariable(component_name);
+    bool component_already_exists = problem.hasVariable(component_name);
 
-    if (problem.hasScalarVariable(component_name))
+    if (component_already_exists)
     {
+      std::cout << "Found variable with name " << component_name << std::endl;
+
       // Component already exists! Check that it is compatible with the vector variable and emit a
       // warning that the variable already exists so we don't blindly overwrite the user's values.
       MooseVariableFEBase & component_variable = getVariable(problem, component_name);
@@ -347,9 +349,10 @@ AddVectorTransferAction::buildVectorComponents(FEProblemBase & problem,
     }
     else
     {
+      std::cout << "No variable found with name " << component_name << std::endl;
+
       auto component_parameters = buildInputParametersForComponents(vector_variable);
 
-      // Add to system.
       problem.addAuxVariable("MooseVariable", component_name, component_parameters);
     }
   }
@@ -393,7 +396,8 @@ AddVectorTransferAction::buildInputParametersForComponents(
   InputParameters params = _factory.getValidParams("MooseVariable");
 
   // Should be same order as vector variable but obviously of a different family.
-  params.set<MooseEnum>("order") = vector_type.order.get_order();
+  params.set<MooseEnum>("order") =
+      Utility::enum_to_string<Order>(OrderWrapper{vector_type.order.get_order()});
   params.set<MooseEnum>("family") = vector_type.family == LAGRANGE_VEC ? "LAGRANGE" : "MONOMIAL";
 
   return params;

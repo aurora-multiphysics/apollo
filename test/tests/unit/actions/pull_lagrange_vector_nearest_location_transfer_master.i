@@ -20,21 +20,6 @@
     family = LAGRANGE_VEC
     order = FIRST
   []
-
-  [received_vector_x]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [received_vector_y]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [received_vector_z]
-    family = LAGRANGE
-    order = FIRST
-  []
 []
 
 [Functions]

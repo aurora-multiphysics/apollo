@@ -15,21 +15,6 @@
     family = MONOMIAL_VEC
     order = CONSTANT
   []
-
-  [sent_vector_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-
-  [sent_vector_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-
-  [sent_vector_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
 []
 
 [Functions]

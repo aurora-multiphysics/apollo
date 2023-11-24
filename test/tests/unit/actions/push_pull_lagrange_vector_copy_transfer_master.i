@@ -16,38 +16,8 @@
     order = FIRST
   []
 
-  [sent_vector_x]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [sent_vector_y]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [sent_vector_z]
-    family = LAGRANGE
-    order = FIRST
-  []
-
   [received_vector]
     family = LAGRANGE_VEC
-    order = FIRST
-  []
-
-  [received_vector_x]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [received_vector_y]
-    family = LAGRANGE
-    order = FIRST
-  []
-
-  [received_vector_z]
-    family = LAGRANGE
     order = FIRST
   []
 []

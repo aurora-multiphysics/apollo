@@ -20,21 +20,6 @@
     family = MONOMIAL_VEC
     order = CONSTANT
   []
-
-  [received_vector_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-
-  [received_vector_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-
-  [received_vector_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
 []
 
 [Functions]

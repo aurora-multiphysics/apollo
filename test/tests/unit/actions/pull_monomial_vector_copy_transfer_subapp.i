@@ -30,11 +30,6 @@
     family = MONOMIAL
     order = CONSTANT
   []
-
-  [dummy]
-    family = MONOMIAL
-    order = CONSTANT
-  []
 []
 
 
