@@ -1,6 +1,8 @@
 [Mesh]
-  type = CoupledMFEMMesh
-  file = gold/mug.e
+  type = GeneratedMesh
+  nx = 5
+  ny = 5
+  nz = 5
   dim = 3
 []
 
