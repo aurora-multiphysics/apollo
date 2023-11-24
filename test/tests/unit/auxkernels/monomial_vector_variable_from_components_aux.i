@@ -4,11 +4,8 @@
   dim = 3
 []
 
-[Variables]
-  [moose_diffused]
-    family = LAGRANGE
-    order = FIRST
-  []
+[Problem]
+  solve = false 
 []
 
 [AuxVariables]
@@ -46,13 +43,6 @@
     component_y = target_y
     component_z = target_z
     execute_on = timestep_end
-  []
-[]
-
-[Kernels]
-  [diffusion]
-    type = Diffusion
-    variable = moose_diffused
   []
 []
 
@@ -103,22 +93,6 @@
     type = VectorFunctionIC
     variable = target_vector
     function = function_target
-  []
-[]
-
-[BCs]
-  [bottom]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'bottom'
-    value = 1
-  []
-
-  [top]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'top'
-    value = 0
   []
 []
 
