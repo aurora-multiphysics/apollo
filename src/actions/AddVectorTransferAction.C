@@ -19,18 +19,17 @@ AddVectorTransferAction::AddVectorTransferAction(const InputParameters & params)
 void
 AddVectorTransferAction::act()
 {
-  convertAllVariables();
-
-  if (getObjectParams().isParamValid("source_type"))
+  // Modify the input parameters.
+  if (hasSourceTypesParameter())
   {
-    convertSourceTypes();
-    getObjectParams().set<std::vector<MooseEnum>>("source_type") = _source_types_converted;
+    getObjectParams().set<std::vector<MooseEnum>>("source_type") = getSourceTypeConverted();
   }
 
-  getObjectParams().set<std::vector<VariableName>>("source_variable") = _from_var_names_converted;
-  getObjectParams().set<std::vector<AuxVariableName>>("variable") = _to_var_names_converted;
+  // NB: set at end in case we need to call getTo(From)VarNames().
+  getObjectParams().set<std::vector<VariableName>>("source_variable") = getFromVarNamesConverted();
+  getObjectParams().set<std::vector<AuxVariableName>>("variable") = getToVarNamesConverted();
 
-  // Add transfer to problem with the modified input parameters.
+  // Add transfer using the modified input parameters.
   _problem->addTransfer(_type, _name, getObjectParams());
 }
 
@@ -68,6 +67,45 @@ AddVectorTransferAction::getToVarNames() const
   return getObjectParams().get<std::vector<AuxVariableName>>("variable");
 }
 
+const std::vector<VariableName> &
+AddVectorTransferAction::getFromVarNamesConverted()
+{
+  if (!_has_converted_variables)
+  {
+    convertAllVariables();
+  }
+
+  return _from_var_names_converted;
+}
+
+const std::vector<AuxVariableName> &
+AddVectorTransferAction::getToVarNamesConverted()
+{
+  if (!_has_converted_variables)
+  {
+    convertAllVariables();
+  }
+
+  return _to_var_names_converted;
+}
+
+std::set<std::string> &
+AddVectorTransferAction::getVectorSourceNames()
+{
+  if (!_has_converted_variables)
+  {
+    convertAllVariables(); // Must be run first!
+  }
+
+  return _vector_source_names;
+}
+
+bool
+AddVectorTransferAction::isSourceVectorVariable(const std::string & var_name)
+{
+  return getVectorSourceNames().count(var_name);
+}
+
 FEProblemBase &
 AddVectorTransferAction::getToProblem() const
 {
@@ -81,7 +119,7 @@ AddVectorTransferAction::getToProblem() const
   {
     auto & subapp = getToMultiApp();
 
-    for (int iapp = 0; iapp < subapp->numGlobalApps(); iapp++)
+    for (unsigned int iapp = 0; iapp < subapp->numGlobalApps(); iapp++)
     {
       if (subapp->hasLocalApp(iapp))
       {
@@ -101,7 +139,7 @@ AddVectorTransferAction::getFromProblem() const
   {
     auto & subapp = getFromMultiApp();
 
-    for (int iapp = 0; iapp < subapp->numGlobalApps(); iapp++)
+    for (unsigned int iapp = 0; iapp < subapp->numGlobalApps(); iapp++)
     {
       if (subapp->hasLocalApp(iapp))
       {
@@ -199,10 +237,38 @@ AddVectorTransferAction::convertAllVariables()
   _from_var_names_converted = convertVariables<VariableName>(from_problem, from_var_names);
 }
 
+bool
+AddVectorTransferAction::hasSourceTypesParameter() const
+{
+  return getObjectParams().isParamValid("source_type");
+}
+
+std::vector<MooseEnum> &
+AddVectorTransferAction::getSourceTypeConverted()
+{
+  if (!hasSourceTypesParameter())
+  {
+    mooseError("No 'source_type' parameter exists for this transfer.");
+  }
+
+  if (!_has_converted_source_types)
+  {
+    convertSourceTypes();
+  }
+
+  return _source_type_converted;
+}
+
 void
 AddVectorTransferAction::convertSourceTypes()
 {
-  // Check if this method has been called before.
+  // Safety check. Ensure that the 'source_type' parameter exists.
+  if (!hasSourceTypesParameter())
+  {
+    mooseError("No 'source_type' parameter exists for this transfer.");
+  }
+
+  // Has method been called before?
   if (_has_converted_source_types)
   {
     return;
@@ -210,41 +276,36 @@ AddVectorTransferAction::convertSourceTypes()
 
   _has_converted_source_types = true;
 
-  // Check: do we have the source_type parameter and is there at least one vector variable?
-  bool has_source_type = getObjectParams().isParamValid("source_type");
-  bool at_least_one_vector_variable = _vector_source_names.size() > 0;
+  // 1. Get source types:
+  const std::vector<MooseEnum> & current_source_types =
+      getObjectParams().get<std::vector<MooseEnum>>("source_type");
 
-  if ((has_source_type && at_least_one_vector_variable) == false)
+  // 2. If there are no vector source variables, then set to the current source type.
+  // NB: ensure we call accessor.
+  if (getVectorSourceNames().size() == 0)
   {
+    _source_type_converted = current_source_types;
     return;
   }
 
-  // 1. Get source types:
-  const std::vector<MooseEnum> & source_types =
-      getObjectParams().get<std::vector<MooseEnum>>("source_type");
-
-  // 2. Iterate over original variable names.
+  // 3. Iterate over original variable names.
   std::vector<MooseEnum> new_source_types;
 
-  int iSource = 0;
-  for (const std::string & var_name : getFromVarNames())
+  int isource = 0;
+  for (auto & var_name : getFromVarNames())
   {
-    if (_vector_source_names.count(var_name)) // Is a vector variable.
-    {
-      new_source_types.push_back(source_types[iSource]); // x, y, z components.
-      new_source_types.push_back(source_types[iSource]); // x, y, z components.
-      new_source_types.push_back(source_types[iSource]); // x, y, z components.
-    }
-    else
-    {
-      new_source_types.push_back(source_types[iSource]); // Non-vector.
-    }
+    auto source_type = current_source_types[isource++];
 
-    iSource++;
+    _source_type_converted.push_back(source_type);
+
+    if (isSourceVectorVariable(var_name))
+    {
+      _source_type_converted.push_back(source_type); // y component
+      _source_type_converted.push_back(source_type); // z component
+    }
   }
 
-  // Set new source types.
-  _source_types_converted = new_source_types;
+  _source_type_converted.shrink_to_fit();
 }
 
 template <class VariableNameClassType>
@@ -282,7 +343,7 @@ AddVectorTransferAction::convertVariables(FEProblemBase & problem,
      */
     if (&problem == &getFromProblem())
     {
-      // Add vector to set for checking later.
+      // Add vector name to set for checking later.
       _vector_source_names.insert(variable_name);
 
       addVectorAuxKernel(problem, variable_name, VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER);
@@ -324,8 +385,6 @@ AddVectorTransferAction::buildVectorComponents(FEProblemBase & problem,
 
     if (component_already_exists)
     {
-      std::cout << "Found variable with name " << component_name << std::endl;
-
       // Component already exists! Check that it is compatible with the vector variable and emit a
       // warning that the variable already exists so we don't blindly overwrite the user's values.
       MooseVariableFEBase & component_variable = getVariable(problem, component_name);
@@ -349,8 +408,7 @@ AddVectorTransferAction::buildVectorComponents(FEProblemBase & problem,
     }
     else
     {
-      std::cout << "No variable found with name " << component_name << std::endl;
-
+      // Attempt to add the auxiliary variable.
       auto component_parameters = buildInputParametersForComponents(vector_variable);
 
       problem.addAuxVariable("MooseVariable", component_name, component_parameters);
@@ -471,18 +529,4 @@ AddVectorTransferAction::getVariable(FEProblemBase & problem,
                                      Moose::VarFieldType type) const
 {
   return problem.getVariable(0, variable_name, Moose::VarKindType::VAR_ANY, type);
-}
-
-MooseVariableFEBase &
-AddVectorTransferAction::getStandardVariable(FEProblemBase & problem,
-                                             std::string & variable_name) const
-{
-  return getVariable(problem, variable_name, Moose::VAR_FIELD_STANDARD);
-}
-
-MooseVariableFEBase &
-AddVectorTransferAction::getVectorVariable(FEProblemBase & problem,
-                                           std::string & variable_name) const
-{
-  return getVariable(problem, variable_name, Moose::VarFieldType::VAR_FIELD_VECTOR);
 }

@@ -24,6 +24,9 @@ protected:
   const std::vector<VariableName> & getFromVarNames() const;
   const std::vector<AuxVariableName> & getToVarNames() const;
 
+  const std::vector<VariableName> & getFromVarNamesConverted();
+  const std::vector<AuxVariableName> & getToVarNamesConverted();
+
   /**
    * An enumeration used internally to specify the component of a vector variable.
    */
@@ -56,10 +59,10 @@ protected:
   addVectorAuxKernel(FEProblemBase & problem, std::string & vector_name, VectorAuxKernelType type);
 
   /**
-   * This method is called internally to locate all vector variables. For each vector variable it
-   * locates, it will create standard scalar variables. When the methods getFromVarNames() and
-   * getToVarNames() are called, they will return a vector containing only the standard variable
-   * names.
+   * This method is called internally to locate all vector variables. For each vector variable
+   * it locates, it will create standard scalar variables. When the methods getFromVarNames()
+   * and getToVarNames() are called, they will return a vector containing only the standard
+   * variable names.
    */
   void convertAllVariables();
 
@@ -80,6 +83,26 @@ protected:
    * variable components.
    */
   void convertSourceTypes();
+
+  /**
+   * Returns true is "source_type" is a valid parameter.
+   */
+  bool hasSourceTypesParameter() const;
+
+  /**
+   * Returns a reference to a vector of converted source types.
+   */
+  std::vector<MooseEnum> & getSourceTypeConverted();
+
+  /**
+   * Returns all vector source variable names.
+   */
+  std::set<std::string> & getVectorSourceNames();
+
+  /**
+   * Returns true if variable name corresponds to a source vector variable.
+   */
+  bool isSourceVectorVariable(const std::string & var_name);
 
   /**
    * Creates component standard variables for the x, y and z components of a vector variable.
@@ -123,31 +146,16 @@ protected:
               std::string & variable_name,
               Moose::VarFieldType type = Moose::VarFieldType::VAR_FIELD_ANY) const;
 
-  MooseVariableFEBase & getStandardVariable(FEProblemBase & problem,
-                                            std::string & variable_name) const;
-  MooseVariableFEBase & getVectorVariable(FEProblemBase & problem,
-                                          std::string & variable_name) const;
-
   /**
    * Returns components of the enum class. This allows iterating over the components.
    */
-  inline std::array<VectorComponent, 3> getAllComponents() const
-  {
-
-    std::array<VectorComponent, 3> components = {
-        VectorComponent::X, VectorComponent::Y, VectorComponent::Z};
-
-    return components;
-  }
+  std::array<VectorComponent, 3> getAllComponents() const;
 
   /**
    * Creates the name of the variable corresponding to a component of a vector variable.
    */
-  inline std::string buildVectorComponentName(const std::string vector_name,
-                                              VectorComponent component) const
-  {
-    return (vector_name + buildVectorComponentExtension(component));
-  }
+  inline std::string buildVectorComponentName(const std::string & vector_name,
+                                              VectorComponent component) const;
 
 private:
   // Names of all source vector variables.
@@ -156,8 +164,27 @@ private:
   // New variable names.
   std::vector<VariableName> _from_var_names_converted;
   std::vector<AuxVariableName> _to_var_names_converted;
-  std::vector<MooseEnum> _source_types_converted;
+
+  // New source types (if present).
+  std::vector<MooseEnum> _source_type_converted;
 
   bool _has_converted_variables;
   bool _has_converted_source_types;
 };
+
+inline std::string
+AddVectorTransferAction::buildVectorComponentName(const std::string & vector_name,
+                                                  VectorComponent component) const
+{
+  return (vector_name + buildVectorComponentExtension(component));
+}
+
+inline std::array<AddVectorTransferAction::VectorComponent, 3>
+AddVectorTransferAction::getAllComponents() const
+{
+
+  std::array<VectorComponent, 3> components = {
+      VectorComponent::X, VectorComponent::Y, VectorComponent::Z};
+
+  return components;
+}
