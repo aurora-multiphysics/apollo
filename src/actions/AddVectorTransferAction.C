@@ -19,77 +19,18 @@ AddVectorTransferAction::AddVectorTransferAction(const InputParameters & params)
 void
 AddVectorTransferAction::act()
 {
-  /**
-   * Does the heavy lifting.
-   */
   convertAllVariables();
 
-  /**
-   * Special case: source_type parameter.
-   *
-   * If we have vector variables, we will need to supply source types for each component.
-   */
-  // TODO: - extract-out to method.
-  if (getObjectParams().isParamValid("source_type") && _vector_source_names.size() > 0)
+  if (getObjectParams().isParamValid("source_type"))
   {
-    // Extract the source types.
-    const std::vector<MooseEnum> & source_types =
-        getObjectParams().get<std::vector<MooseEnum>>("source_type");
-
-    std::cout << "original source types: ";
-    for (auto & var_name : source_types)
-    {
-      std::cout << var_name << " ";
-    }
-    std::cout << std::endl;
-
-    // Iterate over original variable names.
-    std::vector<MooseEnum> new_source_types;
-
-    int iSource = 0;
-
-    for (const std::string & var_name : getFromVarNames())
-    {
-      if (_vector_source_names.count(var_name)) // Is a vector variable.
-      {
-        new_source_types.push_back(source_types[iSource]); // x, y, z components.
-        new_source_types.push_back(source_types[iSource]); // x, y, z components.
-        new_source_types.push_back(source_types[iSource]); // x, y, z components.
-      }
-      else
-      {
-        new_source_types.push_back(source_types[iSource]); // Non-vector.
-      }
-
-      iSource++;
-    }
-
-    new_source_types.shrink_to_fit();
-
-    std::cout << "new source types: ";
-    for (auto & var_name : new_source_types)
-    {
-      std::cout << var_name << " ";
-    }
-    std::cout << std::endl;
-
-    // Set these parameters.
-    getObjectParams().set<std::vector<MooseEnum>>("source_type") = new_source_types;
+    convertSourceTypes();
+    getObjectParams().set<std::vector<MooseEnum>>("source_type") = _source_types_converted;
   }
 
-  /**
-   * Set source_variable and variable to new names. TODO: - Write this better.
-   */
   getObjectParams().set<std::vector<VariableName>>("source_variable") = _from_var_names_converted;
   getObjectParams().set<std::vector<AuxVariableName>>("variable") = _to_var_names_converted;
 
-  /**
-   * TODO: - check if "source_types" exists and fix this for vector variable components.
-   */
-
-  /**
-   * Add transfer to problem with the modified input parameters.
-   */
+  // Add transfer to problem with the modified input parameters.
   _problem->addTransfer(_type, _name, getObjectParams());
 }
 
@@ -273,23 +214,54 @@ AddVectorTransferAction::convertAllVariables()
 
   _to_var_names_converted = convertVariables<AuxVariableName>(to_problem, to_var_names);
   _from_var_names_converted = convertVariables<VariableName>(from_problem, from_var_names);
+}
 
-  // TODO: - create the variables.f
-
-  /**
-   * Mark: - Testing...
-   */
-  std::cout << "from_var_names_converted: " << std::endl;
-  for (auto var_name : _from_var_names_converted)
+void
+AddVectorTransferAction::convertSourceTypes()
+{
+  // Check if this method has been called before.
+  if (_has_converted_source_types)
   {
-    std::cout << var_name << std::endl;
+    return;
   }
 
-  std::cout << "to_var_names_converted: " << std::endl;
-  for (auto var_name : _to_var_names_converted)
+  _has_converted_source_types = true;
+
+  // Check: do we have the source_type parameter and is there at least one vector variable?
+  bool has_source_type = getObjectParams().isParamValid("source_type");
+  bool at_least_one_vector_variable = _vector_source_names.size() > 0;
+
+  if ((has_source_type && at_least_one_vector_variable) == false)
   {
-    std::cout << var_name << std::endl;
+    return;
   }
+
+  // 1. Get source types:
+  const std::vector<MooseEnum> & source_types =
+      getObjectParams().get<std::vector<MooseEnum>>("source_type");
+
+  // 2. Iterate over original variable names.
+  std::vector<MooseEnum> new_source_types;
+
+  int iSource = 0;
+  for (const std::string & var_name : getFromVarNames())
+  {
+    if (_vector_source_names.count(var_name)) // Is a vector variable.
+    {
+      new_source_types.push_back(source_types[iSource]); // x, y, z components.
+      new_source_types.push_back(source_types[iSource]); // x, y, z components.
+      new_source_types.push_back(source_types[iSource]); // x, y, z components.
+    }
+    else
+    {
+      new_source_types.push_back(source_types[iSource]); // Non-vector.
+    }
+
+    iSource++;
+  }
+
+  // Set new source types.
+  _source_types_converted = new_source_types;
 }
 
 template <class VariableNameClassType>

@@ -75,6 +75,13 @@ protected:
                    std::vector<VariableNameClassType> & input_variable_names);
 
   /**
+   * This method checks is source_type is a valid parameter. If it is and there is at least one
+   * vector variable supplied then we need to duplicate its source type for the new standard
+   * variable components.
+   */
+  void convertSourceTypes();
+
+  /**
    * Creates component standard variables for the x, y and z components of a vector variable.
    */
   void buildVectorComponents(FEProblemBase & problem, MooseVariableFEBase & vector_variable);
@@ -149,6 +156,8 @@ private:
   // New variable names.
   std::vector<VariableName> _from_var_names_converted;
   std::vector<AuxVariableName> _to_var_names_converted;
+  std::vector<MooseEnum> _source_types_converted;
 
   bool _has_converted_variables;
+  bool _has_converted_source_types;
 };
