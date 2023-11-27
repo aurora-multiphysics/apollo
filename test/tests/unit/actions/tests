@@ -55,4 +55,11 @@
     csvdiff = 'push_lagrange_vector_nearest_location_transfer_master_out_sub_app0.csv'
     requirement = 'Apollo shall have the ability to transfer a Lagrange vector to a subapp using the MultiAppGeneralFieldNearestLocationTransfer.'
   []
+
+  [./PushPullLagrangeVectorNearestLocationTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_lagrange_vector_nearest_location_transfer_master.i'
+    csvdiff = 'push_pull_lagrange_vector_nearest_location_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer a Lagrange vector to and from a subapp using the MultiAppGeneralFieldNearestLocationTransfer'
+  [] 
 []
