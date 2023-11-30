@@ -227,7 +227,7 @@ MFEMMesh::buildMFEMBoundaryElements(const CubitElementInfo & element_info,
 
   boundary.SetSize(NumOfBdrElements);
 
-  const int num_face_vertices = element_info.getNumFaceCornerNodes();
+  const int num_face_vertices = element_info.getFaceInfo().numFaceCornerNodes();
 
   int renumbered_vertex_ids[num_face_vertices];
 
@@ -241,15 +241,15 @@ MFEMMesh::buildMFEMBoundaryElements(const CubitElementInfo & element_info,
       for (int knode = 0; knode < num_face_vertices; knode++)
       {
         const int libmesh_node_id =
-            boundary_nodes[jelement * element_info.getNumFaceNodes() + knode];
+            boundary_nodes[jelement * element_info.getFaceInfo().numFaceNodes() + knode];
 
         // Renumber vertex ("node") IDs so they're contiguous and start from 0.
         renumbered_vertex_ids[knode] =
             _mfem_vertex_index_for_libmesh_corner_node_id[libmesh_node_id];
       }
 
-      boundary[iboundary++] =
-          buildMFEMFaceElement(element_info.getFaceType(), renumbered_vertex_ids, boundary_id);
+      boundary[iboundary++] = buildMFEMFaceElement(
+          element_info.getFaceInfo().faceType(), renumbered_vertex_ids, boundary_id);
     }
   }
 }
@@ -308,20 +308,20 @@ MFEMMesh::buildMFEMFaceElement(const int face_type, const int * vertex_ids, cons
 
   switch (face_type)
   {
-    case CubitElementInfo::FACE_EDGE2:
-    case CubitElementInfo::FACE_EDGE3:
+    case CubitFaceInfo::FACE_EDGE2:
+    case CubitFaceInfo::FACE_EDGE3:
     {
       new_face = new mfem::Segment(vertex_ids, boundary_id);
       break;
     }
-    case CubitElementInfo::FACE_TRI3:
-    case CubitElementInfo::FACE_TRI6:
+    case CubitFaceInfo::FACE_TRI3:
+    case CubitFaceInfo::FACE_TRI6:
     {
       new_face = new mfem::Triangle(vertex_ids, boundary_id);
       break;
     }
-    case CubitElementInfo::FACE_QUAD4:
-    case CubitElementInfo::FACE_QUAD9:
+    case CubitFaceInfo::FACE_QUAD4:
+    case CubitFaceInfo::FACE_QUAD9:
     {
       new_face = new mfem::Quadrilateral(vertex_ids, boundary_id);
       break;

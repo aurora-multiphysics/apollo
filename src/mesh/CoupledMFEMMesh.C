@@ -424,7 +424,8 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_bound
     auto & boundary_element_sides = side_ids_for_boundary_id[boundary_id];
 
     // Create vector to hold all nodes on boundary.
-    std::vector<int> boundary_nodes(boundary_element_ids.size() * _element_info.getNumFaceNodes());
+    std::vector<int> boundary_nodes(boundary_element_ids.size() *
+                                    _element_info.getFaceInfo().numFaceNodes());
 
     // Iterate over elements on boundary.
     for (int jelement = 0; jelement < boundary_element_ids.size(); jelement++)
@@ -439,14 +440,15 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_bound
       auto nodes_of_element_on_side = element_ptr->nodes_on_side(boundary_element_side);
 
       // Iterate over nodes on boundary side of element.
-      for (int knode = 0; knode < _element_info.getNumFaceNodes(); knode++)
+      for (int knode = 0; knode < _element_info.getFaceInfo().numFaceNodes(); knode++)
       {
         // Get the global node ID of each node.
         const int local_node_id = nodes_of_element_on_side[knode];
         const int global_node_id = element_ptr->node_id(local_node_id);
 
         // Add to boundary_nodes vector.
-        boundary_nodes[jelement * _element_info.getNumFaceNodes() + knode] = global_node_id;
+        boundary_nodes[jelement * _element_info.getFaceInfo().numFaceNodes() + knode] =
+            global_node_id;
       }
     }
 
