@@ -22,7 +22,7 @@ Alternatively, up-to-date images of only the current dependencies for Apollo can
 ```
 docker pull alexanderianblair/apollo-deps:master
 ```
-for those who with to build Apollo themselves.
+for those who wish to build Apollo themselves.
 
 Dockerfiles used to build these images can be found in the `apollo/docker` directory.
 # Building Software and Tests
