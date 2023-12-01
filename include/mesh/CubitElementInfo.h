@@ -111,6 +111,7 @@ protected:
   std::vector<CubitFaceInfo> getWedge6FaceInfo() const;
   std::vector<CubitFaceInfo> getWedge15FaceInfo() const;
 
+private:
   /**
    * Stores the element type.
    */
