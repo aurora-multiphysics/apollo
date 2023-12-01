@@ -13,6 +13,9 @@ CubitFaceInfo::buildCubitFaceInfo()
 {
   switch (_face_type)
   {
+    /**
+     * 2D
+     */
     case (FACE_EDGE2):
     {
       _num_face_nodes = 2;
@@ -25,6 +28,9 @@ CubitFaceInfo::buildCubitFaceInfo()
       _num_face_corner_nodes = 2;
       break;
     }
+    /**
+     * 3D
+     */
     case (FACE_TRI3):
     {
       _num_face_nodes = 3;
@@ -43,9 +49,15 @@ CubitFaceInfo::buildCubitFaceInfo()
       _num_face_corner_nodes = 4;
       break;
     }
+    case (FACE_QUAD8):
+    {
+      _num_face_nodes = 8;
+      _num_face_corner_nodes = 4;
+      break;
+    }
     case (FACE_QUAD9):
     {
-      _num_face_nodes = 9;
+      _num_face_nodes = 9; // Includes center node.
       _num_face_corner_nodes = 4;
       break;
     }
@@ -76,7 +88,7 @@ CubitElementInfo::CubitElementInfo(int num_nodes_per_element, int dimension)
     }
     default:
     {
-      mooseError("Unsupported element dimension ", dimension, ".\n");
+      mooseError("Unsupported element dimension ", dimension, ".");
       break;
     }
   }
@@ -87,49 +99,48 @@ CubitElementInfo::buildCubit2DElementInfo(int num_nodes_per_element)
 {
   _dimension = 2;
   _num_nodes = num_nodes_per_element;
-  _info_for_face.clear();
 
   switch (num_nodes_per_element)
   {
     case 3:
     {
       _element_type = ELEMENT_TRI3;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_EDGE2));
-      _num_faces = 3;
-      _num_corner_nodes = 3;
       _order = 1;
+      _num_corner_nodes = 3;
+      _num_faces = 3;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_EDGE2)};
       break;
     }
     case 6:
     {
       _element_type = ELEMENT_TRI6;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_EDGE3));
-      _num_faces = 3;
-      _num_corner_nodes = 3;
       _order = 2;
+      _num_corner_nodes = 3;
+      _num_faces = 3;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_EDGE3)};
       break;
     }
     case 4:
     {
       _element_type = ELEMENT_QUAD4;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_EDGE2));
-      _num_faces = 4;
-      _num_corner_nodes = 4;
       _order = 1;
+      _num_corner_nodes = 4;
+      _num_faces = 4;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_EDGE2)};
       break;
     }
     case 9:
     {
       _element_type = ELEMENT_QUAD9;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_EDGE3));
-      _num_faces = 4;
-      _num_corner_nodes = 4;
       _order = 2;
+      _num_corner_nodes = 4;
+      _num_faces = 4;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_EDGE3)};
       break;
     }
     default:
     {
-      mooseError("Unsupported 2D element with ", num_nodes_per_element, " nodes per element.\n");
+      mooseError("Unsupported 2D element with ", num_nodes_per_element, " nodes per element.");
       break;
     }
   }
@@ -140,63 +151,98 @@ CubitElementInfo::buildCubit3DElementInfo(int num_nodes_per_element)
 {
   _dimension = 3;
   _num_nodes = num_nodes_per_element;
-  _info_for_face.clear();
 
   switch (num_nodes_per_element)
   {
     case 4:
     {
       _element_type = ELEMENT_TET4;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_TRI3));
-      _num_faces = 4;
-      _num_corner_nodes = 4;
       _order = 1;
+      _num_corner_nodes = 4;
+      _num_faces = 4;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_TRI3)};
       break;
     }
     case 10:
     {
       _element_type = ELEMENT_TET10;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_TRI6));
-      _num_faces = 4;
-      _num_corner_nodes = 4;
       _order = 2;
+      _num_corner_nodes = 4;
+      _num_faces = 4;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_TRI6)};
       break;
     }
     case 8:
     {
       _element_type = ELEMENT_HEX8;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_QUAD4));
-      _num_faces = 6;
-      _num_corner_nodes = 8;
       _order = 1;
+      _num_corner_nodes = 8;
+      _num_faces = 6;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_QUAD4)};
       break;
     }
     case 27:
     {
       _element_type = ELEMENT_HEX27;
-      _info_for_face.push_back(CubitFaceInfo(CubitFaceInfo::FACE_QUAD9));
-      _num_faces = 6;
-      _num_corner_nodes = 8;
       _order = 2;
+      _num_corner_nodes = 8;
+      _num_faces = 6;
+      _face_info = {CubitFaceInfo(CubitFaceInfo::FACE_QUAD9)};
+      break;
+    }
+    case 6:
+    {
+      _element_type = ELEMENT_WEDGE6;
+      _order = 1;
+      _num_corner_nodes = 6;
+      _num_faces = 5;
+      _face_info = getWedge6FaceInfo();
+      break;
+    }
+    case 15:
+    {
+      _element_type = ELEMENT_WEDGE15;
+      _order = 2;
+      _num_corner_nodes = 6;
+      _num_faces = 5;
+      _face_info = getWedge15FaceInfo();
       break;
     }
     default:
     {
-      mooseError("Unsupported 3D element with ", num_nodes_per_element, " nodes per element.\n");
+      mooseError("Unsupported 3D element with ", num_nodes_per_element, " nodes per element.");
       break;
     }
   }
+}
+
+std::vector<CubitFaceInfo>
+CubitElementInfo::getWedge6FaceInfo() const
+{
+  CubitFaceInfo quad4 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD4); // Faces 1, 2, 3 (Exodus)
+  CubitFaceInfo tri3 = CubitFaceInfo(CubitFaceInfo::FACE_TRI3);   // Faces 4, 5 (Exodus)
+
+  return {quad4, quad4, quad4, tri3, tri3};
+}
+
+std::vector<CubitFaceInfo>
+CubitElementInfo::getWedge15FaceInfo() const
+{
+  CubitFaceInfo quad8 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD8); // Faces 1, 2, 3 (Exodus)
+  CubitFaceInfo tri6 = CubitFaceInfo(CubitFaceInfo::FACE_TRI3);   // Faces 4, 5 (Exodus)
+
+  return {quad8, quad8, quad8, tri6, tri6};
 }
 
 const CubitFaceInfo &
 CubitElementInfo::getFaceInfo(int iface) const
 {
   /**
-   * Check _info_for_face initialized.
+   * Check _face_info initialized.
    */
-  if (_info_for_face.empty())
+  if (_face_info.empty())
   {
-    mooseError("_info_for_face is empty.");
+    mooseError("_face_info is empty.");
   }
 
   /**
@@ -212,15 +258,15 @@ CubitElementInfo::getFaceInfo(int iface) const
    * Case 1: single face type --> only store a single face.
    * Case 2: multiple face types --> store each face. Return face at index.
    */
-  bool is_single_face_type = (_info_for_face.size() == 1);
+  bool is_single_face_type = (_face_info.size() == 1);
 
   /**
    * Check vector size matches _num_Faces for multiple face types.
    */
-  if (!is_single_face_type && _info_for_face.size() != _num_faces)
+  if (!is_single_face_type && _face_info.size() != _num_faces)
   {
-    mooseError("_info_for_face.size() != _num_faces.");
+    mooseError("_face_info.size() != _num_faces.");
   }
 
-  return is_single_face_type ? _info_for_face.front() : _info_for_face[iface];
+  return is_single_face_type ? _face_info.front() : _face_info[iface];
 };

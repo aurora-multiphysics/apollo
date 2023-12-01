@@ -22,7 +22,8 @@ public:
     FACE_TRI3,
     FACE_TRI6,
     FACE_QUAD4,
-    FACE_QUAD9
+    FACE_QUAD8, // order = 2.
+    FACE_QUAD9  // order = 2. Center node.
   };
 
   /**
@@ -78,8 +79,12 @@ public:
     ELEMENT_TET4,
     ELEMENT_TET10,
     ELEMENT_HEX8,
-    ELEMENT_HEX27
-  }; // TODO: - extend to Wedge6, Wedge15 element types.
+    ELEMENT_HEX27,
+    ELEMENT_WEDGE6,
+    ELEMENT_WEDGE15 // order = 2. No center node.
+  };
+
+  CubitElementInfo(CubitElementType element_type);
 
   inline CubitElementType getElementType() const { return _element_type; }
 
@@ -101,19 +106,22 @@ protected:
   void buildCubit3DElementInfo(int num_nodes_per_element);
 
   /**
+   * Sets the _face_info vector.
+   */
+  std::vector<CubitFaceInfo> getWedge6FaceInfo() const;
+  std::vector<CubitFaceInfo> getWedge15FaceInfo() const;
+
+  /**
    * Stores the element type.
    */
   CubitElementType _element_type;
 
   /**
-   * Stores info about the face types (assume all faces are identical!)
+   * NB: first-order elements have only nodes on the "corners". Second-order have
+   * additional nodes between "corner" nodes.
    */
-  std::vector<CubitFaceInfo> _info_for_face;
-
-  /**
-   * Store the number of faces.
-   */
-  uint8_t _num_faces;
+  uint8_t _order;
+  uint8_t _dimension;
 
   /**
    * NB: "corner nodes" refer to MOOSE nodes at the corners of an element. In
@@ -123,9 +131,8 @@ protected:
   uint8_t _num_corner_nodes;
 
   /**
-   * NB: first-order elements have only nodes on the "corners". Second-order have
-   * additional nodes between "corner" nodes.
+   * Stores info about the face types.
    */
-  uint8_t _order;
-  uint8_t _dimension;
+  uint8_t _num_faces;
+  std::vector<CubitFaceInfo> _face_info;
 };
