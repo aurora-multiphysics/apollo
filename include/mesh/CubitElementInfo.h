@@ -4,9 +4,6 @@
 
 // TODO: Later add another class on top which will store the element type for each block.
 
-// Forwards declaration.
-class CubitFaceInfo;
-
 /**
  * CubitFaceInfo
  *
@@ -82,14 +79,19 @@ public:
     ELEMENT_TET10,
     ELEMENT_HEX8,
     ELEMENT_HEX27
-  };
+  }; // TODO: - extend to Wedge6, Wedge15 element types.
 
   inline CubitElementType getElementType() const { return _element_type; }
 
   /**
    * Returns constant reference to face info.
    */
-  inline const CubitFaceInfo & getFaceInfo() const { return _face_info; }
+  inline const CubitFaceInfo & getFaceInfo() const { return _info_for_face.front(); }
+
+  /**
+   * Returns info for a particular face.
+   */
+  const CubitFaceInfo & getFaceInfo(int iface) const;
 
   inline uint8_t getNumNodes() const { return _num_nodes; }
   inline uint8_t getNumCornerNodes() const { return _num_corner_nodes; }
@@ -109,10 +111,10 @@ protected:
   /**
    * Stores info about the face types (assume all faces are identical!)
    */
-  CubitFaceInfo _face_info;
-
-  /**
-   * NB: "corner nodes" refer to MOOSE nodes at the corners of an element. In
+  std::vector<CubitFaceInfo> _info_for_face; /*
+    * NB: "corner nodes" refer to MOOSE nodes at the corners of an element. In
+   /**
+    * NB: "corner nodes" refer to MOOSE nodes at the corners of an element. In
    * MFEM this is referred to as "vertices".
    */
   uint8_t _num_nodes;
