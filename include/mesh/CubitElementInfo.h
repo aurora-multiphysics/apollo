@@ -84,14 +84,11 @@ public:
   inline CubitElementType getElementType() const { return _element_type; }
 
   /**
-   * Returns constant reference to face info.
-   */
-  inline const CubitFaceInfo & getFaceInfo() const { return _info_for_face.front(); }
-
-  /**
    * Returns info for a particular face.
    */
-  const CubitFaceInfo & getFaceInfo(int iface) const;
+  const CubitFaceInfo & getFaceInfo(int iface = 0) const;
+
+  inline uint8_t getNumFaces() const { return _num_faces; }
 
   inline uint8_t getNumNodes() const { return _num_nodes; }
   inline uint8_t getNumCornerNodes() const { return _num_corner_nodes; }
@@ -104,17 +101,22 @@ protected:
   void buildCubit3DElementInfo(int num_nodes_per_element);
 
   /**
-   * Stores element type.
+   * Stores the element type.
    */
   CubitElementType _element_type;
 
   /**
    * Stores info about the face types (assume all faces are identical!)
    */
-  std::vector<CubitFaceInfo> _info_for_face; /*
-    * NB: "corner nodes" refer to MOOSE nodes at the corners of an element. In
-   /**
-    * NB: "corner nodes" refer to MOOSE nodes at the corners of an element. In
+  std::vector<CubitFaceInfo> _info_for_face;
+
+  /**
+   * Store the number of faces.
+   */
+  uint8_t _num_faces;
+
+  /**
+   * NB: "corner nodes" refer to MOOSE nodes at the corners of an element. In
    * MFEM this is referred to as "vertices".
    */
   uint8_t _num_nodes;
