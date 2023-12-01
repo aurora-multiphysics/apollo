@@ -39,8 +39,7 @@ CoupledMFEMMesh::safeClone() const
 
 void
 CoupledMFEMMesh::buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                                   std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                                   std::map<int, int> & num_elements_for_boundary_id)
+                                   std::map<int, std::vector<int>> & side_ids_for_boundary_id)
 {
   buildBndElemList();
 
@@ -89,8 +88,6 @@ CoupledMFEMMesh::buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids
 
     element_ids_for_boundary_id[boundary_id] = element_ids;
     side_ids_for_boundary_id[boundary_id] = side_ids;
-
-    num_elements_for_boundary_id[boundary_id] = element_ids.size();
   }
 }
 
@@ -297,26 +294,24 @@ CoupledMFEMMesh::buildMFEMMesh()
   // 7.
   // element_ids_for_boundary_id stores the ids of each element on each boundary.
   // side_ids_for_boundary_id stores the sides of those elements that are on each boundary.
-  // num_elements_for_boundary_id stores the number of elements contained on each boundary.
   std::map<int, std::vector<int>> element_ids_for_boundary_id;
   std::map<int, std::vector<int>> side_ids_for_boundary_id;
-  std::map<int, int> num_elements_for_boundary_id;
 
-  buildBoundaryInfo(
-      element_ids_for_boundary_id, side_ids_for_boundary_id, num_elements_for_boundary_id);
+  buildBoundaryInfo(element_ids_for_boundary_id, side_ids_for_boundary_id);
 
   // 8. Get a vector containing all boundary IDs on sides of semi-local elements.
   std::vector<int> unique_side_boundary_ids = getSideBoundaryIDs();
 
-  // 9.
+  // 9. // TODO: - update documentation.
   // node_ids_for_boundary_id maps from the boundary ID to a vector containing
   // the nodes of each element on the boundary that correspond to the face of the boundary.
-  std::map<int, std::vector<int>> node_ids_for_boundary_id;
+  std::map<int, std::vector<std::pair<int, std::vector<unsigned int>>>>
+      element_info_for_boundary_id;
 
   buildBoundaryNodeIDs(unique_side_boundary_ids,
                        element_ids_for_boundary_id,
                        side_ids_for_boundary_id,
-                       node_ids_for_boundary_id);
+                       element_info_for_boundary_id);
 
   // 10.
   // Call the correct initializer.
@@ -331,10 +326,9 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               unique_block_ids,
                                               unique_side_boundary_ids,
                                               unique_corner_node_ids,
-                                              num_elements_for_boundary_id,
                                               element_ids_for_block_id,
                                               node_ids_for_element_id,
-                                              node_ids_for_boundary_id,
+                                              element_info_for_boundary_id,
                                               coordinates_for_node_id);
       break;
     }
@@ -345,10 +339,9 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               unique_block_ids,
                                               unique_side_boundary_ids,
                                               unique_corner_node_ids,
-                                              num_elements_for_boundary_id,
                                               element_ids_for_block_id,
                                               node_ids_for_element_id,
-                                              node_ids_for_boundary_id,
+                                              element_info_for_boundary_id,
                                               coordinates_for_node_id,
                                               _libmesh_node_id_for_mfem_node_id,
                                               _mfem_node_id_for_libmesh_node_id);
@@ -411,21 +404,25 @@ CoupledMFEMMesh::buildMFEMParMesh()
 }
 
 void
-CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_boundary_ids,
-                                      std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                                      std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                                      std::map<int, std::vector<int>> & node_ids_for_boundary_id)
+CoupledMFEMMesh::buildBoundaryNodeIDs(
+    const std::vector<int> & unique_side_boundary_ids,
+    std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+    std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+    std::map<int, std::vector<std::pair<int, std::vector<unsigned int>>>> &
+        boundary_element_info_for_boundary_id)
 {
+  boundary_element_info_for_boundary_id.clear();
+
   // Iterate over all boundary IDs.
   for (int boundary_id : unique_side_boundary_ids)
   {
-    // Get element IDs  of element on boundary (and their sides that are on boundary).
+    // Get element IDs of element on boundary (and their sides that are on boundary).
     auto & boundary_element_ids = element_ids_for_boundary_id[boundary_id];
     auto & boundary_element_sides = side_ids_for_boundary_id[boundary_id];
 
-    // Create vector to hold all nodes on boundary.
-    std::vector<int> boundary_nodes(boundary_element_ids.size() *
-                                    _element_info.getFaceInfo().numFaceNodes());
+    // Create vector to store the node ids of all corner nodes that lie on the boundary.
+    auto vector_size = boundary_element_ids.size();
+    std::vector<std::pair<int, std::vector<unsigned int>>> all_boundary_element_info(vector_size);
 
     // Iterate over elements on boundary.
     for (int jelement = 0; jelement < boundary_element_ids.size(); jelement++)
@@ -439,20 +436,27 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(const std::vector<int> & unique_side_bound
       // Get vector of local node IDs on boundary side of element.
       auto nodes_of_element_on_side = element_ptr->nodes_on_side(boundary_element_side);
 
-      // Iterate over nodes on boundary side of element.
-      for (int knode = 0; knode < _element_info.getFaceInfo().numFaceNodes(); knode++)
+      // Iterate over nodes on boundary side of element and replace local IDs with global IDs.
+      for (int knode = 0; knode < nodes_of_element_on_side.size(); knode++)
       {
         // Get the global node ID of each node.
         const int local_node_id = nodes_of_element_on_side[knode];
         const int global_node_id = element_ptr->node_id(local_node_id);
 
-        // Add to boundary_nodes vector.
-        boundary_nodes[jelement * _element_info.getFaceInfo().numFaceNodes() + knode] =
-            global_node_id;
+        nodes_of_element_on_side[knode] = global_node_id;
       }
+
+      // Store (side_id, global_node_ids).
+      std::pair<int, std::vector<unsigned int>> boundary_element_info;
+
+      boundary_element_info.first = boundary_element_side;
+      boundary_element_info.second = nodes_of_element_on_side;
+
+      // Add to vector.
+      all_boundary_element_info[jelement] = boundary_element_info;
     }
 
-    // Add to node_ids_for_boundary_id for boundary_id.
-    node_ids_for_boundary_id[boundary_id] = boundary_nodes;
+    // Add to the map.
+    boundary_element_info_for_boundary_id[boundary_id] = all_boundary_element_info;
   }
 }
