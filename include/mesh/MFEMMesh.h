@@ -28,8 +28,8 @@ public:
            const std::vector<int> & unique_libmesh_corner_node_ids,
            std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
            std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-           std::map<int, std::vector<std::pair<int, std::vector<unsigned int>>>> &
-               libmesh_element_info_for_boundary_id,
+           std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+           std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
            std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
 
   /**
@@ -42,8 +42,8 @@ public:
            const std::vector<int> & unique_libmesh_corner_node_ids,
            std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
            std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-           std::map<int, std::vector<std::pair<int, std::vector<unsigned int>>>> &
-               libmesh_element_info_for_boundary_id,
+           std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+           std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
            std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
            std::map<int, int> & libmesh_node_id_for_mfem_node_id,
            std::map<int, int> & mfem_node_id_for_libmesh_node_id);
@@ -68,8 +68,8 @@ protected:
       const std::vector<int> & unique_libmesh_corner_node_ids,
       std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
       std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-      std::map<int, std::vector<std::pair<int, std::vector<unsigned int>>>> &
-          libmesh_element_info_for_boundary_id,
+      std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+      std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id);
 
   /**
@@ -92,11 +92,11 @@ protected:
   /**
    * Construct the boundary array of elements.
    */
-  void
-  buildMFEMBoundaryElements(const CubitElementInfo & element_info,
-                            const std::vector<int> & unique_side_boundary_ids,
-                            std::map<int, std::vector<std::pair<int, std::vector<unsigned int>>>> &
-                                libmesh_element_info_for_boundary_id);
+  void buildMFEMBoundaryElements(
+      const CubitElementInfo & element_info,
+      const std::vector<int> & unique_side_boundary_ids,
+      std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+      std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id);
 
   /**
    * Returns a pointer to an mfem::Element.
