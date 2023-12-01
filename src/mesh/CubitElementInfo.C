@@ -219,19 +219,21 @@ CubitElementInfo::buildCubit3DElementInfo(int num_nodes_per_element)
 std::vector<CubitFaceInfo>
 CubitElementInfo::getWedge6FaceInfo() const
 {
-  CubitFaceInfo quad4 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD4); // Faces 1, 2, 3 (Exodus)
-  CubitFaceInfo tri3 = CubitFaceInfo(CubitFaceInfo::FACE_TRI3);   // Faces 4, 5 (Exodus)
+  // Refer to "cell_prism.C" line 127.
+  // We are using the same side ordering as used in LibMesh.
+  CubitFaceInfo tri3 = CubitFaceInfo(CubitFaceInfo::FACE_TRI3);   // Faces 0, 4 (LibMesh)
+  CubitFaceInfo quad4 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD4); // Faces 1, 2, 3 (LibMesh)
 
-  return {quad4, quad4, quad4, tri3, tri3};
+  return {tri3, quad4, quad4, quad4, tri3};
 }
 
 std::vector<CubitFaceInfo>
 CubitElementInfo::getWedge15FaceInfo() const
 {
-  CubitFaceInfo quad8 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD8); // Faces 1, 2, 3 (Exodus)
-  CubitFaceInfo tri6 = CubitFaceInfo(CubitFaceInfo::FACE_TRI3);   // Faces 4, 5 (Exodus)
+  CubitFaceInfo tri6 = CubitFaceInfo(CubitFaceInfo::FACE_TRI3);   // Faces 0, 4
+  CubitFaceInfo quad8 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD8); // Faces 1, 2, 3
 
-  return {quad8, quad8, quad8, tri6, tri6};
+  return {tri6, quad8, quad8, quad8, tri6};
 }
 
 const CubitFaceInfo &
