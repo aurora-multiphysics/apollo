@@ -94,6 +94,7 @@
     conductivity = electrical_conductivity
     h1_fespace = H1FESpace
     hcurl_fespace = HCurlFESpace
+    block = '1 2'
   []
 []
 
