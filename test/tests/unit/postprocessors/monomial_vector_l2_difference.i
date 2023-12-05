@@ -1,14 +1,13 @@
 [Mesh]
-  type = CoupledMFEMMesh
-  file = gold/mug.e
+  type = GeneratedMesh
+  nx = 5
+  ny = 5
+  nz = 5
   dim = 3
 []
 
-[Variables]
-  [moose_diffused]
-    family = LAGRANGE
-    order = FIRST
-  []
+[Problem]
+  solve = false 
 []
 
 [AuxVariables]
@@ -25,13 +24,6 @@
   [tertiary_monomial_vector]
     family = MONOMIAL_VEC
     order = CONSTANT
-  []
-[]
-
-[Kernels]
-  [diffusion]
-    type = Diffusion
-    variable = moose_diffused
   []
 []
 
@@ -75,22 +67,6 @@
     type = VectorFunctionIC
     variable = tertiary_monomial_vector
     function = tertiary_function  
-  []
-[]
-
-[BCs]
-  [bottom]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'bottom'
-    value = 1
-  []
-
-  [top]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'top'
-    value = 0
   []
 []
 

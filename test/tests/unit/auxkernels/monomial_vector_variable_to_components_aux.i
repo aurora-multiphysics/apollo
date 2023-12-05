@@ -1,14 +1,13 @@
 [Mesh]
-  type = CoupledMFEMMesh
-  file = gold/mug.e
+  type = GeneratedMesh
+  nx = 5
+  ny = 5
+  nz = 5
   dim = 3
 []
 
-[Variables]
-  [moose_diffused]
-    family = LAGRANGE
-    order = FIRST
-  []
+[Problem]
+  solve = false 
 []
 
 [AuxVariables]
@@ -104,13 +103,6 @@
   []
 []
 
-[Kernels]
-  [diffusion]
-    type = Diffusion
-    variable = moose_diffused
-  []
-[]
-
 [Postprocessors]
   # 4. Compare test and target components. Should match!
   [compare_x]
@@ -129,22 +121,6 @@
     type = ElementL2Difference
     variable = test_z
     other_variable = target_z
-  []
-[]
-
-[BCs]
-  [bottom]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'bottom'
-    value = 1
-  []
-
-  [top]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'top'
-    value = 0
   []
 []
 

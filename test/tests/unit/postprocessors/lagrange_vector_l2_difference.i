@@ -1,14 +1,13 @@
 [Mesh]
-  type = CoupledMFEMMesh
-  file = gold/mug.e
+  type = GeneratedMesh
+  nx = 5
+  ny = 5
+  nz = 5
   dim = 3
 []
 
-[Variables]
-  [moose_diffused]
-    family = LAGRANGE
-    order = FIRST
-  []
+[Problem]
+  solve = false 
 []
 
 [AuxVariables]
@@ -25,13 +24,6 @@
   [tertiary_lagrange_vector]
     family = LAGRANGE_VEC
     order = FIRST
-  []
-[]
-
-[Kernels]
-  [diffusion]
-    type = Diffusion
-    variable = moose_diffused
   []
 []
 
@@ -78,22 +70,6 @@
   []
 []
 
-[BCs]
-  [bottom]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'bottom'
-    value = 1
-  []
-
-  [top]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'top'
-    value = 0
-  []
-[]
-
 [Postprocessors]
   [primary_secondary_difference]
     type = ElementVectorL2Difference
@@ -117,5 +93,4 @@
 
 [Outputs]
   csv = true
-  exodus = false
 []

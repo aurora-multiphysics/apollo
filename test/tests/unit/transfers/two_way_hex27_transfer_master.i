@@ -4,11 +4,8 @@
   dim = 3
 []
 
-[Variables]
-  [moose_diffused]
-    family = LAGRANGE
-    order = SECOND
-  []
+[Problem]
+  solve = false 
 []
 
 [AuxVariables]
@@ -20,29 +17,6 @@
   [test_variable_received]
     family = LAGRANGE
     order = SECOND
-  []
-[]
-
-[Kernels]
-  [diffusion]
-    type = Diffusion
-    variable = moose_diffused
-  []
-[]
-
-[BCs]
-  [bottom]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'bottom'
-    value = 1
-  []
-
-  [top]
-    type = DirichletBC
-    variable = moose_diffused
-    boundary = 'top'
-    value = 0
   []
 []
 
@@ -72,14 +46,14 @@
   [sub_app]
     type = TransientMultiApp
     positions = '0 0 0'
-    input_files = 'two_way_hex27_transfer_mfem.i'
+    input_files = 'two_way_hex27_transfer_subapp.i'
     execute_on = timestep_begin
   []
 []
 
 [Transfers]
   [push_test_variable]
-    type = MultiAppNearestNodeTransfer
+    type = MultiAppCopyTransfer
 
     # Transfer to the sub-app from this app.
     to_multi_app = sub_app
@@ -88,17 +62,17 @@
     source_variable = test_variable_sent
 
     # The name of the auxiliary variable in the sub-app.
-    variable = test_variable_on_mfem_side
+    variable = test_variable_on_subapp_side
   []
 
   [pull_test_variable]
-    type = MultiAppNearestNodeTransfer
+    type = MultiAppCopyTransfer
 
     # Transfer from the sub-app to this app.
     from_multi_app = sub_app
 
     # The name of the variable in the sub-app.
-    source_variable = test_variable_on_mfem_side
+    source_variable = test_variable_on_subapp_side
 
     # The name of the auxiliary variable in this app.
     variable = test_variable_received
@@ -114,5 +88,4 @@
 
 [Outputs]
   csv = true
-  exodus = false
 []
