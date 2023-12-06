@@ -47,7 +47,7 @@
   [sub_app]
     type = TransientMultiApp
     positions = '0 0 0'
-    input_files = 'pull_hex27_transfer_subapp.i'
+    input_files = 'pull_hex27_transfer_sub_app.i'
     execute_on = timestep_begin
   []
 []
