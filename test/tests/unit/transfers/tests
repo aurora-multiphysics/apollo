@@ -19,10 +19,10 @@
   #   requirement = 'Apollo shall have the ability to couple second order MOOSE LAGRANGE variables to MFEM H1 conforming gridfunctions.'
   # [] 
 
-  [./TwoWayHex27Transfer]
+  [./PushPullHex27Transfer]
     type = 'CSVDiff'
-    input = 'two_way_hex27_transfer_master.i'
-    csvdiff = 'two_way_hex27_transfer_master_out.csv'
+    input = 'push_pull_hex27_transfer_master.i'
+    csvdiff = 'push_pull_hex27_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order hex27 elements.'
     max_parallel = 1
   []
@@ -35,10 +35,10 @@
     max_parallel = 1
   []
 
-  [./TwoWayTet10Transfer]
+  [./PushPullTet10Transfer]
     type = 'CSVDiff'
-    input = 'two_way_tet10_transfer_master.i'
-    csvdiff = 'two_way_tet10_transfer_master_out.csv'
+    input = 'push_pull_tet10_transfer_master.i'
+    csvdiff = 'push_pull_tet10_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order tet10 elements.'
     max_parallel = 1
   []

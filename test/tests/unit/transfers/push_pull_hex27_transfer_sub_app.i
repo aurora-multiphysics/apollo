@@ -1,3 +1,7 @@
+#
+# NB: Currently MFEMProblem requires a dummy auxvariable and kernel.
+#
+
 [Mesh]
   type = CoupledMFEMMesh
   file = gold/simple-cube-hex27.e
@@ -6,7 +10,6 @@
 
 [Problem]
   type = MFEMProblem
-  use_glvis = true
 []
 
 [Formulation]
@@ -14,58 +17,72 @@
 []
 
 [AuxVariables]
-  [mfem_diffused]
+  [dummy]
+    family = LAGRANGE
+    order = SECOND
+  []
+
+  [received_variable_subapp]
     family = LAGRANGE
     order = SECOND
   []
 []
 
-[Functions]
-  [value_bottom]
-    type = ParsedFunction
-    value = 1.0
+[Kernels]
+  [dummy_kernel]
+    type = MFEMDiffusionKernel
+    variable = dummy
+    coefficient = one_coefficient
   []
+[]
+
+[Functions]
+  [set_variable]
+    type = ParsedFunction
+    expression = '42 + 100*x*x'
+  []
+
   [value_top]
     type = ParsedFunction
-    value = 0.0
+    expression = 0.0
+  []
+
+  [value_bottom]
+    type = ParsedFunction
+    expression = 1.0
   []
 []
 
 [BCs]
+  [top]
+    type = MFEMScalarDirichletBC
+    variable = dummy
+    boundary = '2'
+    coefficient = top_coefficient
+  []
+  
   [bottom]
     type = MFEMScalarDirichletBC
-    variable = mfem_diffused
+    variable = dummy
     boundary = '1'
-    coefficient = BottomValue
-  []
-  [low_terminal]
-    type = MFEMScalarDirichletBC
-    variable = mfem_diffused
-    boundary = '2'
-    coefficient = TopValue
+    coefficient = bottom_coefficient
   []
 []
 
 [Coefficients]
-  [one]
+  [one_coefficient]
     type = MFEMConstantCoefficient
     value = 1.0
   []
-  [TopValue]
+
+  [top_coefficient]
     type = MFEMFunctionCoefficient
     function = value_top
   []
-  [BottomValue]
+
+  [bottom_coefficient]
     type = MFEMFunctionCoefficient
     function = value_bottom
-  []
-[]
-
-[Kernels]
-  [diffusion]
-    type = MFEMDiffusionKernel
-    variable = mfem_diffused
-    coefficient = one
   []
 []
 
@@ -74,7 +91,4 @@
   dt = 1.0
   start_time = 0.0
   end_time = 1.0
-
-  l_tol = 1e-16
-  l_max_its = 1000
 []
