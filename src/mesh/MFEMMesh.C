@@ -309,7 +309,6 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
       break;
     }
     case CubitElementInfo::ELEMENT_WEDGE6:
-    case CubitElementInfo::ELEMENT_WEDGE15:
     {
       new_element = new mfem::Wedge(vertex_ids, block_id);
       break;
