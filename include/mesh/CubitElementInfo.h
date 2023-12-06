@@ -12,7 +12,7 @@
 class CubitFaceInfo
 {
 public:
-  CubitFaceInfo() = default; // TODO: - delete this to avoid failing to initialize.
+  CubitFaceInfo() = delete;
   ~CubitFaceInfo() = default;
 
   enum CubitFaceType
@@ -83,8 +83,6 @@ public:
     ELEMENT_WEDGE6,
     ELEMENT_PYRAMID5
   };
-
-  CubitElementInfo(CubitElementType element_type);
 
   inline CubitElementType getElementType() const { return _element_type; }
 
