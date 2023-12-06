@@ -58,4 +58,13 @@
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using wedge6 (prism6) elements.'
     max_parallel = 1
   []
+
+
+  [./PushPullWedge6Transfer]
+    type = 'CSVDiff'
+    input = 'push_pull_wedge6_transfer_master.i'
+    csvdiff = 'push_pull_wedge6_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using wedge6 (prism6) elements.'
+    max_parallel = 1
+  []
 []
