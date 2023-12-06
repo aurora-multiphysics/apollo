@@ -27,10 +27,10 @@
     max_parallel = 1
   []
 
-  [./OneWayHex27Transfer]
+  [./PullHex27Transfer]
     type = 'CSVDiff'
-    input = 'one_way_hex27_transfer_master.i'
-    csvdiff = 'one_way_hex27_transfer_master_out.csv'
+    input = 'pull_hex27_transfer_master.i'
+    csvdiff = 'pull_hex27_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order hex27 elements.'
     max_parallel = 1
   []
