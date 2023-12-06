@@ -74,4 +74,12 @@
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using pyramid5 elements.'
     max_parallel = 1
   []
+
+  [./PushPullPyramid5Transfer]
+    type = 'CSVDiff'
+    input = 'push_pull_pyramid5_transfer_master.i'
+    csvdiff = 'push_pull_pyramid5_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using pyramid5 elements.'
+    max_parallel = 1
+  []
 []
