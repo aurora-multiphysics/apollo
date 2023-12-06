@@ -123,6 +123,7 @@ protected:
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
 
+private:
   /**
    * The element and face type used in the MOOSE mesh. We currently only support
    * a single element type. Support for additional element types in a mesh will
