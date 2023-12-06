@@ -353,6 +353,75 @@ CoupledMFEMMesh::buildMFEMMesh()
       break;
     }
   }
+
+  /**
+   * Debugging print-out.
+   */
+  bool debug = true;
+
+  if (debug)
+  {
+    FILE * fp = fopen("/opt/moose_output.txt", "w");
+
+    const MeshBase & lib_mesh = getMesh();
+
+    const int num_elements = lib_mesh.n_elem();
+
+    for (int ielement = 0; ielement < num_elements; ielement++)
+    {
+      auto element_ptr = lib_mesh.elem_ptr(ielement);
+
+      fprintf(fp, "Element %d:\n", ielement);
+
+      // fprintf(fp, "*** Element %3d ***\n", ielement);
+
+      for (int iface = 0; iface < element_ptr->n_faces(); iface++)
+      {
+        auto face_nodes = element_ptr->nodes_on_side(iface);
+
+        fprintf(fp, "\tFace %d with %d vertices:\n", iface, face_nodes.size());
+
+        for (auto face_node : face_nodes)
+        {
+          auto node_ptr = element_ptr->node_ptr(face_node);
+
+          auto coord_x = (*node_ptr)(0);
+          auto coord_y = (*node_ptr)(1);
+          auto coord_z = (*node_ptr)(2);
+
+          fprintf(fp,
+                  "\t\t(%.2lf, %.2lf, %.2lf) -- %d\n",
+                  coord_x,
+                  coord_y,
+                  coord_z,
+                  element_ptr->node_id(face_node));
+        }
+      }
+
+      fprintf(fp, "\n");
+
+      for (int inode = 0; inode < element_ptr->n_nodes(); inode++)
+      {
+        auto node_ptr = element_ptr->node_ptr(inode);
+
+        auto coord_x = (*node_ptr)(0);
+        auto coord_y = (*node_ptr)(1);
+        auto coord_z = (*node_ptr)(2);
+
+        // fprintf(fp, "%d: (%.2lf, %.2lf, %.2lf)\n", inode, coord_x, coord_y, coord_z);
+        fprintf(fp,
+                "(%.2lf, %.2lf, %.2lf) -- %d\n",
+                coord_x,
+                coord_y,
+                coord_z,
+                element_ptr->node_id(inode));
+      }
+
+      fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+  }
 }
 
 std::unique_ptr<int[]>

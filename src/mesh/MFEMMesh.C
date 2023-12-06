@@ -38,6 +38,67 @@ MFEMMesh::MFEMMesh(
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
   FinalizeMesh();
+
+  bool debug = true;
+
+  if (debug)
+  {
+    FILE * fp = fopen("/opt/mfem_output.txt", "w");
+
+    mfem::Array<int> the_vertices;
+    mfem::Array<int> the_faces;
+    mfem::Array<int> the_face_orientations;
+    mfem::Array<int> the_face_vertices;
+
+    for (int ielement = 0; ielement < NumOfElements; ielement++)
+    {
+      fprintf(fp, "Element %d:\n", ielement);
+
+      /**
+       * Extract the vertices and faces.
+       */
+      GetElementVertices(ielement, the_vertices);
+      GetElementFaces(ielement, the_faces, the_face_orientations);
+
+      for (auto iface : the_faces)
+      {
+        /**
+         * Get vertices for face.
+         */
+        GetFaceVertices(iface, the_face_vertices);
+
+        fprintf(fp, "\tFace %d with %d vertices:\n", iface, the_face_vertices.Size());
+
+        for (auto iface_vertex : the_face_vertices)
+        {
+          auto vertex = vertices[iface_vertex];
+
+          auto coord_x = vertex(0);
+          auto coord_y = vertex(1);
+          auto coord_z = vertex(2);
+
+          fprintf(fp, "\t\t(%.2lf, %.2lf, %.2lf) -- %d\n", coord_x, coord_y, coord_z, iface_vertex);
+        }
+      }
+
+      fprintf(fp, "\n");
+
+      for (int ivertex : the_vertices)
+      {
+        auto vertex = vertices[ivertex];
+
+        auto coord_x = vertex(0);
+        auto coord_y = vertex(1);
+        auto coord_z = vertex(2);
+
+        fprintf(fp, "(%.2lf, %.2lf, %.2lf) -- %d\n", coord_x, coord_y, coord_z, ivertex);
+      }
+
+      fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+  }
 }
 
 /**
@@ -223,6 +284,12 @@ MFEMMesh::buildMFEMBoundaryElements(
   // Find total number of boundary elements.
   NumOfBdrElements = 0;
 
+  if (unique_side_boundary_ids.empty())
+  {
+    boundary.SetSize(0);
+    return;
+  }
+
   for (int boundary_id : unique_side_boundary_ids)
   {
     NumOfBdrElements += libmesh_node_ids_for_boundary_id[boundary_id].size();
@@ -234,8 +301,13 @@ MFEMMesh::buildMFEMBoundaryElements(
   int iboundary = 0;
   for (int boundary_id : unique_side_boundary_ids)
   {
+    std::cout << "The next boundary_id is " << boundary_id << std::endl;
+
     auto & all_boundary_node_ids = libmesh_node_ids_for_boundary_id[boundary_id];
     auto & all_boundary_side_ids = libmesh_side_ids_for_boundary_id[boundary_id];
+
+    std::cout << "There are " << all_boundary_node_ids.size() << " nodes for this boundary id."
+              << std::endl;
 
     // Iterate over all elements on boundary.
     for (int jelement = 0; jelement < all_boundary_node_ids.size(); jelement++)
@@ -247,6 +319,17 @@ MFEMMesh::buildMFEMBoundaryElements(
       // Get the face information.
       auto & boundary_face_info = element_info.getFaceInfo(boundary_face_id);
 
+      // fprintf(stdout,
+      //         "boundary_face_id #%d has %d corner nodes...\n",
+      //         boundary_face_id,
+      //         boundary_face_info.numFaceCornerNodes());
+
+      // for (auto node_id : boundary_node_ids)
+      // {
+      //   fprintf(stdout, "%d, ", node_id);
+      // }
+      // printf("\n");
+
       // Iterate only over the corner nodes and renumber.
       int renumbered_vertex_ids[boundary_face_info.numFaceCornerNodes()];
 
@@ -257,7 +340,12 @@ MFEMMesh::buildMFEMBoundaryElements(
         // Renumber vertex ("node") IDs so they're contiguous and start from 0.
         renumbered_vertex_ids[knode] =
             _mfem_vertex_index_for_libmesh_corner_node_id[libmesh_node_id];
+
+        // auto mfem_vertex = vertices[renumbered_vertex_ids[knode]];
+
+        // printf("(%.2lf, %.2lf, %.2lf), ", mfem_vertex(0), mfem_vertex(1), mfem_vertex(2));
       }
+      // printf("\n");
 
       boundary[iboundary++] =
           buildMFEMFaceElement(boundary_face_info.faceType(), renumbered_vertex_ids, boundary_id);
