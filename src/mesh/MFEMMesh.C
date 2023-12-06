@@ -144,6 +144,71 @@ MFEMMesh::MFEMMesh(
                          mfem_node_id_for_libmesh_node_id);
 
   FinalizeMesh();
+
+  bool debug = true;
+
+  if (debug)
+  {
+    FILE * fp = fopen("/opt/mfem_output.txt", "w");
+
+    mfem::Array<int> the_faces;
+    mfem::Array<int> the_face_orientations;
+    mfem::Array<int> the_dofs;
+    double the_coordinates[3];
+
+    auto the_fe_space = this->GetNodalFESpace();
+
+    for (int ielement = 0; ielement < NumOfElements; ielement++)
+    {
+      the_fe_space->GetElementDofs(ielement, the_dofs);
+
+      fprintf(fp, "Element %d:\n", ielement);
+
+      /**
+       * Extract the nodes and faces.
+       */
+      GetElementFaces(ielement, the_faces, the_face_orientations);
+
+      for (auto iface : the_faces)
+      {
+        /**
+         * Get nodes for face.
+         */
+        mfem::Array<int> the_face_dofs;
+        the_fe_space->GetFaceDofs(iface, the_face_dofs);
+
+        fprintf(fp, "\tFace %d with %d nodes:\n", iface, the_face_dofs.Size());
+
+        for (int the_dof : the_face_dofs)
+        {
+          GetNode(the_dof, the_coordinates);
+
+          auto coord_x = the_coordinates[0];
+          auto coord_y = the_coordinates[1];
+          auto coord_z = the_coordinates[2];
+
+          fprintf(fp, "\t\t(%.2lf, %.2lf, %.2lf) -- %d\n", coord_x, coord_y, coord_z, the_dof);
+        }
+      }
+
+      fprintf(fp, "\n");
+
+      for (int the_dof : the_dofs)
+      {
+        GetNode(the_dof, the_coordinates);
+
+        auto coord_x = the_coordinates[0];
+        auto coord_y = the_coordinates[1];
+        auto coord_z = the_coordinates[2];
+
+        fprintf(fp, "\t\t(%.2lf, %.2lf, %.2lf) -- %d\n", coord_x, coord_y, coord_z, the_dof);
+      }
+
+      fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+  }
 }
 
 MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool fix_orientation)
@@ -394,6 +459,11 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
     case CubitElementInfo::ELEMENT_WEDGE15:
     {
       new_element = new mfem::Wedge(vertex_ids, block_id);
+      break;
+    }
+    case CubitElementInfo::ELEMENT_PYRAMID5:
+    {
+      new_element = new mfem::Pyramid(vertex_ids, block_id);
       break;
     }
     default:

@@ -201,11 +201,21 @@ CubitElementInfo::buildCubit3DElementInfo(int num_nodes_per_element)
     }
     case 15:
     {
-      _element_type = ELEMENT_WEDGE15;
-      _order = 2;
-      _num_corner_nodes = 6;
+      // _element_type = ELEMENT_WEDGE15;
+      // _order = 2;
+      // _num_corner_nodes = 6;
+      // _num_faces = 5;
+      // _face_info = getWedge15FaceInfo();
+      mooseError("Wedge15 is not currently supported.");
+      break;
+    }
+    case 5:
+    {
+      _element_type = ELEMENT_PYRAMID5;
+      _order = 1;
+      _num_corner_nodes = 5;
       _num_faces = 5;
-      _face_info = getWedge15FaceInfo();
+      _face_info = getPyramid5FaceInfo();
       break;
     }
     default:
@@ -234,6 +244,17 @@ CubitElementInfo::getWedge15FaceInfo() const
   CubitFaceInfo quad8 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD8); // Faces 1, 2, 3
 
   return {tri6, quad8, quad8, quad8, tri6};
+}
+
+std::vector<CubitFaceInfo>
+CubitElementInfo::getPyramid5FaceInfo() const
+{
+  // Refer to "cell_pyramid5.C" line 134.
+  // We are using the same side ordering as used in LibMesh.
+  CubitFaceInfo tri3 = CubitFaceInfo(CubitFaceInfo::FACE_TRI3);
+  CubitFaceInfo quad4 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD4);
+
+  return {tri3, tri3, tri3, tri3, quad4};
 }
 
 const CubitFaceInfo &

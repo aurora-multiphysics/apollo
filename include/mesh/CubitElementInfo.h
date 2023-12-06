@@ -81,7 +81,8 @@ public:
     ELEMENT_HEX8,
     ELEMENT_HEX27,
     ELEMENT_WEDGE6,
-    ELEMENT_WEDGE15 // order = 2. No center node.
+    ELEMENT_WEDGE15, // order = 2. No center node.
+    ELEMENT_PYRAMID5
   };
 
   CubitElementInfo(CubitElementType element_type);
@@ -110,6 +111,7 @@ protected:
    */
   std::vector<CubitFaceInfo> getWedge6FaceInfo() const;
   std::vector<CubitFaceInfo> getWedge15FaceInfo() const;
+  std::vector<CubitFaceInfo> getPyramid5FaceInfo() const;
 
 private:
   /**
