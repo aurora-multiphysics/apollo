@@ -42,7 +42,7 @@
     type = ParsedFunction
     value = Imax*cos(2.0*pi*freq*t)
     vars = 'freq Imax'
-    vals = '0.01666667 2742.0'
+    vals = '200 2742.0'
   []
 []
 
@@ -74,18 +74,6 @@
     h1_fespace = H1FESpace
     coil_xsection_boundary = 7
     block = '3 4 5 6'
-  []
-[]
-
-[Functions]
-  [RacetrackCoilCurrentFunction]
-    type = RacetrackCoilCurrentDensity
-    coil_axis_x = 194e-3 # m
-    coil_axis_y = 100e-3 # m
-    coil_thickness = 50e-3 # m
-    coil_current_magnitude = 2742.0 # Ampere-turns
-    coil_xsection_area = 2.5e-3 # m^2
-    frequency = 200.0 # Hz
   []
 []
 

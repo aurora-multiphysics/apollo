@@ -18,6 +18,10 @@
   magnetic_permeability_name = magnetic_permeability
   electric_conductivity_name = electrical_conductivity
   dielectric_permittivity_name = dielectric_permittivity
+  magnetic_flux_density_re_name = magnetic_flux_density_real
+  magnetic_flux_density_im_name = magnetic_flux_density_imag
+  current_density_re_name = current_density_real
+  current_density_im_name = current_density_imag
 []
 
 [FESpaces]
@@ -52,6 +56,14 @@
     fespace = HDivFESpace
   []
   [magnetic_flux_density_imag]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [current_density_real]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [current_density_imag]
     type = MFEMVariable
     fespace = HDivFESpace
   []
