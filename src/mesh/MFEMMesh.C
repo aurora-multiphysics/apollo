@@ -180,14 +180,13 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
   NumOfElements = num_elements_in_mesh;
   elements.SetSize(num_elements_in_mesh);
 
-  // NB: "vertices" and "corner nodes" are equivalent.
-  const int num_vertices = element_info.getNumCornerNodes();
-
-  std::vector<int> renumbered_vertex_ids(num_vertices);
-
   int ielement = 0;
-  for (int block_id : unique_block_ids) // Iterate over blocks.
+  for (int block_id : unique_block_ids)
   {
+    // Get the element type for the block.
+    const int num_vertices = element_info.getNumCornerNodes();
+    std::vector<int> renumbered_vertex_ids(num_vertices);
+
     auto & element_ids = element_ids_for_block_id[block_id];
 
     for (int element_id : element_ids) // Iterate over elements in block.

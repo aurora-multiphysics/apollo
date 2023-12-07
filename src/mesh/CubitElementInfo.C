@@ -329,12 +329,12 @@ CubitMeshInfo::validDimension(int dimension) const
 }
 
 const CubitElementInfo &
-CubitMeshInfo::getElementInfo(int block_id)
+CubitMeshInfo::getElementInfo(int block_id) const
 {
   if (!hasBlockID(block_id))
   {
     mooseError("No element info for block ID '", block_id, "'.");
   }
 
-  return _element_info_for_block_id[block_id];
+  return _element_info_for_block_id.at(block_id);
 }

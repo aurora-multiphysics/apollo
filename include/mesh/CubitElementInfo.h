@@ -156,7 +156,7 @@ public:
   /**
    * Returns the element info for a particular block.
    */
-  const CubitElementInfo & getElementInfo(int block_id);
+  const CubitElementInfo & getElementInfo(int block_id) const;
 
   inline uint8_t getDimension() const { return _dimension; }
 
