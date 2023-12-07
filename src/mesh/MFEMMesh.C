@@ -10,7 +10,7 @@ static void convertToCArray(std::array<double, 3> & array_in, double array_out[3
  */
 MFEMMesh::MFEMMesh(
     const int num_elements_in_mesh,
-    const CubitElementInfo & element_info,
+    const CubitBlockInfo & block_info,
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
     const std::vector<int> & unique_libmesh_corner_node_ids,
@@ -18,15 +18,16 @@ MFEMMesh::MFEMMesh(
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
     std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
-  if (element_info.getOrder() != 1)
+  if (block_info.order() != 1)
   {
-    mooseError("1st order initializer called for order ", element_info.getOrder(), ".");
+    mooseError("1st order initializer called for order ", block_info.order(), ".");
   }
 
   buildMFEMVerticesAndElements(num_elements_in_mesh,
-                               element_info,
+                               block_info,
                                unique_block_ids,
                                unique_side_boundary_ids,
                                unique_libmesh_corner_node_ids,
@@ -34,6 +35,7 @@ MFEMMesh::MFEMMesh(
                                libmesh_node_ids_for_element_id,
                                libmesh_node_ids_for_boundary_id,
                                libmesh_side_ids_for_boundary_id,
+                               libmesh_block_ids_for_boundary_id,
                                coordinates_for_libmesh_node_id);
 
   // Finalize mesh method is needed to fully finish constructing the mesh.
@@ -45,7 +47,7 @@ MFEMMesh::MFEMMesh(
  */
 MFEMMesh::MFEMMesh(
     const int num_elements_in_mesh,
-    const CubitElementInfo & element_info,
+    const CubitBlockInfo & block_info,
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
     const std::vector<int> & unique_libmesh_corner_node_ids,
@@ -53,17 +55,18 @@ MFEMMesh::MFEMMesh(
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
     std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, int> & libmesh_node_id_for_mfem_node_id,
     std::map<int, int> & mfem_node_id_for_libmesh_node_id)
 {
-  if (element_info.getOrder() != 2)
+  if (block_info.order() != 2)
   {
-    mooseError("2nd order initializer called for order ", element_info.getOrder(), ".");
+    mooseError("2nd order initializer called for order ", block_info.order(), ".");
   }
 
   buildMFEMVerticesAndElements(num_elements_in_mesh,
-                               element_info,
+                               block_info,
                                unique_block_ids,
                                unique_side_boundary_ids,
                                unique_libmesh_corner_node_ids,
@@ -71,10 +74,10 @@ MFEMMesh::MFEMMesh(
                                libmesh_node_ids_for_element_id,
                                libmesh_node_ids_for_boundary_id,
                                libmesh_side_ids_for_boundary_id,
+                               libmesh_block_ids_for_boundary_id,
                                coordinates_for_libmesh_node_id);
 
-  // Handle higher-order meshes.
-  handleQuadraticFESpace(element_info,
+  handleQuadraticFESpace(block_info,
                          unique_block_ids,
                          libmesh_element_ids_for_block_id,
                          libmesh_node_ids_for_element_id,
@@ -104,7 +107,7 @@ MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool 
 void
 MFEMMesh::buildMFEMVerticesAndElements(
     const int num_elements_in_mesh,
-    const CubitElementInfo & element_info,
+    const CubitBlockInfo & block_info,
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
     const std::vector<int> & unique_libmesh_corner_node_ids,
@@ -112,26 +115,28 @@ MFEMMesh::buildMFEMVerticesAndElements(
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
     std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
     std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
   // Set dimensions.
-  Dim = spaceDim = element_info.getDimension();
+  Dim = spaceDim = block_info.dimension();
 
   // Create the vertices.
   buildMFEMVertices(unique_libmesh_corner_node_ids, coordinates_for_libmesh_node_id);
 
   // Create the mesh elements.
   buildMFEMElements(num_elements_in_mesh,
-                    element_info,
+                    block_info,
                     unique_block_ids,
                     libmesh_element_ids_for_block_id,
                     libmesh_node_ids_for_element_id);
 
   // Create the boundary elements.
-  buildMFEMBoundaryElements(element_info,
+  buildMFEMBoundaryElements(block_info,
                             unique_side_boundary_ids,
                             libmesh_node_ids_for_boundary_id,
-                            libmesh_side_ids_for_boundary_id);
+                            libmesh_side_ids_for_boundary_id,
+                            libmesh_block_ids_for_boundary_id);
 }
 
 void
@@ -169,7 +174,7 @@ MFEMMesh::buildMFEMVertices(const std::vector<int> & unique_libmesh_corner_node_
 
 void
 MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
-                            const CubitElementInfo & element_info,
+                            const CubitBlockInfo & block_info,
                             const std::vector<int> & unique_block_ids,
                             std::map<int, std::vector<int>> & element_ids_for_block_id,
                             std::map<int, std::vector<int>> & node_ids_for_element_id)
@@ -183,9 +188,10 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
   int ielement = 0;
   for (int block_id : unique_block_ids)
   {
-    // Get the element type for the block.
-    const int num_vertices = element_info.getNumCornerNodes();
-    std::vector<int> renumbered_vertex_ids(num_vertices);
+    // Get the element type associated with the block.
+    auto & block_element = block_info.blockElement(block_id);
+
+    std::vector<int> renumbered_vertex_ids(block_element.getNumCornerNodes());
 
     auto & element_ids = element_ids_for_block_id[block_id];
 
@@ -194,7 +200,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       auto & libmesh_node_ids = node_ids_for_element_id[element_id];
 
       // Iterate over ONLY the corner nodes in the element.
-      for (int ivertex = 0; ivertex < num_vertices; ivertex++)
+      for (int ivertex = 0; ivertex < block_element.getNumCornerNodes(); ivertex++)
       {
         const int libmesh_node_id = libmesh_node_ids[ivertex];
 
@@ -207,17 +213,18 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       _libmesh_element_id_for_mfem_element_id[ielement] = element_id;
 
       elements[ielement++] =
-          buildMFEMElement(element_info.getElementType(), renumbered_vertex_ids.data(), block_id);
+          buildMFEMElement(block_element.getElementType(), renumbered_vertex_ids.data(), block_id);
     }
   }
 }
 
 void
 MFEMMesh::buildMFEMBoundaryElements(
-    const CubitElementInfo & element_info,
+    const CubitBlockInfo & block_info,
     const std::vector<int> & unique_side_boundary_ids,
     std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id)
+    std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id)
 {
   // Find total number of boundary elements.
   NumOfBdrElements = 0;
@@ -241,6 +248,7 @@ MFEMMesh::buildMFEMBoundaryElements(
   {
     auto & all_boundary_node_ids = libmesh_node_ids_for_boundary_id[boundary_id];
     auto & all_boundary_side_ids = libmesh_side_ids_for_boundary_id[boundary_id];
+    auto & all_boundary_block_ids = libmesh_block_ids_for_boundary_id[boundary_id];
 
     // Iterate over all elements on boundary.
     for (int jelement = 0; jelement < (int)all_boundary_node_ids.size(); jelement++)
@@ -248,9 +256,11 @@ MFEMMesh::buildMFEMBoundaryElements(
       // Extract the boundary node ids and face id for this boundary element.
       auto & boundary_node_ids = all_boundary_node_ids[jelement];
       auto boundary_face_id = all_boundary_side_ids[jelement];
+      auto boundary_block_id = all_boundary_block_ids[jelement];
 
-      // Get the face information.
-      auto & boundary_face_info = element_info.getFaceInfo(boundary_face_id);
+      // Get the element type and face info.
+      auto & block_element = block_info.blockElement(boundary_block_id);
+      auto & boundary_face_info = block_element.getFaceInfo(boundary_face_id);
 
       // Iterate only over the corner nodes and renumber.
       std::vector<int> renumbered_vertex_ids(boundary_face_info.numFaceCornerNodes());
@@ -365,7 +375,7 @@ MFEMMesh::buildMFEMFaceElement(const int face_type, const int * vertex_ids, cons
 
 void
 MFEMMesh::handleQuadraticFESpace(
-    const CubitElementInfo & element_info,
+    const CubitBlockInfo & block_info,
     const std::vector<int> & unique_block_ids,
     std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
@@ -374,16 +384,24 @@ MFEMMesh::handleQuadraticFESpace(
     std::map<int, int> & mfem_node_id_for_libmesh_node_id)
 {
   // Verify that this is indeed a second-order element.
-  if (element_info.getOrder() != 2)
+  if (block_info.order() != 2)
   {
     return;
   }
 
+  // Current limitation: - only supporting a single second-order element type.
+  if (block_info.hasMultipleElementTypes())
+  {
+    mooseError("Cannot handle multiple different higher-order element types.");
+  }
+
   // Add a warning for 2D second-order elements but proceed.
-  if (element_info.getDimension() == 2)
+  if (block_info.dimension() == 2)
   {
     mooseWarning("'", __func__, "' has not been tested with second-order 2D elements.");
   }
+
+  auto & element_info = block_info.blockElement(unique_block_ids.front()); // MARK: - temporary.
 
   // 2D maps:
   const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};

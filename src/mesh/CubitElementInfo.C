@@ -286,7 +286,6 @@ CubitBlockInfo::CubitBlockInfo(int dimension)
   }
 
   _dimension = dimension;
-  _finalize = false;
 
   clearBlockElements();
 }
@@ -298,30 +297,16 @@ CubitBlockInfo::addBlockElement(int block_id, int num_nodes_per_element)
     mooseError("Block with ID '", block_id, "' has already been added.");
   else if (!validBlockID(block_id))
     mooseError("Illegal block ID '", block_id, "'.");
-  else if (finalize())
-    mooseError("Unable to add element blocks (_finalize = true).");
 
   auto element_info = CubitElementInfo(num_nodes_per_element, _dimension);
 
+  /**
+   * Check element is compatible with existing element blocks.
+   */
+  checkElementBlockIsCompatible(element_info);
+
   _block_ids.insert(block_id);
   _block_element_for_block_id[block_id] = element_info;
-}
-
-void
-CubitBlockInfo::finalizeBlockElements()
-{
-  if (finalize())
-  {
-    return;
-  }
-
-  // Check that there is at least one block added.
-  if (numElementBlocks() < 1)
-  {
-    mooseError("No element blocks have been added.");
-  }
-
-  _finalize = true;
 }
 
 void
@@ -358,4 +343,64 @@ CubitBlockInfo::blockElement(int block_id) const
   }
 
   return _block_element_for_block_id.at(block_id);
+}
+
+void
+CubitBlockInfo::checkElementBlockIsCompatible(const CubitElementInfo & new_block_element) const
+{
+  if (!hasElementBlocks())
+  {
+    return;
+  }
+
+  // Enforce block orders to be the same for now.
+  if (testBlockElement().getOrder() != new_block_element.getOrder())
+  {
+    mooseError("All block elements must be of the same order.");
+  }
+}
+
+const CubitElementInfo &
+CubitBlockInfo::testBlockElement() const
+{
+  if (!hasElementBlocks())
+  {
+    mooseError("No element blocks.");
+  }
+
+  auto block_id = *(blockIDs().begin());
+
+  return blockElement(block_id);
+}
+
+uint8_t
+CubitBlockInfo::order() const
+{
+  if (!hasElementBlocks())
+  {
+    mooseError("No element blocks.");
+  }
+
+  return testBlockElement().getOrder();
+}
+
+bool
+CubitBlockInfo::hasMultipleElementTypes() const
+{
+  if (numElementBlocks() < 2)
+  {
+    return false;
+  }
+
+  auto test_element_type = testBlockElement().getElementType();
+
+  for (auto block_id : blockIDs())
+  {
+    if (blockElement(block_id).getElementType() != test_element_type)
+    {
+      return true;
+    }
+  }
+
+  return false;
 }

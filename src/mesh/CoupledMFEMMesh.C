@@ -321,19 +321,43 @@ CoupledMFEMMesh::buildMFEMMesh()
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
 
-  // MARK: test code. Currently still supporting single element type.
-  auto element_info = blockInfo().blockElement(unique_block_ids.front());
+  // *** TEST CODE ***
+  // 1. Create mapping from block_id to element_id
+  std::map<int, int> block_id_for_element_id;
+
+  for (auto block_id : unique_block_ids)
+  {
+    for (int element_id : element_ids_for_block_id[block_id])
+    {
+      block_id_for_element_id[element_id] = block_id;
+    }
+  }
+
+  std::map<int, std::vector<int>> block_ids_for_boundary_id;
+
+  for (auto boundary_id : unique_side_boundary_ids)
+  {
+    auto & boundary_element_ids = element_ids_for_boundary_id[boundary_id];
+
+    std::vector<int> boundary_block_ids(boundary_element_ids.size());
+
+    int element_counter = 0;
+    for (auto element_id : boundary_element_ids)
+    {
+      boundary_block_ids[element_counter++] = block_id_for_element_id[element_id];
+    }
+
+    block_ids_for_boundary_id[boundary_id] = boundary_block_ids;
+  }
 
   // 10.
   // Call the correct initializer.
-  const int element_order = element_info.getOrder();
-
-  switch (element_order)
+  switch (blockInfo().order())
   {
     case 1:
     {
       _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
-                                              element_info,
+                                              blockInfo(),
                                               unique_block_ids,
                                               unique_side_boundary_ids,
                                               unique_corner_node_ids,
@@ -341,13 +365,14 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               node_ids_for_element_id,
                                               node_ids_for_boundary_id,
                                               side_ids_for_boundary_id,
+                                              block_ids_for_boundary_id,
                                               coordinates_for_node_id);
       break;
     }
     case 2:
     {
       _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
-                                              element_info,
+                                              blockInfo(),
                                               unique_block_ids,
                                               unique_side_boundary_ids,
                                               unique_corner_node_ids,
@@ -355,6 +380,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               node_ids_for_element_id,
                                               node_ids_for_boundary_id,
                                               side_ids_for_boundary_id,
+                                              block_ids_for_boundary_id,
                                               coordinates_for_node_id,
                                               _libmesh_node_id_for_mfem_node_id,
                                               _mfem_node_id_for_libmesh_node_id);
@@ -362,7 +388,7 @@ CoupledMFEMMesh::buildMFEMMesh()
     }
     default:
     {
-      mooseError("Unsupported element type of order ", element_order, ".");
+      mooseError("Unsupported element type of order ", blockInfo().order(), ".");
       break;
     }
   }

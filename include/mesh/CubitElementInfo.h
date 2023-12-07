@@ -162,18 +162,35 @@ public:
   void addBlockElement(int block_id, int num_nodes_per_element);
 
   /**
-   * Call finalize once all block elements have been added.
+   * Iterates over blocks and checks type of each element.
    */
-  void finalizeBlockElements();
+  bool hasMultipleElementTypes() const;
 
   /**
    * Accessors.
    */
+  uint8_t order() const;
+
   inline uint8_t dimension() const { return _dimension; }
   inline std::size_t numElementBlocks() const { return _block_ids.size(); }
-  inline bool finalize() const { return _finalize; }
+  inline bool hasElementBlocks() const { return numElementBlocks() > 0; }
 
 protected:
+  /**
+   * Current limitation is that the order of all element blocks is the same. This method is called
+   * internally in addBlockElement.
+   */
+  void checkElementBlockIsCompatible(const CubitElementInfo & new_block_element) const;
+
+  /**
+   * Returns a reference to a single cubit element in the set. This can be used for comparison with
+   * a new element block.
+   */
+  const CubitElementInfo & testBlockElement() const;
+
+  /**
+   * Reset all block elements. Called internally in initializer.
+   */
   void clearBlockElements();
 
   /**
@@ -183,6 +200,8 @@ protected:
   bool validBlockID(int block_id) const;
   bool validDimension(int dimension) const;
 
+  inline const std::set<int> & blockIDs() const { return _block_ids; }
+
 private:
   std::set<int> _block_ids;
   std::map<int, CubitElementInfo> _block_element_for_block_id;
@@ -191,9 +210,4 @@ private:
    * Stores dimension of mesh. All block elements must be this dimension.
    */
   uint8_t _dimension;
-
-  /**
-   * Flag to indicate whether blocks can be added.
-   */
-  bool _finalize;
 };
