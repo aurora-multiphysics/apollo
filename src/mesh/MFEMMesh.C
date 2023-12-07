@@ -183,7 +183,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
   // NB: "vertices" and "corner nodes" are equivalent.
   const int num_vertices = element_info.getNumCornerNodes();
 
-  int renumbered_vertex_ids[num_vertices];
+  std::vector<int> renumbered_vertex_ids(num_vertices);
 
   int ielement = 0;
   for (int block_id : unique_block_ids) // Iterate over blocks.
@@ -208,7 +208,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       _libmesh_element_id_for_mfem_element_id[ielement] = element_id;
 
       elements[ielement++] =
-          buildMFEMElement(element_info.getElementType(), renumbered_vertex_ids, block_id);
+          buildMFEMElement(element_info.getElementType(), renumbered_vertex_ids.data(), block_id);
     }
   }
 }
@@ -244,7 +244,7 @@ MFEMMesh::buildMFEMBoundaryElements(
     auto & all_boundary_side_ids = libmesh_side_ids_for_boundary_id[boundary_id];
 
     // Iterate over all elements on boundary.
-    for (int jelement = 0; jelement < all_boundary_node_ids.size(); jelement++)
+    for (int jelement = 0; jelement < (int)all_boundary_node_ids.size(); jelement++)
     {
       // Extract the boundary node ids and face id for this boundary element.
       auto & boundary_node_ids = all_boundary_node_ids[jelement];
@@ -254,7 +254,7 @@ MFEMMesh::buildMFEMBoundaryElements(
       auto & boundary_face_info = element_info.getFaceInfo(boundary_face_id);
 
       // Iterate only over the corner nodes and renumber.
-      int renumbered_vertex_ids[boundary_face_info.numFaceCornerNodes()];
+      std::vector<int> renumbered_vertex_ids(boundary_face_info.numFaceCornerNodes());
 
       for (int knode = 0; knode < boundary_face_info.numFaceCornerNodes(); knode++)
       {
@@ -265,8 +265,8 @@ MFEMMesh::buildMFEMBoundaryElements(
             _mfem_vertex_index_for_libmesh_corner_node_id[libmesh_node_id];
       }
 
-      boundary[iboundary++] =
-          buildMFEMFaceElement(boundary_face_info.faceType(), renumbered_vertex_ids, boundary_id);
+      boundary[iboundary++] = buildMFEMFaceElement(
+          boundary_face_info.faceType(), renumbered_vertex_ids.data(), boundary_id);
     }
   }
 }

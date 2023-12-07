@@ -432,7 +432,7 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
     std::vector<std::vector<unsigned int>> boundary_node_ids(boundary_element_ids.size());
 
     // Iterate over elements on boundary.
-    for (int jelement = 0; jelement < boundary_element_ids.size(); jelement++)
+    for (int jelement = 0; jelement < (int)boundary_element_ids.size(); jelement++)
     {
       // Get element ID and the boundary side.
       const int boundary_element_global_id = boundary_element_ids[jelement];
@@ -444,7 +444,7 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
       auto nodes_of_element_on_side = element_ptr->nodes_on_side(boundary_element_side);
 
       // Replace local IDs with global IDs.
-      for (int knode = 0; knode < nodes_of_element_on_side.size(); knode++)
+      for (int knode = 0; knode < (int)nodes_of_element_on_side.size(); knode++)
       {
         // Get the global node ID of each node.
         const int local_node_id = nodes_of_element_on_side[knode];
