@@ -274,3 +274,56 @@ CubitElementInfo::getFaceInfo(int iface) const
 
   return is_single_face_type ? _face_info.front() : _face_info[iface];
 };
+
+/**
+ * CubitMeshInfo
+ */
+void
+CubitMeshInfo::addBlock(int block_id, int num_nodes_per_element, int dimension)
+{
+  if (!hasBlockID(block_id))
+    mooseError("No element info for block ID '", block_id, "'.");
+  else if (!validBlockID(block_id))
+    mooseError("Illegal block ID '", block_id, "'.");
+  else if (!validDimension(dimension))
+    mooseError("Illegal dimension '", dimension, "'.");
+
+  _block_ids.insert(block_id);
+  _element_info_for_block_id[block_id] = CubitElementInfo(num_nodes_per_element, dimension);
+}
+
+void
+CubitMeshInfo::removeBlocks()
+{
+  _block_ids.clear();
+  _element_info_for_block_id.clear();
+}
+
+bool
+CubitMeshInfo::hasBlockID(int block_id) const
+{
+  return _block_ids.count(block_id);
+}
+
+bool
+CubitMeshInfo::validBlockID(int block_id) const
+{
+  return (block_id > 0);
+}
+
+bool
+CubitMeshInfo::validDimension(int dimension) const
+{
+  return (dimension == 2 || dimension == 3);
+}
+
+const CubitElementInfo &
+CubitMeshInfo::getElementInfo(int block_id)
+{
+  if (!hasBlockID(block_id))
+  {
+    mooseError("No element info for block ID '", block_id, "'.");
+  }
+
+  return _element_info_for_block_id[block_id];
+}

@@ -135,3 +135,54 @@ private:
   uint8_t _num_faces;
   std::vector<CubitFaceInfo> _face_info;
 };
+
+/**
+ * CubitMeshInfo
+ *
+ * Stores the information about each block in a mesh. Each block can contain a different
+ * element type.
+ */
+class CubitMeshInfo
+{
+public:
+  ~CubitMeshInfo() = default;
+
+  /**
+   * Default initializer.
+   */
+  CubitMeshInfo() { removeBlocks(); }
+
+  /**
+   * Returns the element info for a particular block.
+   */
+  const CubitElementInfo & getElementInfo(int block_id);
+
+  /**
+   * Add a new block which may have a different element type.
+   */
+  void addBlock(int block_id, int num_nodes_per_element, int dimension);
+
+protected:
+  /**
+   * Check whether block ID is valid.
+   */
+  bool hasBlockID(int block_id) const;
+  bool validBlockID(int block_id) const;
+  bool validDimension(int dimension) const;
+
+  /**
+   * Clear all existing blocks.
+   */
+  void removeBlocks();
+
+private:
+  /**
+   * Set contains all block ids present in mesh.
+   */
+  std::set<int> _block_ids;
+
+  /**
+   * Maps from block id to element info.
+   */
+  std::map<int, CubitElementInfo> _element_info_for_block_id;
+};
