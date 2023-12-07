@@ -145,22 +145,25 @@ private:
 class CubitMeshInfo
 {
 public:
+  CubitMeshInfo() = delete;
   ~CubitMeshInfo() = default;
 
   /**
    * Default initializer.
    */
-  CubitMeshInfo() { removeBlocks(); }
+  CubitMeshInfo(int dimension);
 
   /**
    * Returns the element info for a particular block.
    */
   const CubitElementInfo & getElementInfo(int block_id);
 
+  inline uint8_t getDimension() const { return _dimension; }
+
   /**
    * Add a new block which may have a different element type.
    */
-  void addBlock(int block_id, int num_nodes_per_element, int dimension);
+  void addBlock(int block_id, int num_nodes_per_element);
 
 protected:
   /**
@@ -185,4 +188,10 @@ private:
    * Maps from block id to element info.
    */
   std::map<int, CubitElementInfo> _element_info_for_block_id;
+
+  /**
+   * The dimension of the mesh. Elements of all blocks added are expected to be of the same
+   * dimension.
+   */
+  uint8_t _dimension;
 };

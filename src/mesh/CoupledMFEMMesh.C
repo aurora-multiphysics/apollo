@@ -18,7 +18,8 @@ CoupledMFEMMesh::validParams()
   return params;
 }
 
-CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters & parameters) : ExclusiveMFEMMesh(parameters)
+CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters & parameters)
+  : ExclusiveMFEMMesh(parameters), _mesh_info(_dim)
 {
 }
 
@@ -155,7 +156,7 @@ CoupledMFEMMesh::buildLibmeshElementAndFaceInfo(std::vector<int> & unique_block_
 
     auto first_element_ptr = *element_range.begin();
 
-    _mesh_info.addBlock(block_id, first_element_ptr->n_nodes(), _dim);
+    _mesh_info.addBlock(block_id, first_element_ptr->n_nodes());
   }
 }
 
@@ -186,6 +187,8 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
 {
   for (int block_id : unique_block_ids)
   {
+    auto & element_info = getElementInfo(block_id);
+
     std::vector<int> elements_in_block;
 
     auto active_block_elements_begin = getMesh().active_subdomain_elements_begin(block_id);
@@ -199,12 +202,11 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
 
       const int element_id = element_ptr->id();
 
-      std::vector<int> element_node_ids(getElementInfo(block_id).getNumNodes());
+      std::vector<int> element_node_ids(element_info.getNumNodes());
 
       elements_in_block.push_back(element_id);
 
-      for (int node_counter = 0; node_counter < getElementInfo(block_id).getNumNodes();
-           node_counter++)
+      for (int node_counter = 0; node_counter < element_info.getNumNodes(); node_counter++)
       {
         element_node_ids[node_counter] = element_ptr->node_id(node_counter);
       }

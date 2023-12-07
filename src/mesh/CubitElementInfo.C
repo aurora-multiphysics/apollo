@@ -278,18 +278,29 @@ CubitElementInfo::getFaceInfo(int iface) const
 /**
  * CubitMeshInfo
  */
+CubitMeshInfo::CubitMeshInfo(int dimension)
+{
+  if (!validDimension(dimension))
+  {
+    mooseError("Invalid dimension '", dimension, "' specified.");
+  }
+
+  _dimension = dimension;
+  removeBlocks();
+}
+
 void
-CubitMeshInfo::addBlock(int block_id, int num_nodes_per_element, int dimension)
+CubitMeshInfo::addBlock(int block_id, int num_nodes_per_element)
 {
   if (hasBlockID(block_id))
     mooseError("Block with ID '", block_id, "' has already been added.");
   else if (!validBlockID(block_id))
     mooseError("Illegal block ID '", block_id, "'.");
-  else if (!validDimension(dimension))
-    mooseError("Illegal dimension '", dimension, "'.");
+
+  auto element_info = CubitElementInfo(num_nodes_per_element, _dimension);
 
   _block_ids.insert(block_id);
-  _element_info_for_block_id[block_id] = CubitElementInfo(num_nodes_per_element, dimension);
+  _element_info_for_block_id[block_id] = element_info;
 }
 
 void
