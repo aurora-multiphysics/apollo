@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include "MooseError.h"
 
-// TODO: Later add another class on top which will store the element type for each block.
-
 /**
  * CubitFaceInfo
  *
@@ -137,61 +135,65 @@ private:
 };
 
 /**
- * CubitMeshInfo
+ * CubitBlockInfo
  *
  * Stores the information about each block in a mesh. Each block can contain a different
  * element type.
  */
-class CubitMeshInfo
+class CubitBlockInfo
 {
 public:
-  CubitMeshInfo() = delete;
-  ~CubitMeshInfo() = default;
+  CubitBlockInfo() = delete;
+  ~CubitBlockInfo() = default;
 
   /**
    * Default initializer.
    */
-  CubitMeshInfo(int dimension);
+  CubitBlockInfo(int dimension);
 
   /**
-   * Returns the element info for a particular block.
+   * Returns a constant reference to the element info for a particular block.
    */
-  const CubitElementInfo & getElementInfo(int block_id) const;
-
-  inline uint8_t getDimension() const { return _dimension; }
+  const CubitElementInfo & blockElement(int block_id) const;
 
   /**
-   * Add a new block which may have a different element type.
+   * Call to add each block individually.
    */
-  void addBlock(int block_id, int num_nodes_per_element);
+  void addBlockElement(int block_id, int num_nodes_per_element);
+
+  /**
+   * Call finalize once all block elements have been added.
+   */
+  void finalizeBlockElements();
+
+  /**
+   * Accessors.
+   */
+  inline uint8_t dimension() const { return _dimension; }
+  inline std::size_t numElementBlocks() const { return _block_ids.size(); }
+  inline bool finalize() const { return _finalize; }
 
 protected:
+  void clearBlockElements();
+
   /**
-   * Check whether block ID is valid.
+   * Helper methods.
    */
   bool hasBlockID(int block_id) const;
   bool validBlockID(int block_id) const;
   bool validDimension(int dimension) const;
 
-  /**
-   * Clear all existing blocks.
-   */
-  void removeBlocks();
-
 private:
-  /**
-   * Set contains all block ids present in mesh.
-   */
   std::set<int> _block_ids;
+  std::map<int, CubitElementInfo> _block_element_for_block_id;
 
   /**
-   * Maps from block id to element info.
-   */
-  std::map<int, CubitElementInfo> _element_info_for_block_id;
-
-  /**
-   * The dimension of the mesh. Elements of all blocks added are expected to be of the same
-   * dimension.
+   * Stores dimension of mesh. All block elements must be this dimension.
    */
   uint8_t _dimension;
+
+  /**
+   * Flag to indicate whether blocks can be added.
+   */
+  bool _finalize;
 };

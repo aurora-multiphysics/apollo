@@ -19,7 +19,7 @@ CoupledMFEMMesh::validParams()
 }
 
 CoupledMFEMMesh::CoupledMFEMMesh(const InputParameters & parameters)
-  : ExclusiveMFEMMesh(parameters), _mesh_info(_dim)
+  : ExclusiveMFEMMesh(parameters), _block_info(_dim)
 {
 }
 
@@ -156,7 +156,7 @@ CoupledMFEMMesh::buildLibmeshElementAndFaceInfo(std::vector<int> & unique_block_
 
     auto first_element_ptr = *element_range.begin();
 
-    _mesh_info.addBlock(block_id, first_element_ptr->n_nodes());
+    blockInfo().addBlockElement(block_id, first_element_ptr->n_nodes());
   }
 }
 
@@ -187,7 +187,7 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
 {
   for (int block_id : unique_block_ids)
   {
-    auto & element_info = getElementInfo(block_id);
+    auto & element_info = blockElement(block_id);
 
     std::vector<int> elements_in_block;
 
@@ -232,6 +232,8 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
   // to the unique_corner_node_ids vector.
   for (int block_id : unique_block_ids)
   {
+    auto & block_element = blockElement(block_id);
+
     auto & element_ids = element_ids_for_block_id[block_id];
 
     for (int element_id : element_ids)
@@ -239,7 +241,7 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
       auto & node_ids = node_ids_for_element_id[element_id];
 
       // Only use the nodes on the edge of the element!
-      for (int knode = 0; knode < getElementInfo(block_id).getNumCornerNodes(); knode++)
+      for (int knode = 0; knode < block_element.getNumCornerNodes(); knode++)
       {
         unique_corner_node_ids.push_back(node_ids[knode]);
       }
@@ -320,7 +322,7 @@ CoupledMFEMMesh::buildMFEMMesh()
                        node_ids_for_boundary_id);
 
   // MARK: test code. Currently still supporting single element type.
-  auto element_info = _mesh_info.getElementInfo(unique_block_ids.front());
+  auto element_info = blockInfo().blockElement(unique_block_ids.front());
 
   // 10.
   // Call the correct initializer.
@@ -462,10 +464,4 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
     // Add to the map.
     node_ids_for_boundary_id[boundary_id] = boundary_node_ids;
   }
-}
-
-const CubitElementInfo &
-CoupledMFEMMesh::getElementInfo(int block_id)
-{
-  return _mesh_info.getElementInfo(block_id);
 }

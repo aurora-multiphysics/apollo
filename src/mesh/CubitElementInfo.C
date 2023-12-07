@@ -278,7 +278,7 @@ CubitElementInfo::getFaceInfo(int iface) const
 /**
  * CubitMeshInfo
  */
-CubitMeshInfo::CubitMeshInfo(int dimension)
+CubitBlockInfo::CubitBlockInfo(int dimension)
 {
   if (!validDimension(dimension))
   {
@@ -286,55 +286,76 @@ CubitMeshInfo::CubitMeshInfo(int dimension)
   }
 
   _dimension = dimension;
-  removeBlocks();
+  _finalize = false;
+
+  clearBlockElements();
 }
 
 void
-CubitMeshInfo::addBlock(int block_id, int num_nodes_per_element)
+CubitBlockInfo::addBlockElement(int block_id, int num_nodes_per_element)
 {
   if (hasBlockID(block_id))
     mooseError("Block with ID '", block_id, "' has already been added.");
   else if (!validBlockID(block_id))
     mooseError("Illegal block ID '", block_id, "'.");
+  else if (finalize())
+    mooseError("Unable to add element blocks (_finalize = true).");
 
   auto element_info = CubitElementInfo(num_nodes_per_element, _dimension);
 
   _block_ids.insert(block_id);
-  _element_info_for_block_id[block_id] = element_info;
+  _block_element_for_block_id[block_id] = element_info;
 }
 
 void
-CubitMeshInfo::removeBlocks()
+CubitBlockInfo::finalizeBlockElements()
+{
+  if (finalize())
+  {
+    return;
+  }
+
+  // Check that there is at least one block added.
+  if (numElementBlocks() < 1)
+  {
+    mooseError("No element blocks have been added.");
+  }
+
+  _finalize = true;
+}
+
+void
+CubitBlockInfo::clearBlockElements()
 {
   _block_ids.clear();
-  _element_info_for_block_id.clear();
+  _block_element_for_block_id.clear();
 }
 
 bool
-CubitMeshInfo::hasBlockID(int block_id) const
+CubitBlockInfo::hasBlockID(int block_id) const
 {
   return (_block_ids.count(block_id) > 0);
 }
 
 bool
-CubitMeshInfo::validBlockID(int block_id) const
+CubitBlockInfo::validBlockID(int block_id) const
 {
   return (block_id > 0);
 }
 
 bool
-CubitMeshInfo::validDimension(int dimension) const
+CubitBlockInfo::validDimension(int dimension) const
 {
   return (dimension == 2 || dimension == 3);
 }
 
 const CubitElementInfo &
-CubitMeshInfo::getElementInfo(int block_id) const
+CubitBlockInfo::blockElement(int block_id) const
 {
   if (!hasBlockID(block_id))
   {
     mooseError("No element info for block ID '", block_id, "'.");
   }
 
-  return _element_info_for_block_id.at(block_id);
+  return _block_element_for_block_id.at(block_id);
 }

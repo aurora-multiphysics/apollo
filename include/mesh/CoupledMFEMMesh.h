@@ -124,15 +124,28 @@ protected:
   void buildMFEMParMesh() override;
 
   /**
-   * Returns constant reference to element info for particular block id.
+   * Returns a constant reference to the block info.
    */
-  const CubitElementInfo & getElementInfo(int block_id);
+  inline const CubitBlockInfo & blockInfo() const { return _block_info; }
+
+  /**
+   * Returns a non-const reference to the block info.
+   */
+  inline CubitBlockInfo & blockInfo() { return _block_info; }
+
+  /**
+   * Returns a const reference to the block element.
+   */
+  inline const CubitElementInfo & blockElement(int block_id)
+  {
+    return blockInfo().blockElement(block_id);
+  }
 
 private:
   /**
-   * Stores the element and face type used in each block of the MOOSE mesh.
+   * Stores the element info for each block in the mesh.
    */
-  CubitMeshInfo _mesh_info;
+  CubitBlockInfo _block_info;
 
   /**
    * MFEM <--> libMesh maps required for higher-order mesh element transfers.
