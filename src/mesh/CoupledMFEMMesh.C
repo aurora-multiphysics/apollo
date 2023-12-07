@@ -139,11 +139,24 @@ CoupledMFEMMesh::isDistributedMesh() const
 }
 
 void
-CoupledMFEMMesh::buildLibmeshElementAndFaceInfo()
+CoupledMFEMMesh::buildLibmeshElementAndFaceInfo(std::vector<int> & unique_block_ids)
 {
-  auto first_element_ptr = getFirstElementOnProcessor();
+  /**
+   * Iterate over the block_ids. Note that we only need to extract the first element from
+   * each block since only a single element type can be specified per block.
+   */
+  for (int block_id : unique_block_ids)
+  {
+    auto element_range = getMesh().active_subdomain_elements_ptr_range(block_id);
+    if (element_range.begin() == element_range.end())
+    {
+      mooseError("Block '", block_id, "' contains no elements.");
+    }
 
-  _element_info = CubitElementInfo(first_element_ptr->n_nodes(), _dim);
+    auto first_element_ptr = *element_range.begin();
+
+    _mesh_info.addBlock(block_id, first_element_ptr->n_nodes(), _dim);
+  }
 }
 
 std::vector<int>
@@ -184,22 +197,14 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
     {
       auto element_ptr = *element_iterator;
 
-      // Each block can contain a different element type but within a block, all
-      // elements must be identical. Check the first element in each block.
-      if (element_iterator == active_block_elements_begin &&
-          element_ptr->n_nodes() != _element_info.getNumNodes())
-      {
-        mooseError("Multiple element types detected.");
-        return;
-      }
-
       const int element_id = element_ptr->id();
 
-      std::vector<int> element_node_ids(_element_info.getNumNodes());
+      std::vector<int> element_node_ids(getElementInfo(block_id).getNumNodes());
 
       elements_in_block.push_back(element_id);
 
-      for (int node_counter = 0; node_counter < _element_info.getNumNodes(); node_counter++)
+      for (int node_counter = 0; node_counter < getElementInfo(block_id).getNumNodes();
+           node_counter++)
       {
         element_node_ids[node_counter] = element_ptr->node_id(node_counter);
       }
@@ -232,7 +237,7 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
       auto & node_ids = node_ids_for_element_id[element_id];
 
       // Only use the nodes on the edge of the element!
-      for (int knode = 0; knode < _element_info.getNumCornerNodes(); knode++)
+      for (int knode = 0; knode < getElementInfo(block_id).getNumCornerNodes(); knode++)
       {
         unique_corner_node_ids.push_back(node_ids[knode]);
       }
@@ -258,11 +263,11 @@ CoupledMFEMMesh::buildMFEMMesh()
     getMesh().allgather();
   }
 
-  // 2. Retrieve information about the elements used within the mesh.
-  buildLibmeshElementAndFaceInfo();
-
-  // 3. Get the unique libmesh IDs of each block in the mesh.
+  // 2. Get the unique libmesh IDs of each block in the mesh.
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
+
+  // 3. Retrieve information about the elements used within the mesh.
+  buildLibmeshElementAndFaceInfo(unique_block_ids);
 
   // 4. Build maps:
   // Map from block ID --> vector of element IDs.
@@ -311,16 +316,20 @@ CoupledMFEMMesh::buildMFEMMesh()
                        element_ids_for_boundary_id,
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
+
+  // MARK: test code. Currently still supporting single element type.
+  auto element_info = _mesh_info.getElementInfo(unique_block_ids.front());
+
   // 10.
   // Call the correct initializer.
-  const int element_order = _element_info.getOrder();
+  const int element_order = element_info.getOrder();
 
   switch (element_order)
   {
     case 1:
     {
       _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
-                                              _element_info,
+                                              element_info,
                                               unique_block_ids,
                                               unique_side_boundary_ids,
                                               unique_corner_node_ids,
@@ -334,7 +343,7 @@ CoupledMFEMMesh::buildMFEMMesh()
     case 2:
     {
       _mfem_mesh = std::make_shared<MFEMMesh>(nElem(),
-                                              _element_info,
+                                              element_info,
                                               unique_block_ids,
                                               unique_side_boundary_ids,
                                               unique_corner_node_ids,
@@ -451,4 +460,10 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
     // Add to the map.
     node_ids_for_boundary_id[boundary_id] = boundary_node_ids;
   }
+}
+
+const CubitElementInfo &
+CoupledMFEMMesh::getElementInfo(int block_id)
+{
+  return _mesh_info.getElementInfo(block_id);
 }

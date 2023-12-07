@@ -281,8 +281,8 @@ CubitElementInfo::getFaceInfo(int iface) const
 void
 CubitMeshInfo::addBlock(int block_id, int num_nodes_per_element, int dimension)
 {
-  if (!hasBlockID(block_id))
-    mooseError("No element info for block ID '", block_id, "'.");
+  if (hasBlockID(block_id))
+    mooseError("Block with ID '", block_id, "' has already been added.");
   else if (!validBlockID(block_id))
     mooseError("Illegal block ID '", block_id, "'.");
   else if (!validDimension(dimension))
@@ -302,7 +302,7 @@ CubitMeshInfo::removeBlocks()
 bool
 CubitMeshInfo::hasBlockID(int block_id) const
 {
-  return _block_ids.count(block_id);
+  return (_block_ids.count(block_id) > 0);
 }
 
 bool

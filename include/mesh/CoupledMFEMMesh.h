@@ -83,9 +83,9 @@ protected:
                                 std::map<int, std::vector<int>> & node_ids_for_element_id);
 
   /**
-   * Sets protected member variables.
+   * Sets private member variables.
    */
-  void buildLibmeshElementAndFaceInfo();
+  void buildLibmeshElementAndFaceInfo(std::vector<int> & unique_block_ids);
 
   /**
    * Blocks/subdomains are separate subsets of the mesh that could have different
@@ -123,13 +123,16 @@ protected:
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
 
+  /**
+   * Returns constant reference to element info for particular block id.
+   */
+  const CubitElementInfo & getElementInfo(int block_id);
+
 private:
   /**
-   * The element and face type used in the MOOSE mesh. We currently only support
-   * a single element type. Support for additional element types in a mesh will
-   * be added in the future.
+   * Stores the element and face type used in each block of the MOOSE mesh.
    */
-  CubitElementInfo _element_info;
+  CubitMeshInfo _mesh_info;
 
   /**
    * MFEM <--> libMesh maps required for higher-order mesh element transfers.
