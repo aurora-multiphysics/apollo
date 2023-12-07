@@ -6,16 +6,16 @@
 
 [Problem]
   type = MFEMProblem
-  use_glvis = true
+  use_glvis = false
 []
 
 [Formulation]
-  type = AFormulation
-  magnetic_vector_potential_name = magnetic_vector_potential
+  type = EBFormulation
+  e_field_name = electric_field
+  b_field_name = magnetic_flux_density
   magnetic_reluctivity_name = magnetic_reluctivity
   magnetic_permeability_name = magnetic_permeability
   electric_conductivity_name = electrical_conductivity
-  magnetic_flux_density_name = magnetic_flux_density
 []
 
 [FESpaces]
@@ -37,7 +37,7 @@
 []
 
 [AuxVariables]
-  [magnetic_vector_potential]
+  [electric_field]
     type = MFEMVariable
     fespace = HCurlFESpace
   []
@@ -56,38 +56,20 @@
 []
 
 [Functions]
-  [potential_high]
+  [current_magnitude]
     type = ParsedFunction
-    value = 1000*cos(2.0*pi*freq*t)
-    vars = 'freq'
-    vals = '0.01666667'
-  []
-  [potential_low]
-    type = ParsedFunction
-    value = -1000*cos(2.0*pi*freq*t)
-    vars = 'freq'
-    vals = '0.01666667'
+    expression = cos(2.0*pi*freq*t)
+    symbol_names = 'freq'
+    symbol_values = '0.01666667'
   []
 []
 
 [BCs]
-  [tangential_E_bdr]
+  [tangential_E_bc]
     type = MFEMVectorDirichletBC
-    variable = dmagnetic_vector_potential_dt
-    boundary = '1 2 3'
+    variable = electric_field
     vector_coefficient = TangentialECoef
-  []
-  [high_terminal]
-    type = MFEMScalarDirichletBC
-    variable = electric_potential
-    boundary = '1'
-    coefficient = HighPotential
-  []
-  [low_terminal]
-    type = MFEMScalarDirichletBC
-    variable = electric_potential
-    boundary = '2'
-    coefficient = LowPotential
+    boundary = '1 2 4'
   []
 []
 
@@ -164,23 +146,21 @@
     value = 0.0
   []
 
-  [HighPotential]
+  [CurrentCoef]
     type = MFEMFunctionCoefficient
-    function = potential_high
-  []
-  [LowPotential]
-    type = MFEMFunctionCoefficient
-    function = potential_low
+    function = current_magnitude
   []
 []
 
 [Sources]
   [SourcePotential]
-    type = MFEMScalarPotentialSource
-    potential = electric_potential
-    conductivity = electrical_conductivity
-    h1_fespace = H1FESpace
-    hcurl_fespace = HCurlFESpace
+    type = MFEMOpenCoilSource
+    total_current_coef = CurrentCoef
+    source_current_density_gridfunction = source_current_density
+    source_potential_gridfunction = electric_potential
+    coil_in_boundary = 1
+    coil_out_boundary = 2
+    block = 1
   []
 []
 
