@@ -1,0 +1,10 @@
+[Tests]
+  design = 'syntax/Problem/index.md'
+  [./PullWedge6Pyramid5Transfer]
+    type = 'CSVDiff'
+    input = 'pull_wedge6_pyramid5_transfer_master.i'
+    csvdiff = 'pull_wedge6_pyramid5_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using multiple first-order element types.'
+    max_parallel = 1
+  []
+[]
