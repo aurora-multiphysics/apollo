@@ -16,4 +16,36 @@
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple first-order element types.'
     max_parallel = 1
   []
+
+  [./PullMultiElementOrder2Transfer]
+    type = 'CSVDiff'
+    input = 'pull_multi_element_order2_transfer_master.i'
+    csvdiff = 'pull_multi_element_order2_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using multiple second-order element types.'
+    max_parallel = 1
+  []
+
+  [./PushPullMultiElementOrder2Transfer]
+    type = 'CSVDiff'
+    input = 'push_pull_multi_element_order2_transfer_master.i'
+    csvdiff = 'push_pull_multi_element_order2_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple second-order element types.'
+    max_parallel = 1
+  []
+
+  [./PullMultiElementOrder1Order2Transfer]
+    type = 'CSVDiff'
+    input = 'pull_multi_element_order1_order2_transfer_master.i'
+    csvdiff = 'pull_multi_element_order1_order2_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using first- and second-order element types.'
+    max_parallel = 1
+  []
+
+  [./PushPullMultiElementOrder1Order2Transfer]
+    type = 'CSVDiff'
+    input = 'push_pull_multi_element_order1_order2_transfer_master.i'
+    csvdiff = 'push_pull_multi_element_order1_order2_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using first- and second-order element types.'
+    max_parallel = 1
+  []
 []
