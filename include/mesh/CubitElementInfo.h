@@ -138,7 +138,7 @@ private:
  * CubitBlockInfo
  *
  * Stores the information about each block in a mesh. Each block can contain a different
- * element type.
+ * element type (although all element types must be of the same order).
  */
 class CubitBlockInfo
 {
@@ -169,11 +169,13 @@ public:
   /**
    * Accessors.
    */
-  uint8_t order() const;
-
   inline uint8_t dimension() const { return _dimension; }
-  inline std::size_t numElementBlocks() const { return _block_ids.size(); }
-  inline bool hasElementBlocks() const { return numElementBlocks() > 0; }
+  inline uint8_t order() const { return _order; }
+
+  inline const std::set<int> & blockIDs() const { return _block_ids; }
+
+  inline std::size_t numElementBlocks() const { return blockIDs().size(); }
+  inline bool hasElementBlocks() const { return !blockIDs().empty(); }
 
 protected:
   /**
@@ -200,14 +202,20 @@ protected:
   bool validBlockID(int block_id) const;
   bool validDimension(int dimension) const;
 
-  inline const std::set<int> & blockIDs() const { return _block_ids; }
-
 private:
+  /**
+   * Stores all block IDs.
+   */
   std::set<int> _block_ids;
+
+  /**
+   * Maps from block ID to element.
+   */
   std::map<int, CubitElementInfo> _block_element_for_block_id;
 
   /**
-   * Stores dimension of mesh. All block elements must be this dimension.
+   * Stores dimension of mesh. All elements must be this dimension.
    */
   uint8_t _dimension;
+  uint8_t _order;
 };

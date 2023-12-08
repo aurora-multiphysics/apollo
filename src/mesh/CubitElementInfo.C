@@ -298,20 +298,26 @@ CubitBlockInfo::addBlockElement(int block_id, int num_nodes_per_element)
   else if (!validBlockID(block_id))
     mooseError("Illegal block ID '", block_id, "'.");
 
-  auto element_info = CubitElementInfo(num_nodes_per_element, _dimension);
+  auto block_element = CubitElementInfo(num_nodes_per_element, _dimension);
 
   /**
    * Check element is compatible with existing element blocks.
    */
-  checkElementBlockIsCompatible(element_info);
+  checkElementBlockIsCompatible(block_element);
+
+  if (!hasElementBlocks()) // Set order of elements.
+  {
+    _order = block_element.getOrder();
+  }
 
   _block_ids.insert(block_id);
-  _block_element_for_block_id[block_id] = element_info;
+  _block_element_for_block_id[block_id] = block_element;
 }
 
 void
 CubitBlockInfo::clearBlockElements()
 {
+  _order = 0;
   _block_ids.clear();
   _block_element_for_block_id.clear();
 }
@@ -371,17 +377,6 @@ CubitBlockInfo::testBlockElement() const
   auto block_id = *(blockIDs().begin());
 
   return blockElement(block_id);
-}
-
-uint8_t
-CubitBlockInfo::order() const
-{
-  if (!hasElementBlocks())
-  {
-    mooseError("No element blocks.");
-  }
-
-  return testBlockElement().getOrder();
 }
 
 bool
