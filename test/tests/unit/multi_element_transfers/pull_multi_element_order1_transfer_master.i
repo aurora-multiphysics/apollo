@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/simple-cube-wedge6-pyramid5.e
+  file = gold/simple-cube-multi-element-order1.e
   dim = 3
 []
 
@@ -47,7 +47,7 @@
   [sub_app]
     type = TransientMultiApp
     positions = '0 0 0'
-    input_files = 'pull_wedge6_pyramid5_transfer_sub_app.i'
+    input_files = 'pull_multi_element_order1_transfer_sub_app.i'
     execute_on = timestep_begin
   []
 []

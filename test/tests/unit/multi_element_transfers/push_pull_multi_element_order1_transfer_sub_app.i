@@ -1,6 +1,6 @@
 [Mesh]
   type = CoupledMFEMMesh
-  file = gold/simple-cube-wedge6-pyramid5.e
+  file = gold/simple-cube-multi-element-order1.e
   dim = 3
 []
 
@@ -14,19 +14,11 @@
 []
 
 [AuxVariables]
-  [sent_variable]
+  [received_variable_subapp]
     family = LAGRANGE
     order = FIRST
   []
 []
-
-[ICs]
-  [set_variable]
-    type = FunctionIC
-    variable = sent_variable
-    function = set_variable
-  []
-[]  
 
 [Functions]
   [set_variable]
