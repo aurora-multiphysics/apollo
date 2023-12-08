@@ -192,7 +192,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
     // Get the element type associated with the block.
     auto & block_element = block_info.blockElement(block_id);
 
-    std::vector<int> renumbered_vertex_ids(block_element.getNumCornerNodes());
+    std::vector<int> renumbered_vertex_ids(block_element.numCornerNodes());
 
     auto & element_ids = element_ids_for_block_id[block_id];
 
@@ -201,7 +201,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       auto & libmesh_node_ids = node_ids_for_element_id[element_id];
 
       // Iterate over ONLY the corner nodes in the element.
-      for (int ivertex = 0; ivertex < block_element.getNumCornerNodes(); ivertex++)
+      for (int ivertex = 0; ivertex < block_element.numCornerNodes(); ivertex++)
       {
         const int libmesh_node_id = libmesh_node_ids[ivertex];
 
@@ -215,7 +215,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
       _mfem_element_id_for_libmesh_element_id[element_id] = ielement;
 
       elements[ielement++] =
-          buildMFEMElement(block_element.getElementType(), renumbered_vertex_ids.data(), block_id);
+          buildMFEMElement(block_element.elementType(), renumbered_vertex_ids.data(), block_id);
     }
   }
 }
@@ -262,7 +262,7 @@ MFEMMesh::buildMFEMBoundaryElements(
 
       // Get the element type and face info.
       auto & block_element = block_info.blockElement(boundary_block_id);
-      auto & boundary_face_info = block_element.getFaceInfo(boundary_face_id);
+      auto & boundary_face_info = block_element.face(boundary_face_id);
 
       // Iterate only over the corner nodes and renumber.
       std::vector<int> renumbered_vertex_ids(boundary_face_info.numFaceCornerNodes());
@@ -441,7 +441,7 @@ MFEMMesh::handleQuadraticFESpace(
     // Get the correct mapping.
     int * mfem_to_libmesh_map = nullptr;
 
-    switch (block_element.getElementType())
+    switch (block_element.elementType())
     {
       case CubitElementInfo::ELEMENT_TRI6:
       {
@@ -466,9 +466,9 @@ MFEMMesh::handleQuadraticFESpace(
       default:
       {
         mooseError("No second-order map available for element type ",
-                   block_element.getElementType(),
+                   block_element.elementType(),
                    " with dimension ",
-                   block_element.getDimension(),
+                   block_element.dimension(),
                    ".");
         break;
       }

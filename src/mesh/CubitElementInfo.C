@@ -239,7 +239,7 @@ CubitElementInfo::getPyramid5FaceInfo() const
 }
 
 const CubitFaceInfo &
-CubitElementInfo::getFaceInfo(int iface) const
+CubitElementInfo::face(int iface) const
 {
   /**
    * Check _face_info initialized.
@@ -307,7 +307,7 @@ CubitBlockInfo::addBlockElement(int block_id, int num_nodes_per_element)
 
   if (!hasElementBlocks()) // Set order of elements.
   {
-    _order = block_element.getOrder();
+    _order = block_element.order();
   }
 
   _block_ids.insert(block_id);
@@ -360,7 +360,7 @@ CubitBlockInfo::checkElementBlockIsCompatible(const CubitElementInfo & new_block
   }
 
   // Enforce block orders to be the same for now.
-  if (testBlockElement().getOrder() != new_block_element.getOrder())
+  if (testBlockElement().order() != new_block_element.order())
   {
     mooseError("All block elements must be of the same order.");
   }
@@ -387,11 +387,11 @@ CubitBlockInfo::hasMultipleElementTypes() const
     return false;
   }
 
-  auto test_element_type = testBlockElement().getElementType();
+  auto test_element_type = testBlockElement().elementType();
 
   for (auto block_id : blockIDs())
   {
-    if (blockElement(block_id).getElementType() != test_element_type)
+    if (blockElement(block_id).elementType() != test_element_type)
     {
       return true;
     }

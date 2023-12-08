@@ -202,11 +202,11 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
 
       const int element_id = element_ptr->id();
 
-      std::vector<int> element_node_ids(element_info.getNumNodes());
+      std::vector<int> element_node_ids(element_info.numNodes());
 
       elements_in_block.push_back(element_id);
 
-      for (int node_counter = 0; node_counter < element_info.getNumNodes(); node_counter++)
+      for (int node_counter = 0; node_counter < element_info.numNodes(); node_counter++)
       {
         element_node_ids[node_counter] = element_ptr->node_id(node_counter);
       }
@@ -241,7 +241,7 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
       auto & node_ids = node_ids_for_element_id[element_id];
 
       // Only use the nodes on the edge of the element!
-      for (int knode = 0; knode < block_element.getNumCornerNodes(); knode++)
+      for (int knode = 0; knode < block_element.numCornerNodes(); knode++)
       {
         unique_corner_node_ids.push_back(node_ids[knode]);
       }

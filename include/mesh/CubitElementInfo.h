@@ -82,20 +82,20 @@ public:
     ELEMENT_PYRAMID5
   };
 
-  inline CubitElementType getElementType() const { return _element_type; }
+  inline CubitElementType elementType() const { return _element_type; }
 
   /**
    * Returns info for a particular face.
    */
-  const CubitFaceInfo & getFaceInfo(int iface = 0) const;
+  const CubitFaceInfo & face(int iface = 0) const;
 
-  inline uint8_t getNumFaces() const { return _num_faces; }
+  inline uint8_t numFaces() const { return _num_faces; }
 
-  inline uint8_t getNumNodes() const { return _num_nodes; }
-  inline uint8_t getNumCornerNodes() const { return _num_corner_nodes; }
+  inline uint8_t numNodes() const { return _num_nodes; }
+  inline uint8_t numCornerNodes() const { return _num_corner_nodes; }
 
-  inline uint8_t getOrder() const { return _order; }
-  inline uint8_t getDimension() const { return _dimension; }
+  inline uint8_t order() const { return _order; }
+  inline uint8_t dimension() const { return _dimension; }
 
 protected:
   void buildCubit2DElementInfo(int num_nodes_per_element);
