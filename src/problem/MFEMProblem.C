@@ -128,6 +128,11 @@ MFEMProblem::init()
 void
 MFEMProblem::externalSolve()
 {
+  if (!_solve)
+  {
+    return;
+  }
+
   hephaestus::TransientExecutioner * transient_mfem_exec =
       dynamic_cast<hephaestus::TransientExecutioner *>(executioner);
   if (transient_mfem_exec != NULL)
