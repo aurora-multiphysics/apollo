@@ -138,10 +138,12 @@ protected:
       std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
       std::map<int, int> & libmesh_node_id_for_mfem_node_id);
 
+private:
   /**
    * Map from the MFEM element id to the libmesh element id internally.
    */
   std::map<int, int> _libmesh_element_id_for_mfem_element_id;
+  std::map<int, int> _mfem_element_id_for_libmesh_element_id;
 
   /**
    * Maps from the libmesh corner node id to the mfem vertex id internally.

@@ -180,6 +180,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
                             std::map<int, std::vector<int>> & node_ids_for_element_id)
 {
   _libmesh_element_id_for_mfem_element_id.clear();
+  _mfem_element_id_for_libmesh_element_id.clear();
 
   // Set mesh elements.
   NumOfElements = num_elements_in_mesh;
@@ -211,6 +212,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
 
       // Map from mfem element id to libmesh element id.
       _libmesh_element_id_for_mfem_element_id[ielement] = element_id;
+      _mfem_element_id_for_libmesh_element_id[element_id] = ielement;
 
       elements[ielement++] =
           buildMFEMElement(block_element.getElementType(), renumbered_vertex_ids.data(), block_id);
@@ -389,66 +391,15 @@ MFEMMesh::handleQuadraticFESpace(
     return;
   }
 
-  // Current limitation: - only supporting a single second-order element type.
-  if (block_info.hasMultipleElementTypes())
-  {
-    mooseError("Cannot handle multiple different higher-order element types.");
-  }
-
   // Add a warning for 2D second-order elements but proceed.
   if (block_info.dimension() == 2)
   {
     mooseWarning("'", __func__, "' has not been tested with second-order 2D elements.");
   }
 
-  auto & element_info = block_info.blockElement(unique_block_ids.front()); // MARK: - temporary.
-
-  // 2D maps:
-  const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};
-  const int mfem_to_libmesh_quad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-  // 3D maps:
-  const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
-
-  // NB: different map used for hex27 to ReadCubit. LibMesh uses a different node
-  // ordering to the Exodus/Genesis format.
-  const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
-                                       19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
-
-  int * mfem_to_libmesh_map = nullptr;
-
-  switch (element_info.getElementType())
-  {
-    case CubitElementInfo::ELEMENT_TRI6:
-    {
-      mfem_to_libmesh_map = (int *)mfem_to_libmesh_tri6;
-      break;
-    }
-    case CubitElementInfo::ELEMENT_QUAD9:
-    {
-      mfem_to_libmesh_map = (int *)mfem_to_libmesh_quad9;
-      break;
-    }
-    case CubitElementInfo::ELEMENT_TET10:
-    {
-      mfem_to_libmesh_map = (int *)mfem_to_libmesh_tet10;
-      break;
-    }
-    case CubitElementInfo::ELEMENT_HEX27:
-    {
-      mfem_to_libmesh_map = (int *)mfem_to_libmesh_hex27;
-      break;
-    }
-    default:
-    {
-      mooseError("No second-order map available for element type ",
-                 element_info.getElementType(),
-                 " with dimension ",
-                 element_info.getDimension(),
-                 ".");
-      break;
-    }
-  }
+  // Clear second order maps.
+  libmesh_node_id_for_mfem_node_id.clear();
+  mfem_node_id_for_libmesh_node_id.clear();
 
   // Call FinalizeTopology. If we call this then we must call Finalize later after
   // we've defined the mesh nodes.
@@ -467,50 +418,104 @@ MFEMMesh::handleQuadraticFESpace(
   Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
   own_nodes = 1;                               // and 'finite_element_space'
 
-  // Clear second order maps.
-  libmesh_node_id_for_mfem_node_id.clear();
-  mfem_node_id_for_libmesh_node_id.clear();
+  // 2D maps:
+  const int mfem_to_libmesh_tri6[] = {1, 2, 3, 4, 5, 6};
+  const int mfem_to_libmesh_quad9[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-  for (int ielement = 0; ielement < NumOfElements; ielement++)
+  // 3D maps:
+  const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+
+  // NB: different map used for hex27 to ReadCubit. LibMesh uses a different node
+  // ordering to the Exodus/Genesis format.
+  const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
+                                       19, 20, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27};
+
+  // Iterate over blocks and libmesh elements.
+  for (auto block_id : unique_block_ids)
   {
-    const int libmesh_element_id = _libmesh_element_id_for_mfem_element_id[ielement];
+    auto & libmesh_element_ids = libmesh_element_ids_for_block_id[block_id];
 
-    // Get vector containing ALL node global IDs for element.
-    auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
+    // Find the element type.
+    auto & block_element = block_info.blockElement(block_id);
 
-    // Sets DOF array for element. Higher-order (second-order) elements contain
-    // additional nodes between corner nodes.
-    mfem::Array<int> dofs;
-    finite_element_space->GetElementDofs(ielement, dofs);
+    // Get the correct mapping.
+    int * mfem_to_libmesh_map = nullptr;
 
-    // NB: returned indices are ALWAYS ordered byNodes (ie xxx..., yyy..., zzz...)
-    mfem::Array<int> vdofs;
-    finite_element_space->GetElementVDofs(ielement, vdofs);
-
-    // Iterate over dofs array.
-    for (int j = 0; j < dofs.Size(); j++)
+    switch (block_element.getElementType())
     {
-      const int mfem_node_id = dofs[j];
-
-      // Find the libmesh node ID:
-      // NB: the map is 1-based to we need to subtract 1.
-      const int libmesh_node_index = mfem_to_libmesh_map[j] - 1;
-      const int libmesh_node_id = libmesh_node_ids[libmesh_node_index];
-
-      // Update two-way map:
-      libmesh_node_id_for_mfem_node_id[mfem_node_id] = libmesh_node_id;
-      mfem_node_id_for_libmesh_node_id[libmesh_node_id] = mfem_node_id;
-
-      // Extract node's coordinates:
-      auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
-
-      // NB: vdofs using xxx, yyy, zzz ordering.
-      (*Nodes)(vdofs[j]) = coordinates[0];
-      (*Nodes)(vdofs[j + dofs.Size()]) = coordinates[1];
-
-      if (Dim == 3)
+      case CubitElementInfo::ELEMENT_TRI6:
       {
-        (*Nodes)(vdofs[j + 2 * dofs.Size()]) = coordinates[2];
+        mfem_to_libmesh_map = (int *)mfem_to_libmesh_tri6;
+        break;
+      }
+      case CubitElementInfo::ELEMENT_QUAD9:
+      {
+        mfem_to_libmesh_map = (int *)mfem_to_libmesh_quad9;
+        break;
+      }
+      case CubitElementInfo::ELEMENT_TET10:
+      {
+        mfem_to_libmesh_map = (int *)mfem_to_libmesh_tet10;
+        break;
+      }
+      case CubitElementInfo::ELEMENT_HEX27:
+      {
+        mfem_to_libmesh_map = (int *)mfem_to_libmesh_hex27;
+        break;
+      }
+      default:
+      {
+        mooseError("No second-order map available for element type ",
+                   block_element.getElementType(),
+                   " with dimension ",
+                   block_element.getDimension(),
+                   ".");
+        break;
+      }
+    }
+
+    // Iterate over elements in the block.
+    for (auto libmesh_element_id : libmesh_element_ids)
+    {
+      auto mfem_element_id = _mfem_element_id_for_libmesh_element_id[libmesh_element_id];
+
+      // Get vector containing ALL node global IDs for element.
+      auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
+
+      // Sets DOF array for element. Higher-order (second-order) elements contain
+      // additional nodes between corner nodes.
+      mfem::Array<int> dofs;
+      finite_element_space->GetElementDofs(mfem_element_id, dofs);
+
+      // NB: returned indices are ALWAYS ordered byNodes (ie xxx..., yyy..., zzz...)
+      mfem::Array<int> vdofs;
+      finite_element_space->GetElementVDofs(mfem_element_id, vdofs);
+
+      // Iterate over dofs array.
+      for (int j = 0; j < dofs.Size(); j++)
+      {
+        const int mfem_node_id = dofs[j];
+
+        // Find the libmesh node ID:
+        // NB: the map is 1-based to we need to subtract 1.
+        const int libmesh_node_index = mfem_to_libmesh_map[j] - 1;
+        const int libmesh_node_id = libmesh_node_ids[libmesh_node_index];
+
+        // Update two-way map:
+        libmesh_node_id_for_mfem_node_id[mfem_node_id] = libmesh_node_id;
+        mfem_node_id_for_libmesh_node_id[libmesh_node_id] = mfem_node_id;
+
+        // Extract node's coordinates:
+        auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
+
+        // NB: vdofs using xxx, yyy, zzz ordering.
+        (*Nodes)(vdofs[j]) = coordinates[0];
+        (*Nodes)(vdofs[j + dofs.Size()]) = coordinates[1];
+
+        if (Dim == 3)
+        {
+          (*Nodes)(vdofs[j + 2 * dofs.Size()]) = coordinates[2];
+        }
       }
     }
   }
