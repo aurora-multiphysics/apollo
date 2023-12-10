@@ -50,17 +50,17 @@ protected:
    * and element IDs.
    */
   void buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                         std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                         std::map<int, int> & num_elements_for_boundary_id);
+                         std::map<int, std::vector<int>> & side_ids_for_boundary_id);
 
   /**
-   * Create a mapping from each boundary ID to a vector containing the global node
+   * Create a mapping from each boundary ID to a vector of vectors containing the global node
    * IDs of nodes that lie on the faces of elements that fall on the boundary.
    */
-  void buildBoundaryNodeIDs(const std::vector<int> & unique_side_boundary_ids,
-                            std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-                            std::map<int, std::vector<int>> & side_ids_for_boundary_id,
-                            std::map<int, std::vector<int>> & node_ids_for_boundary_id);
+  void buildBoundaryNodeIDs(
+      const std::vector<int> & unique_side_boundary_ids,
+      std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+      std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+      std::map<int, std::vector<std::vector<unsigned int>>> & node_ids_for_boundary_id);
 
   /**
    * Builds two maps:
@@ -123,6 +123,7 @@ protected:
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
 
+private:
   /**
    * The element and face type used in the MOOSE mesh. We currently only support
    * a single element type. Support for additional element types in a mesh will

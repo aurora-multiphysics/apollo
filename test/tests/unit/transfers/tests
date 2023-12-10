@@ -19,35 +19,67 @@
   #   requirement = 'Apollo shall have the ability to couple second order MOOSE LAGRANGE variables to MFEM H1 conforming gridfunctions.'
   # [] 
 
-  [./TwoWayHex27Transfer]
+  [./PushPullHex27Transfer]
     type = 'CSVDiff'
-    input = 'two_way_hex27_transfer_master.i'
-    csvdiff = 'two_way_hex27_transfer_master_out.csv'
+    input = 'push_pull_hex27_transfer_master.i'
+    csvdiff = 'push_pull_hex27_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order hex27 elements.'
     max_parallel = 1
   []
 
-  [./OneWayHex27Transfer]
+  [./PullHex27Transfer]
     type = 'CSVDiff'
-    input = 'one_way_hex27_transfer_master.i'
-    csvdiff = 'one_way_hex27_transfer_master_out.csv'
+    input = 'pull_hex27_transfer_master.i'
+    csvdiff = 'pull_hex27_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order hex27 elements.'
     max_parallel = 1
   []
 
-  [./TwoWayTet10Transfer]
+  [./PushPullTet10Transfer]
     type = 'CSVDiff'
-    input = 'two_way_tet10_transfer_master.i'
-    csvdiff = 'two_way_tet10_transfer_master_out.csv'
+    input = 'push_pull_tet10_transfer_master.i'
+    csvdiff = 'push_pull_tet10_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order tet10 elements.'
     max_parallel = 1
   []
 
-  [./OneWayTet10Transfer]
+  [./PullTet10Transfer]
     type = 'CSVDiff'
-    input = 'one_way_tet10_transfer_master.i'
-    csvdiff = 'one_way_tet10_transfer_master_out.csv'
+    input = 'pull_tet10_transfer_master.i'
+    csvdiff = 'pull_tet10_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order tet10 elements.'
+    max_parallel = 1
+  []
+
+  [./PullWedge6Transfer]
+    type = 'CSVDiff'
+    input = 'pull_wedge6_transfer_master.i'
+    csvdiff = 'pull_wedge6_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using wedge6 (prism6) elements.'
+    max_parallel = 1
+  []
+
+  [./PushPullWedge6Transfer]
+    type = 'CSVDiff'
+    input = 'push_pull_wedge6_transfer_master.i'
+    csvdiff = 'push_pull_wedge6_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using wedge6 (prism6) elements.'
+    max_parallel = 1
+  []
+
+  [./PullPyramid5Transfer]
+    type = 'CSVDiff'
+    input = 'pull_pyramid5_transfer_master.i'
+    csvdiff = 'pull_pyramid5_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using pyramid5 elements.'
+    max_parallel = 1
+  []
+
+  [./PushPullPyramid5Transfer]
+    type = 'CSVDiff'
+    input = 'push_pull_pyramid5_transfer_master.i'
+    csvdiff = 'push_pull_pyramid5_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using pyramid5 elements.'
     max_parallel = 1
   []
 []

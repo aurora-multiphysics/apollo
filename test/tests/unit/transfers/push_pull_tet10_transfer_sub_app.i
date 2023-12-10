@@ -6,12 +6,24 @@
 
 [Problem]
   solve = false
+  type = MFEMProblem
+[]
+
+[Formulation]
+  type = CustomFormulation
 []
 
 [AuxVariables]
-  [test_variable_on_subapp_side]
+  [received_variable_subapp]
     family = LAGRANGE
     order = SECOND
+  []
+[]
+
+[Functions]
+  [set_variable]
+    type = ParsedFunction
+    expression = '42 + 100*x*x'
   []
 []
 
