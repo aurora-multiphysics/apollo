@@ -3,7 +3,7 @@
 
 // Function prototypes:
 static bool coordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
-static void convertToCArray(std::array<double, 3> & array_in, double array_out[3]);
+static void convertToCArray(const std::array<double, 3> & array_in, double array_out[3]);
 
 /**
  * Initializer for 1st order elements.
@@ -14,12 +14,12 @@ MFEMMesh::MFEMMesh(
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
     const std::vector<int> & unique_libmesh_corner_node_ids,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
+    const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    const std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
+    const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
   if (block_info.order() != 1)
   {
@@ -51,12 +51,12 @@ MFEMMesh::MFEMMesh(
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
     const std::vector<int> & unique_libmesh_corner_node_ids,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    const std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
+    const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, int> & libmesh_node_id_for_mfem_node_id,
     std::map<int, int> & mfem_node_id_for_libmesh_node_id)
 {
@@ -111,12 +111,12 @@ MFEMMesh::buildMFEMVerticesAndElements(
     const std::vector<int> & unique_block_ids,
     const std::vector<int> & unique_side_boundary_ids,
     const std::vector<int> & unique_libmesh_corner_node_ids,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
+    const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    const std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id,
+    const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
   // Set dimensions.
   Dim = spaceDim = block_info.dimension();
@@ -140,8 +140,9 @@ MFEMMesh::buildMFEMVerticesAndElements(
 }
 
 void
-MFEMMesh::buildMFEMVertices(const std::vector<int> & unique_libmesh_corner_node_ids,
-                            std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
+MFEMMesh::buildMFEMVertices(
+    const std::vector<int> & unique_libmesh_corner_node_ids,
+    const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id)
 {
   _mfem_vertex_index_for_libmesh_corner_node_id.clear();
 
@@ -155,7 +156,7 @@ MFEMMesh::buildMFEMVertices(const std::vector<int> & unique_libmesh_corner_node_
   for (int libmesh_node_id : unique_libmesh_corner_node_ids)
   {
     // Get the xyz coordinates associated with the libmesh corner node.
-    auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
+    auto & coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
 
     // Set xyz components.
     vertices[ivertex](0) = coordinates[0];
@@ -176,8 +177,8 @@ void
 MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
                             const CubitBlockInfo & block_info,
                             const std::vector<int> & unique_block_ids,
-                            std::map<int, std::vector<int>> & element_ids_for_block_id,
-                            std::map<int, std::vector<int>> & node_ids_for_element_id)
+                            const std::map<int, std::vector<int>> & element_ids_for_block_id,
+                            const std::map<int, std::vector<int>> & node_ids_for_element_id)
 {
   _libmesh_element_id_for_mfem_element_id.clear();
   _mfem_element_id_for_libmesh_element_id.clear();
@@ -194,11 +195,11 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
 
     std::vector<int> renumbered_vertex_ids(block_element.numCornerNodes());
 
-    auto & element_ids = element_ids_for_block_id[block_id];
+    auto & element_ids = element_ids_for_block_id.at(block_id);
 
     for (int element_id : element_ids) // Iterate over elements in block.
     {
-      auto & libmesh_node_ids = node_ids_for_element_id[element_id];
+      auto & libmesh_node_ids = node_ids_for_element_id.at(element_id);
 
       // Iterate over ONLY the corner nodes in the element.
       for (int ivertex = 0; ivertex < block_element.numCornerNodes(); ivertex++)
@@ -207,7 +208,7 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
 
         // Map from the corner libmesh node --> corresponding mfem vertex.
         renumbered_vertex_ids[ivertex] =
-            _mfem_vertex_index_for_libmesh_corner_node_id[libmesh_node_id];
+            _mfem_vertex_index_for_libmesh_corner_node_id.at(libmesh_node_id);
       }
 
       // Map from mfem element id to libmesh element id.
@@ -224,9 +225,9 @@ void
 MFEMMesh::buildMFEMBoundaryElements(
     const CubitBlockInfo & block_info,
     const std::vector<int> & unique_side_boundary_ids,
-    std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id)
+    const std::map<int, std::vector<std::vector<unsigned int>>> & libmesh_node_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_side_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & libmesh_block_ids_for_boundary_id)
 {
   // Find total number of boundary elements.
   NumOfBdrElements = 0;
@@ -239,7 +240,7 @@ MFEMMesh::buildMFEMBoundaryElements(
 
   for (int boundary_id : unique_side_boundary_ids)
   {
-    NumOfBdrElements += libmesh_node_ids_for_boundary_id[boundary_id].size();
+    NumOfBdrElements += libmesh_node_ids_for_boundary_id.at(boundary_id).size();
   }
 
   boundary.SetSize(NumOfBdrElements);
@@ -248,9 +249,9 @@ MFEMMesh::buildMFEMBoundaryElements(
   int iboundary = 0;
   for (int boundary_id : unique_side_boundary_ids)
   {
-    auto & all_boundary_node_ids = libmesh_node_ids_for_boundary_id[boundary_id];
-    auto & all_boundary_side_ids = libmesh_side_ids_for_boundary_id[boundary_id];
-    auto & all_boundary_block_ids = libmesh_block_ids_for_boundary_id[boundary_id];
+    auto & all_boundary_node_ids = libmesh_node_ids_for_boundary_id.at(boundary_id);
+    auto & all_boundary_side_ids = libmesh_side_ids_for_boundary_id.at(boundary_id);
+    auto & all_boundary_block_ids = libmesh_block_ids_for_boundary_id.at(boundary_id);
 
     // Iterate over all elements on boundary.
     for (int jelement = 0; jelement < (int)all_boundary_node_ids.size(); jelement++)
@@ -379,9 +380,9 @@ void
 MFEMMesh::handleQuadraticFESpace(
     const CubitBlockInfo & block_info,
     const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     std::map<int, int> & libmesh_node_id_for_mfem_node_id,
     std::map<int, int> & mfem_node_id_for_libmesh_node_id)
 {
@@ -433,7 +434,7 @@ MFEMMesh::handleQuadraticFESpace(
   // Iterate over blocks and libmesh elements.
   for (auto block_id : unique_block_ids)
   {
-    auto & libmesh_element_ids = libmesh_element_ids_for_block_id[block_id];
+    auto & libmesh_element_ids = libmesh_element_ids_for_block_id.at(block_id);
 
     // Find the element type.
     auto & block_element = block_info.blockElement(block_id);
@@ -477,10 +478,10 @@ MFEMMesh::handleQuadraticFESpace(
     // Iterate over elements in the block.
     for (auto libmesh_element_id : libmesh_element_ids)
     {
-      auto mfem_element_id = _mfem_element_id_for_libmesh_element_id[libmesh_element_id];
+      auto mfem_element_id = _mfem_element_id_for_libmesh_element_id.at(libmesh_element_id);
 
       // Get vector containing ALL node global IDs for element.
-      auto & libmesh_node_ids = libmesh_node_ids_for_element_id[libmesh_element_id];
+      auto & libmesh_node_ids = libmesh_node_ids_for_element_id.at(libmesh_element_id);
 
       // Sets DOF array for element. Higher-order (second-order) elements contain
       // additional nodes between corner nodes.
@@ -506,7 +507,7 @@ MFEMMesh::handleQuadraticFESpace(
         mfem_node_id_for_libmesh_node_id[libmesh_node_id] = mfem_node_id;
 
         // Extract node's coordinates:
-        auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
+        auto & coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
 
         // NB: vdofs using xxx, yyy, zzz ordering.
         (*Nodes)(vdofs[j]) = coordinates[0];
@@ -535,19 +536,19 @@ MFEMMesh::handleQuadraticFESpace(
 
 void
 MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
-    mfem::FiniteElementSpace & finite_element_space,
+    const mfem::FiniteElementSpace & finite_element_space,
     const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
-    std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
-    std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
-    std::map<int, int> & libmesh_node_id_for_mfem_node_id)
+    const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
+    const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
+    const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
+    const std::map<int, int> & libmesh_node_id_for_mfem_node_id)
 {
   // Create a set of all unique libmesh node ids.
   std::set<int> libmesh_node_ids;
 
   for (auto & key_value : libmesh_node_ids_for_element_id)
   {
-    std::vector<int> & libmesh_node_ids_for_element = key_value.second;
+    const std::vector<int> & libmesh_node_ids_for_element = key_value.second;
 
     for (int libmesh_node_id : libmesh_node_ids_for_element)
     {
@@ -566,13 +567,13 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     {
       GetNode(mfem_dof, mfem_coordinates);
 
-      const int libmesh_node_id = libmesh_node_id_for_mfem_node_id[mfem_dof];
+      const int libmesh_node_id = libmesh_node_id_for_mfem_node_id.at(mfem_dof);
 
       // Remove from set.
       libmesh_node_ids.erase(libmesh_node_id);
 
       // Convert from std::array<double, 3> --> C array for comparison.
-      auto & coordinates = coordinates_for_libmesh_node_id[libmesh_node_id];
+      auto & coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
       convertToCArray(coordinates, libmesh_coordinates);
 
       if (!coordinatesMatch(libmesh_coordinates, mfem_coordinates))
@@ -619,7 +620,7 @@ coordinatesMatch(double primary[3], double secondary[3], const double tolerance)
 }
 
 static void
-convertToCArray(std::array<double, 3> & array_in, double array_out[3])
+convertToCArray(const std::array<double, 3> & array_in, double array_out[3])
 {
   if (!array_out)
   {
