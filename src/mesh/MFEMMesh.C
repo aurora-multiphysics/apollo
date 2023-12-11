@@ -89,7 +89,7 @@ MFEMMesh::MFEMMesh(
 }
 
 MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool fix_orientation)
-  : _libmesh_element_id_for_mfem_element_id{}, _mfem_vertex_index_for_libmesh_corner_node_id{}
+  : _mfem_element_id_for_libmesh_element_id{}, _mfem_vertex_index_for_libmesh_corner_node_id{}
 {
   SetEmpty();
 
@@ -180,7 +180,6 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
                             const std::map<int, std::vector<int>> & element_ids_for_block_id,
                             const std::map<int, std::vector<int>> & node_ids_for_element_id)
 {
-  _libmesh_element_id_for_mfem_element_id.clear();
   _mfem_element_id_for_libmesh_element_id.clear();
 
   // Set mesh elements.
@@ -207,12 +206,10 @@ MFEMMesh::buildMFEMElements(const int num_elements_in_mesh,
         const int libmesh_node_id = libmesh_node_ids[ivertex];
 
         // Map from the corner libmesh node --> corresponding mfem vertex.
-        renumbered_vertex_ids[ivertex] =
-            _mfem_vertex_index_for_libmesh_corner_node_id.at(libmesh_node_id);
+        renumbered_vertex_ids[ivertex] = getMFEMVertexIndex(libmesh_node_id);
       }
 
       // Map from mfem element id to libmesh element id.
-      _libmesh_element_id_for_mfem_element_id[ielement] = element_id;
       _mfem_element_id_for_libmesh_element_id[element_id] = ielement;
 
       elements[ielement++] =
@@ -273,8 +270,7 @@ MFEMMesh::buildMFEMBoundaryElements(
         const int libmesh_node_id = boundary_node_ids[knode];
 
         // Renumber vertex ("node") IDs so they're contiguous and start from 0.
-        renumbered_vertex_ids[knode] =
-            _mfem_vertex_index_for_libmesh_corner_node_id[libmesh_node_id];
+        renumbered_vertex_ids[knode] = getMFEMVertexIndex(libmesh_node_id);
       }
 
       boundary[iboundary++] = buildMFEMFaceElement(
@@ -478,7 +474,7 @@ MFEMMesh::handleQuadraticFESpace(
     // Iterate over elements in the block.
     for (auto libmesh_element_id : libmesh_element_ids)
     {
-      auto mfem_element_id = _mfem_element_id_for_libmesh_element_id.at(libmesh_element_id);
+      auto mfem_element_id = getMFEMElementID(libmesh_element_id);
 
       // Get vector containing ALL node global IDs for element.
       auto & libmesh_node_ids = libmesh_node_ids_for_element_id.at(libmesh_element_id);

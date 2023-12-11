@@ -144,15 +144,20 @@ protected:
       const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
       const std::map<int, int> & libmesh_node_id_for_mfem_node_id);
 
-private:
   /**
-   * Map from the MFEM element id to the libmesh element id internally.
+   * Accessors.
    */
-  std::map<int, int> _libmesh_element_id_for_mfem_element_id;
-  std::map<int, int> _mfem_element_id_for_libmesh_element_id;
+  inline int getMFEMElementID(int libmesh_element_id) const
+  {
+    return _mfem_element_id_for_libmesh_element_id.at(libmesh_element_id);
+  }
 
-  /**
-   * Maps from the libmesh corner node id to the mfem vertex id internally.
-   */
+  inline int getMFEMVertexIndex(int libmesh_corner_node_id) const
+  {
+    return _mfem_vertex_index_for_libmesh_corner_node_id.at(libmesh_corner_node_id);
+  }
+
+private:
+  std::map<int, int> _mfem_element_id_for_libmesh_element_id;
   std::map<int, int> _mfem_vertex_index_for_libmesh_corner_node_id;
 };
