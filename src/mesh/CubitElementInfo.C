@@ -239,7 +239,7 @@ CubitElementInfo::getPyramid5FaceInfo() const
 }
 
 const CubitFaceInfo &
-CubitElementInfo::getFaceInfo(int iface) const
+CubitElementInfo::face(int iface) const
 {
   /**
    * Check _face_info initialized.
@@ -274,3 +274,105 @@ CubitElementInfo::getFaceInfo(int iface) const
 
   return is_single_face_type ? _face_info.front() : _face_info[iface];
 };
+
+/**
+ * CubitBlockInfo
+ */
+CubitBlockInfo::CubitBlockInfo(int dimension)
+{
+  if (!validDimension(dimension))
+  {
+    mooseError("Invalid dimension '", dimension, "' specified.");
+  }
+
+  _dimension = dimension;
+
+  clearBlockElements();
+}
+
+void
+CubitBlockInfo::addBlockElement(int block_id, int num_nodes_per_element)
+{
+  if (hasBlockID(block_id))
+    mooseError("Block with ID '", block_id, "' has already been added.");
+  else if (!validBlockID(block_id))
+    mooseError("Illegal block ID '", block_id, "'.");
+
+  auto block_element = CubitElementInfo(num_nodes_per_element, _dimension);
+
+  /**
+   * Check element is compatible with existing element blocks.
+   */
+  checkElementBlockIsCompatible(block_element);
+
+  if (!hasBlocks()) // Set order of elements.
+  {
+    _order = block_element.order();
+  }
+
+  _block_ids.insert(block_id);
+  _block_element_for_block_id[block_id] = block_element;
+}
+
+uint8_t
+CubitBlockInfo::order() const
+{
+  if (!hasBlocks())
+  {
+    mooseError("No elements have been added.");
+  }
+
+  return _order;
+}
+
+void
+CubitBlockInfo::clearBlockElements()
+{
+  _order = 0;
+  _block_ids.clear();
+  _block_element_for_block_id.clear();
+}
+
+bool
+CubitBlockInfo::hasBlockID(int block_id) const
+{
+  return (_block_ids.count(block_id) > 0);
+}
+
+bool
+CubitBlockInfo::validBlockID(int block_id) const
+{
+  return (block_id > 0); // 1-based indexing.
+}
+
+bool
+CubitBlockInfo::validDimension(int dimension) const
+{
+  return (dimension == 2 || dimension == 3);
+}
+
+const CubitElementInfo &
+CubitBlockInfo::blockElement(int block_id) const
+{
+  if (!hasBlockID(block_id))
+  {
+    mooseError("No element info for block ID '", block_id, "'.");
+  }
+
+  return _block_element_for_block_id.at(block_id);
+}
+
+void
+CubitBlockInfo::checkElementBlockIsCompatible(const CubitElementInfo & new_block_element) const
+{
+  if (!hasBlocks())
+  {
+    return;
+  }
+
+  // Enforce block orders to be the same for now.
+  if (order() != new_block_element.order())
+  {
+    mooseError("All block elements must be of the same order.");
+  }
+}

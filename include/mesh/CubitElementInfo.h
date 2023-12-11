@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include "MooseError.h"
 
-// TODO: Later add another class on top which will store the element type for each block.
-
 /**
  * CubitFaceInfo
  *
@@ -84,20 +82,20 @@ public:
     ELEMENT_PYRAMID5
   };
 
-  inline CubitElementType getElementType() const { return _element_type; }
+  inline CubitElementType elementType() const { return _element_type; }
 
   /**
    * Returns info for a particular face.
    */
-  const CubitFaceInfo & getFaceInfo(int iface = 0) const;
+  const CubitFaceInfo & face(int iface = 0) const;
 
-  inline uint8_t getNumFaces() const { return _num_faces; }
+  inline uint8_t numFaces() const { return _num_faces; }
 
-  inline uint8_t getNumNodes() const { return _num_nodes; }
-  inline uint8_t getNumCornerNodes() const { return _num_corner_nodes; }
+  inline uint8_t numNodes() const { return _num_nodes; }
+  inline uint8_t numCornerNodes() const { return _num_corner_nodes; }
 
-  inline uint8_t getOrder() const { return _order; }
-  inline uint8_t getDimension() const { return _dimension; }
+  inline uint8_t order() const { return _order; }
+  inline uint8_t dimension() const { return _dimension; }
 
 protected:
   void buildCubit2DElementInfo(int num_nodes_per_element);
@@ -134,4 +132,79 @@ private:
    */
   uint8_t _num_faces;
   std::vector<CubitFaceInfo> _face_info;
+};
+
+/**
+ * CubitBlockInfo
+ *
+ * Stores the information about each block in a mesh. Each block can contain a different
+ * element type (although all element types must be of the same order and dimension).
+ */
+class CubitBlockInfo
+{
+public:
+  CubitBlockInfo() = delete;
+  ~CubitBlockInfo() = default;
+
+  /**
+   * Default initializer.
+   */
+  CubitBlockInfo(int dimension);
+
+  /**
+   * Returns a constant reference to the element info for a particular block.
+   */
+  const CubitElementInfo & blockElement(int block_id) const;
+
+  /**
+   * Call to add each block individually.
+   */
+  void addBlockElement(int block_id, int num_nodes_per_element);
+
+  /**
+   * Accessors.
+   */
+  uint8_t order() const;
+  inline uint8_t dimension() const { return _dimension; }
+
+  inline std::size_t numBlocks() const { return blockIDs().size(); }
+  inline bool hasBlocks() const { return !blockIDs().empty(); }
+
+protected:
+  /**
+   * Checks that the order of a new block element matches the order of existing blocks. Called
+   * internally in mehtod "addBlockElement".
+   */
+  void checkElementBlockIsCompatible(const CubitElementInfo & new_block_element) const;
+
+  /**
+   * Reset all block elements. Called internally in initializer.
+   */
+  void clearBlockElements();
+
+  /**
+   * Helper methods.
+   */
+  inline const std::set<int> & blockIDs() const { return _block_ids; }
+
+  bool hasBlockID(int block_id) const;
+  bool validBlockID(int block_id) const;
+  bool validDimension(int dimension) const;
+
+private:
+  /**
+   * Stores all block IDs.
+   */
+  std::set<int> _block_ids;
+
+  /**
+   * Maps from block ID to element.
+   */
+  std::map<int, CubitElementInfo> _block_element_for_block_id;
+
+  /**
+   * Dimension and order of block elements.
+   */
+  uint8_t _dimension;
+  uint8_t _order;
 };

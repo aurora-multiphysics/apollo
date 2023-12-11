@@ -34,14 +34,14 @@ public:
   /**
    * Override method in ExclusiveMFEMMesh.
    */
-  inline int getMFEMNodeID(const int libmesh_node_id) override
+  inline int getMFEMNodeID(const int libmesh_node_id) const override
   {
-    return _mfem_node_id_for_libmesh_node_id[libmesh_node_id];
+    return _mfem_node_id_for_libmesh_node_id.at(libmesh_node_id);
   }
 
-  inline int getLibmeshNodeID(const int mfem_node_id) override
+  inline int getLibmeshNodeID(const int mfem_node_id) const override
   {
-    return _libmesh_node_id_for_mfem_node_id[mfem_node_id];
+    return _libmesh_node_id_for_mfem_node_id.at(mfem_node_id);
   }
 
 protected:
@@ -58,8 +58,8 @@ protected:
    */
   void buildBoundaryNodeIDs(
       const std::vector<int> & unique_side_boundary_ids,
-      std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-      std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+      const std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+      const std::map<int, std::vector<int>> & side_ids_for_boundary_id,
       std::map<int, std::vector<std::vector<unsigned int>>> & node_ids_for_boundary_id);
 
   /**
@@ -79,13 +79,13 @@ protected:
    */
   void buildUniqueCornerNodeIDs(std::vector<int> & unique_corner_node_ids,
                                 const std::vector<int> & unique_block_ids,
-                                std::map<int, std::vector<int>> & element_ids_for_block_id,
-                                std::map<int, std::vector<int>> & node_ids_for_element_id);
+                                const std::map<int, std::vector<int>> & element_ids_for_block_id,
+                                const std::map<int, std::vector<int>> & node_ids_for_element_id);
 
   /**
-   * Sets protected member variables.
+   * Add block elements to _block_info.
    */
-  void buildLibmeshElementAndFaceInfo();
+  void buildCubitBlockInfo(const std::vector<int> & unique_block_ids);
 
   /**
    * Blocks/subdomains are separate subsets of the mesh that could have different
@@ -100,11 +100,6 @@ protected:
    * Returns a vector containing the IDs of all boundaries.
    */
   std::vector<int> getSideBoundaryIDs() const;
-
-  /**
-   * Returns a pointer to the first element on the processor.
-   */
-  const Elem * getFirstElementOnProcessor() const;
 
   /**
    * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
@@ -123,13 +118,29 @@ protected:
   void buildMFEMMesh() override;
   void buildMFEMParMesh() override;
 
+  /**
+   * Returns a constant reference to the block info.
+   */
+  inline const CubitBlockInfo & blockInfo() const { return _block_info; }
+
+  /**
+   * Returns a non-const reference to the block info.
+   */
+  inline CubitBlockInfo & blockInfo() { return _block_info; }
+
+  /**
+   * Returns a const reference to the block element.
+   */
+  inline const CubitElementInfo & blockElement(int block_id)
+  {
+    return blockInfo().blockElement(block_id);
+  }
+
 private:
   /**
-   * The element and face type used in the MOOSE mesh. We currently only support
-   * a single element type. Support for additional element types in a mesh will
-   * be added in the future.
+   * Stores the element info for each block in the mesh.
    */
-  CubitElementInfo _element_info;
+  CubitBlockInfo _block_info;
 
   /**
    * MFEM <--> libMesh maps required for higher-order mesh element transfers.
