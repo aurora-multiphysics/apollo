@@ -118,7 +118,7 @@ CoupledMFEMMesh::isDistributedMesh() const
 }
 
 void
-CoupledMFEMMesh::buildCubitBlockInfo(std::vector<int> & unique_block_ids)
+CoupledMFEMMesh::buildCubitBlockInfo(const std::vector<int> & unique_block_ids)
 {
   /**
    * Iterate over the block_ids. Note that we only need to extract the first element from
@@ -203,8 +203,8 @@ void
 CoupledMFEMMesh::buildUniqueCornerNodeIDs(
     std::vector<int> & unique_corner_node_ids,
     const std::vector<int> & unique_block_ids,
-    std::map<int, std::vector<int>> & element_ids_for_block_id,
-    std::map<int, std::vector<int>> & node_ids_for_element_id)
+    const std::map<int, std::vector<int>> & element_ids_for_block_id,
+    const std::map<int, std::vector<int>> & node_ids_for_element_id)
 {
   // Iterate through all nodes (on edge of each element) and add their global IDs
   // to the unique_corner_node_ids vector.
@@ -212,11 +212,11 @@ CoupledMFEMMesh::buildUniqueCornerNodeIDs(
   {
     auto & block_element = blockElement(block_id);
 
-    auto & element_ids = element_ids_for_block_id[block_id];
+    auto & element_ids = element_ids_for_block_id.at(block_id);
 
     for (int element_id : element_ids)
     {
-      auto & node_ids = node_ids_for_element_id[element_id];
+      auto & node_ids = node_ids_for_element_id.at(element_id);
 
       // Only use the nodes on the edge of the element!
       for (int knode = 0; knode < block_element.numCornerNodes(); knode++)
@@ -423,8 +423,8 @@ CoupledMFEMMesh::buildMFEMParMesh()
 void
 CoupledMFEMMesh::buildBoundaryNodeIDs(
     const std::vector<int> & unique_side_boundary_ids,
-    std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-    std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+    const std::map<int, std::vector<int>> & side_ids_for_boundary_id,
     std::map<int, std::vector<std::vector<unsigned int>>> & node_ids_for_boundary_id)
 {
   node_ids_for_boundary_id.clear();
@@ -433,8 +433,8 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
   for (int boundary_id : unique_side_boundary_ids)
   {
     // Get element IDs of element on boundary (and their sides that are on boundary).
-    auto & boundary_element_ids = element_ids_for_boundary_id[boundary_id];
-    auto & boundary_element_sides = side_ids_for_boundary_id[boundary_id];
+    auto & boundary_element_ids = element_ids_for_boundary_id.at(boundary_id);
+    auto & boundary_element_sides = side_ids_for_boundary_id.at(boundary_id);
 
     // Create vector to store the node ids of all boundary nodes.
     std::vector<std::vector<unsigned int>> boundary_node_ids(boundary_element_ids.size());

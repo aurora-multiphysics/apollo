@@ -58,8 +58,8 @@ protected:
    */
   void buildBoundaryNodeIDs(
       const std::vector<int> & unique_side_boundary_ids,
-      std::map<int, std::vector<int>> & element_ids_for_boundary_id,
-      std::map<int, std::vector<int>> & side_ids_for_boundary_id,
+      const std::map<int, std::vector<int>> & element_ids_for_boundary_id,
+      const std::map<int, std::vector<int>> & side_ids_for_boundary_id,
       std::map<int, std::vector<std::vector<unsigned int>>> & node_ids_for_boundary_id);
 
   /**
@@ -79,13 +79,13 @@ protected:
    */
   void buildUniqueCornerNodeIDs(std::vector<int> & unique_corner_node_ids,
                                 const std::vector<int> & unique_block_ids,
-                                std::map<int, std::vector<int>> & element_ids_for_block_id,
-                                std::map<int, std::vector<int>> & node_ids_for_element_id);
+                                const std::map<int, std::vector<int>> & element_ids_for_block_id,
+                                const std::map<int, std::vector<int>> & node_ids_for_element_id);
 
   /**
    * Add block elements to _block_info.
    */
-  void buildCubitBlockInfo(std::vector<int> & unique_block_ids);
+  void buildCubitBlockInfo(const std::vector<int> & unique_block_ids);
 
   /**
    * Blocks/subdomains are separate subsets of the mesh that could have different
