@@ -138,7 +138,7 @@ private:
  * CubitBlockInfo
  *
  * Stores the information about each block in a mesh. Each block can contain a different
- * element type (although all element types must be of the same order).
+ * element type (although all element types must be of the same order and dimension).
  */
 class CubitBlockInfo
 {
@@ -162,33 +162,20 @@ public:
   void addBlockElement(int block_id, int num_nodes_per_element);
 
   /**
-   * Iterates over blocks and checks type of each element.
-   */
-  bool hasMultipleElementTypes() const;
-
-  /**
    * Accessors.
    */
+  uint8_t order() const;
   inline uint8_t dimension() const { return _dimension; }
-  inline uint8_t order() const { return _order; }
 
-  inline const std::set<int> & blockIDs() const { return _block_ids; }
-
-  inline std::size_t numElementBlocks() const { return blockIDs().size(); }
-  inline bool hasElementBlocks() const { return !blockIDs().empty(); }
+  inline std::size_t numBlocks() const { return blockIDs().size(); }
+  inline bool hasBlocks() const { return !blockIDs().empty(); }
 
 protected:
   /**
-   * Current limitation is that the order of all element blocks is the same. This method is called
-   * internally in addBlockElement.
+   * Checks that the order of a new block element matches the order of existing blocks. Called
+   * internally in mehtod "addBlockElement".
    */
   void checkElementBlockIsCompatible(const CubitElementInfo & new_block_element) const;
-
-  /**
-   * Returns a reference to a single cubit element in the set. This can be used for comparison with
-   * a new element block.
-   */
-  const CubitElementInfo & testBlockElement() const;
 
   /**
    * Reset all block elements. Called internally in initializer.
@@ -198,6 +185,8 @@ protected:
   /**
    * Helper methods.
    */
+  inline const std::set<int> & blockIDs() const { return _block_ids; }
+
   bool hasBlockID(int block_id) const;
   bool validBlockID(int block_id) const;
   bool validDimension(int dimension) const;
@@ -214,7 +203,7 @@ private:
   std::map<int, CubitElementInfo> _block_element_for_block_id;
 
   /**
-   * Stores dimension of mesh. All elements must be this dimension.
+   * Dimension and order of block elements.
    */
   uint8_t _dimension;
   uint8_t _order;

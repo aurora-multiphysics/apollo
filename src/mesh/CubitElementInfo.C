@@ -276,7 +276,7 @@ CubitElementInfo::face(int iface) const
 };
 
 /**
- * CubitMeshInfo
+ * CubitBlockInfo
  */
 CubitBlockInfo::CubitBlockInfo(int dimension)
 {
@@ -305,13 +305,24 @@ CubitBlockInfo::addBlockElement(int block_id, int num_nodes_per_element)
    */
   checkElementBlockIsCompatible(block_element);
 
-  if (!hasElementBlocks()) // Set order of elements.
+  if (!hasBlocks()) // Set order of elements.
   {
     _order = block_element.order();
   }
 
   _block_ids.insert(block_id);
   _block_element_for_block_id[block_id] = block_element;
+}
+
+uint8_t
+CubitBlockInfo::order() const
+{
+  if (!hasBlocks())
+  {
+    mooseError("No elements have been added.");
+  }
+
+  return _order;
 }
 
 void
@@ -331,7 +342,7 @@ CubitBlockInfo::hasBlockID(int block_id) const
 bool
 CubitBlockInfo::validBlockID(int block_id) const
 {
-  return (block_id > 0);
+  return (block_id > 0); // 1-based indexing.
 }
 
 bool
@@ -354,48 +365,14 @@ CubitBlockInfo::blockElement(int block_id) const
 void
 CubitBlockInfo::checkElementBlockIsCompatible(const CubitElementInfo & new_block_element) const
 {
-  if (!hasElementBlocks())
+  if (!hasBlocks())
   {
     return;
   }
 
   // Enforce block orders to be the same for now.
-  if (testBlockElement().order() != new_block_element.order())
+  if (order() != new_block_element.order())
   {
     mooseError("All block elements must be of the same order.");
   }
-}
-
-const CubitElementInfo &
-CubitBlockInfo::testBlockElement() const
-{
-  if (!hasElementBlocks())
-  {
-    mooseError("No element blocks.");
-  }
-
-  auto block_id = *(blockIDs().begin());
-
-  return blockElement(block_id);
-}
-
-bool
-CubitBlockInfo::hasMultipleElementTypes() const
-{
-  if (numElementBlocks() < 2)
-  {
-    return false;
-  }
-
-  auto test_element_type = testBlockElement().elementType();
-
-  for (auto block_id : blockIDs())
-  {
-    if (blockElement(block_id).elementType() != test_element_type)
-    {
-      return true;
-    }
-  }
-
-  return false;
 }
