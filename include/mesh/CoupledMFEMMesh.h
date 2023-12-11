@@ -102,11 +102,6 @@ protected:
   std::vector<int> getSideBoundaryIDs() const;
 
   /**
-   * Returns a pointer to the first element on the processor.
-   */
-  const Elem * getFirstElementOnProcessor() const;
-
-  /**
    * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
    * pointer.
    */

@@ -111,28 +111,6 @@ CoupledMFEMMesh::getSideBoundaryIDs() const
   return side_boundary_ids;
 }
 
-const Elem *
-CoupledMFEMMesh::getFirstElementOnProcessor() const
-{
-  Elem * first_element_ptr = nullptr;
-
-  auto local_elements_begin = getMesh().local_elements_begin();
-  auto local_elements_end = getMesh().local_elements_end();
-
-  for (auto iterator = local_elements_begin; iterator != local_elements_end; iterator++)
-  {
-    first_element_ptr = *iterator;
-    break;
-  }
-
-  if (!first_element_ptr)
-  {
-    mooseError("Unable to get the first element on processor ", getMesh().processor_id(), ".");
-  }
-
-  return first_element_ptr;
-}
-
 bool
 CoupledMFEMMesh::isDistributedMesh() const
 {
