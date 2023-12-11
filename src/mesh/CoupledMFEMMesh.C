@@ -140,7 +140,7 @@ CoupledMFEMMesh::isDistributedMesh() const
 }
 
 void
-CoupledMFEMMesh::buildLibmeshElementAndFaceInfo(std::vector<int> & unique_block_ids)
+CoupledMFEMMesh::buildCubitBlockInfo(std::vector<int> & unique_block_ids)
 {
   /**
    * Iterate over the block_ids. Note that we only need to extract the first element from
@@ -271,7 +271,7 @@ CoupledMFEMMesh::buildMFEMMesh()
   std::vector<int> unique_block_ids = getLibmeshBlockIDs();
 
   // 3. Retrieve information about the elements used within the mesh.
-  buildLibmeshElementAndFaceInfo(unique_block_ids);
+  buildCubitBlockInfo(unique_block_ids);
 
   // 4. Build maps:
   // Map from block ID --> vector of element IDs.

@@ -83,9 +83,9 @@ protected:
                                 std::map<int, std::vector<int>> & node_ids_for_element_id);
 
   /**
-   * Sets private member variables.
+   * Add block elements to _block_info.
    */
-  void buildLibmeshElementAndFaceInfo(std::vector<int> & unique_block_ids);
+  void buildCubitBlockInfo(std::vector<int> & unique_block_ids);
 
   /**
    * Blocks/subdomains are separate subsets of the mesh that could have different
