@@ -24,6 +24,25 @@ MFEMOpenCoilSource::validParams()
   params.addParam<BoundaryName>(
       "coil_out_boundary",
       "The boundary (id or name) from the mesh determinining the coil output terminal");
+
+  params.addParam<Real>(
+      "l_tol",
+      1.0e-20,
+      "The relative tolerance to use in the linear solver for the OpenCoilSource");
+
+  params.addParam<Real>(
+      "l_abs_tol",
+      1.0e-20,
+      "The absolute tolerance to use in the linear solver for the OpenCoilSource");
+
+  params.addParam<unsigned int>(
+      "l_max_its",
+      1000,
+      "The number of iterations to use in the linear solver for the OpenCoilSource");
+
+  params.addParam<int>(
+      "print_level", 1, "The print levelof the linear solver for the OpenCoilSource");
+
   return params;
 }
 
@@ -34,10 +53,15 @@ MFEMOpenCoilSource::MFEMOpenCoilSource(const InputParameters & parameters)
     _source_potential_gridfunction(getUserObject<MFEMVariable>("source_potential_gridfunction")),
     _total_current_coef(getUserObject<MFEMCoefficient>("total_current_coef")),
     _conductivity_coef_name(std::string("electrical_conductivity")),
+    _solver_params({{"Tolerance", float(getParam<Real>("l_tol"))},
+                    {"AbsTolerance", float(getParam<Real>("l_abs_tol"))},
+                    {"MaxIter", getParam<unsigned int>("l_max_its")},
+                    {"PrintLevel", getParam<int>("print_level")}}),
     _open_coil_params({{"SourceName", _source_current_density_gridfunction.name()},
                        {"PotentialName", _source_potential_gridfunction.name()},
                        {"IFuncCoefName", _total_current_coef.name()},
-                       {"ConductivityCoefName", _conductivity_coef_name}}),
+                       {"ConductivityCoefName", _conductivity_coef_name},
+                       {"SolverOptions", _solver_params}}),
     _coil_domains(blocks.size()),
     _coil_in_id(std::stoi(getParam<BoundaryName>("coil_in_boundary"))),
     _coil_out_id(std::stoi(getParam<BoundaryName>("coil_out_boundary"))),

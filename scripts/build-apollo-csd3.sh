@@ -107,9 +107,9 @@ function build_mfem() {
     if [ -d "$WORKDIR/mfem" ] ; then
        return
     fi
-    git clone https://github.com/mfem/mfem.git
-    cd mfem
-    git checkout master
+    git clone https://github.com/Heinrich-BR/mfem.git
+    cd mfem 
+    git checkout SubmeshBoundary
     sed -i "s|list|# list|g" $WORKDIR/mfem/config/cmake/modules/FindNetCDF.cmake
     mkdir build
     cd build

@@ -24,6 +24,7 @@ protected:
   const MFEMCoefficient & _total_current_coef;
   const std::string _conductivity_coef_name;
 
+  const hephaestus::InputParameters _solver_params;
   const hephaestus::InputParameters _open_coil_params;
   mfem::Array<int> _coil_domains;
   const int _coil_in_id, _coil_out_id;
