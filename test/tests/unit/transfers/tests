@@ -24,7 +24,6 @@
     input = 'pull_hex8_transfer_master.i'
     csvdiff = 'pull_hex8_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using first-order hex8 elements.'
-    max_parallel = 1
   []
 
   [./PushPullHex8Transfer]
@@ -32,7 +31,6 @@
     input = 'push_pull_hex8_transfer_master.i'
     csvdiff = 'push_pull_hex8_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using first-order hex8 elements.'
-    max_parallel = 1
   []
 
   [./PullHex27Transfer]
@@ -40,7 +38,6 @@
     input = 'pull_hex27_transfer_master.i'
     csvdiff = 'pull_hex27_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order hex27 elements.'
-    max_parallel = 1
   []
   
   [./PushPullHex27Transfer]
@@ -48,7 +45,6 @@
     input = 'push_pull_hex27_transfer_master.i'
     csvdiff = 'push_pull_hex27_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order hex27 elements.'
-    max_parallel = 1
   []
 
   [./PullTet4Transfer]
@@ -56,7 +52,6 @@
     input = 'pull_tet4_transfer_master.i'
     csvdiff = 'pull_tet4_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using first-order tet4 elements.'
-    max_parallel = 1
   []
 
   [./PushPullTet4Transfer]
@@ -64,7 +59,6 @@
     input = 'push_pull_tet4_transfer_master.i'
     csvdiff = 'push_pull_tet4_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using first-order tet4 elements.'
-    max_parallel = 1
   []
 
   [./PullTet10Transfer]
@@ -72,7 +66,6 @@
     input = 'pull_tet10_transfer_master.i'
     csvdiff = 'pull_tet10_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using second-order tet10 elements.'
-    max_parallel = 1
   []
 
   [./PushPullTet10Transfer]
@@ -80,7 +73,6 @@
     input = 'push_pull_tet10_transfer_master.i'
     csvdiff = 'push_pull_tet10_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MOOSE and MFEM using second-order tet10 elements.'
-    max_parallel = 1
   []
 
   [./PullWedge6Transfer]
@@ -88,7 +80,6 @@
     input = 'pull_wedge6_transfer_master.i'
     csvdiff = 'pull_wedge6_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using wedge6 (prism6) elements.'
-    max_parallel = 1
   []
 
   [./PushPullWedge6Transfer]
@@ -96,7 +87,6 @@
     input = 'push_pull_wedge6_transfer_master.i'
     csvdiff = 'push_pull_wedge6_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using wedge6 (prism6) elements.'
-    max_parallel = 1
   []
 
   [./PullPyramid5Transfer]
@@ -104,7 +94,6 @@
     input = 'pull_pyramid5_transfer_master.i'
     csvdiff = 'pull_pyramid5_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using pyramid5 elements.'
-    max_parallel = 1
   []
 
   [./PushPullPyramid5Transfer]
@@ -112,7 +101,6 @@
     input = 'push_pull_pyramid5_transfer_master.i'
     csvdiff = 'push_pull_pyramid5_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using pyramid5 elements.'
-    max_parallel = 1
   []
 
   [./PullMultiElementOrder1Transfer]
@@ -120,7 +108,6 @@
     input = 'pull_multi_element_order1_transfer_master.i'
     csvdiff = 'pull_multi_element_order1_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using multiple first-order element types.'
-    max_parallel = 1
   []
 
   [./PushPullMultiElementOrder1Transfer]
@@ -128,7 +115,6 @@
     input = 'push_pull_multi_element_order1_transfer_master.i'
     csvdiff = 'push_pull_multi_element_order1_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple first-order element types.'
-    max_parallel = 1
   []
 
   [./PullMultiElementOrder2Transfer]
@@ -136,7 +122,6 @@
     input = 'pull_multi_element_order2_transfer_master.i'
     csvdiff = 'pull_multi_element_order2_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using multiple second-order element types.'
-    max_parallel = 1
   []
 
   [./PushPullMultiElementOrder2Transfer]
@@ -144,23 +129,14 @@
     input = 'push_pull_multi_element_order2_transfer_master.i'
     csvdiff = 'push_pull_multi_element_order2_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple second-order element types.'
-    max_parallel = 1
   []
 
   # First-order element transfer tests (replicated, multiple processors).
-  [./PullHex8ParallelReplicatedTransfer]
+  [./PullMultiElementOrder1ParallelReplicatedTransfer]
     type = 'CSVDiff'
-    input = 'pull_hex8_transfer_master.i'
-    csvdiff = 'pull_hex8_transfer_master_out.csv'
-    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using first-order hex8 elements (2 processors).'
-    min_parallel = 2
-  []
-
-  [./PushPullHex8ParallelReplicatedTransfer]
-    type = 'CSVDiff'
-    input = 'push_pull_hex8_transfer_master.i'
-    csvdiff = 'push_pull_hex8_transfer_master_out.csv'
-    requirement = 'Apollo shall have the ability to transfer between MFEM to MOOSE using first-order hex8 elements (2 processors).'
+    input = 'pull_multi_element_order1_transfer_master.i'
+    csvdiff = 'pull_multi_element_order1_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using multiple first-order element types (parallel).'
     min_parallel = 2
   []
 
@@ -168,10 +144,7 @@
     type = 'CSVDiff'
     input = 'push_pull_multi_element_order1_transfer_master.i'
     csvdiff = 'push_pull_multi_element_order1_transfer_master_out.csv'
-    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple first-order element types (2 processors).'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple first-order element types (parallel).'
     min_parallel = 2
   []
-
-  # Second-order element transfer tests (replicated, multiple processors)
-  # TODO: - add.
 []
