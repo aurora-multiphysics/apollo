@@ -511,8 +511,7 @@ MFEMMesh::handleQuadraticFESpace(
    * All coordinates should match. If this does not occur then it suggests that
    * there is a problem with the higher-order transfer.
    */
-  verifyUniqueMappingBetweenLibmeshAndMFEMNodes(*finite_element_space,
-                                                unique_block_ids,
+  verifyUniqueMappingBetweenLibmeshAndMFEMNodes(unique_block_ids,
                                                 libmesh_element_ids_for_block_id,
                                                 libmesh_node_ids_for_element_id,
                                                 coordinates_for_libmesh_node_id,
@@ -521,13 +520,18 @@ MFEMMesh::handleQuadraticFESpace(
 
 void
 MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
-    const mfem::FiniteElementSpace & finite_element_space,
     const std::vector<int> & unique_block_ids,
     const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     const std::map<int, int> & libmesh_node_id_for_mfem_node_id)
 {
+  const auto * finite_element_space = GetNodalFESpace();
+  if (!finite_element_space)
+  {
+    mooseError("No nodal FE space.");
+  }
+
   // Create a set of all unique libmesh node ids.
   std::set<int> libmesh_node_ids;
 
@@ -546,7 +550,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
     mfem::Array<int> mfem_dofs;
-    finite_element_space.GetElementDofs(ielement, mfem_dofs);
+    finite_element_space->GetElementDofs(ielement, mfem_dofs);
 
     for (int mfem_dof : mfem_dofs)
     {
