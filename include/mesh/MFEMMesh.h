@@ -137,7 +137,6 @@ protected:
    * libmesh node id. Any left-over node ids will be detected.
    */
   void verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
-      const mfem::FiniteElementSpace & finite_element_space,
       const std::vector<int> & unique_block_ids,
       const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
       const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,

@@ -2,8 +2,8 @@
 #include "MFEMMesh.h"
 
 // Function prototypes:
-static bool coordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
-static void convertToCArray(const std::array<double, 3> & array_in, double array_out[3]);
+static bool
+coordinatesMatch(const double * primary, const double * secondary, const double tolerance = 0.01);
 
 /**
  * Initializer for 1st order elements.
@@ -484,10 +484,6 @@ MFEMMesh::handleQuadraticFESpace(
       mfem::Array<int> dofs;
       finite_element_space->GetElementDofs(mfem_element_id, dofs);
 
-      // NB: returned indices are ALWAYS ordered byNodes (ie xxx..., yyy..., zzz...)
-      mfem::Array<int> vdofs;
-      finite_element_space->GetElementVDofs(mfem_element_id, vdofs);
-
       // Iterate over dofs array.
       for (int j = 0; j < dofs.Size(); j++)
       {
@@ -505,14 +501,7 @@ MFEMMesh::handleQuadraticFESpace(
         // Extract node's coordinates:
         auto & coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
 
-        // NB: vdofs using xxx, yyy, zzz ordering.
-        (*Nodes)(vdofs[j]) = coordinates[0];
-        (*Nodes)(vdofs[j + dofs.Size()]) = coordinates[1];
-
-        if (Dim == 3)
-        {
-          (*Nodes)(vdofs[j + 2 * dofs.Size()]) = coordinates[2];
-        }
+        SetNode(dofs[j], coordinates.data());
       }
     }
   }
@@ -522,8 +511,7 @@ MFEMMesh::handleQuadraticFESpace(
    * All coordinates should match. If this does not occur then it suggests that
    * there is a problem with the higher-order transfer.
    */
-  verifyUniqueMappingBetweenLibmeshAndMFEMNodes(*finite_element_space,
-                                                unique_block_ids,
+  verifyUniqueMappingBetweenLibmeshAndMFEMNodes(unique_block_ids,
                                                 libmesh_element_ids_for_block_id,
                                                 libmesh_node_ids_for_element_id,
                                                 coordinates_for_libmesh_node_id,
@@ -532,13 +520,18 @@ MFEMMesh::handleQuadraticFESpace(
 
 void
 MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
-    const mfem::FiniteElementSpace & finite_element_space,
     const std::vector<int> & unique_block_ids,
     const std::map<int, std::vector<int>> & libmesh_element_ids_for_block_id,
     const std::map<int, std::vector<int>> & libmesh_node_ids_for_element_id,
     const std::map<int, std::array<double, 3>> & coordinates_for_libmesh_node_id,
     const std::map<int, int> & libmesh_node_id_for_mfem_node_id)
 {
+  const auto * finite_element_space = GetNodalFESpace();
+  if (!finite_element_space)
+  {
+    mooseError("No nodal FE space.");
+  }
+
   // Create a set of all unique libmesh node ids.
   std::set<int> libmesh_node_ids;
 
@@ -552,12 +545,12 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     }
   }
 
-  double mfem_coordinates[3], libmesh_coordinates[3];
+  double mfem_coordinates[3];
 
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
     mfem::Array<int> mfem_dofs;
-    finite_element_space.GetElementDofs(ielement, mfem_dofs);
+    finite_element_space->GetElementDofs(ielement, mfem_dofs);
 
     for (int mfem_dof : mfem_dofs)
     {
@@ -568,11 +561,9 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
       // Remove from set.
       libmesh_node_ids.erase(libmesh_node_id);
 
-      // Convert from std::array<double, 3> --> C array for comparison.
-      auto & coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
-      convertToCArray(coordinates, libmesh_coordinates);
+      auto & libmesh_coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
 
-      if (!coordinatesMatch(libmesh_coordinates, mfem_coordinates))
+      if (!coordinatesMatch(libmesh_coordinates.data(), mfem_coordinates))
       {
         mooseError("Non-matching coordinates detected for libmesh node ",
                    libmesh_node_id,
@@ -597,7 +588,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
 }
 
 static bool
-coordinatesMatch(double primary[3], double secondary[3], const double tolerance)
+coordinatesMatch(const double * primary, const double * secondary, const double tolerance)
 {
   if (!primary || !secondary || tolerance < 0.0)
   {
@@ -613,18 +604,4 @@ coordinatesMatch(double primary[3], double secondary[3], const double tolerance)
   }
 
   return true;
-}
-
-static void
-convertToCArray(const std::array<double, 3> & array_in, double array_out[3])
-{
-  if (!array_out)
-  {
-    return;
-  }
-
-  for (int i = 0; i < 3; i++)
-  {
-    array_out[i] = array_in[i];
-  }
 }
