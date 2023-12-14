@@ -299,36 +299,12 @@ CoupledMFEMMesh::buildMFEMMesh()
                        side_ids_for_boundary_id,
                        node_ids_for_boundary_id);
 
-  // *** TEST CODE ***
-  // 1. Create mapping from block_id to element_id
-  std::map<int, int> block_id_for_element_id;
+  // 10. Create mapping from the boundary ID to a vector containing the block IDs of all elements
+  // that lie on the boundary. This is required for in MFEM mesh for multiple-element types.
+  auto block_ids_for_boundary_id =
+      getBlockIDsForBoundaryID(element_ids_for_block_id, element_ids_for_boundary_id);
 
-  for (auto block_id : unique_block_ids)
-  {
-    for (int element_id : element_ids_for_block_id[block_id])
-    {
-      block_id_for_element_id[element_id] = block_id;
-    }
-  }
-
-  std::map<int, std::vector<int>> block_ids_for_boundary_id;
-
-  for (auto boundary_id : unique_side_boundary_ids)
-  {
-    auto & boundary_element_ids = element_ids_for_boundary_id[boundary_id];
-
-    std::vector<int> boundary_block_ids(boundary_element_ids.size());
-
-    int element_counter = 0;
-    for (auto element_id : boundary_element_ids)
-    {
-      boundary_block_ids[element_counter++] = block_id_for_element_id[element_id];
-    }
-
-    block_ids_for_boundary_id[boundary_id] = boundary_block_ids;
-  }
-
-  // 10.
+  // 11.
   // Call the correct initializer.
   switch (blockInfo().order())
   {
@@ -372,15 +348,57 @@ CoupledMFEMMesh::buildMFEMMesh()
   }
 }
 
+std::map<int, int>
+CoupledMFEMMesh::getBlockIDForElementID(
+    const std::map<int, std::vector<int>> & element_ids_for_block_id) const
+{
+  std::map<int, int> block_id_for_element_id;
+
+  for (const auto & key_value : element_ids_for_block_id)
+  {
+    auto block_id = key_value.first;
+    auto & element_ids = key_value.second;
+
+    for (const auto & element_id : element_ids)
+    {
+      block_id_for_element_id[element_id] = block_id;
+    }
+  }
+
+  return block_id_for_element_id;
+}
+
+std::map<int, std::vector<int>>
+CoupledMFEMMesh::getBlockIDsForBoundaryID(
+    const std::map<int, std::vector<int>> & element_ids_for_block_id,
+    const std::map<int, std::vector<int>> & element_ids_for_boundary_id) const
+{
+  auto block_id_for_element_id = getBlockIDForElementID(element_ids_for_block_id);
+
+  std::map<int, std::vector<int>> block_ids_for_boundary_id;
+
+  for (const auto & key_value : element_ids_for_boundary_id)
+  {
+    auto boundary_id = key_value.first;
+    auto & element_ids = key_value.second;
+
+    std::vector<int> block_ids(element_ids.size());
+
+    int ielement = 0;
+    for (const auto & element_id : element_ids)
+    {
+      block_ids[ielement++] = block_id_for_element_id.at(element_id);
+    }
+
+    block_ids_for_boundary_id[boundary_id] = block_ids;
+  }
+
+  return block_ids_for_boundary_id;
+}
+
 std::unique_ptr<int[]>
 CoupledMFEMMesh::getMeshPartitioning()
 {
-  // Return NULL if mesh is not distributed.
-  if (!isDistributedMesh())
-  {
-    return nullptr;
-  }
-
   // Call allgather because we need all element information on each processor.
   getMesh().allgather();
 

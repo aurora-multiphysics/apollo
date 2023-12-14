@@ -102,6 +102,20 @@ protected:
   std::vector<int> getSideBoundaryIDs() const;
 
   /**
+   * Maps from the element ID to the block ID.
+   */
+  std::map<int, int>
+  getBlockIDForElementID(const std::map<int, std::vector<int>> & element_ids_for_block_id) const;
+
+  /**
+   * Maps from the boundary ID to a vector containing the block IDs of all elements that lie on
+   * the boundary.
+   */
+  std::map<int, std::vector<int>> getBlockIDsForBoundaryID(
+      const std::map<int, std::vector<int>> & element_ids_for_block_id,
+      const std::map<int, std::vector<int>> & element_ids_for_boundary_id) const;
+
+  /**
    * Returns the libMesh partitioning. The "raw" pointer is wrapped up in a unique
    * pointer.
    */
