@@ -2,8 +2,8 @@
 #include "MFEMMesh.h"
 
 // Function prototypes:
-static bool coordinatesMatch(double primary[3], double secondary[3], const double tolerance = 0.01);
-static void convertToCArray(const std::array<double, 3> & array_in, double array_out[3]);
+static bool
+coordinatesMatch(const double * primary, const double * secondary, const double tolerance = 0.01);
 
 /**
  * Initializer for 1st order elements.
@@ -484,10 +484,6 @@ MFEMMesh::handleQuadraticFESpace(
       mfem::Array<int> dofs;
       finite_element_space->GetElementDofs(mfem_element_id, dofs);
 
-      // NB: returned indices are ALWAYS ordered byNodes (ie xxx..., yyy..., zzz...)
-      mfem::Array<int> vdofs;
-      finite_element_space->GetElementVDofs(mfem_element_id, vdofs);
-
       // Iterate over dofs array.
       for (int j = 0; j < dofs.Size(); j++)
       {
@@ -505,14 +501,7 @@ MFEMMesh::handleQuadraticFESpace(
         // Extract node's coordinates:
         auto & coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
 
-        // NB: vdofs using xxx, yyy, zzz ordering.
-        (*Nodes)(vdofs[j]) = coordinates[0];
-        (*Nodes)(vdofs[j + dofs.Size()]) = coordinates[1];
-
-        if (Dim == 3)
-        {
-          (*Nodes)(vdofs[j + 2 * dofs.Size()]) = coordinates[2];
-        }
+        SetNode(dofs[j], coordinates.data());
       }
     }
   }
@@ -552,7 +541,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
     }
   }
 
-  double mfem_coordinates[3], libmesh_coordinates[3];
+  double mfem_coordinates[3];
 
   for (int ielement = 0; ielement < NumOfElements; ielement++)
   {
@@ -568,11 +557,9 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
       // Remove from set.
       libmesh_node_ids.erase(libmesh_node_id);
 
-      // Convert from std::array<double, 3> --> C array for comparison.
-      auto & coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
-      convertToCArray(coordinates, libmesh_coordinates);
+      auto & libmesh_coordinates = coordinates_for_libmesh_node_id.at(libmesh_node_id);
 
-      if (!coordinatesMatch(libmesh_coordinates, mfem_coordinates))
+      if (!coordinatesMatch(libmesh_coordinates.data(), mfem_coordinates))
       {
         mooseError("Non-matching coordinates detected for libmesh node ",
                    libmesh_node_id,
@@ -597,7 +584,7 @@ MFEMMesh::verifyUniqueMappingBetweenLibmeshAndMFEMNodes(
 }
 
 static bool
-coordinatesMatch(double primary[3], double secondary[3], const double tolerance)
+coordinatesMatch(const double * primary, const double * secondary, const double tolerance)
 {
   if (!primary || !secondary || tolerance < 0.0)
   {
@@ -613,18 +600,4 @@ coordinatesMatch(double primary[3], double secondary[3], const double tolerance)
   }
 
   return true;
-}
-
-static void
-convertToCArray(const std::array<double, 3> & array_in, double array_out[3])
-{
-  if (!array_out)
-  {
-    return;
-  }
-
-  for (int i = 0; i < 3; i++)
-  {
-    array_out[i] = array_in[i];
-  }
 }
