@@ -147,4 +147,21 @@
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple first-order element types (parallel).'
     min_parallel = 2
   []
+
+   # Second-order element transfer tests (replicated, multiple processors).
+  [./PullMultiElementOrder2ParallelReplicatedTransfer]
+    type = 'CSVDiff'
+    input = 'pull_multi_element_order2_transfer_master.i'
+    csvdiff = 'pull_multi_element_order2_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using multiple second-order element types (parallel).'
+    min_parallel = 2
+  []
+
+  [./PushPullMultiElementOrder2ParallelReplicatedTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_multi_element_order2_transfer_master.i'
+    csvdiff = 'push_pull_multi_element_order2_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple second-order element types (parallel).'
+    min_parallel = 2
+  []
 []
