@@ -316,8 +316,6 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 void
 MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 {
-  fprintf(stdout, "Now calling 'setMFEMVarData'...\n");
-
   auto & moose_var_ref = getVariable(0, var_name);
   MeshBase & libmesh_base = mesh().getMesh();
 
@@ -328,11 +326,6 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
   auto & pgf = *(mfem_problem->gridfunctions.Get(var_name));
 
   unsigned int count = 0;
-
-  fprintf(stdout,
-          "libmesh size = %ld, mfem size = %ld\n",
-          libmesh_base.n_local_nodes(),
-          pgf.GetTrueDofs()->Size());
 
   if (moose_var_ref.isNodal())
   {
@@ -413,43 +406,39 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 void
 MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 {
-  fprintf(stdout, "Now calling 'setMooseVarData...'\n");
+  auto & moose_var_ref = getVariable(0, var_name);
+  MeshBase & libmesh_base = mesh().getMesh();
 
-  auto & mooseVarRef = getVariable(0, var_name);
-  MeshBase & libmeshBase = mesh().getMesh();
-  unsigned int order = (unsigned int)mooseVarRef.order();
-  NumericVector<Number> & tempSolutionVector = mooseVarRef.sys().solution();
+  unsigned int order = (unsigned int)moose_var_ref.order();
+
+  NumericVector<Number> & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(var_name));
 
   unsigned int count = 0;
 
-  if (mooseVarRef.isNodal())
+  if (moose_var_ref.isNodal())
   {
-    mfem::Vector mfem_local_nodes(libmeshBase.n_local_nodes());
+    mfem::Vector mfem_local_nodes(libmesh_base.n_local_nodes());
     mfem_local_nodes = *(pgf.GetTrueDofs());
-    fprintf(stdout,
-            "libmesh size = %ld, mfem size = %ld\n",
-            libmeshBase.n_local_nodes(),
-            pgf.GetTrueDofs()->Size());
 
-    for (auto & node : as_range(libmeshBase.local_nodes_begin(), libmeshBase.local_nodes_end()))
+    for (auto & node : as_range(libmesh_base.local_nodes_begin(), libmesh_base.local_nodes_end()))
     {
-      unsigned int n_comp = node->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+      unsigned int n_comp = node->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
       unsigned int node_id = node->id();
 
       for (unsigned int i = 0; i < n_comp; i++)
       {
-        dof_id_type dof = node->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
+        dof_id_type dof = node->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
 
         if (order == 1)
         {
-          mooseVarRef.sys().solution().set(dof, mfem_local_nodes[count]);
+          moose_var_ref.sys().solution().set(dof, mfem_local_nodes[count]);
         }
         else
         {
           const int mfem_dof = mesh().getMFEMNodeID(node_id);
 
-          mooseVarRef.sys().solution().set(dof, mfem_local_nodes[mfem_dof]);
+          moose_var_ref.sys().solution().set(dof, mfem_local_nodes[mfem_dof]);
         }
         count++;
       }
@@ -457,24 +446,24 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
   }
   else
   {
-    mfem::Vector mfem_local_elems(libmeshBase.n_local_elem());
+    mfem::Vector mfem_local_elems(libmesh_base.n_local_elem());
     mfem_local_elems = *(pgf.GetTrueDofs());
 
     for (auto & elem :
-         as_range(libmeshBase.local_elements_begin(), libmeshBase.local_elements_end()))
+         as_range(libmesh_base.local_elements_begin(), libmesh_base.local_elements_end()))
     {
-      unsigned int n_comp = elem->n_comp(mooseVarRef.sys().number(), mooseVarRef.number());
+      unsigned int n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
       unsigned int elem_id = elem->id();
       for (unsigned int i = 0; i < n_comp; i++)
       {
-        dof_id_type dof = elem->dof_number(mooseVarRef.sys().number(), mooseVarRef.number(), i);
-        mooseVarRef.sys().solution().set(dof, mfem_local_elems[count]);
+        dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
+        moose_var_ref.sys().solution().set(dof, mfem_local_elems[count]);
         count++;
       }
     }
   }
-  mooseVarRef.sys().solution().close();
-  mooseVarRef.sys().update();
+  moose_var_ref.sys().solution().close();
+  moose_var_ref.sys().update();
 }
 
 InputParameters
