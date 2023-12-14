@@ -375,12 +375,6 @@ CoupledMFEMMesh::buildMFEMMesh()
 std::unique_ptr<int[]>
 CoupledMFEMMesh::getMeshPartitioning()
 {
-  // Return NULL if mesh is not distributed.
-  if (!isDistributedMesh())
-  {
-    return nullptr;
-  }
-
   // Call allgather because we need all element information on each processor.
   getMesh().allgather();
 
