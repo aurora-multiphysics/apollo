@@ -408,7 +408,6 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
          as_range(libmesh_base.local_elements_begin(), libmesh_base.local_elements_end()))
     {
       unsigned int n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
-      unsigned int elem_id = elem->id();
       for (unsigned int i = 0; i < n_comp; i++)
       {
         dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
@@ -489,7 +488,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
          as_range(libmesh_base.local_elements_begin(), libmesh_base.local_elements_end()))
     {
       unsigned int n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
-      unsigned int elem_id = elem->id();
+
       for (unsigned int i = 0; i < n_comp; i++)
       {
         dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
