@@ -451,7 +451,7 @@ CoupledMFEMMesh::buildMFEMParMesh()
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
 
   // Do a spot of printing.
-  // if (processor_id() == 0)
+  if (blockInfo().order() > 1 && n_processors() > 1)
   {
     char buffer[200];
 
