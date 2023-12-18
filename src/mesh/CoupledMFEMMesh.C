@@ -339,8 +339,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               side_ids_for_boundary_id,
                                               block_ids_for_boundary_id,
                                               coordinates_for_node_id,
-                                              _libmesh_node_id_for_mfem_node_id,
-                                              _mfem_node_id_for_libmesh_node_id);
+                                              _libmesh_global_node_id_for_mfem_local_node_id,
+                                              _mfem_local_node_id_for_libmesh_global_node_id);
       break;
     }
     default:
@@ -465,7 +465,7 @@ CoupledMFEMMesh::buildMFEMParMesh()
       {
         auto & node = element_ptr->node_ref(i);
 
-        if (_mfem_node_id_for_libmesh_node_id.count(node.id()) == 0)
+        if (_mfem_local_node_id_for_libmesh_global_node_id.count(node.id()) == 0)
         {
           fprintf(fp,
                   "\tnode %3d: (%.2lf, %.2lf, %.2lf) <--> node: ???\n",
@@ -548,7 +548,7 @@ CoupledMFEMMesh::updateNodalDofMappingsV2(MFEMMesh & serial_mesh, MFEMParMesh & 
 
   // Important notes:
   // 1. LibMesh: node id is unique even across multiple processors.
-  // 2. MFEM: "local dof": belongs to the processor. Two processors may both have nodes zero ids.
+  // 2. MFEM: "local dof": belongs to the processor.
   // 3. MFEM: "local true dof": unique nodes on a processor. i.e. if local nodes 1, 2 both
   // correspond to the same coordinates on a processor they will map to a single true dof.
   std::map<int, int> libmesh_global_node_id_for_mfem_local_node_id;
@@ -658,8 +658,8 @@ CoupledMFEMMesh::updateNodalDofMappingsV2(MFEMMesh & serial_mesh, MFEMParMesh & 
   }
 
   // Set two-way mappings.
-  _libmesh_node_id_for_mfem_node_id = libmesh_global_node_id_for_mfem_local_node_id;
-  _mfem_node_id_for_libmesh_node_id = mfem_local_node_id_for_libmesh_global_node_id;
+  _libmesh_global_node_id_for_mfem_local_node_id = libmesh_global_node_id_for_mfem_local_node_id;
+  _mfem_local_node_id_for_libmesh_global_node_id = mfem_local_node_id_for_libmesh_global_node_id;
 }
 
 void
@@ -753,8 +753,8 @@ CoupledMFEMMesh::updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & pa
     }
   }
 
-  _libmesh_node_id_for_mfem_node_id = new_libmesh_node_id_for_mfem_node_id;
-  _mfem_node_id_for_libmesh_node_id = new_mfem_node_id_for_libmesh_node_id;
+  _libmesh_global_node_id_for_mfem_local_node_id = new_libmesh_node_id_for_mfem_node_id;
+  _mfem_local_node_id_for_libmesh_global_node_id = new_mfem_node_id_for_libmesh_node_id;
 
   if (processor_id() == 0)
   {

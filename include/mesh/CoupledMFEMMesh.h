@@ -36,12 +36,12 @@ public:
    */
   inline int getMFEMNodeID(const int libmesh_node_id) const override
   {
-    return _mfem_node_id_for_libmesh_node_id.at(libmesh_node_id);
+    return _mfem_local_node_id_for_libmesh_global_node_id.at(libmesh_node_id);
   }
 
   inline int getLibmeshNodeID(const int mfem_node_id) const override
   {
-    return _libmesh_node_id_for_mfem_node_id.at(mfem_node_id);
+    return _libmesh_global_node_id_for_mfem_local_node_id.at(mfem_node_id);
   }
 
 protected:
@@ -170,8 +170,9 @@ private:
   CubitBlockInfo _block_info;
 
   /**
-   * MFEM <--> libMesh maps required for higher-order mesh element transfers.
+   * Maps from a libMesh global node ID to the MFEM LOCAL node ID (dof) on the processor. NB: this
+   * is NOT the same as LOCAL TRUE dof.
    */
-  std::map<int, int> _libmesh_node_id_for_mfem_node_id;
-  std::map<int, int> _mfem_node_id_for_libmesh_node_id;
+  std::map<int, int> _libmesh_global_node_id_for_mfem_local_node_id;
+  std::map<int, int> _mfem_local_node_id_for_libmesh_global_node_id;
 };
