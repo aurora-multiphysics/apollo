@@ -82,8 +82,17 @@ protected:
                                 const std::map<int, std::vector<int>> & element_ids_for_block_id,
                                 const std::map<int, std::vector<int>> & node_ids_for_element_id);
 
+  /**
+   * TODO: - add documentation for this method.
+   */
   void updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
 
+  /**
+   * Required for converting an MFEMMesh to an MFEMParMesh. This method will update the two-way
+   * mappings so that libMesh GLOBAL node IDs now correctly map to the LOCAL node IDs (dofs) for the
+   * MFEMParMesh. This method is called internally after creating an MFEMParMesh from an MFEMMesh.
+   * NB: if this method is not called then the synchronization steps will fail!
+   */
   void updateNodalDofMappingsV2(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
 
   /**
