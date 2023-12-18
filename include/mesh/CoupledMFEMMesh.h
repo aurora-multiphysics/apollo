@@ -82,6 +82,10 @@ protected:
                                 const std::map<int, std::vector<int>> & element_ids_for_block_id,
                                 const std::map<int, std::vector<int>> & node_ids_for_element_id);
 
+  void updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+
+  void updateNodalDofMappingsV2(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+
   /**
    * Add block elements to _block_info.
    */

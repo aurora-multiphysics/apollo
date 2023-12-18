@@ -11,6 +11,9 @@
 
 registerMooseObject("ApolloApp", CoupledMFEMMesh);
 
+static double compute_square_of_difference(const std::array<double, 3> & coordinates1,
+                                           const std::array<double, 3> & coordinates2);
+
 InputParameters
 CoupledMFEMMesh::validParams()
 {
@@ -426,16 +429,364 @@ CoupledMFEMMesh::getMeshPartitioning()
 void
 CoupledMFEMMesh::buildMFEMParMesh()
 {
-  // There are two cases:
-  // 1. construct MFEMParMesh from distributed MOOSE mesh -- partitioning array non-null.
-  // 2. construct MFEMParMesh from serial      MOOSE mesh -- partitioning array null.
   auto partitioning = getMeshPartitioning();
 
   int * partitioning_raw_ptr = partitioning ? partitioning.get() : nullptr;
 
   _mfem_par_mesh =
       std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, getMFEMMesh(), partitioning_raw_ptr);
+
+  // If we have a higher-order mesh then we need to figure-out the mapping from the libMesh node ID
+  // to the MFEM node ID since this will have changed.
+  if (blockInfo().order() > 1 && n_processors() > 1)
+  {
+    // NB: - we can be a lot smarter and more efficient than this. Should be able to maintain
+    // ordering.
+    updateNodalDofMappingsV2(*_mfem_mesh.get(), *_mfem_par_mesh.get());
+
+    // MARK:  - problem: while this gets the mapping from the libMesh node ID to the LOCAL MFEM node
+    // id correct, we need to go from the LOCAL dof to the LOCAL TRUE dof which will be smaller.
+  }
+
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
+
+  // Do a spot of printing.
+  // if (processor_id() == 0)
+  {
+    char buffer[200];
+
+    sprintf(buffer, "/opt/moose_%ld.txt", processor_id());
+    FILE * fp = fopen(buffer, "w");
+
+    for (const auto element_ptr : getMesh().local_element_ptr_range())
+    {
+      auto element_id = element_ptr->id();
+
+      fprintf(fp, "*** Element %3d ***\n", element_id);
+
+      for (int i = 0; i < element_ptr->n_nodes(); i++)
+      {
+        auto & node = element_ptr->node_ref(i);
+
+        if (_mfem_node_id_for_libmesh_node_id.count(node.id()) == 0)
+        {
+          fprintf(fp,
+                  "\tnode %3d: (%.2lf, %.2lf, %.2lf) <--> node: ???\n",
+                  node.id(),
+                  node(0),
+                  node(1),
+                  node(2));
+
+          fflush(fp);
+          continue;
+        }
+
+        auto mfem_linked_node_id = getMFEMNodeID(node.id());
+
+        double coordinates[3];
+        _mfem_par_mesh->GetNode(mfem_linked_node_id, coordinates);
+
+        fprintf(fp,
+                "\tnode %3d: (%.2lf, %.2lf, %.2lf) <--> node: %3d: (%.2lf, %.2lf, %.2lf)\n",
+                node.id(),
+                node(0),
+                node(1),
+                node(2),
+                mfem_linked_node_id,
+                coordinates[0],
+                coordinates[1],
+                coordinates[2]);
+        fflush(fp);
+      }
+    }
+
+    fclose(fp);
+
+    sprintf(buffer, "/opt/mfem_%ld.txt", processor_id());
+    fp = fopen(buffer, "w");
+
+    auto * fe_space = _mfem_par_mesh->GetNodalFESpace();
+
+    for (int ielement = 0; ielement < _mfem_par_mesh->GetNE(); ielement++)
+    {
+      fprintf(fp, "*** MFEM Element %3d ***\n", ielement);
+
+      mfem::Array<int> dofs;
+      fe_space->GetElementDofs(ielement, dofs);
+
+      double coordinates[3];
+
+      for (int dof : dofs)
+      {
+        _mfem_par_mesh->GetNode(dof, coordinates);
+
+        fprintf(fp,
+                "\tnode %3d: (%.2lf, %.2lf, %.2lf)\n",
+                dof,
+                coordinates[0],
+                coordinates[1],
+                coordinates[2]);
+        fflush(fp);
+      }
+    }
+
+    fclose(fp);
+  }
+}
+
+void
+CoupledMFEMMesh::updateNodalDofMappingsV2(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh)
+{
+  // No need to change dof mappings if running on a single processor or if a first order element.
+  if (n_processors() < 2 || blockInfo().order() == 1)
+  {
+    return;
+  }
+
+  // Get the FE spaces.
+  auto * serial_fespace = serial_mesh.GetNodalFESpace();
+  auto * par_fespace = dynamic_cast<const mfem::ParFiniteElementSpace *>(par_mesh.GetNodalFESpace());
+
+  if (!serial_fespace || !par_fespace)
+  {
+    mooseError("No fespace associated with mesh.");
+  }
+
+  // Compute the global ids of the parallel mesh.
+  std::map<int, int> new_libmesh_node_id_for_mfem_node_id;
+  std::map<int, int> new_mfem_node_id_for_libmesh_node_id;
+
+  // Iterate over the elements of the serial mesh.
+  int counter = 0;
+  for (auto element_ptr : getMesh().local_element_ptr_range())
+  {
+    const auto global_element_id = element_ptr->id();
+    const auto local_element_id = counter++;
+
+    // Get the dofs of the element for both the serial and parmesh.
+    mfem::Array<int> old_local_dofs;
+    serial_fespace->GetElementDofs(global_element_id, old_local_dofs);
+
+    mfem::Array<int> new_local_dofs;
+    par_fespace->GetElementDofs(local_element_id, new_local_dofs);
+
+    // Verify that the number of dofs match.
+    const size_t old_num_dofs = old_local_dofs.Size();
+    const size_t new_num_dofs = new_local_dofs.Size();
+
+    if (old_num_dofs != new_num_dofs)
+    {
+      mooseError("Number of dofs must match (",
+                 old_num_dofs,
+                 " != ",
+                 new_num_dofs,
+                 ") for serial element .",
+                 global_element_id);
+    }
+
+    // Get the coordinates associated with each node.
+    std::vector<std::array<double, 3>> all_serial_coordinates(old_num_dofs);
+    std::vector<std::array<double, 3>> all_parallel_coordinates(new_num_dofs);
+
+    int index = 0;
+    for (int dof : old_local_dofs)
+    {
+      serial_mesh.GetNode(dof, all_serial_coordinates[index++].data());
+    }
+
+    index = 0;
+    for (int dof : new_local_dofs)
+    {
+      par_mesh.GetNode(dof, all_parallel_coordinates[index++].data());
+    }
+
+    // Now we match the coordinates.
+    std::set<int> matched_serial_dofs;
+
+    std::map<int, int> serial_dof_for_parallel_dof;
+    std::map<int, int> parallel_dof_for_serial_dof;
+
+    for (int i = 0; i < (int)old_num_dofs; i++)
+    {
+      auto parallel_dof = new_local_dofs[i];
+      auto & parallel_coordinates = all_parallel_coordinates[i];
+
+      //auto parallel_local_true_dof = par_fespace->GetLocalTDofNumber(new_local_dofs[i]);
+
+      // if (parallel_local_true_dof == -1)
+      // {
+      //   continue; // On a different processor. Ignore.
+      // }
+
+      // fprintf(stdout, "local_true_dof = %d for local_dof = %d\n", parallel_local_true_dof, new_local_dofs[i]);
+      // fflush(stdout);
+
+      double min_diff_sqd = 1e9;
+      int matched_serial_dof = -1;
+
+      for (int j = 0; j < (int)old_num_dofs; j++)
+      {
+        auto serial_dof = old_local_dofs[j];
+
+        if (matched_serial_dofs.count(serial_dof) > 0) // Already matched.
+        {
+          continue;
+        }
+
+        auto & serial_coordinates = all_serial_coordinates[j];
+
+        auto diff_sqd = compute_square_of_difference(serial_coordinates, parallel_coordinates);
+
+        if (diff_sqd < min_diff_sqd)
+        {
+          min_diff_sqd = diff_sqd;
+          matched_serial_dof = serial_dof;
+        }
+      }
+
+      // TODO: - add tolerances and check for closer matches.
+
+      // Add to set.
+      matched_serial_dofs.insert(matched_serial_dof);
+
+      // Add to two-way map.
+      serial_dof_for_parallel_dof[parallel_dof] = matched_serial_dof;
+      parallel_dof_for_serial_dof[matched_serial_dof] = parallel_dof;
+    }
+
+    // Iterate over old dofs and update.
+    for (int serial_dof : old_local_dofs)
+    {
+      auto parallel_true_mfem_dof = parallel_dof_for_serial_dof[serial_dof];
+
+      // Get the corresponding libmesh node ID.
+      auto libmesh_node_id = getLibmeshNodeID(serial_dof);
+
+      new_libmesh_node_id_for_mfem_node_id[parallel_true_mfem_dof] = libmesh_node_id;
+      new_mfem_node_id_for_libmesh_node_id[libmesh_node_id] = parallel_true_mfem_dof;
+    }
+  }
+
+  // Set new updated node IDs.
+  _libmesh_node_id_for_mfem_node_id = new_libmesh_node_id_for_mfem_node_id;
+  _mfem_node_id_for_libmesh_node_id = new_mfem_node_id_for_libmesh_node_id;
+}
+
+void
+CoupledMFEMMesh::updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh)
+{
+  char buffer[100];
+  sprintf(buffer, "/opt/mappings_processor_%d\n", processor_id());
+
+  FILE * fp = fopen(buffer, "w");
+
+  for (auto node_ptr : getMesh().local_node_ptr_range())
+  {
+    auto node_id = node_ptr->id();
+
+    fprintf(fp, "libmesh node id %4d\t\tmfem node id %4d\n", node_id, getMFEMNodeID(node_id));
+  }
+
+  fflush(fp);
+  fclose(fp);
+
+  // if (blockInfo().order() == 1)
+  // {
+  //   return;
+  // }
+
+  auto * serial_fespace = serial_mesh.GetNodalFESpace();
+  auto * par_fespace = dynamic_cast<const mfem::ParFiniteElementSpace *>(par_mesh.GetNodalFESpace());
+
+  // TDOO: - add safety checks here...
+
+  // Compute the global ids of the parallel mesh.
+  std::map<int, int> new_libmesh_node_id_for_mfem_node_id;
+  std::map<int, int> new_mfem_node_id_for_libmesh_node_id;
+
+  for (int ielement = 0; ielement < serial_mesh.GetNE(); ielement++)
+  {
+    auto global_element_id = ielement;
+    auto local_element_id = par_mesh.GetLocalElementNum(global_element_id);
+
+    if (local_element_id == -1) // Not on this processor
+    {
+      continue;
+    }
+
+    mfem::Array<int> new_local_dofs;
+    mfem::Array<int> old_local_dofs;
+
+    par_fespace->GetElementDofs(local_element_id, new_local_dofs);
+
+    serial_fespace->GetElementDofs(global_element_id, old_local_dofs);
+
+    mfem::Vector reduced_local_dofs;
+
+    for (int i = 0; i < new_local_dofs.Size(); i++)
+    {
+
+
+
+
+
+      // Get the local true dof. This will get around duplicates.
+      auto libmesh_node_id = getLibmeshNodeID(old_local_dofs[i]);
+
+      new_libmesh_node_id_for_mfem_node_id[new_local_dofs[i]] = libmesh_node_id;
+      new_mfem_node_id_for_libmesh_node_id[libmesh_node_id] = new_local_dofs[i];
+
+      // Compare coordinates of libmesh node with OLD and NEW libmesh node IDs. Do they match?
+      auto libmesh_node = *getMesh().node_ptr(libmesh_node_id);
+
+      fprintf(stdout,
+              "LIBMESH (processor %d): (%.2lf, %.2lf, %.2lf), ",
+              processor_id(),
+              libmesh_node(0),
+              libmesh_node(1),
+              libmesh_node(2));
+
+      double coordinates_new[3];
+      par_mesh.GetNode(new_local_dofs[i], coordinates_new);
+
+      double coordinates_old[3];
+      serial_mesh.GetNode(old_local_dofs[i], coordinates_old);
+
+      fprintf(stdout,
+              "SERIAL MFEM: (%.2lf, %.2lf, %.2lf), ",
+              coordinates_old[0],
+              coordinates_old[1],
+              coordinates_old[2]);
+
+      fprintf(stdout,
+              "PARALLEL MFEM: (%.2lf, %.2lf, %.2lf)\n",
+              coordinates_new[0],
+              coordinates_new[1],
+              coordinates_new[2]);
+    }
+  }
+
+  _libmesh_node_id_for_mfem_node_id = new_libmesh_node_id_for_mfem_node_id;
+  _mfem_node_id_for_libmesh_node_id = new_mfem_node_id_for_libmesh_node_id;
+
+  if (processor_id() == 0)
+  {
+    sprintf(buffer, "/opt/new_mappings_processor_%d\n", processor_id());
+
+    FILE * fp = fopen(buffer, "w");
+
+    for (auto node_ptr : getMesh().local_node_ptr_range())
+    {
+      auto node_id = node_ptr->id();
+
+      fprintf(fp, "libmesh node id %4d\n", node_id);
+      // fprintf(fp, "libmesh node id %4d\t\tmfem node id %4d\n", node_id,
+      // getMFEMNodeID(node_id));
+      fflush(fp);
+    }
+
+    fclose(fp);
+  }
 }
 
 void
@@ -486,4 +837,18 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
     // Add to the map.
     node_ids_for_boundary_id[boundary_id] = boundary_node_ids;
   }
+}
+
+static double
+compute_square_of_difference(const std::array<double, 3> & coordinates1,
+                             const std::array<double, 3> & coordinates2)
+{
+  double sum_diff_sqd = 0.0;
+
+  for (int i = 0; i < 3; i++)
+  {
+    sum_diff_sqd += pow(coordinates1[i] - coordinates2[i], 2);
+  }
+
+  return sum_diff_sqd;
 }
