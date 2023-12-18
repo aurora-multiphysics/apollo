@@ -316,8 +316,6 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 void
 MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 {
-  fprintf(stdout, "%s called on processor %d\n", __func__, mesh().processor_id());
-
   auto & moose_var_ref = getVariable(0, var_name);
   MeshBase & libmesh_base = mesh().getMesh();
 
@@ -327,7 +325,7 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 
   auto & pgf = *(mfem_problem->gridfunctions.Get(var_name));
 
-  const auto *par_fespace = order > 1 ? pgf.ParFESpace() : nullptr;
+  const auto * par_fespace = order > 1 ? pgf.ParFESpace() : nullptr;
 
   unsigned int count = 0;
 
@@ -354,12 +352,7 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
     }
   }
 
-  mfem::Vector mfem_local_dofs(count);
-
-  fprintf(stdout, "Got up to line %d on processor %d\n", __LINE__, mesh().processor_id());
-  fflush(stdout);
-
-  std::vector<int> dodgy_mfem_dofs;
+  mfem::Vector mfem_true_local_dofs(count);
 
   count = 0;
   if (moose_var_ref.isNodal())
@@ -378,54 +371,36 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 
           if (order == 1)
           {
-            mfem_local_dofs[count] = temp_solution_vector(dof);
+            mfem_true_local_dofs[count] = temp_solution_vector(dof);
           }
           else
           {
             // Get the local dof:
-            const int mfem_local_dof = mesh().getMFEMNodeID(node_id);
+            const int mfem_local_dof = mesh().getLocalMFEMNodeId(node_id);
 
-            const int mfem_local_true_dof = par_fespace->GetLocalTDofNumber(mfem_local_dof);
+            // Convert to TRUE LOCAL dof. Removes duplicated. No longer 1:1 mapping.
+            const int mfem_true_local_dof = par_fespace->GetLocalTDofNumber(mfem_local_dof);
 
-            if (mfem_local_true_dof == -1) continue;
-
-            // Convert to local true dof.
-
-
-            if (mfem_local_true_dof >= mfem_local_dofs.Size())
+            // Not on this processor? --> skip.
+            if (mfem_true_local_dof == -1)
             {
-              dodgy_mfem_dofs.push_back(mfem_local_true_dof);
-
-              fprintf(stdout,
-                      "mfem_local_dof = %d <--> libmesh_dof = %d (count = %d), processor = %d\n",
-                      mfem_local_dof,
-                      node_id,
-                      mfem_local_dofs.Size(),
-                      mesh().processor_id());
               continue;
             }
 
-            mfem_local_dofs[mfem_local_true_dof] = temp_solution_vector(dof);
+            // Catch dodgy local true dofs.
+            mooseAssert(mfem_true_local_dof >= 0 &&
+                            mfem_true_local_dof < mfem_true_local_dofs.Size(),
+                        "local-true dof out-of-bounds.");
+
+            mfem_true_local_dofs[mfem_true_local_dof] = temp_solution_vector(dof);
           }
+
           count++;
         }
       }
     }
 
-    std::sort(dodgy_mfem_dofs.begin(), dodgy_mfem_dofs.end());
-    for (auto dodgy_dof : dodgy_mfem_dofs) 
-    {
-      fprintf(stdout, "%d, ", dodgy_dof);
-    }
-    fprintf(stdout, "\n");
-
-    fprintf(stdout, "Got up to here on processor %d\n", mesh().processor_id());
-    fflush(stdout);
-
-    pgf.SetFromTrueDofs(mfem_local_dofs);
-
-    fprintf(stdout, "Set correctly on processor %d\n", mesh().processor_id());
-    fflush(stdout);
+    pgf.SetFromTrueDofs(mfem_true_local_dofs);
   }
   else
   {
@@ -437,23 +412,19 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
       for (unsigned int i = 0; i < n_comp; i++)
       {
         dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
-        mfem_local_dofs[count] = temp_solution_vector(dof);
+        mfem_true_local_dofs[count] = temp_solution_vector(dof);
         count++;
       }
     }
-    pgf.SetFromTrueDofs(mfem_local_dofs);
+    pgf.SetFromTrueDofs(mfem_true_local_dofs);
   }
   moose_var_ref.sys().solution().close();
   moose_var_ref.sys().update();
-
-  printf("Finished here...\n");
 }
 
 void
 MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 {
-  fprintf(stdout, "%s called on processor %d\n", __func__, mesh().processor_id());
-
   auto & moose_var_ref = getVariable(0, var_name);
   MeshBase & libmesh_base = mesh().getMesh();
 
@@ -462,14 +433,14 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
   NumericVector<Number> & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(var_name));
 
-  const auto *par_fespace = (order > 1) ? pgf.ParFESpace() : nullptr;
+  const auto * par_fespace = (order > 1) ? pgf.ParFESpace() : nullptr;
 
   unsigned int count = 0;
 
   if (moose_var_ref.isNodal())
   {
-    mfem::Vector mfem_local_nodes(libmesh_base.n_local_nodes());
-    mfem_local_nodes = *(pgf.GetTrueDofs());
+    mfem::Vector mfem_true_local_dofs(libmesh_base.n_local_nodes());
+    mfem_true_local_dofs = *(pgf.GetTrueDofs());
 
     for (auto & node : as_range(libmesh_base.local_nodes_begin(), libmesh_base.local_nodes_end()))
     {
@@ -482,28 +453,29 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 
         if (order == 1)
         {
-          moose_var_ref.sys().solution().set(dof, mfem_local_nodes[count]);
+          moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[count]);
         }
         else
         {
-          const int mfem_local_dof = mesh().getMFEMNodeID(node_id); // Local dof # 1:1 correspondance with MOOSE nodes.
+          // Local dof # 1:1 correspondance with MOOSE nodes.
+          const int mfem_local_dof = mesh().getLocalMFEMNodeId(node_id);
 
+          // No 1:1 correspondance with MOOSE nodes. #local true dofs <= #local dofs.
+          // Removes multiple local nodes that refer to same coordinate.
           const int mfem_true_local_dof = par_fespace->GetLocalTDofNumber(mfem_local_dof);
 
-          if (mfem_true_local_dof == -1)  // Not on this processor. Ignore. No 1:1 correspondance with MOOSE nodes.
+          // Skip dof if it isn't on this processor.
+          if (mfem_true_local_dof == -1)
           {
             continue;
           }
 
-          if (mfem_true_local_dof < mfem_local_nodes.Size())
-          {
-            moose_var_ref.sys().solution().set(dof, mfem_local_nodes[mfem_true_local_dof]);
-          }
-          else 
-          {
-            fprintf(stdout, "mfem local dof %d out of bounds on processor %d\n", mfem_true_local_dof, mesh().processor_id());
-          }
+          mooseAssert(mfem_true_local_dof >= 0 && mfem_true_local_dof < mfem_true_local_dofs.Size(),
+                      "local-true dof out-of-bounds.");
+
+          moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[mfem_true_local_dof]);
         }
+
         count++;
       }
     }

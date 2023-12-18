@@ -478,7 +478,7 @@ CoupledMFEMMesh::buildMFEMParMesh()
           continue;
         }
 
-        auto mfem_linked_node_id = getMFEMNodeID(node.id());
+        auto mfem_linked_node_id = getLocalMFEMNodeId(node.id());
 
         double coordinates[3];
         _mfem_par_mesh->GetNode(mfem_linked_node_id, coordinates);
@@ -649,7 +649,7 @@ CoupledMFEMMesh::updateNodalDofMappingsV2(MFEMMesh & serial_mesh, MFEMParMesh & 
       const auto parallel_local_dof = parallel_dof_for_serial_dof[dof];
 
       // Pair the libmesh node formerly associated with the serial node with this node.
-      auto libmesh_node_id = getLibmeshNodeID(dof);
+      auto libmesh_node_id = getLibmeshGlobalNodeId(dof);
 
       // Update two-way mappings.
       libmesh_global_node_id_for_mfem_local_node_id[parallel_local_dof] = libmesh_node_id;
@@ -674,7 +674,7 @@ CoupledMFEMMesh::updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & pa
   {
     auto node_id = node_ptr->id();
 
-    fprintf(fp, "libmesh node id %4d\t\tmfem node id %4d\n", node_id, getMFEMNodeID(node_id));
+    fprintf(fp, "libmesh node id %4d\t\tmfem node id %4d\n", node_id, getLocalMFEMNodeId(node_id));
   }
 
   fflush(fp);
@@ -718,7 +718,7 @@ CoupledMFEMMesh::updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & pa
     {
 
       // Get the local true dof. This will get around duplicates.
-      auto libmesh_node_id = getLibmeshNodeID(old_local_dofs[i]);
+      auto libmesh_node_id = getLibmeshGlobalNodeId(old_local_dofs[i]);
 
       new_libmesh_node_id_for_mfem_node_id[new_local_dofs[i]] = libmesh_node_id;
       new_mfem_node_id_for_libmesh_node_id[libmesh_node_id] = new_local_dofs[i];

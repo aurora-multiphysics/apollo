@@ -34,14 +34,14 @@ public:
   /**
    * Override method in ExclusiveMFEMMesh.
    */
-  inline int getMFEMNodeID(const int libmesh_node_id) const override
+  inline int getLocalMFEMNodeId(const int libmesh_global_node_id) const override
   {
-    return _mfem_local_node_id_for_libmesh_global_node_id.at(libmesh_node_id);
+    return _mfem_local_node_id_for_libmesh_global_node_id.at(libmesh_global_node_id);
   }
 
-  inline int getLibmeshNodeID(const int mfem_node_id) const override
+  inline int getLibmeshGlobalNodeId(const int mfem_local_node_id) const override
   {
-    return _libmesh_global_node_id_for_mfem_local_node_id.at(mfem_node_id);
+    return _libmesh_global_node_id_for_mfem_local_node_id.at(mfem_local_node_id);
   }
 
 protected:
