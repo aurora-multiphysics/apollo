@@ -371,7 +371,7 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 
           if (order == 1)
           {
-            mfem_true_local_dofs[count] = temp_solution_vector(dof);
+            mfem_true_local_dofs[count++] = temp_solution_vector(dof);
           }
           else
           {
@@ -394,8 +394,6 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 
             mfem_true_local_dofs[mfem_true_local_dof] = temp_solution_vector(dof);
           }
-
-          count++;
         }
       }
     }
@@ -411,12 +409,13 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
       for (unsigned int i = 0; i < n_comp; i++)
       {
         dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
-        mfem_true_local_dofs[count] = temp_solution_vector(dof);
-        count++;
+        mfem_true_local_dofs[count++] = temp_solution_vector(dof);
       }
     }
+
     pgf.SetFromTrueDofs(mfem_true_local_dofs);
   }
+
   moose_var_ref.sys().solution().close();
   moose_var_ref.sys().update();
 }
@@ -452,7 +451,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 
         if (order == 1)
         {
-          moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[count]);
+          moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[count++]);
         }
         else
         {
@@ -474,8 +473,6 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
 
           moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[mfem_true_local_dof]);
         }
-
-        count++;
       }
     }
   }
@@ -492,8 +489,7 @@ MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
       for (unsigned int i = 0; i < n_comp; i++)
       {
         dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
-        moose_var_ref.sys().solution().set(dof, mfem_local_elems[count]);
-        count++;
+        moose_var_ref.sys().solution().set(dof, mfem_local_elems[count++]);
       }
     }
   }
