@@ -314,7 +314,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
 }
 
 void
-MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
+MFEMProblem::setMFEMVarData(const std::string & var_name)
 {
   auto & moose_var_ref = getVariable(0, var_name);
 
@@ -325,7 +325,7 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 }
 
 void
-MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
+MFEMProblem::setMOOSEVarData(const std::string & var_name)
 {
   auto & moose_var_ref = getVariable(0, var_name);
 
@@ -607,7 +607,7 @@ MFEMProblem::syncSolutions(Direction direction)
     return;
   }
 
-  void (MFEMProblem::*setVarDataFuncPtr)(std::string, EquationSystems &);
+  void (MFEMProblem::*setVarDataFuncPtr)(const std::string &);
 
   switch (direction)
   {
@@ -629,9 +629,9 @@ MFEMProblem::syncSolutions(Direction direction)
     mooseError("Invalid syncSolutions direction specified.");
   }
 
-  for (std::string name : getAuxVariableNames())
+  for (std::string & name : getAuxVariableNames())
   {
-    (this->*setVarDataFuncPtr)(name, es());
+    (this->*setVarDataFuncPtr)(name);
   }
 }
 

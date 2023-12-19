@@ -131,8 +131,8 @@ public:
    * transfer it to the other. For example if you solve for temperature in MOOSE, you would use
    * setMFEMVarData to get this temperature data into an MFEM grid function.
    */
-  void setMFEMVarData(std::string var_name, EquationSystems & esRef);
-  void setMOOSEVarData(std::string var_name, EquationSystems & esRef);
+  void setMFEMVarData(const std::string & var_name);
+  void setMOOSEVarData(const std::string & var_name);
 
   /**
    * Method used to get an mfem FEC depending on the variable family specified in the input file.
