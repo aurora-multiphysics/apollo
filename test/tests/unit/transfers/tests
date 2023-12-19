@@ -117,6 +117,13 @@
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple first-order element types.'
   []
 
+  [./PushPullMultiElementOrder1MonomialTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_multi_element_order1_monomial_transfer_master.i'
+    csvdiff = 'push_pull_multi_element_order1_monomial_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer constant-order Monomials between MFEM and MOOSE using multiple first-order element types.'
+  []
+
   [./PullMultiElementOrder2Transfer]
     type = 'CSVDiff'
     input = 'pull_multi_element_order2_transfer_master.i'
@@ -129,6 +136,13 @@
     input = 'push_pull_multi_element_order2_transfer_master.i'
     csvdiff = 'push_pull_multi_element_order2_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple second-order element types.'
+  []
+
+  [./PushPullMultiElementOrder2MonomialTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_multi_element_order2_monomial_transfer_master.i'
+    csvdiff = 'push_pull_multi_element_order2_monomial_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer constant-order Monomials between MFEM and MOOSE using multiple second-order element types.'
   []
 
   # First-order element transfer tests (replicated, multiple processors).
@@ -148,6 +162,14 @@
     min_parallel = 2
   []
 
+  [./PushPullMultiElementOrder1ParallelReplicatedMonomialTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_multi_element_order1_monomial_transfer_master.i'
+    csvdiff = 'push_pull_multi_element_order1_monomial_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer constant-order Monomials between MFEM and MOOSE using multiple first-order element types (parallel).'
+    min_parallel = 2
+  []
+
    # Second-order element transfer tests (replicated, multiple processors).
   [./PullMultiElementOrder2ParallelReplicatedTransfer]
     type = 'CSVDiff'
@@ -162,6 +184,14 @@
     input = 'push_pull_multi_element_order2_transfer_master.i'
     csvdiff = 'push_pull_multi_element_order2_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using multiple second-order element types (parallel).'
+    min_parallel = 2
+  []
+
+  [./PushPullMultiElementOrder2ParallelReplicatedMonomialTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_multi_element_order2_monomial_transfer_master.i'
+    csvdiff = 'push_pull_multi_element_order2_monomial_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer constant-order Monomials between MFEM and MOOSE using multiple second-order element types (parallel).'
     min_parallel = 2
   []
 []
