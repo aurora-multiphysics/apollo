@@ -124,6 +124,7 @@ public:
   void addAuxKernel(const std::string & kernel_name,
                     const std::string & name,
                     InputParameters & parameters) override;
+
   /**
    * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve
    * data from one of the variable types (either Moose AuxVar or MFEM grid function), and
@@ -131,6 +132,7 @@ public:
    * setMFEMVarData to get this temperature data into an MFEM grid function.
    */
   void setMFEMVarData(std::string var_name, EquationSystems & esRef);
+
   /**
    * setMFEMVarData and setMOOSEVarData have very similar uses. They are both used to retrieve data
    * from one of the variable types (either Moose AuxVar or MFEM grid function), and transfer it to
@@ -147,6 +149,12 @@ public:
   InputParameters addMFEMFESpaceFromMOOSEVariable(InputParameters & moosevar_params);
 
 protected:
+  /**
+   * Called internally by setMFEMVarData.
+   */
+  void setMFEMNodalVarData(MooseVariableFieldBase & moose_variable);
+  void setMFEMElementalVarData(MooseVariableFieldBase & moose_variable);
+
   std::string _input_mesh;
   std::string _formulation_name;
   int _order;
