@@ -92,20 +92,6 @@ protected:
                                           const MFEMParMesh & parallel_mesh);
 
   /**
-   * Backup method for updating the nodal dof mappings. This compares the nodal coordinates to
-   * establish which node in the MFEMParMesh should map to each node in the serial MFEMMesh.
-   * Potentially prone to errors.
-   */
-  void convertSerialDofMappingsToParallelBackup(const MFEMMesh & serial_mesh,
-                                                const MFEMParMesh & parallel_mesh);
-
-  /**
-   * Write debugging info for second order nodes. This verifies that the mappings are working
-   * correctly.
-   */
-  void debugSecondOrderNodeMappings(const MFEMParMesh & parallel_mesh) const;
-
-  /**
    * Add block elements to _block_info.
    */
   void buildCubitBlockInfo(const std::vector<int> & unique_block_ids);
