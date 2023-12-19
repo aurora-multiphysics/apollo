@@ -421,6 +421,8 @@ MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
   mooseAssert(moose_var_ref.isNodal() == false, "Variable must not be nodal.");
 
   auto order = (unsigned int)moose_var_ref.order();
+  mooseAssert((n_processors() == 1) || (n_processors() > 1 && order == CONSTANT),
+              "Currently, only constant-order elemental variables can be synced in parallel.");
 
   auto & libmesh_base = mesh().getMesh();
   auto & temp_solution_vector = moose_var_ref.sys().solution();
@@ -463,10 +465,9 @@ MFEMProblem::setMooseNodalVarData(MooseVariableFieldBase & moose_var_ref)
 {
   mooseAssert(moose_var_ref.isNodal() == true, "Variable must be nodal.");
 
-  auto & libmesh_base = mesh().getMesh();
-
   auto order = (unsigned int)moose_var_ref.order();
 
+  auto & libmesh_base = mesh().getMesh();
   auto & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
 
@@ -521,6 +522,10 @@ void
 MFEMProblem::setMooseElementalVarData(MooseVariableFieldBase & moose_var_ref)
 {
   mooseAssert(moose_var_ref.isNodal() == false, "Variable must not be nodal.");
+
+  auto order = (unsigned int)moose_var_ref.order();
+  mooseAssert((n_processors() == 1) || (n_processors() > 1 && order == CONSTANT),
+              "Currently, only constant-order elemental variables can be synced in parallel.");
 
   auto & libmesh_base = mesh().getMesh();
   auto & temp_solution_vector = moose_var_ref.sys().solution();
