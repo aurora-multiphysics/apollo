@@ -443,9 +443,6 @@ CoupledMFEMMesh::buildMFEMParMesh()
     updateNodalDofMappings(*_mfem_mesh.get(), *_mfem_par_mesh.get());
   }
 
-  // Print debugging info during testing.
-  debugSecondOrderNodeMappings(*_mfem_mesh.get(), *_mfem_par_mesh.get());
-
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
 }
 
