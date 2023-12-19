@@ -85,23 +85,25 @@ protected:
   /**
    * Required for converting an MFEMMesh to an MFEMParMesh. This method updates the two-way mappings
    * so that the libMesh global node IDs now correctly map to the LOCAL MFEM dofs for the
-   * MFEMParMesh. THis method is called internally after creating an MFEMParMesh from an MFEMMesh.
+   * MFEMParMesh. This method is called internally after creating an MFEMParMesh from an MFEMMesh.
    * NB: failure to call this method will result in the synchronization steps failing.
    */
-  void convertSerialDofMappingsToParallel(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+  void convertSerialDofMappingsToParallel(const MFEMMesh & serial_mesh,
+                                          const MFEMParMesh & parallel_mesh);
 
   /**
    * Backup method for updating the nodal dof mappings. This compares the nodal coordinates to
    * establish which node in the MFEMParMesh should map to each node in the serial MFEMMesh.
    * Potentially prone to errors.
    */
-  void convertSerialDofMappingsToParallelBackup(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+  void convertSerialDofMappingsToParallelBackup(const MFEMMesh & serial_mesh,
+                                                const MFEMParMesh & parallel_mesh);
 
   /**
    * Write debugging info for second order nodes. This verifies that the mappings are working
    * correctly.
    */
-  void debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh) const;
+  void debugSecondOrderNodeMappings(const MFEMParMesh & parallel_mesh) const;
 
   /**
    * Add block elements to _block_info.

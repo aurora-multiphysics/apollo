@@ -445,8 +445,8 @@ CoupledMFEMMesh::buildMFEMParMesh()
 }
 
 void
-CoupledMFEMMesh::convertSerialDofMappingsToParallel(MFEMMesh & serial_mesh,
-                                                    MFEMParMesh & parallel_mesh)
+CoupledMFEMMesh::convertSerialDofMappingsToParallel(const MFEMMesh & serial_mesh,
+                                                    const MFEMParMesh & parallel_mesh)
 {
   // No need to change dof mappings if running on a single processor or if a first order element.
   if (n_processors() < 2 || blockInfo().order() == 1)
@@ -520,11 +520,11 @@ CoupledMFEMMesh::convertSerialDofMappingsToParallel(MFEMMesh & serial_mesh,
 }
 
 void
-CoupledMFEMMesh::convertSerialDofMappingsToParallelBackup(MFEMMesh & serial_mesh,
-                                                          MFEMParMesh & parallel_mesh)
+CoupledMFEMMesh::convertSerialDofMappingsToParallelBackup(const MFEMMesh & serial_mesh,
+                                                          const MFEMParMesh & parallel_mesh)
 {
   // No need to change dof mappings if running on a single processor or if a first order element.
-  if (n_processors() < 2 || blockInfo().order() == 1)
+  if (n_processors() < 2 || blockInfo().order() < 2)
   {
     return;
   }
@@ -652,7 +652,7 @@ CoupledMFEMMesh::convertSerialDofMappingsToParallelBackup(MFEMMesh & serial_mesh
 }
 
 void
-CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh) const
+CoupledMFEMMesh::debugSecondOrderNodeMappings(const MFEMParMesh & parallel_mesh) const
 {
   // Do a spot of printing.
   if (blockInfo().order() == 1 || n_processors() == 1)
@@ -691,7 +691,7 @@ CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMes
       auto mfem_linked_node_id = getLocalMFEMNodeId(node.id());
 
       double coordinates[3];
-      _mfem_par_mesh->GetNode(mfem_linked_node_id, coordinates);
+      parallel_mesh.GetNode(mfem_linked_node_id, coordinates);
 
       fprintf(fp,
               "\tnode %3lu: (%.2lf, %.2lf, %.2lf) <--> node: %3d: (%.2lf, %.2lf, %.2lf)\n",
@@ -712,9 +712,9 @@ CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMes
   sprintf(buffer, "/opt/mfem_%u.txt", processor_id());
   fp = fopen(buffer, "w");
 
-  auto * fe_space = _mfem_par_mesh->GetNodalFESpace();
+  const auto * fe_space = parallel_mesh.GetNodalFESpace();
 
-  for (int ielement = 0; ielement < _mfem_par_mesh->GetNE(); ielement++)
+  for (int ielement = 0; ielement < parallel_mesh.GetNE(); ielement++)
   {
     fprintf(fp, "*** MFEM Element %3d ***\n", ielement);
 
@@ -726,7 +726,7 @@ CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMes
     int index = 0;
     for (int dof : dofs)
     {
-      _mfem_par_mesh->GetNode(dof, coordinates);
+      parallel_mesh.GetNode(dof, coordinates);
 
       fprintf(fp,
               "\tnode %3u: (%.2lf, %.2lf, %.2lf) [index: %2d]\n",
