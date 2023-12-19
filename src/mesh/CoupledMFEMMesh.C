@@ -438,10 +438,7 @@ CoupledMFEMMesh::buildMFEMParMesh()
 
   // If we have a higher-order mesh then we need to figure-out the mapping from the libMesh node ID
   // to the MFEM node ID since this will have changed.
-  if (blockInfo().order() > 1 && n_processors() > 1)
-  {
-    updateNodalDofMappings(*_mfem_mesh.get(), *_mfem_par_mesh.get());
-  }
+  updateNodalDofMappings(*_mfem_mesh.get(), *_mfem_par_mesh.get());
 
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
 }
