@@ -83,17 +83,25 @@ protected:
                                 const std::map<int, std::vector<int>> & node_ids_for_element_id);
 
   /**
-   * TODO: - add documentation for this method.
+   * Required for converting an MFEMMesh to an MFEMParMesh. This method updates the two-way mappings
+   * so that the libMesh global node IDs now correctly map to the LOCAL MFEM dofs for the
+   * MFEMParMesh. THis method is called internally after creating an MFEMParMesh from an MFEMMesh.
+   * NB: failure to call this method will result in the synchronization steps failing.
    */
   void updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
 
   /**
-   * Required for converting an MFEMMesh to an MFEMParMesh. This method will update the two-way
-   * mappings so that libMesh GLOBAL node IDs now correctly map to the LOCAL node IDs (dofs) for the
-   * MFEMParMesh. This method is called internally after creating an MFEMParMesh from an MFEMMesh.
-   * NB: if this method is not called then the synchronization steps will fail!
+   * Backup method for updating the nodal dof mappings. This compares the nodal coordinates to
+   * establish which node in the MFEMParMesh should map to each node in the serial MFEMMesh.
+   * Potentially prone to errors.
    */
-  void updateNodalDofMappingsV2(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+  void updateNodalDofMappingsBackup(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+
+  /**
+   * Write debugging info for second order nodes. This verifies that the mappings are working
+   * correctly.
+   */
+  void debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh) const;
 
   /**
    * Add block elements to _block_info.
