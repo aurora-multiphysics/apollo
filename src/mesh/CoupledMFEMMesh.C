@@ -438,13 +438,14 @@ CoupledMFEMMesh::buildMFEMParMesh()
 
   // If we have a higher-order mesh then we need to figure-out the mapping from the libMesh node ID
   // to the MFEM node ID since this will have changed.
-  updateNodalDofMappings(*_mfem_mesh.get(), *_mfem_par_mesh.get());
+  convertSerialDofMappingsToParallel(*_mfem_mesh.get(), *_mfem_par_mesh.get());
 
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
 }
 
 void
-CoupledMFEMMesh::updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & parallel_mesh)
+CoupledMFEMMesh::convertSerialDofMappingsToParallel(MFEMMesh & serial_mesh,
+                                                    MFEMParMesh & parallel_mesh)
 {
   // No need to change dof mappings if running on a single processor or if a first order element.
   if (n_processors() < 2 || blockInfo().order() == 1)
@@ -518,7 +519,8 @@ CoupledMFEMMesh::updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & pa
 }
 
 void
-CoupledMFEMMesh::updateNodalDofMappingsBackup(MFEMMesh & serial_mesh, MFEMParMesh & parallel_mesh)
+CoupledMFEMMesh::convertSerialDofMappingsToParallelBackup(MFEMMesh & serial_mesh,
+                                                          MFEMParMesh & parallel_mesh)
 {
   // No need to change dof mappings if running on a single processor or if a first order element.
   if (n_processors() < 2 || blockInfo().order() == 1)

@@ -88,14 +88,14 @@ protected:
    * MFEMParMesh. THis method is called internally after creating an MFEMParMesh from an MFEMMesh.
    * NB: failure to call this method will result in the synchronization steps failing.
    */
-  void updateNodalDofMappings(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+  void convertSerialDofMappingsToParallel(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
 
   /**
    * Backup method for updating the nodal dof mappings. This compares the nodal coordinates to
    * establish which node in the MFEMParMesh should map to each node in the serial MFEMMesh.
    * Potentially prone to errors.
    */
-  void updateNodalDofMappingsBackup(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
+  void convertSerialDofMappingsToParallelBackup(MFEMMesh & serial_mesh, MFEMParMesh & par_mesh);
 
   /**
    * Write debugging info for second order nodes. This verifies that the mappings are working
