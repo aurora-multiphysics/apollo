@@ -11,8 +11,9 @@
 
 registerMooseObject("ApolloApp", CoupledMFEMMesh);
 
-static double compute_square_of_difference(const std::array<double, 3> & coordinates1,
-                                           const std::array<double, 3> & coordinates2);
+// Function prototypes.
+static double computeSquareOfDifference(const std::array<double, 3> & coordinates1,
+                                        const std::array<double, 3> & coordinates2);
 
 InputParameters
 CoupledMFEMMesh::validParams()
@@ -599,7 +600,7 @@ CoupledMFEMMesh::convertSerialDofMappingsToParallelBackup(MFEMMesh & serial_mesh
         auto serial_dof = serial_local_dofs[j];
         auto & serial_coordinates = all_serial_coordinates[j];
 
-        auto diff_sqd = compute_square_of_difference(serial_coordinates, parallel_coordinates);
+        auto diff_sqd = computeSquareOfDifference(serial_coordinates, parallel_coordinates);
 
         if (diff_sqd < min_diff_sqd)
         {
@@ -661,23 +662,23 @@ CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMes
 
   char buffer[200];
 
-  sprintf(buffer, "/opt/moose_%ld.txt", processor_id());
+  sprintf(buffer, "/opt/moose_%u.txt", processor_id());
   FILE * fp = fopen(buffer, "w");
 
   for (const auto element_ptr : getMesh().local_element_ptr_range())
   {
     auto element_id = element_ptr->id();
 
-    fprintf(fp, "*** Element %3d ***\n", element_id);
+    fprintf(fp, "*** Element %3lu ***\n", element_id);
 
-    for (int i = 0; i < element_ptr->n_nodes(); i++)
+    for (auto i = 0; i < (int)element_ptr->n_nodes(); i++)
     {
       auto & node = element_ptr->node_ref(i);
 
       if (_mfem_local_node_id_for_libmesh_global_node_id.count(node.id()) == 0)
       {
         fprintf(fp,
-                "\tnode %3d: (%.2lf, %.2lf, %.2lf) <--> node: ???\n",
+                "\tnode %3lu: (%.2lf, %.2lf, %.2lf) <--> node: ???\n",
                 node.id(),
                 node(0),
                 node(1),
@@ -693,7 +694,7 @@ CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMes
       _mfem_par_mesh->GetNode(mfem_linked_node_id, coordinates);
 
       fprintf(fp,
-              "\tnode %3d: (%.2lf, %.2lf, %.2lf) <--> node: %3d: (%.2lf, %.2lf, %.2lf)\n",
+              "\tnode %3lu: (%.2lf, %.2lf, %.2lf) <--> node: %3d: (%.2lf, %.2lf, %.2lf)\n",
               node.id(),
               node(0),
               node(1),
@@ -708,7 +709,7 @@ CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMes
 
   fclose(fp);
 
-  sprintf(buffer, "/opt/mfem_%ld.txt", processor_id());
+  sprintf(buffer, "/opt/mfem_%u.txt", processor_id());
   fp = fopen(buffer, "w");
 
   auto * fe_space = _mfem_par_mesh->GetNodalFESpace();
@@ -728,7 +729,7 @@ CoupledMFEMMesh::debugSecondOrderNodeMappings(MFEMMesh & serial_mesh, MFEMParMes
       _mfem_par_mesh->GetNode(dof, coordinates);
 
       fprintf(fp,
-              "\tnode %3d: (%.2lf, %.2lf, %.2lf) [index: %2d]\n",
+              "\tnode %3u: (%.2lf, %.2lf, %.2lf) [index: %2d]\n",
               dof,
               coordinates[0],
               coordinates[1],
@@ -792,8 +793,8 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
 }
 
 static double
-compute_square_of_difference(const std::array<double, 3> & coordinates1,
-                             const std::array<double, 3> & coordinates2)
+computeSquareOfDifference(const std::array<double, 3> & coordinates1,
+                          const std::array<double, 3> & coordinates2)
 {
   double sum_diff_sqd = 0.0;
 
