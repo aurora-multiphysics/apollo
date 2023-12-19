@@ -325,6 +325,17 @@ MFEMProblem::setMFEMVarData(std::string var_name, EquationSystems & esRef)
 }
 
 void
+MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
+{
+  auto & moose_var_ref = getVariable(0, var_name);
+
+  if (moose_var_ref.isNodal())
+    setMooseNodalVarData(moose_var_ref);
+  else
+    setMooseElementalVarData(moose_var_ref);
+}
+
+void
 MFEMProblem::setMFEMNodalVarData(MooseVariableFieldBase & moose_var_ref)
 {
   // Sanity check:
@@ -446,78 +457,89 @@ MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
 }
 
 void
-MFEMProblem::setMOOSEVarData(std::string var_name, EquationSystems & esRef)
+MFEMProblem::setMooseNodalVarData(MooseVariableFieldBase & moose_var_ref)
 {
-  auto & moose_var_ref = getVariable(0, var_name);
-  MeshBase & libmesh_base = mesh().getMesh();
+  auto & libmesh_base = mesh().getMesh();
 
-  unsigned int order = (unsigned int)moose_var_ref.order();
+  auto order = (unsigned int)moose_var_ref.order();
 
-  NumericVector<Number> & temp_solution_vector = moose_var_ref.sys().solution();
-  auto & pgf = *(mfem_problem->gridfunctions.Get(var_name));
+  auto & temp_solution_vector = moose_var_ref.sys().solution();
+  auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
 
   const auto * par_fespace = (order > 1) ? pgf.ParFESpace() : nullptr;
 
   unsigned int count = 0;
 
-  if (moose_var_ref.isNodal())
+  mfem::Vector mfem_true_local_dofs(libmesh_base.n_local_nodes());
+  mfem_true_local_dofs = *(pgf.GetTrueDofs());
+
+  for (const auto * node : libmesh_base.local_node_ptr_range())
   {
-    mfem::Vector mfem_true_local_dofs(libmesh_base.n_local_nodes());
-    mfem_true_local_dofs = *(pgf.GetTrueDofs());
+    unsigned int n_comp = node->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
+    unsigned int node_id = node->id();
 
-    for (auto & node : as_range(libmesh_base.local_nodes_begin(), libmesh_base.local_nodes_end()))
+    for (unsigned int i = 0; i < n_comp; i++)
     {
-      unsigned int n_comp = node->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
-      unsigned int node_id = node->id();
+      dof_id_type dof = node->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
 
-      for (unsigned int i = 0; i < n_comp; i++)
+      if (order == 1)
       {
-        dof_id_type dof = node->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
+        moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[count++]);
+      }
+      else
+      {
+        // Local dof # 1:1 correspondance with MOOSE nodes.
+        const int mfem_local_dof = mesh().getLocalMFEMNodeId(node_id);
 
-        if (order == 1)
+        // No 1:1 correspondance with MOOSE nodes. #local true dofs <= #local dofs.
+        // Removes multiple local nodes that refer to same coordinate.
+        const int mfem_true_local_dof = par_fespace->GetLocalTDofNumber(mfem_local_dof);
+
+        // Skip dof if it isn't on this processor.
+        if (mfem_true_local_dof == -1)
         {
-          moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[count++]);
+          continue;
         }
-        else
-        {
-          // Local dof # 1:1 correspondance with MOOSE nodes.
-          const int mfem_local_dof = mesh().getLocalMFEMNodeId(node_id);
 
-          // No 1:1 correspondance with MOOSE nodes. #local true dofs <= #local dofs.
-          // Removes multiple local nodes that refer to same coordinate.
-          const int mfem_true_local_dof = par_fespace->GetLocalTDofNumber(mfem_local_dof);
+        mooseAssert(mfem_true_local_dof >= 0 && mfem_true_local_dof < mfem_true_local_dofs.Size(),
+                    "local-true dof out-of-bounds.");
 
-          // Skip dof if it isn't on this processor.
-          if (mfem_true_local_dof == -1)
-          {
-            continue;
-          }
-
-          mooseAssert(mfem_true_local_dof >= 0 && mfem_true_local_dof < mfem_true_local_dofs.Size(),
-                      "local-true dof out-of-bounds.");
-
-          moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[mfem_true_local_dof]);
-        }
+        moose_var_ref.sys().solution().set(dof, mfem_true_local_dofs[mfem_true_local_dof]);
       }
     }
   }
-  else
+
+  moose_var_ref.sys().solution().close();
+  moose_var_ref.sys().update();
+}
+
+void
+MFEMProblem::setMooseElementalVarData(MooseVariableFieldBase & moose_var_ref)
+{
+  auto & libmesh_base = mesh().getMesh();
+  auto order = (unsigned int)moose_var_ref.order();
+
+  auto & temp_solution_vector = moose_var_ref.sys().solution();
+  auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
+
+  const auto * par_fespace = (order > 1) ? pgf.ParFESpace() : nullptr;
+
+  unsigned int count = 0;
+
+  mfem::Vector mfem_local_elems(libmesh_base.n_local_elem());
+  mfem_local_elems = *(pgf.GetTrueDofs());
+
+  for (const auto * elem : libmesh_base.local_element_ptr_range())
   {
-    mfem::Vector mfem_local_elems(libmesh_base.n_local_elem());
-    mfem_local_elems = *(pgf.GetTrueDofs());
+    unsigned int n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
 
-    for (auto & elem :
-         as_range(libmesh_base.local_elements_begin(), libmesh_base.local_elements_end()))
+    for (unsigned int i = 0; i < n_comp; i++)
     {
-      unsigned int n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
-
-      for (unsigned int i = 0; i < n_comp; i++)
-      {
-        dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
-        moose_var_ref.sys().solution().set(dof, mfem_local_elems[count++]);
-      }
+      dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
+      moose_var_ref.sys().solution().set(dof, mfem_local_elems[count++]);
     }
   }
+
   moose_var_ref.sys().solution().close();
   moose_var_ref.sys().update();
 }
