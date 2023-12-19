@@ -402,35 +402,38 @@ MFEMProblem::setMFEMNodalVarData(MooseVariableFieldBase & moose_var_ref)
 void
 MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
 {
-  MeshBase & libmesh_base = mesh().getMesh();
+  // Sanity check:
+  mooseAssert(moose_var_ref.isNodal() == false, "Element type must not be nodal.");
 
-  unsigned int order = (unsigned int)moose_var_ref.order();
+  auto order = (unsigned int)moose_var_ref.order();
 
-  NumericVector<Number> & temp_solution_vector = moose_var_ref.sys().solution();
-
+  auto & libmesh_base = mesh().getMesh();
+  auto & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
 
-  unsigned int count = 0;
+  // Count number of true local dofs.
+  unsigned int true_local_dofs_count = 0;
 
-  for (auto & elem :
-       as_range(libmesh_base.local_elements_begin(), libmesh_base.local_elements_end()))
+  for (const auto * elem : libmesh_base.local_element_ptr_range())
   {
-    unsigned int n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
-    count += n_comp;
+    auto n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
+    true_local_dofs_count += n_comp;
   }
 
-  mfem::Vector mfem_true_local_dofs(count);
+  mfem::Vector mfem_true_local_dofs(true_local_dofs_count);
 
-  count = 0;
+  // Set MFEM true local dofs.
+  unsigned int dof_index = 0;
 
-  for (auto & elem :
-       as_range(libmesh_base.local_elements_begin(), libmesh_base.local_elements_end()))
+  for (const auto * elem : libmesh_base.local_element_ptr_range())
   {
-    unsigned int n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
-    for (unsigned int i = 0; i < n_comp; i++)
+    auto n_comp = elem->n_comp(moose_var_ref.sys().number(), moose_var_ref.number());
+
+    for (decltype(n_comp) i = 0; i < n_comp; i++)
     {
       dof_id_type dof = elem->dof_number(moose_var_ref.sys().number(), moose_var_ref.number(), i);
-      mfem_true_local_dofs[count++] = temp_solution_vector(dof);
+
+      mfem_true_local_dofs[dof_index++] = temp_solution_vector(dof);
     }
   }
 
