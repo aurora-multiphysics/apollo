@@ -89,6 +89,20 @@
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using wedge6 (prism6) elements.'
   []
 
+  [./PullWedge18Transfer]
+    type = 'CSVDiff'
+    input = 'pull_wedge18_transfer_master.i'
+    csvdiff = 'pull_wedge18_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using wedge18 (prism18) elements.'
+  []
+
+  [./PushPullWedge18Transfer]
+    type = 'CSVDiff'
+    input = 'push_pull_wedge18_transfer_master.i'
+    csvdiff = 'push_pull_wedge18_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using wedge18 (prism18) elements.'
+  []
+
   [./PullPyramid5Transfer]
     type = 'CSVDiff'
     input = 'pull_pyramid5_transfer_master.i'
