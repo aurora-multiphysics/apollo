@@ -199,6 +199,15 @@ CubitElementInfo::buildCubit3DElementInfo(int num_nodes_per_element)
       _face_info = getWedge6FaceInfo();
       break;
     }
+    case 18:
+    {
+      _element_type = ELEMENT_WEDGE18;
+      _order = 2;
+      _num_corner_nodes = 6;
+      _num_faces = 5;
+      _face_info = getWedge18FaceInfo();
+      break;
+    }
     case 5:
     {
       _element_type = ELEMENT_PYRAMID5;
@@ -235,6 +244,15 @@ CubitElementInfo::getWedge6FaceInfo() const
   CubitFaceInfo quad4 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD4); // Faces 1, 2, 3 (LibMesh)
 
   return {tri3, quad4, quad4, quad4, tri3};
+}
+
+std::vector<CubitFaceInfo>
+CubitElementInfo::getWedge18FaceInfo() const
+{
+  CubitFaceInfo tri6 = CubitFaceInfo(CubitFaceInfo::FACE_TRI6);
+  CubitFaceInfo quad9 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD9);
+
+  return {tri6, quad9, quad9, quad9, tri6};
 }
 
 std::vector<CubitFaceInfo>

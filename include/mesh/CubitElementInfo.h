@@ -79,6 +79,7 @@ public:
     ELEMENT_HEX8,
     ELEMENT_HEX27,
     ELEMENT_WEDGE6,
+    ELEMENT_WEDGE18,
     ELEMENT_PYRAMID5,
     ELEMENT_PYRAMID14
   };
@@ -106,6 +107,8 @@ protected:
    * Sets the _face_info vector.
    */
   std::vector<CubitFaceInfo> getWedge6FaceInfo() const;
+  std::vector<CubitFaceInfo> getWedge18FaceInfo() const;
+
   std::vector<CubitFaceInfo> getPyramid5FaceInfo() const;
   std::vector<CubitFaceInfo> getPyramid14FaceInfo() const;
 
