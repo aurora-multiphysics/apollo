@@ -208,6 +208,16 @@ CubitElementInfo::buildCubit3DElementInfo(int num_nodes_per_element)
       _face_info = getPyramid5FaceInfo();
       break;
     }
+    case 14:
+    {
+      _element_type = ELEMENT_PYRAMID14;
+      _order = 2;
+      _num_corner_nodes = 5;
+      _num_faces = 5;
+      _face_info = getPyramid14FaceInfo();
+      _num_corner_nodes = 5;
+      break;
+    }
     default:
     {
       mooseError("Unsupported 3D element with ", num_nodes_per_element, " nodes per element.");
@@ -236,6 +246,19 @@ CubitElementInfo::getPyramid5FaceInfo() const
   CubitFaceInfo quad4 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD4);
 
   return {tri3, tri3, tri3, tri3, quad4};
+}
+
+std::vector<CubitFaceInfo>
+CubitElementInfo::getPyramid14FaceInfo() const
+{
+  // Refer to "cell_pyramid14.h"
+  // Define Pyramid14: Quad9 base and 4 x Tri6.
+  CubitFaceInfo tri6 = CubitFaceInfo(CubitFaceInfo::FACE_TRI6);
+  CubitFaceInfo quad9 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD9);
+
+  // Use same ordering as LibMesh ("cell_pyramid14.c"; line 44)
+  // front, right, back, left, base.
+  return {tri6, tri6, tri6, tri6, quad9};
 }
 
 const CubitFaceInfo &
