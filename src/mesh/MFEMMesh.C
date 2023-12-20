@@ -424,7 +424,7 @@ MFEMMesh::handleQuadraticFESpace(
   // 3D maps:
   const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
 
-  const int mfem_to_libmesh_pyramid14[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+  // const int mfem_to_libmesh_pyramid14[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 
   const int mfem_to_libmesh_wedge18[] = {
       1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 10, 11, 12, 16, 17, 18};
