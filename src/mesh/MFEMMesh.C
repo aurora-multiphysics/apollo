@@ -317,6 +317,7 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
       break;
     }
     case CubitElementInfo::ELEMENT_WEDGE6:
+    case CubitElementInfo::ELEMENT_WEDGE18:
     {
       new_element = new mfem::Wedge(vertex_ids, block_id);
       break;
@@ -425,6 +426,9 @@ MFEMMesh::handleQuadraticFESpace(
 
   const int mfem_to_libmesh_pyramid14[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 
+  const int mfem_to_libmesh_wedge18[] = {
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 10, 11, 12, 16, 17, 18};
+
   // NB: different map used for hex27 to ReadCubit. LibMesh uses a different node
   // ordering to the Exodus/Genesis format.
   const int mfem_to_libmesh_hex27[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18,
@@ -461,6 +465,11 @@ MFEMMesh::handleQuadraticFESpace(
       case CubitElementInfo::ELEMENT_HEX27:
       {
         mfem_to_libmesh_map = (int *)mfem_to_libmesh_hex27;
+        break;
+      }
+      case CubitElementInfo::ELEMENT_WEDGE18:
+      {
+        mfem_to_libmesh_map = (int *)mfem_to_libmesh_wedge18;
         break;
       }
       case CubitElementInfo::ELEMENT_PYRAMID14:
