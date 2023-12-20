@@ -257,7 +257,7 @@ CubitElementInfo::getPyramid14FaceInfo() const
   CubitFaceInfo quad9 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD9);
 
   // Use same ordering as LibMesh ("cell_pyramid14.c"; line 44)
-  // front, right, back, left, base.
+  // front, right, back, left, base (different in MFEM!).
   return {tri6, tri6, tri6, tri6, quad9};
 }
 
