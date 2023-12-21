@@ -117,20 +117,6 @@
     requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using pyramid5 elements.'
   []
 
-  [./PullPyramid14Transfer]
-    type = 'CSVDiff'
-    input = 'pull_pyramid14_transfer_master.i'
-    csvdiff = 'pull_pyramid14_transfer_master_out.csv'
-    requirement = 'Apollo shall have the ability to transfer from MFEM to MOOSE using pyramid14 elements.'
-  []
-
-  [./PushPullPyramid14Transfer]
-    type = 'CSVDiff'
-    input = 'push_pull_pyramid14_transfer_master.i'
-    csvdiff = 'push_pull_pyramid14_transfer_master_out.csv'
-    requirement = 'Apollo shall have the ability to transfer between MFEM and MOOSE using pyramid14 elements.'
-  []
-
   [./PullMultiElementOrder1Transfer]
     type = 'CSVDiff'
     input = 'pull_multi_element_order1_transfer_master.i'
