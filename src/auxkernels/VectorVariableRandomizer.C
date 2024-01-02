@@ -21,8 +21,10 @@ VectorVariableRandomizer::VectorVariableRandomizer(const InputParameters & param
 void
 VectorVariableRandomizer::compute()
 {
-  std::default_random_engine generator;
-  std::uniform_int_distribution<int> distribution(10, 1000);
+  std::random_device os_seed;
+  std::default_random_engine generator(os_seed());
+
+  std::uniform_int_distribution<int> distribution(1, 100);
 
   Real x = distribution(generator);
   Real y = distribution(generator);
