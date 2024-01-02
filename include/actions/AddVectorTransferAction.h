@@ -38,7 +38,7 @@ protected:
   };
 
   /**
-   * An enumeration used to specify which auxkernel to build.
+   * An enumeration used to specify the auxkernel to build.
    */
   enum class VectorAuxKernelType
   {
@@ -69,7 +69,7 @@ protected:
   /**
    * This method will iterate through the variable names. If the variable associated with the name
    * happens to be a vector variable, the standard variables for its components will be created.
-   * Returns a vector containing the updated varaible names (adding all new standard variables and
+   * Returns a vector containing the updated variable names (adding all new standard variables and
    * removing any vector variables).
    */
   template <class VariableNameClassType>
@@ -78,7 +78,7 @@ protected:
                    std::vector<VariableNameClassType> & input_variable_names);
 
   /**
-   * This method checks is source_type is a valid parameter. If it is and there is at least one
+   * This method verifies that source_type is a valid parameter. If it is and there is at least one
    * vector variable supplied then we need to duplicate its source type for the new standard
    * variable components.
    */
