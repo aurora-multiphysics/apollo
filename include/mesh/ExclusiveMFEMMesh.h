@@ -60,8 +60,15 @@ public:
   /**
    * Override in derived classes.
    */
-  virtual inline int getMFEMNodeID(const int libmesh_node_id) { return 0; }
-  virtual inline int getLibmeshNodeID(const int mfem_node_id) { return 0; }
+  virtual inline int getMFEMNodeID(const int libmesh_node_id) const
+  {
+    mooseError("Not implemented.");
+  }
+
+  virtual inline int getLibmeshNodeID(const int mfem_node_id) const
+  {
+    mooseError("Not implemented.");
+  }
 
 protected:
   /**
