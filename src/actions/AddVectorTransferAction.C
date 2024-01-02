@@ -131,7 +131,6 @@ AddVectorTransferAction::getToProblem() const
   mooseError("The FEProblemBase could not be located.");
 }
 
-// TODO: - why is it this way around?
 FEProblemBase &
 AddVectorTransferAction::getFromProblem() const
 {
@@ -282,7 +281,7 @@ AddVectorTransferAction::convertSourceTypes()
 
   // 2. If there are no vector source variables, then set to the current source type.
   // NB: ensure we call accessor.
-  if (getVectorSourceNames().size() == 0)
+  if (getVectorSourceNames().empty())
   {
     _source_type_converted = current_source_types;
     return;
