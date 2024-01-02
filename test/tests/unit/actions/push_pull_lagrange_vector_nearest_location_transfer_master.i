@@ -11,12 +11,12 @@
 []
 
 [AuxVariables]
-  [sent_vector]
+  [received_vector]
     family = LAGRANGE_VEC
     order = FIRST
   []
 
-  [received_vector]
+  [expected_vector]
     family = LAGRANGE_VEC
     order = FIRST
   []
@@ -32,10 +32,9 @@
 []
 
 [ICs]
-  # 1. Set the sent vector.
   [set_vector]
     type = VectorFunctionIC
-    variable = sent_vector
+    variable = expected_vector
     function = set_vector
   []
 []
@@ -50,37 +49,37 @@
 []
 
 [VectorTransfers]
-  # 2. Push sent vector to subapp.
+  # Transfer expected variable to subapp.
   [push]
     type = MultiAppGeneralFieldNearestLocationTransfer
-    to_multi_app = sub_app
-    source_variable = sent_vector
-    variable = received_vector_subapp
+    to_multi_app = sub_app 
+    source_variable = expected_vector 
+    variable = received_vector_sub_app
   []
 
-  # 3. Pull vector from subapp.
+  # Transfer back.
   [pull]
     type = MultiAppGeneralFieldNearestLocationTransfer
     from_multi_app = sub_app
-    source_variable = received_vector_subapp
+    source_variable = received_vector_sub_app
     variable = received_vector
   []
 []
 
 [Postprocessors]
-  # 4. Compare sent vector and received vector.
   [vector_l2_difference]
     type = ElementVectorL2Difference
-    variable = sent_vector
-    other_variable = received_vector
+    variable = received_vector
+    other_variable = expected_vector
+    execute_on = timestep_end
   []
 []
 
 [Executioner]
-  type       = Transient
-  dt         = 1.0
+  type = Transient
+  dt = 1.0
   start_time = 0.0
-  end_time   = 1.0
+  end_time = 1.0
 []
 
 [Outputs]

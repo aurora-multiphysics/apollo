@@ -12,23 +12,23 @@
 
 [AuxVariables]
   [received_vector_sub_app]
-    family = LAGRANGE_VEC
-    order = FIRST
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
   [received_vector_sub_app_x]
-    family = LAGRANGE
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 
   [received_vector_sub_app_y]
-    family = LAGRANGE
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 
   [received_vector_sub_app_z]
-    family = LAGRANGE
-    order = FIRST
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 

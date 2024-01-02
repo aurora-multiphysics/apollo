@@ -12,13 +12,13 @@
 
 [AuxVariables]
   [received_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 
   [expected_vector]
-    family = LAGRANGE_VEC
-    order = FIRST
+    family = MONOMIAL_VEC
+    order = CONSTANT
   []
 []
 
@@ -43,16 +43,25 @@
   [sub_app]
     type = TransientMultiApp
     positions = '0 0 0'
-    input_files = 'pull_lagrange_vector_copy_transfer_subapp.i'
+    input_files = 'push_pull_monomial_vector_nearest_location_transfer_subapp.i'
     execute_on = timestep_begin
   []
 []
 
 [VectorTransfers]
+  # Transfer expected variable to subapp.
+  [push]
+    type = MultiAppGeneralFieldNearestLocationTransfer
+    to_multi_app = sub_app 
+    source_variable = expected_vector 
+    variable = received_vector_sub_app
+  []
+
+  # Transfer back.
   [pull]
-    type = MultiAppCopyTransfer
+    type = MultiAppGeneralFieldNearestLocationTransfer
     from_multi_app = sub_app
-    source_variable = sent_vector
+    source_variable = received_vector_sub_app
     variable = received_vector
   []
 []
@@ -62,6 +71,7 @@
     type = ElementVectorL2Difference
     variable = received_vector
     other_variable = expected_vector
+    execute_on = timestep_end
   []
 []
 
