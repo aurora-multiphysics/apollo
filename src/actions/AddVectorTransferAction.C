@@ -449,14 +449,14 @@ AddVectorTransferAction::buildInputParametersForComponents(
     mooseError("'", vector_variable.name(), "' is not a supported vector variable.");
   }
 
-  const FEType & vector_type = vector_variable.feType();
+  const auto vector_order = getVariableOrder(vector_variable);
+  const auto vector_family = getVariableFamily(vector_variable);
 
   InputParameters params = _factory.getValidParams("MooseVariable");
 
   // Should be same order as vector variable but obviously of a different family.
-  params.set<MooseEnum>("order") =
-      Utility::enum_to_string<Order>(OrderWrapper{vector_type.order.get_order()});
-  params.set<MooseEnum>("family") = vector_type.family == LAGRANGE_VEC ? "LAGRANGE" : "MONOMIAL";
+  params.set<MooseEnum>("order") = Utility::enum_to_string<Order>(OrderWrapper{vector_order});
+  params.set<MooseEnum>("family") = (vector_family == LAGRANGE_VEC ? "LAGRANGE" : "MONOMIAL");
 
   return params;
 }
@@ -464,8 +464,8 @@ AddVectorTransferAction::buildInputParametersForComponents(
 bool
 AddVectorTransferAction::isSupportedVectorVariable(MooseVariableFEBase & variable) const
 {
-  const auto family = variable.feType().family;
-  const auto order = variable.order();
+  const auto family = getVariableFamily(variable);
+  const auto order = getVariableOrder(variable);
 
   return (family == LAGRANGE_VEC || (family == MONOMIAL_VEC && order == CONSTANT));
 }
@@ -473,8 +473,8 @@ AddVectorTransferAction::isSupportedVectorVariable(MooseVariableFEBase & variabl
 bool
 AddVectorTransferAction::isSupportedComponentVariable(MooseVariableFEBase & variable) const
 {
-  const auto family = variable.feType().family;
-  const auto order = variable.order();
+  const auto family = getVariableFamily(variable);
+  const auto order = getVariableOrder(variable);
 
   return (family == LAGRANGE || (family == MONOMIAL && order == CONSTANT));
 }

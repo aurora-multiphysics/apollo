@@ -157,6 +157,12 @@ protected:
   inline std::string buildVectorComponentName(const std::string & vector_name,
                                               VectorComponent component) const;
 
+  /**
+   * Returns family/order of variable.
+   */
+  inline libMesh::FEFamily getVariableFamily(const MooseVariableFEBase & variable) const;
+  inline libMesh::Order getVariableOrder(const MooseVariableFEBase & variable) const;
+
 private:
   // Names of all source vector variables.
   std::set<std::string> _vector_source_names;
@@ -187,4 +193,16 @@ AddVectorTransferAction::getAllComponents() const
       VectorComponent::X, VectorComponent::Y, VectorComponent::Z};
 
   return components;
+}
+
+inline libMesh::FEFamily
+AddVectorTransferAction::getVariableFamily(const MooseVariableFEBase & variable) const
+{
+  return variable.feType().family;
+}
+
+inline libMesh::Order
+AddVectorTransferAction::getVariableOrder(const MooseVariableFEBase & variable) const
+{
+  return variable.order();
 }
