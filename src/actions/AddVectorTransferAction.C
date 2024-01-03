@@ -1,4 +1,7 @@
 #include "AddVectorTransferAction.h"
+#include "ExecuteMooseObjectWarehouse.h"
+#include "AuxiliarySystem.h"
+#include "AuxKernel.h"
 #include "FEProblem.h"
 
 registerMooseAction("MooseApp", AddVectorTransferAction, "add_vector_transfer");
@@ -29,8 +32,22 @@ AddVectorTransferAction::act()
   getObjectParams().set<std::vector<VariableName>>("source_variable") = getFromVarNamesConverted();
   getObjectParams().set<std::vector<AuxVariableName>>("variable") = getToVarNamesConverted();
 
+  // TODO: - need a static method to get the name for the standard variable class type.
+  std::string wrapper_type;
+
+  if (_type == "MultiAppGeneralFieldNearestLocationTransfer")
+    wrapper_type = "MultiAppGeneralFieldNearestLocationTransferVector";
+  else
+    mooseError("Not currently handling type ", _type);
+
+  // TODO: - add additional types.
+
   // Add transfer using the modified input parameters.
-  _problem->addTransfer(_type, _name, getObjectParams());
+
+  // Set a reference to this class.
+  getObjectParams().set<AddVectorTransferAction *>("add_vector_transfer_action") = this;
+
+  _problem->addTransfer(wrapper_type, _name, getObjectParams());
 }
 
 const std::shared_ptr<MultiApp>
@@ -197,11 +214,13 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
    */
   if (isPushTransfer())
   {
-    params.set<ExecFlagEnum>("execute_on") = "timestep_begin MULTIAPP_FIXED_POINT_BEGIN";
+    params.set<ExecFlagEnum>("execute_on") =
+        EXEC_NONE; //"timestep_begin MULTIAPP_FIXED_POINT_BEGIN";
   }
   else if (isPullTransfer())
   {
-    params.set<ExecFlagEnum>("execute_on") = "timestep_end";
+    params.set<ExecFlagEnum>("execute_on") = EXEC_NONE;
+    //"timestep_end";
   }
   else
   {
@@ -209,6 +228,43 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
   }
 
   problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
+
+  // Get the auxkernel and add references to a vector.
+  // TODO: - extract-out to a method.
+  auto & aux_system = problem.getAuxiliarySystem();
+
+  // The auxiliary system will store the VectorAuxKernel derived auxkernels in the
+  // nodal_vec_aux_storage or the _elemental_vec_aux_storage.
+  auto & nodal_vector_aux_warehouse = aux_system.nodalVectorAuxWarehouse();
+
+  // TODO: - check here as well if Monomial.
+  // auto & elemental_vector_aux_warehouse = auxiliary_system.getElementalVectorAuxWarehouse();
+
+  // Attempt to locate.
+  auto object_shared_ptr = nodal_vector_aux_warehouse.getObject(unique_aux_kernel_name);
+  if (!object_shared_ptr)
+  {
+    mooseError(
+        "Failed to find VectorAuxKernel derived object with name '", unique_aux_kernel_name, "'.");
+  }
+
+  // Don't attempt to cast to specific class. Leave as VectorAuxKernel base. Should call correct
+  // virtual method. Add.
+  VectorAuxKernel * auxkernel = object_shared_ptr.get();
+
+  if (type == VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER)
+  {
+    _prepare_vector_for_transfer_auxkernels.push_back(auxkernel);
+  }
+  else if (type == VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER)
+  {
+    _recover_vector_post_transfer_auxkernels.push_back(auxkernel);
+  }
+  else
+  {
+    mooseError(
+        "Not handling currently"); // TODO: - proper error message; switch to switch statement.
+  }
 }
 
 void

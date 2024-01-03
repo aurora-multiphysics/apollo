@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MooseObjectAction.h"
+#include "AuxiliarySystem.h"
 
 class AddVectorTransferAction : public MooseObjectAction
 {
@@ -10,6 +11,17 @@ public:
   AddVectorTransferAction(const InputParameters & params);
 
   virtual void act() override;
+
+  //   TEST: make anything that needs this a friend class.
+  inline const std::vector<VectorAuxKernel *> & getPreTransferAuxKernels() const
+  {
+    return _prepare_vector_for_transfer_auxkernels;
+  }
+
+  inline const std::vector<VectorAuxKernel *> & getPostTransferAuxKernels() const
+  {
+    return _recover_vector_post_transfer_auxkernels;
+  }
 
 protected:
   /**
@@ -164,6 +176,9 @@ protected:
   inline libMesh::Order getVariableOrder(const MooseVariableFEBase & variable) const;
 
 private:
+  std::vector<VectorAuxKernel *> _prepare_vector_for_transfer_auxkernels;
+  std::vector<VectorAuxKernel *> _recover_vector_post_transfer_auxkernels;
+
   // Names of all source vector variables.
   std::set<std::string> _vector_source_names;
 
