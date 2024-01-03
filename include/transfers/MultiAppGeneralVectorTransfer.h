@@ -3,13 +3,8 @@
 /**
  * Include headers of all MultiApp Transfers we would like.
  */
-#include "MultiAppFieldTransfer.h"
-#include "MultiAppTransfer.h"
-#include "MultiAppCopyTransfer.h"
-#include "MooseVariableFEBase.h"
 #include "MultiAppGeneralFieldNearestLocationTransfer.h"
-#include "AddVectorTransferAction.h"
-#include "Factory.h"
+#include "AuxKernel.h"
 
 // Forwards declaration.
 template <typename MultiAppTransferClassType>
@@ -32,13 +27,19 @@ public:
   void execute() override final;
 
 protected:
-  inline const AddVectorTransferAction & getAddVectorTransferAction() const
-  {
-    return *_add_vector_transfer_action;
-  }
-
   void computeAuxKernels(const std::vector<VectorAuxKernel *> & vector_auxkernels) const;
 
+  inline const std::vector<VectorAuxKernel *> & getPreTransferAuxKernels() const
+  {
+    return _pre_transfer_auxkernels;
+  }
+
+  inline const std::vector<VectorAuxKernel *> & getPostTransferAuxKernels() const
+  {
+    return _post_transfer_auxkernels;
+  }
+
 private:
-  const AddVectorTransferAction * _add_vector_transfer_action;
+  const std::vector<VectorAuxKernel *> _pre_transfer_auxkernels;
+  const std::vector<VectorAuxKernel *> _post_transfer_auxkernels;
 };

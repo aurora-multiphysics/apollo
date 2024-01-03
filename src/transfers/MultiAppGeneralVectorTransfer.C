@@ -1,11 +1,12 @@
-#include "MultiAppGeneralVectorTransfer.h" // Remove unused headers.
+#include "MultiAppGeneralVectorTransfer.h" // TODO: - Remove unused headers.
 #include "FEProblemBase.h"
 #include "SystemBase.h"
-#include "VectorVariableFromComponentsAux.h"
-#include "VectorVariableToComponentsAux.h"
 #include "Moose.h"
 #include "AuxiliarySystem.h"
 #include "MooseObject.h"
+
+#include "VectorVariableFromComponentsAux.h"
+#include "VectorVariableToComponentsAux.h"
 
 /**
  * Register all Moose objects that we would like here.
@@ -18,8 +19,13 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::validParams()
 {
   InputParameters params = MultiAppTransferClassType::validParams();
 
-  params.addRequiredParam<AddVectorTransferAction *>("add_vector_transfer_action",
-                                                     "Pointer to vector transfer action class.");
+  params.addRequiredParam<std::vector<VectorAuxKernel *>>(
+      "pre_transfer_auxkernels",
+      "Vector auxkernels called to update each vector's component variables before a transfer.");
+
+  params.addRequiredParam<std::vector<VectorAuxKernel *>>(
+      "post_transfer_auxkernels",
+      "Vector auxkernels called to update a vector from its component variables after a transfer.");
 
   // Combine class description for original class with template class.
   params.addClassDescription(params.getClassDescription() + " (allows vector variables).");
@@ -31,8 +37,10 @@ template <typename MultiAppTransferClassType>
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::MultiAppVectorTransferTemplate(
     const InputParameters & parameters)
   : MultiAppTransferClassType(parameters),
-    _add_vector_transfer_action(
-        parameters.get<AddVectorTransferAction *>("add_vector_transfer_action"))
+    _pre_transfer_auxkernels(
+        parameters.get<std::vector<VectorAuxKernel *>>("pre_transfer_auxkernels")),
+    _post_transfer_auxkernels(
+        parameters.get<std::vector<VectorAuxKernel *>>("post_transfer_auxkernels"))
 {
 }
 
@@ -42,14 +50,14 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
 {
   // Run through the pre-transfer vector aux-kernels and call the compute() methods. This will
   // ensure that vector components are updated pre-transfer.
-  computeAuxKernels(getAddVectorTransferAction().getPreTransferAuxKernels());
+  computeAuxKernels(getPreTransferAuxKernels());
 
   // Call execute on inherited class which will work on standard variables.
   MultiAppTransferClassType::execute();
 
   // Run through the post-transfer vector aux-kernels and call the compute() methods. This will
   // rebuild the vectors from their components.
-  computeAuxKernels(getAddVectorTransferAction().getPostTransferAuxKernels());
+  computeAuxKernels(getPostTransferAuxKernels());
 }
 
 template <typename MultiAppTransferClassType>

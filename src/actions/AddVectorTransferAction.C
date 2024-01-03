@@ -45,7 +45,13 @@ AddVectorTransferAction::act()
   // Add transfer using the modified input parameters.
 
   // Set a reference to this class.
-  getObjectParams().set<AddVectorTransferAction *>("add_vector_transfer_action") = this;
+  auto pre_transfer_auxkernels = getPreTransferAuxKernels();
+  auto post_transfer_auxkernels = getPostTransferAuxKernels();
+
+  getObjectParams().set<decltype(pre_transfer_auxkernels)>("pre_transfer_auxkernels") =
+      pre_transfer_auxkernels;
+  getObjectParams().set<decltype(post_transfer_auxkernels)>("post_transfer_auxkernels") =
+      post_transfer_auxkernels;
 
   _problem->addTransfer(wrapper_type, _name, getObjectParams());
 }

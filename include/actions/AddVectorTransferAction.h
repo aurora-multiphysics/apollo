@@ -12,17 +12,6 @@ public:
 
   virtual void act() override;
 
-  //   TEST: make anything that needs this a friend class.
-  inline const std::vector<VectorAuxKernel *> & getPreTransferAuxKernels() const
-  {
-    return _prepare_vector_for_transfer_auxkernels;
-  }
-
-  inline const std::vector<VectorAuxKernel *> & getPostTransferAuxKernels() const
-  {
-    return _recover_vector_post_transfer_auxkernels;
-  }
-
 protected:
   /**
    * Returns a shared pointer to or from the multiapp.
@@ -174,6 +163,17 @@ protected:
    */
   inline libMesh::FEFamily getVariableFamily(const MooseVariableFEBase & variable) const;
   inline libMesh::Order getVariableOrder(const MooseVariableFEBase & variable) const;
+
+  // TODO: - add documentation.
+  inline const std::vector<VectorAuxKernel *> & getPreTransferAuxKernels() const
+  {
+    return _prepare_vector_for_transfer_auxkernels;
+  }
+
+  inline const std::vector<VectorAuxKernel *> & getPostTransferAuxKernels() const
+  {
+    return _recover_vector_post_transfer_auxkernels;
+  }
 
 private:
   std::vector<VectorAuxKernel *> _prepare_vector_for_transfer_auxkernels;
