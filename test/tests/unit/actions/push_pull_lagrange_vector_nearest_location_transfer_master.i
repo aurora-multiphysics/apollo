@@ -71,7 +71,7 @@
     type = ElementVectorL2Difference
     variable = received_vector
     other_variable = expected_vector
-    execute_on = timestep_end
+    execute_on = final
   []
 []
 
