@@ -178,6 +178,21 @@ MFEMProblem::addMaterial(const std::string & kernel_name,
     int block = std::stoi(mfem_material.blocks[bid]);
     hephaestus::Subdomain mfem_subdomain(name, block);
     mfem_material.storeCoefficients(mfem_subdomain);
+
+    // Hotfix to ensure coupled coeffs get properly initialised in Hephaestus.
+    // To replaced by addAuxkernels?
+    for (auto coef = mfem_subdomain.scalar_coefficients.begin();
+         coef != mfem_subdomain.scalar_coefficients.end();
+         ++coef)
+    {
+      hephaestus::CoupledCoefficient * _coupled_coef =
+          dynamic_cast<hephaestus::CoupledCoefficient *>(coef->second);
+      if (_coupled_coef != NULL)
+      {
+        mfem_problem_builder->AddAuxSolver(coef->first, _coupled_coef, false);
+      }
+    }
+
     _coefficients.subdomains.push_back(mfem_subdomain);
   }
 }
@@ -201,14 +216,6 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMCoefficient * mfem_coef(&getUserObject<MFEMCoefficient>(name));
   _coefficients.scalars.Register(name, mfem_coef->getCoefficient(), false);
-
-  // Add associated auxsolvers for CoupledCoefficients
-  hephaestus::CoupledCoefficient * _coupled_coef =
-      dynamic_cast<hephaestus::CoupledCoefficient *>(_coefficients.scalars.Get(name));
-  if (_coupled_coef != NULL)
-  {
-    mfem_problem_builder->AddAuxSolver(name, _coupled_coef, false);
-  }
 }
 
 void
