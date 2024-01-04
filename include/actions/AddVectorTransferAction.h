@@ -159,6 +159,11 @@ protected:
                                               VectorComponent component) const;
 
   /**
+   * Creates the type name of the transfer suitable for vector variables.
+   */
+  inline std::string buildVectorTransferTypeName(const std::string & transfer_type) const;
+
+  /**
    * Returns family/order of variable.
    */
   inline libMesh::FEFamily getVariableFamily(const MooseVariableFEBase & variable) const;
@@ -198,6 +203,12 @@ AddVectorTransferAction::buildVectorComponentName(const std::string & vector_nam
                                                   VectorComponent component) const
 {
   return (vector_name + buildVectorComponentExtension(component));
+}
+
+inline std::string
+AddVectorTransferAction::buildVectorTransferTypeName(const std::string & transfer_type) const
+{
+  return (transfer_type + "Vector");
 }
 
 inline std::array<AddVectorTransferAction::VectorComponent, 3>

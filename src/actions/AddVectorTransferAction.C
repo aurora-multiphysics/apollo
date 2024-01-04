@@ -32,18 +32,6 @@ AddVectorTransferAction::act()
   getObjectParams().set<std::vector<VariableName>>("source_variable") = getFromVarNamesConverted();
   getObjectParams().set<std::vector<AuxVariableName>>("variable") = getToVarNamesConverted();
 
-  // TODO: - need a static method to get the name for the standard variable class type.
-  std::string wrapper_type;
-
-  if (_type == "MultiAppGeneralFieldNearestLocationTransfer")
-    wrapper_type = "MultiAppGeneralFieldNearestLocationTransferVector";
-  else
-    mooseError("Not currently handling type ", _type);
-
-  // TODO: - add additional types.
-
-  // Add transfer using the modified input parameters.
-
   // Set a reference to this class.
   auto pre_transfer_auxkernels = getPreTransferAuxKernels();
   auto post_transfer_auxkernels = getPostTransferAuxKernels();
@@ -53,7 +41,8 @@ AddVectorTransferAction::act()
   getObjectParams().set<decltype(post_transfer_auxkernels)>("post_transfer_auxkernels") =
       post_transfer_auxkernels;
 
-  _problem->addTransfer(wrapper_type, _name, getObjectParams());
+  // Create the transfer using the wrapped transfer (which modifies the execute method).
+  _problem->addTransfer(buildVectorTransferTypeName(_type), _name, getObjectParams());
 }
 
 const std::shared_ptr<MultiApp>
@@ -218,20 +207,8 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
    * Case 1: "Push problem" --> we need to execute just before we start running the subapp.
    * Case 2: "Pull problem" --> we need to execute when we've finished running the subapp.
    */
-  if (isPushTransfer())
-  {
-    params.set<ExecFlagEnum>("execute_on") =
-        EXEC_NONE; //"timestep_begin MULTIAPP_FIXED_POINT_BEGIN";
-  }
-  else if (isPullTransfer())
-  {
-    params.set<ExecFlagEnum>("execute_on") = EXEC_NONE;
-    //"timestep_end";
-  }
-  else
-  {
-    mooseError("Unsupported transfer direction specified.");
-  }
+  params.set<ExecFlagEnum>("execute_on") =
+      EXEC_NONE; // NB: - called in templated Transfer directly.
 
   problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
 

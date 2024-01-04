@@ -3,18 +3,22 @@
 /**
  * Include headers of all MultiApp Transfers we would like.
  */
-#include "MultiAppGeneralFieldNearestLocationTransfer.h"
 #include "AuxKernel.h"
 
 // Forwards declaration.
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate;
 
+class MultiAppGeneralFieldNearestLocationTransfer;
+class MultiAppNearestNodeTransfer;
+
 /**
  * Create all transfer types using template here. Don't forget to register them in .C file.
  */
 typedef MultiAppVectorTransferTemplate<MultiAppGeneralFieldNearestLocationTransfer>
     MultiAppGeneralFieldNearestLocationTransferVector;
+typedef MultiAppVectorTransferTemplate<MultiAppNearestNodeTransfer>
+    MultiAppNearestNodeTransferVector;
 
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate : public MultiAppTransferClassType

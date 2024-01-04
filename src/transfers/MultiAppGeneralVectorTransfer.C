@@ -5,6 +5,9 @@
 #include "AuxiliarySystem.h"
 #include "MooseObject.h"
 
+#include "MultiAppGeneralFieldNearestLocationTransfer.h"
+#include "MultiAppNearestNodeTransfer.h"
+
 #include "VectorVariableFromComponentsAux.h"
 #include "VectorVariableToComponentsAux.h"
 
@@ -12,6 +15,7 @@
  * Register all Moose objects that we would like here.
  */
 registerMooseObject("MooseApp", MultiAppGeneralFieldNearestLocationTransferVector);
+registerMooseObject("MooseApp", MultiAppNearestNodeTransferVector);
 
 template <typename MultiAppTransferClassType>
 InputParameters
