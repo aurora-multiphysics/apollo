@@ -1,4 +1,5 @@
 #include "VectorVariableToComponentsAux.h"
+#include "ApolloVectorTransferFlags.h"
 
 registerMooseObject("MooseApp", VectorVariableToComponentsAux);
 
@@ -6,6 +7,9 @@ InputParameters
 VectorVariableToComponentsAux::validParams()
 {
   InputParameters params = WritableVectorAuxKernel::validParams();
+
+  ExecFlagEnum & exec = params.set<ExecFlagEnum>("execute_on");
+  exec.addAvailableFlags(ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
 
   params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
   params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
