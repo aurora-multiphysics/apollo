@@ -4,6 +4,7 @@
  * Include headers of all MultiApp Transfers we would like.
  */
 #include "AuxKernel.h"
+#include "AuxiliarySystem.h"
 
 // Forwards declaration.
 template <typename MultiAppTransferClassType>
@@ -11,6 +12,7 @@ class MultiAppVectorTransferTemplate;
 
 class MultiAppGeneralFieldNearestLocationTransfer;
 class MultiAppNearestNodeTransfer;
+class MultiAppCopyTransfer; // NB: CopyTransfer can handle vector variables.
 
 /**
  * Create all transfer types using template here. Don't forget to register them in .C file.
@@ -19,6 +21,7 @@ typedef MultiAppVectorTransferTemplate<MultiAppGeneralFieldNearestLocationTransf
     MultiAppGeneralFieldNearestLocationTransferVector;
 typedef MultiAppVectorTransferTemplate<MultiAppNearestNodeTransfer>
     MultiAppNearestNodeTransferVector;
+typedef MultiAppVectorTransferTemplate<MultiAppCopyTransfer> MultiAppCopyTransferVector;
 
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate : public MultiAppTransferClassType
@@ -31,19 +34,10 @@ public:
   void execute() override final;
 
 protected:
-  void computeAuxKernels(const std::vector<VectorAuxKernel *> & vector_auxkernels) const;
-
-  inline const std::vector<VectorAuxKernel *> & getPreTransferAuxKernels() const
-  {
-    return _pre_transfer_auxkernels;
-  }
-
-  inline const std::vector<VectorAuxKernel *> & getPostTransferAuxKernels() const
-  {
-    return _post_transfer_auxkernels;
-  }
+  inline AuxiliarySystem & getFromAuxSystem() const { return _from_aux_system; }
+  inline AuxiliarySystem & getToAuxSystem() const { return _to_aux_system; }
 
 private:
-  const std::vector<VectorAuxKernel *> _pre_transfer_auxkernels;
-  const std::vector<VectorAuxKernel *> _post_transfer_auxkernels;
+  AuxiliarySystem & _from_aux_system;
+  AuxiliarySystem & _to_aux_system;
 };

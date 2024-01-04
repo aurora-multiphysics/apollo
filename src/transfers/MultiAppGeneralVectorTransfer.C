@@ -7,15 +7,19 @@
 
 #include "MultiAppGeneralFieldNearestLocationTransfer.h"
 #include "MultiAppNearestNodeTransfer.h"
+#include "MultiAppCopyTransfer.h"
 
 #include "VectorVariableFromComponentsAux.h"
 #include "VectorVariableToComponentsAux.h"
+
+#include "ApolloVectorTransferFlags.h"
 
 /**
  * Register all Moose objects that we would like here.
  */
 registerMooseObject("MooseApp", MultiAppGeneralFieldNearestLocationTransferVector);
 registerMooseObject("MooseApp", MultiAppNearestNodeTransferVector);
+registerMooseObject("MooseApp", MultiAppCopyTransferVector);
 
 template <typename MultiAppTransferClassType>
 InputParameters
@@ -23,13 +27,11 @@ MultiAppVectorTransferTemplate<MultiAppTransferClassType>::validParams()
 {
   InputParameters params = MultiAppTransferClassType::validParams();
 
-  params.addRequiredParam<std::vector<VectorAuxKernel *>>(
-      "pre_transfer_auxkernels",
-      "Vector auxkernels called to update each vector's component variables before a transfer.");
-
-  params.addRequiredParam<std::vector<VectorAuxKernel *>>(
-      "post_transfer_auxkernels",
-      "Vector auxkernels called to update a vector from its component variables after a transfer.");
+  params.addRequiredParam<AuxiliarySystem *>(
+      "from_aux_system",
+      "The auxiliary system for the problem we are transferrring variables from.");
+  params.addRequiredParam<AuxiliarySystem *>(
+      "to_aux_system", "The auxiliary system for the problem we are transferring variables to.");
 
   // Combine class description for original class with template class.
   params.addClassDescription(params.getClassDescription() + " (allows vector variables).");
@@ -41,10 +43,8 @@ template <typename MultiAppTransferClassType>
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::MultiAppVectorTransferTemplate(
     const InputParameters & parameters)
   : MultiAppTransferClassType(parameters),
-    _pre_transfer_auxkernels(
-        parameters.get<std::vector<VectorAuxKernel *>>("pre_transfer_auxkernels")),
-    _post_transfer_auxkernels(
-        parameters.get<std::vector<VectorAuxKernel *>>("post_transfer_auxkernels"))
+    _from_aux_system(*parameters.get<AuxiliarySystem *>("from_aux_system")),
+    _to_aux_system(*parameters.get<AuxiliarySystem *>("to_aux_system"))
 {
 }
 
@@ -52,28 +52,12 @@ template <typename MultiAppTransferClassType>
 void
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
 {
-  // Run through the pre-transfer vector aux-kernels and call the compute() methods. This will
-  // ensure that vector components are updated pre-transfer.
-  computeAuxKernels(getPreTransferAuxKernels());
+  // Update all components of the vector variables for be transferred.
+  getFromAuxSystem().compute(ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
 
   // Call execute on inherited class which will work on standard variables.
   MultiAppTransferClassType::execute();
 
-  // Run through the post-transfer vector aux-kernels and call the compute() methods. This will
-  // rebuild the vectors from their components.
-  computeAuxKernels(getPostTransferAuxKernels());
-}
-
-template <typename MultiAppTransferClassType>
-void
-MultiAppVectorTransferTemplate<MultiAppTransferClassType>::computeAuxKernels(
-    const std::vector<VectorAuxKernel *> & vector_auxkernels) const
-{
-  for (auto * vector_aux_kernel_ptr : vector_auxkernels)
-  {
-    std::cout << "Now executing auxkernel " << vector_aux_kernel_ptr->name() << std::endl;
-
-    if (vector_aux_kernel_ptr)
-      vector_aux_kernel_ptr->compute();
-  }
+  // Rebuild all vector variables from their components.
+  getToAuxSystem().compute(ApolloApp::EXEC_RECOVER_VECTOR_POST_TRANSFER);
 }
