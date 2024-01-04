@@ -4,6 +4,8 @@
 #include "AuxKernel.h"
 #include "FEProblem.h"
 
+#include "ApolloVectorTransferFlags.h"
+
 registerMooseAction("MooseApp", AddVectorTransferAction, "add_vector_transfer");
 
 InputParameters
@@ -32,14 +34,9 @@ AddVectorTransferAction::act()
   getObjectParams().set<std::vector<VariableName>>("source_variable") = getFromVarNamesConverted();
   getObjectParams().set<std::vector<AuxVariableName>>("variable") = getToVarNamesConverted();
 
-  // Set a reference to this class.
-  auto pre_transfer_auxkernels = getPreTransferAuxKernels();
-  auto post_transfer_auxkernels = getPostTransferAuxKernels();
-
-  getObjectParams().set<decltype(pre_transfer_auxkernels)>("pre_transfer_auxkernels") =
-      pre_transfer_auxkernels;
-  getObjectParams().set<decltype(post_transfer_auxkernels)>("post_transfer_auxkernels") =
-      post_transfer_auxkernels;
+  // Add requried pointers to the auxiliary systems of both the fromProblem and the toProblem.
+  getObjectParams().set<AuxiliarySystem *>("from_aux_system") = &getFromAuxSystem();
+  getObjectParams().set<AuxiliarySystem *>("to_aux_system") = &getToAuxSystem();
 
   // Create the transfer using the wrapped transfer (which modifies the execute method).
   _problem->addTransfer(buildVectorTransferTypeName(_type), _name, getObjectParams());
@@ -168,6 +165,18 @@ AddVectorTransferAction::getFromProblem() const
   mooseError("The FEProblemBase could not be located.");
 }
 
+AuxiliarySystem &
+AddVectorTransferAction::getFromAuxSystem() const
+{
+  return getFromProblem().getAuxiliarySystem();
+}
+
+AuxiliarySystem &
+AddVectorTransferAction::getToAuxSystem() const
+{
+  return getToProblem().getAuxiliarySystem();
+}
+
 void
 AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
                                             std::string & vector_name,
@@ -207,47 +216,14 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
    * Case 1: "Push problem" --> we need to execute just before we start running the subapp.
    * Case 2: "Pull problem" --> we need to execute when we've finished running the subapp.
    */
-  params.set<ExecFlagEnum>("execute_on") =
-      EXEC_NONE; // NB: - called in templated Transfer directly.
+
+  // NB: - tidy this bit up. These custom flags will be required later.
+  if (type == VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER)
+    params.set<ExecFlagEnum>("execute_on") = ApolloApp::EXEC_RECOVER_VECTOR_POST_TRANSFER;
+  else
+    params.set<ExecFlagEnum>("execute_on") = ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER;
 
   problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
-
-  // Get the auxkernel and add references to a vector.
-  // TODO: - extract-out to a method.
-  auto & aux_system = problem.getAuxiliarySystem();
-
-  // The auxiliary system will store the VectorAuxKernel derived auxkernels in the
-  // nodal_vec_aux_storage or the _elemental_vec_aux_storage.
-  auto & nodal_vector_aux_warehouse = aux_system.nodalVectorAuxWarehouse();
-
-  // TODO: - check here as well if Monomial.
-  // auto & elemental_vector_aux_warehouse = auxiliary_system.getElementalVectorAuxWarehouse();
-
-  // Attempt to locate.
-  auto object_shared_ptr = nodal_vector_aux_warehouse.getObject(unique_aux_kernel_name);
-  if (!object_shared_ptr)
-  {
-    mooseError(
-        "Failed to find VectorAuxKernel derived object with name '", unique_aux_kernel_name, "'.");
-  }
-
-  // Don't attempt to cast to specific class. Leave as VectorAuxKernel base. Should call correct
-  // virtual method. Add.
-  VectorAuxKernel * auxkernel = object_shared_ptr.get();
-
-  if (type == VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER)
-  {
-    _prepare_vector_for_transfer_auxkernels.push_back(auxkernel);
-  }
-  else if (type == VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER)
-  {
-    _recover_vector_post_transfer_auxkernels.push_back(auxkernel);
-  }
-  else
-  {
-    mooseError(
-        "Not handling currently"); // TODO: - proper error message; switch to switch statement.
-  }
 }
 
 void
