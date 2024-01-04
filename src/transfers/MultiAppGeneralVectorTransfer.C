@@ -43,10 +43,10 @@ template <typename MultiAppTransferClassType>
 void
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
 {
-  // Update all components of the vector variables for be transferred.
+  // Update all components of the vector variables.
   getFromAuxSystem().compute(ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
 
-  // Call execute on inherited class which will work on standard variables.
+  // Call execute on inherited class which will work on component variables.
   MultiAppTransferClassType::execute();
 
   // Rebuild all vector variables from their components.
