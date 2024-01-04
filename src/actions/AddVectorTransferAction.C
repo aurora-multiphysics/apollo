@@ -1,5 +1,4 @@
 #include "AddVectorTransferAction.h"
-#include "ExecuteMooseObjectWarehouse.h"
 #include "AuxiliarySystem.h"
 #include "AuxKernel.h"
 #include "FEProblem.h"
@@ -34,7 +33,7 @@ AddVectorTransferAction::act()
   getObjectParams().set<std::vector<VariableName>>("source_variable") = getFromVarNamesConverted();
   getObjectParams().set<std::vector<AuxVariableName>>("variable") = getToVarNamesConverted();
 
-  // Add requried pointers to the auxiliary systems of both the fromProblem and the toProblem.
+  // Add required pointers to the auxiliary systems of both the fromProblem and the toProblem.
   getObjectParams().set<AuxiliarySystem *>("from_aux_system") = &getFromAuxSystem();
   getObjectParams().set<AuxiliarySystem *>("to_aux_system") = &getToAuxSystem();
 
@@ -185,15 +184,19 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
   std::string aux_kernel_name;
   std::string unique_aux_kernel_name;
 
+  ExecFlagType exec_flag;
+
   switch (type)
   {
     case VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER:
       aux_kernel_name = "VectorVariableFromComponentsAux";
       unique_aux_kernel_name = vector_name + "_from_components";
+      exec_flag = ApolloApp::EXEC_RECOVER_VECTOR_POST_TRANSFER;
       break;
     case VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER:
       aux_kernel_name = "VectorVariableToComponentsAux";
       unique_aux_kernel_name = vector_name + "_to_components";
+      exec_flag = ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER;
       break;
     default:
       mooseError("Unsupported vector auxkernel type.");
@@ -210,18 +213,10 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
   params.set<std::vector<VariableName>>("component_z") = {
       buildVectorComponentName(vector_name, VectorComponent::Z)};
 
-  /**
-   * Note on execution times:
-   *
-   * Case 1: "Push problem" --> we need to execute just before we start running the subapp.
-   * Case 2: "Pull problem" --> we need to execute when we've finished running the subapp.
-   */
-
-  // NB: - tidy this bit up. These custom flags will be required later.
-  if (type == VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER)
-    params.set<ExecFlagEnum>("execute_on") = ApolloApp::EXEC_RECOVER_VECTOR_POST_TRANSFER;
-  else
-    params.set<ExecFlagEnum>("execute_on") = ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER;
+  // Set execution flag. This will prevent the auxkernels being called elsewhere. The auxkernels
+  // will be triggered in the template transfer class which wraps around the existing transfer
+  // class.
+  params.set<ExecFlagEnum>("execute_on") = exec_flag;
 
   problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
 }

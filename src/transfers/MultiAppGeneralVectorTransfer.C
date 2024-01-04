@@ -1,16 +1,8 @@
-#include "MultiAppGeneralVectorTransfer.h" // TODO: - Remove unused headers.
-#include "FEProblemBase.h"
-#include "SystemBase.h"
-#include "Moose.h"
+#include "MultiAppGeneralVectorTransfer.h"
 #include "AuxiliarySystem.h"
-#include "MooseObject.h"
 
 #include "MultiAppGeneralFieldNearestLocationTransfer.h"
-#include "MultiAppNearestNodeTransfer.h"
 #include "MultiAppCopyTransfer.h"
-
-#include "VectorVariableFromComponentsAux.h"
-#include "VectorVariableToComponentsAux.h"
 
 #include "ApolloVectorTransferFlags.h"
 
@@ -18,7 +10,6 @@
  * Register all Moose objects that we would like here.
  */
 registerMooseObject("MooseApp", MultiAppGeneralFieldNearestLocationTransferVector);
-registerMooseObject("MooseApp", MultiAppNearestNodeTransferVector);
 registerMooseObject("MooseApp", MultiAppCopyTransferVector);
 
 template <typename MultiAppTransferClassType>
