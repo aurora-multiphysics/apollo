@@ -411,7 +411,8 @@ void
 MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
 {
   // Sanity check:
-  mooseAssert(moose_var_ref.isNodal() == false, "Variable must not be nodal.");
+  mooseAssert(moose_var_ref.isNodal() == false,
+              "Attempted to call 'setMFEMElementalVarData' on a nodal MOOSE variable.");
 
   auto order = (unsigned int)moose_var_ref.order();
   mooseAssert((n_processors() == 1) || (n_processors() > 1 && order == CONSTANT),
@@ -456,7 +457,8 @@ MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
 void
 MFEMProblem::setMooseNodalVarData(MooseVariableFieldBase & moose_var_ref)
 {
-  mooseAssert(moose_var_ref.isNodal() == true, "Variable must be nodal.");
+  mooseAssert(moose_var_ref.isNodal() == true,
+              "Attempted to call 'setMooseNodalVarData' on a non-nodal MOOSE variable.");
 
   auto order = (unsigned int)moose_var_ref.order();
 
