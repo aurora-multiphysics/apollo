@@ -149,10 +149,10 @@ protected:
   void setMFEMElementalVarData(MooseVariableFieldBase & moose_variable);
 
   /**
-   * Called internally by setMooseVarData.
+   * Called internally by setMOOSEVarData.
    */
-  void setMooseNodalVarData(MooseVariableFieldBase & moose_variable);
-  void setMooseElementalVarData(MooseVariableFieldBase & moose_variable);
+  void setMOOSENodalVarData(MooseVariableFieldBase & moose_variable);
+  void setMOOSEElementalVarData(MooseVariableFieldBase & moose_variable);
 
   std::string _input_mesh;
   std::string _formulation_name;

@@ -323,9 +323,9 @@ MFEMProblem::setMOOSEVarData(const std::string & var_name)
   auto & moose_var_ref = getVariable(0, var_name);
 
   if (moose_var_ref.isNodal())
-    setMooseNodalVarData(moose_var_ref);
+    setMOOSENodalVarData(moose_var_ref);
   else
-    setMooseElementalVarData(moose_var_ref);
+    setMOOSEElementalVarData(moose_var_ref);
 }
 
 void
@@ -455,10 +455,10 @@ MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
 }
 
 void
-MFEMProblem::setMooseNodalVarData(MooseVariableFieldBase & moose_var_ref)
+MFEMProblem::setMOOSENodalVarData(MooseVariableFieldBase & moose_var_ref)
 {
   mooseAssert(moose_var_ref.isNodal() == true,
-              "Attempted to call 'setMooseNodalVarData' on a non-nodal MOOSE variable.");
+              "Attempted to call 'setMOOSENodalVarData' on a non-nodal MOOSE variable.");
 
   auto order = (unsigned int)moose_var_ref.order();
 
@@ -514,7 +514,7 @@ MFEMProblem::setMooseNodalVarData(MooseVariableFieldBase & moose_var_ref)
 }
 
 void
-MFEMProblem::setMooseElementalVarData(MooseVariableFieldBase & moose_var_ref)
+MFEMProblem::setMOOSEElementalVarData(MooseVariableFieldBase & moose_var_ref)
 {
   mooseAssert(moose_var_ref.isNodal() == false, "Variable must not be nodal.");
 
