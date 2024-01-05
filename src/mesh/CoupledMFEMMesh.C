@@ -449,7 +449,7 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
 
   // Iterate over all boundary IDs.
   for (int boundary_id : unique_side_boundary_ids)
-  {
+  {    
     // Get element IDs of element on boundary (and their sides that are on boundary).
     auto & boundary_element_ids = element_ids_for_boundary_id.at(boundary_id);
     auto & boundary_element_sides = side_ids_for_boundary_id.at(boundary_id);
@@ -480,10 +480,10 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
       }
 
       // Add to vector.
-      boundary_node_ids[jelement] = nodes_of_element_on_side;
+      boundary_node_ids[jelement] = std::move(nodes_of_element_on_side);
     }
 
     // Add to the map.
-    node_ids_for_boundary_id[boundary_id] = boundary_node_ids;
+    node_ids_for_boundary_id[boundary_id] = std::move(boundary_node_ids);
   }
 }
