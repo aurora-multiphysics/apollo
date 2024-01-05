@@ -199,6 +199,15 @@ CubitElementInfo::buildCubit3DElementInfo(int num_nodes_per_element)
       _face_info = getWedge6FaceInfo();
       break;
     }
+    case 18:
+    {
+      _element_type = ELEMENT_WEDGE18;
+      _order = 2;
+      _num_corner_nodes = 6;
+      _num_faces = 5;
+      _face_info = getWedge18FaceInfo();
+      break;
+    }
     case 5:
     {
       _element_type = ELEMENT_PYRAMID5;
@@ -206,6 +215,16 @@ CubitElementInfo::buildCubit3DElementInfo(int num_nodes_per_element)
       _num_corner_nodes = 5;
       _num_faces = 5;
       _face_info = getPyramid5FaceInfo();
+      break;
+    }
+    case 14:
+    {
+      _element_type = ELEMENT_PYRAMID14;
+      _order = 2;
+      _num_corner_nodes = 5;
+      _num_faces = 5;
+      _face_info = getPyramid14FaceInfo();
+      _num_corner_nodes = 5;
       break;
     }
     default:
@@ -228,6 +247,15 @@ CubitElementInfo::getWedge6FaceInfo() const
 }
 
 std::vector<CubitFaceInfo>
+CubitElementInfo::getWedge18FaceInfo() const
+{
+  CubitFaceInfo tri6 = CubitFaceInfo(CubitFaceInfo::FACE_TRI6);
+  CubitFaceInfo quad9 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD9);
+
+  return {tri6, quad9, quad9, quad9, tri6};
+}
+
+std::vector<CubitFaceInfo>
 CubitElementInfo::getPyramid5FaceInfo() const
 {
   // Refer to "cell_pyramid5.C" line 134.
@@ -236,6 +264,19 @@ CubitElementInfo::getPyramid5FaceInfo() const
   CubitFaceInfo quad4 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD4);
 
   return {tri3, tri3, tri3, tri3, quad4};
+}
+
+std::vector<CubitFaceInfo>
+CubitElementInfo::getPyramid14FaceInfo() const
+{
+  // Refer to "cell_pyramid14.h"
+  // Define Pyramid14: Quad9 base and 4 x Tri6.
+  CubitFaceInfo tri6 = CubitFaceInfo(CubitFaceInfo::FACE_TRI6);
+  CubitFaceInfo quad9 = CubitFaceInfo(CubitFaceInfo::FACE_QUAD9);
+
+  // Use same ordering as LibMesh ("cell_pyramid14.c"; line 44)
+  // front, right, back, left, base (different in MFEM!).
+  return {tri6, tri6, tri6, tri6, quad9};
 }
 
 const CubitFaceInfo &

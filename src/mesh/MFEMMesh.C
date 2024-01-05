@@ -317,11 +317,13 @@ MFEMMesh::buildMFEMElement(const int element_type, const int * vertex_ids, const
       break;
     }
     case CubitElementInfo::ELEMENT_WEDGE6:
+    case CubitElementInfo::ELEMENT_WEDGE18:
     {
       new_element = new mfem::Wedge(vertex_ids, block_id);
       break;
     }
     case CubitElementInfo::ELEMENT_PYRAMID5:
+    case CubitElementInfo::ELEMENT_PYRAMID14:
     {
       new_element = new mfem::Pyramid(vertex_ids, block_id);
       break;
@@ -403,13 +405,13 @@ MFEMMesh::handleQuadraticFESpace(
   FinalizeTopology();
 
   // Define quadratic FE space.
-  mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, 3);
+  mfem::FiniteElementCollection * finite_element_collection = new mfem::H1_FECollection(2, Dim);
 
   // NB: the specified ordering is byVDIM.
   // byVDim: XYZ, XYZ, XYZ, XYZ,...
   // byNode: XXX..., YYY..., ZZZ...
   mfem::FiniteElementSpace * finite_element_space =
-      new mfem::FiniteElementSpace(this, finite_element_collection, Dim, mfem::Ordering::byVDIM);
+      new mfem::FiniteElementSpace(this, finite_element_collection, spaceDim);
 
   Nodes = new mfem::GridFunction(finite_element_space);
   Nodes->MakeOwner(finite_element_collection); // Nodes will destroy 'finite_element_collection'
@@ -421,6 +423,11 @@ MFEMMesh::handleQuadraticFESpace(
 
   // 3D maps:
   const int mfem_to_libmesh_tet10[] = {1, 2, 3, 4, 5, 7, 8, 6, 9, 10};
+
+  // const int mfem_to_libmesh_pyramid14[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+
+  const int mfem_to_libmesh_wedge18[] = {
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 10, 11, 12, 16, 17, 18};
 
   // NB: different map used for hex27 to ReadCubit. LibMesh uses a different node
   // ordering to the Exodus/Genesis format.
@@ -458,6 +465,16 @@ MFEMMesh::handleQuadraticFESpace(
       case CubitElementInfo::ELEMENT_HEX27:
       {
         mfem_to_libmesh_map = (int *)mfem_to_libmesh_hex27;
+        break;
+      }
+      case CubitElementInfo::ELEMENT_WEDGE18:
+      {
+        mfem_to_libmesh_map = (int *)mfem_to_libmesh_wedge18;
+        break;
+      }
+      case CubitElementInfo::ELEMENT_PYRAMID14:
+      {
+        mooseError("H1_FECollection does not currently support Pyramid14.");
         break;
       }
       default:

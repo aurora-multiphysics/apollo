@@ -336,8 +336,8 @@ CoupledMFEMMesh::buildMFEMMesh()
                                               side_ids_for_boundary_id,
                                               block_ids_for_boundary_id,
                                               coordinates_for_node_id,
-                                              _libmesh_node_id_for_mfem_node_id,
-                                              _mfem_node_id_for_libmesh_node_id);
+                                              _libmesh_global_node_id_for_mfem_local_node_id,
+                                              _mfem_local_node_id_for_libmesh_global_node_id);
       break;
     }
     default:
@@ -426,16 +426,93 @@ CoupledMFEMMesh::getMeshPartitioning()
 void
 CoupledMFEMMesh::buildMFEMParMesh()
 {
-  // There are two cases:
-  // 1. construct MFEMParMesh from distributed MOOSE mesh -- partitioning array non-null.
-  // 2. construct MFEMParMesh from serial      MOOSE mesh -- partitioning array null.
   auto partitioning = getMeshPartitioning();
 
   int * partitioning_raw_ptr = partitioning ? partitioning.get() : nullptr;
 
   _mfem_par_mesh =
       std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, getMFEMMesh(), partitioning_raw_ptr);
+
+  // If we have a higher-order mesh then we need to figure-out the mapping from the libMesh node ID
+  // to the MFEM node ID since this will have changed.
+  convertSerialDofMappingsToParallel(*_mfem_mesh.get(), *_mfem_par_mesh.get());
+
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
+}
+
+void
+CoupledMFEMMesh::convertSerialDofMappingsToParallel(const MFEMMesh & serial_mesh,
+                                                    const MFEMParMesh & parallel_mesh)
+{
+  // No need to change dof mappings if running on a single processor or if a first order element.
+  if (n_processors() < 2 || blockInfo().order() == 1)
+  {
+    return;
+  }
+
+  // Get the FE spaces.
+  const auto * serial_fespace = serial_mesh.GetNodalFESpace();
+  const auto * parallel_fespace = parallel_mesh.GetNodalFESpace();
+
+  mooseAssert(serial_fespace != NULL && parallel_fespace != NULL, "Nodal FESpace is NULL!");
+
+  // Important notes:
+  // 1. LibMesh: node id is unique even across multiple processors.
+  // 2. MFEM: "local dof": belongs to the processor.
+  // 3. MFEM: "local true dof": unique nodes on a processor. i.e. if local nodes 1, 2 both
+  // correspond to the same coordinates on a processor they will map to a single true dof.
+  std::map<int, int> libmesh_global_node_id_for_mfem_local_node_id;
+  std::map<int, int> mfem_local_node_id_for_libmesh_global_node_id;
+
+  // Match-up the libMesh elements on the processor with the MFEM elements on the ParMesh.
+  int counter = 0;
+  for (auto element_ptr : getMesh().local_element_ptr_range())
+  {
+    const auto global_element_id = element_ptr->id();
+    const auto local_element_id = counter++;
+
+    // Get the LOCAL dofs of the element for both the serial and ParMesh for this element.
+    mfem::Array<int> serial_local_dofs;
+    serial_fespace->GetElementDofs(global_element_id, serial_local_dofs);
+
+    mfem::Array<int> parallel_local_dofs;
+    parallel_fespace->GetElementDofs(local_element_id, parallel_local_dofs);
+
+    // Verify that the number of LOCAL dofs match.
+    mooseAssert(serial_local_dofs.Size() == parallel_local_dofs.Size(),
+                "Serial and parallel dofs sizes do not match for element.");
+
+    const auto num_local_dofs = serial_local_dofs.Size();
+
+    std::map<int, int> serial_dof_for_parallel_dof;
+    std::map<int, int> parallel_dof_for_serial_dof;
+
+    for (int i = 0; i < num_local_dofs; i++)
+    {
+      auto parallel_dof = parallel_local_dofs[i];
+      auto serial_dof = serial_local_dofs[i];
+
+      serial_dof_for_parallel_dof[parallel_dof] = serial_dof;
+      parallel_dof_for_serial_dof[serial_dof] = parallel_dof;
+    }
+
+    // Iterate over serial local dofs and update mappings.
+    for (auto dof : serial_local_dofs)
+    {
+      const auto parallel_local_dof = parallel_dof_for_serial_dof[dof];
+
+      // Pair the libmesh node formerly associated with the serial node with this node.
+      auto libmesh_node_id = getLibmeshGlobalNodeId(dof);
+
+      // Update two-way mappings.
+      libmesh_global_node_id_for_mfem_local_node_id[parallel_local_dof] = libmesh_node_id;
+      mfem_local_node_id_for_libmesh_global_node_id[libmesh_node_id] = parallel_local_dof;
+    }
+  }
+
+  // Set two-way mappings.
+  _libmesh_global_node_id_for_mfem_local_node_id = libmesh_global_node_id_for_mfem_local_node_id;
+  _mfem_local_node_id_for_libmesh_global_node_id = mfem_local_node_id_for_libmesh_global_node_id;
 }
 
 void
