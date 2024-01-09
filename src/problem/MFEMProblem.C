@@ -458,7 +458,6 @@ MFEMProblem::setMOOSENodalVarData(MooseVariableFieldBase & moose_var_ref)
   auto order = (unsigned int)moose_var_ref.order();
 
   auto & libmesh_base = mesh().getMesh();
-  auto & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
 
   const auto * par_fespace = (order > 1) ? pgf.ParFESpace() : nullptr;
@@ -519,7 +518,6 @@ MFEMProblem::setMOOSEElementalVarData(MooseVariableFieldBase & moose_var_ref)
               "Currently, only constant-order elemental variables can be synced in parallel.");
 
   auto & libmesh_base = mesh().getMesh();
-  auto & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
 
   auto * mfem_local_elems = pgf.GetTrueDofs(); // Must delete.
