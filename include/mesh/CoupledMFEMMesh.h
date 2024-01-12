@@ -34,14 +34,14 @@ public:
   /**
    * Override method in ExclusiveMFEMMesh.
    */
-  inline int getMFEMNodeID(const int libmesh_node_id) const override
+  inline int getLocalMFEMNodeId(const int libmesh_global_node_id) const override
   {
-    return _mfem_node_id_for_libmesh_node_id.at(libmesh_node_id);
+    return _mfem_local_node_id_for_libmesh_global_node_id.at(libmesh_global_node_id);
   }
 
-  inline int getLibmeshNodeID(const int mfem_node_id) const override
+  inline int getLibmeshGlobalNodeId(const int mfem_local_node_id) const override
   {
-    return _libmesh_node_id_for_mfem_node_id.at(mfem_node_id);
+    return _libmesh_global_node_id_for_mfem_local_node_id.at(mfem_local_node_id);
   }
 
 protected:
@@ -81,6 +81,15 @@ protected:
                                 const std::vector<int> & unique_block_ids,
                                 const std::map<int, std::vector<int>> & element_ids_for_block_id,
                                 const std::map<int, std::vector<int>> & node_ids_for_element_id);
+
+  /**
+   * Required for converting an MFEMMesh to an MFEMParMesh. This method updates the two-way mappings
+   * so that the libMesh global node IDs now correctly map to the LOCAL MFEM dofs for the
+   * MFEMParMesh. This method is called internally after creating an MFEMParMesh from an MFEMMesh.
+   * NB: failure to call this method will result in the synchronization steps failing.
+   */
+  void convertSerialDofMappingsToParallel(const MFEMMesh & serial_mesh,
+                                          const MFEMParMesh & parallel_mesh);
 
   /**
    * Add block elements to _block_info.
@@ -157,8 +166,9 @@ private:
   CubitBlockInfo _block_info;
 
   /**
-   * MFEM <--> libMesh maps required for higher-order mesh element transfers.
+   * Maps from a libMesh global node ID to the MFEM LOCAL node ID (dof) on the processor. NB: this
+   * is NOT the same as LOCAL TRUE dof.
    */
-  std::map<int, int> _libmesh_node_id_for_mfem_node_id;
-  std::map<int, int> _mfem_node_id_for_libmesh_node_id;
+  std::map<int, int> _libmesh_global_node_id_for_mfem_local_node_id;
+  std::map<int, int> _mfem_local_node_id_for_libmesh_global_node_id;
 };
