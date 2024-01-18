@@ -17,5 +17,3 @@ MFEMBilinearFormKernel::MFEMBilinearFormKernel(const InputParameters & parameter
   : GeneralUserObject(parameters)
 {
 }
-
-MFEMBilinearFormKernel::~MFEMBilinearFormKernel() {}
