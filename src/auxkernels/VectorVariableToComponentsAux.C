@@ -1,19 +1,11 @@
 #include "VectorVariableToComponentsAux.h"
-#include "ApolloVectorTransferFlags.h"
 
 registerMooseObject("MooseApp", VectorVariableToComponentsAux);
 
 InputParameters
 VectorVariableToComponentsAux::validParams()
 {
-  InputParameters params = WritableVectorAuxKernel::validParams();
-
-  ExecFlagEnum & exec = params.set<ExecFlagEnum>("execute_on");
-  exec.addAvailableFlags(ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
-
-  params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
-  params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
-  params.addRequiredCoupledVar("component_z", "The z-component of the vector variable.");
+  InputParameters params = VectorVariableFromComponentsAux::validParams();
 
   params.addClassDescription("Extract the components of a vector.");
 
@@ -21,12 +13,8 @@ VectorVariableToComponentsAux::validParams()
 }
 
 VectorVariableToComponentsAux::VectorVariableToComponentsAux(const InputParameters & parameters)
-  : WritableVectorAuxKernel(parameters),
-    _component_x(getWritableCoupledVariable("component_x")),
-    _component_y(getWritableCoupledVariable("component_y")),
-    _component_z(getWritableCoupledVariable("component_z"))
+  : VectorVariableFromComponentsAux(parameters)
 {
-  checkVectorComponents(_component_x, _component_y, _component_z);
 }
 
 void
