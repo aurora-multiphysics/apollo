@@ -48,6 +48,10 @@
     type = MFEMVariable
     fespace = H1FESpace
   []
+  [grad_electric_potential]
+    type = MFEMVariable 
+    fespace = HCurlFESpace
+  []
 []
 
 [Functions]
@@ -90,6 +94,7 @@
   [SourcePotential]
     type = MFEMScalarPotentialSource
     potential = electric_potential
+    grad_electric_potential = grad_electric_potential
     h1_fespace = H1FESpace
     hcurl_fespace = HCurlFESpace
     conductivity = electrical_conductivity
