@@ -292,7 +292,7 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
     FEProblemBase::addUserObject(kernel_name, name, parameters);
     MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
 
-    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
+    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), false);
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
   else if (base_auxkernel == "AuxKernel" || base_auxkernel == "VectorAuxKernel" ||
