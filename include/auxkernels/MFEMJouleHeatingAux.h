@@ -13,7 +13,7 @@ private:
 public:
   JouleHeatingCoefficient(const hephaestus::InputParameters & params)
     : hephaestus::CoupledCoefficient(params),
-      conductivity_coef_name(params.GetParam<std::string>("ConductivityCoefName")){};
+      conductivity_coef_name(params.GetParam<std::string>("ConductivityCoefName")) {}
 
   void Init(const hephaestus::GridFunctions & variables, hephaestus::Coefficients & coefficients)
   {

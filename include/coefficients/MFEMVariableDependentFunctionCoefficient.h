@@ -11,13 +11,13 @@ public:
   MFEMVariableDependentFunctionCoefficient(const InputParameters & parameters);
   virtual ~MFEMVariableDependentFunctionCoefficient();
 
-  virtual void execute() override{};
-  virtual void initialize() override{};
-  virtual void finalize() override{};
+  virtual void execute() override {}
+  virtual void initialize() override {}
+  virtual void finalize() override {}
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  virtual mfem::Coefficient * getCoefficient() override { return this; };
+  virtual mfem::Coefficient * getCoefficient() override { return this; }
 
 private:
   const Function & _func;

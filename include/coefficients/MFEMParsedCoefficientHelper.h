@@ -56,7 +56,7 @@ public:
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  virtual mfem::Coefficient * getCoefficient() override { return this; };
+  virtual mfem::Coefficient * getCoefficient() override { return this; }
 
 protected:
   usingFunctionParserUtilsMembers(false);

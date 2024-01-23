@@ -14,8 +14,8 @@ public:
   virtual mfem::DataCollection * createDataCollection(const std::string & collection_name)
   {
     return new mfem::DataCollection(collection_name);
-  };
+  }
 
 protected:
-  void output() override{};
+  void output() override {}
 };
