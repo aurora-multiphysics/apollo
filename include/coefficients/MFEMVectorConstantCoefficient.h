@@ -12,12 +12,13 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual mfem::VectorCoefficient * getVectorCoefficient() override
+
+  virtual std::shared_ptr<mfem::VectorCoefficient> getVectorCoefficient() override
   {
-    return &_vector_coefficient;
-  };
+    return _vector_coefficient;
+  }
 
 private:
   const mfem::Vector _vector;
-  mfem::VectorConstantCoefficient _vector_coefficient;
+  std::shared_ptr<mfem::VectorConstantCoefficient> _vector_coefficient{nullptr};
 };

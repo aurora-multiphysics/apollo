@@ -204,7 +204,7 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMCoefficient * mfem_coef(&getUserObject<MFEMCoefficient>(name));
-  _coefficients._scalars.Register(name, mfem_coef->getCoefficient(), false);
+  _coefficients._scalars.Register(name, mfem_coef->getCoefficient());
 
   // Add associated auxsolvers for CoupledCoefficients
   hephaestus::CoupledCoefficient * _coupled_coef =
@@ -222,7 +222,7 @@ MFEMProblem::addVectorCoefficient(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMVectorCoefficient * mfem_vec_coef(&getUserObject<MFEMVectorCoefficient>(name));
-  _coefficients._vectors.Register(name, mfem_vec_coef->getVectorCoefficient(), false);
+  _coefficients._vectors.Register(name, mfem_vec_coef->getVectorCoefficient());
 }
 
 void

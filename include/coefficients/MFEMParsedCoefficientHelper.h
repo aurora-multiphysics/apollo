@@ -25,7 +25,8 @@
  */
 class MFEMParsedCoefficientHelper : public MFEMCoefficient,
                                     public hephaestus::CoupledCoefficient,
-                                    public FunctionParserUtils<false>
+                                    public FunctionParserUtils<false>,
+                                    public std::enable_shared_from_this<MFEMParsedCoefficientHelper>
 {
 public:
   enum class VariableNameMappingMode
@@ -56,7 +57,10 @@ public:
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  virtual mfem::Coefficient * getCoefficient() override { return this; }
+  std::shared_ptr<mfem::Coefficient> getCoefficient() override
+  {
+    return shared_from_this();
+  }
 
 protected:
   usingFunctionParserUtilsMembers(false);

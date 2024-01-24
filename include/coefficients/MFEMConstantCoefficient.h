@@ -14,8 +14,9 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual mfem::Coefficient * getCoefficient() override { return &coefficient; };
+
+  virtual std::shared_ptr<mfem::Coefficient> getCoefficient() override { return coefficient; }
 
 private:
-  mfem::ConstantCoefficient coefficient;
+  std::shared_ptr<mfem::ConstantCoefficient> coefficient{nullptr};
 };

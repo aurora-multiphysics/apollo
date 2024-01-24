@@ -30,12 +30,9 @@ MFEMThermalMaterial::storeCoefficients(hephaestus::Subdomain & subdomain)
 {
   subdomain._scalar_coefficients.Register(
       "thermal_conductivity",
-      const_cast<MFEMCoefficient *>(_thermal_conductivity_coeff)->getCoefficient(),
-      false);
+      const_cast<MFEMCoefficient *>(_thermal_conductivity_coeff)->getCoefficient());
   subdomain._scalar_coefficients.Register(
-      "heat_capacity",
-      const_cast<MFEMCoefficient *>(_heat_capacity_coeff)->getCoefficient(),
-      false);
+      "heat_capacity", const_cast<MFEMCoefficient *>(_heat_capacity_coeff)->getCoefficient());
 }
 
 MFEMThermalMaterial::~MFEMThermalMaterial() {}
