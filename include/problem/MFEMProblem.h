@@ -157,12 +157,13 @@ protected:
   std::string _input_mesh;
   std::string _formulation_name;
   int _order;
-  hephaestus::ProblemBuilder * mfem_problem_builder;
-  std::unique_ptr<hephaestus::Problem> mfem_problem;
+
   hephaestus::Coefficients _coefficients;
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _exec_params;
+  hephaestus::ProblemBuilder * mfem_problem_builder;
 
+  std::unique_ptr<hephaestus::Problem> mfem_problem;
   std::unique_ptr<hephaestus::Executioner> executioner;
 };

@@ -82,7 +82,7 @@ MFEMProblem::initialSetup()
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
   if (_moose_executioner != nullptr)
   {
-    hephaestus::TimeDomainProblemBuilder * mfem_transient_problem_builder =
+    auto * mfem_transient_problem_builder =
         dynamic_cast<hephaestus::TimeDomainProblemBuilder *>(mfem_problem_builder);
     if (mfem_transient_problem_builder == nullptr)
       mooseError("Specified formulation does not support Transient executioners");
@@ -97,7 +97,7 @@ MFEMProblem::initialSetup()
   }
   else if (dynamic_cast<Steady *>(_app.getExecutioner()))
   {
-    hephaestus::SteadyStateProblemBuilder * mfem_steady_problem_builder =
+    auto * mfem_steady_problem_builder =
         dynamic_cast<hephaestus::SteadyStateProblemBuilder *>(mfem_problem_builder);
     if (mfem_steady_problem_builder == nullptr)
       mooseError("Specified formulation does not support Steady executioners");
@@ -285,7 +285,8 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
     FEProblemBase::addUserObject(kernel_name, name, parameters);
     MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
 
-    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
+    // NB: - set own_data = false to prevent double-free.
+    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), false);
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
   else if (base_auxkernel == "AuxKernel" || base_auxkernel == "VectorAuxKernel" ||
