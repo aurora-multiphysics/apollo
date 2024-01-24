@@ -17,6 +17,9 @@ MFEMOpenCoilSource::validParams()
   params.addParam<UserObjectName>("source_potential_gridfunction",
                                   "The gridfunction to store the scalar potential in the coil.");
 
+  params.addParam<UserObjectName>("source_grad_potential",
+                                  "Name of the gradient of the potential.");
+
   params.addParam<BoundaryName>(
       "coil_in_boundary",
       "The boundary (id or name) from the mesh determinining the coil input terminal");
@@ -51,6 +54,7 @@ MFEMOpenCoilSource::MFEMOpenCoilSource(const InputParameters & parameters)
     _source_current_density_gridfunction(
         getUserObject<MFEMVariable>("source_current_density_gridfunction")),
     _source_potential_gridfunction(getUserObject<MFEMVariable>("source_potential_gridfunction")),
+    _source_grad_potential(getUserObject<MFEMVariable>("source_grad_potential")),
     _total_current_coef(getUserObject<MFEMCoefficient>("total_current_coef")),
     _conductivity_coef_name(std::string("electrical_conductivity")),
     _solver_params({{"Tolerance", float(getParam<Real>("l_tol"))},
@@ -59,6 +63,7 @@ MFEMOpenCoilSource::MFEMOpenCoilSource(const InputParameters & parameters)
                     {"PrintLevel", getParam<int>("print_level")}}),
     _open_coil_params({{"SourceName", _source_current_density_gridfunction.name()},
                        {"PotentialName", _source_potential_gridfunction.name()},
+                       {"GradPotentialName", _source_grad_potential.name()},
                        {"IFuncCoefName", _total_current_coef.name()},
                        {"ConductivityCoefName", _conductivity_coef_name},
                        {"SolverOptions", _solver_params}}),
