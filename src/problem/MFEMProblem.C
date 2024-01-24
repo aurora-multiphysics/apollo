@@ -139,7 +139,7 @@ MFEMProblem::externalSolve()
   }
 
   auto * transient_mfem_exec = dynamic_cast<hephaestus::TransientExecutioner *>(executioner.get());
-  if (transient_mfem_exec != NULL)
+  if (transient_mfem_exec != nullptr)
   {
     transient_mfem_exec->_t_step = dt();
   }
