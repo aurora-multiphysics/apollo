@@ -390,7 +390,7 @@ CoupledMFEMMesh::getBlockIDsForBoundaryID(
       block_ids[ielement++] = block_id_for_element_id.at(element_id);
     }
 
-    block_ids_for_boundary_id[boundary_id] = block_ids;
+    block_ids_for_boundary_id[boundary_id] = std::move(block_ids);
   }
 
   return block_ids_for_boundary_id;
