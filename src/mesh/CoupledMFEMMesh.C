@@ -454,7 +454,7 @@ CoupledMFEMMesh::convertSerialDofMappingsToParallel(const MFEMMesh & serial_mesh
   const auto * serial_fespace = serial_mesh.GetNodalFESpace();
   const auto * parallel_fespace = parallel_mesh.GetNodalFESpace();
 
-  mooseAssert(serial_fespace != NULL && parallel_fespace != NULL, "Nodal FESpace is NULL!");
+  mooseAssert(serial_fespace != nullptr && parallel_fespace != nullptr, "Nodal FESpace is NULL!");
 
   // Important notes:
   // 1. LibMesh: node id is unique even across multiple processors.

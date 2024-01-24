@@ -94,7 +94,7 @@ MFEMMesh::MFEMMesh(std::string mesh_fname, int generate_edges, int refine, bool 
   SetEmpty();
 
   mfem::named_ifgzstream mesh_fstream(mesh_fname);
-  if (!mesh_fstream) // TODO: - can this be NULL?
+  if (!mesh_fstream) // TODO: - can this be nullptr?
   {
     mooseError("Failed to read '" + mesh_fname + "'\n");
   }
