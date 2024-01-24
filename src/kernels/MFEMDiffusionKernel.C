@@ -18,16 +18,14 @@ MFEMDiffusionKernel::validParams()
 
 MFEMDiffusionKernel::MFEMDiffusionKernel(const InputParameters & parameters)
   : MFEMBilinearFormKernel(parameters),
-    kernel_params({{"VariableName", getParam<std::string>("variable")},
-                   {"CoefficientName", getParam<std::string>("coefficient")}}),
-    kernel(kernel_params)
+    _kernel_params{{{"VariableName", getParam<std::string>("variable")},
+                    {"CoefficientName", getParam<std::string>("coefficient")}}},
+    _kernel{std::make_unique<hephaestus::DiffusionKernel>(_kernel_params)}
 {
 }
 
 hephaestus::Kernel<mfem::ParBilinearForm> *
 MFEMDiffusionKernel::getKernel()
 {
-  return &kernel;
+  return _kernel.release(); // Caller assumes ownership.
 }
-
-MFEMDiffusionKernel::~MFEMDiffusionKernel() {}
