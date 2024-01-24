@@ -25,13 +25,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 {
 }
 
-MFEMProblem::~MFEMProblem()
-{
-  if (executioner != nullptr)
-  {
-    delete executioner;
-  }
-}
+MFEMProblem::~MFEMProblem() {}
 
 void
 MFEMProblem::outputStep(ExecFlagType type)
@@ -99,7 +93,7 @@ MFEMProblem::initialSetup()
     exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::TimeDomainProblem *>(mfem_problem.get()));
-    executioner = new hephaestus::TransientExecutioner(exec_params);
+    executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
   }
   else if (dynamic_cast<Steady *>(_app.getExecutioner()))
   {
@@ -110,7 +104,7 @@ MFEMProblem::initialSetup()
     mfem_problem = mfem_steady_problem_builder->ReturnProblem();
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::SteadyStateProblem *>(mfem_problem.get()));
-    executioner = new hephaestus::SteadyExecutioner(exec_params);
+    executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
   }
   else
   {
@@ -133,9 +127,8 @@ MFEMProblem::externalSolve()
     return;
   }
 
-  hephaestus::TransientExecutioner * transient_mfem_exec =
-      dynamic_cast<hephaestus::TransientExecutioner *>(executioner);
-  if (transient_mfem_exec != nullptr)
+  auto * transient_mfem_exec = dynamic_cast<hephaestus::TransientExecutioner *>(executioner.get());
+  if (transient_mfem_exec != NULL)
   {
     transient_mfem_exec->t_step = dt();
   }

@@ -163,5 +163,6 @@ protected:
   hephaestus::InputParameters _solver_options;
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _exec_params;
-  hephaestus::Executioner * executioner;
+
+  std::unique_ptr<hephaestus::Executioner> executioner;
 };
