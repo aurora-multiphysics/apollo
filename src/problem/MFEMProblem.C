@@ -25,13 +25,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 {
 }
 
-MFEMProblem::~MFEMProblem()
-{
-  if (executioner != nullptr)
-  {
-    delete executioner;
-  }
-}
+MFEMProblem::~MFEMProblem() {}
 
 void
 MFEMProblem::outputStep(ExecFlagType type)
@@ -88,7 +82,7 @@ MFEMProblem::initialSetup()
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
   if (_moose_executioner != nullptr)
   {
-    hephaestus::TimeDomainProblemBuilder * mfem_transient_problem_builder =
+    auto * mfem_transient_problem_builder =
         dynamic_cast<hephaestus::TimeDomainProblemBuilder *>(mfem_problem_builder);
     if (mfem_transient_problem_builder == nullptr)
       mooseError("Specified formulation does not support Transient executioners");
@@ -99,18 +93,18 @@ MFEMProblem::initialSetup()
     exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::TimeDomainProblem *>(mfem_problem.get()));
-    executioner = new hephaestus::TransientExecutioner(exec_params);
+    executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
   }
   else if (dynamic_cast<Steady *>(_app.getExecutioner()))
   {
-    hephaestus::SteadyStateProblemBuilder * mfem_steady_problem_builder =
+    auto * mfem_steady_problem_builder =
         dynamic_cast<hephaestus::SteadyStateProblemBuilder *>(mfem_problem_builder);
     if (mfem_steady_problem_builder == nullptr)
       mooseError("Specified formulation does not support Steady executioners");
     mfem_problem = mfem_steady_problem_builder->ReturnProblem();
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::SteadyStateProblem *>(mfem_problem.get()));
-    executioner = new hephaestus::SteadyExecutioner(exec_params);
+    executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
   }
   else
   {
@@ -133,9 +127,8 @@ MFEMProblem::externalSolve()
     return;
   }
 
-  hephaestus::TransientExecutioner * transient_mfem_exec =
-      dynamic_cast<hephaestus::TransientExecutioner *>(executioner);
-  if (transient_mfem_exec != nullptr)
+  auto * transient_mfem_exec = dynamic_cast<hephaestus::TransientExecutioner *>(executioner.get());
+  if (transient_mfem_exec != NULL)
   {
     transient_mfem_exec->t_step = dt();
   }
@@ -292,7 +285,8 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
     FEProblemBase::addUserObject(kernel_name, name, parameters);
     MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
 
-    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), true);
+    // NB: - set own_data = false to prevent double-free.
+    mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver(), false);
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
   else if (base_auxkernel == "AuxKernel" || base_auxkernel == "VectorAuxKernel" ||
@@ -464,7 +458,6 @@ MFEMProblem::setMOOSENodalVarData(MooseVariableFieldBase & moose_var_ref)
   auto order = (unsigned int)moose_var_ref.order();
 
   auto & libmesh_base = mesh().getMesh();
-  auto & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
 
   const auto * par_fespace = (order > 1) ? pgf.ParFESpace() : nullptr;
@@ -525,7 +518,6 @@ MFEMProblem::setMOOSEElementalVarData(MooseVariableFieldBase & moose_var_ref)
               "Currently, only constant-order elemental variables can be synced in parallel.");
 
   auto & libmesh_base = mesh().getMesh();
-  auto & temp_solution_vector = moose_var_ref.sys().solution();
   auto & pgf = *(mfem_problem->gridfunctions.Get(moose_var_ref.name()));
 
   auto * mfem_local_elems = pgf.GetTrueDofs(); // Must delete.

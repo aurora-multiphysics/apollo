@@ -87,8 +87,8 @@ CoupledMFEMMesh::buildBoundaryInfo(std::map<int, std::vector<int>> & element_ids
     auto element_ids = key_value_pair.second.element_ids;
     auto side_ids = key_value_pair.second.side_ids;
 
-    element_ids_for_boundary_id[boundary_id] = element_ids;
-    side_ids_for_boundary_id[boundary_id] = side_ids;
+    element_ids_for_boundary_id[boundary_id] = std::move(element_ids);
+    side_ids_for_boundary_id[boundary_id] = std::move(side_ids);
   }
 }
 
@@ -189,13 +189,13 @@ CoupledMFEMMesh::buildElementAndNodeIDs(const std::vector<int> & unique_block_id
         element_node_ids[node_counter] = element_ptr->node_id(node_counter);
       }
 
-      node_ids_for_element_id[element_id] = element_node_ids;
+      node_ids_for_element_id[element_id] = std::move(element_node_ids);
     }
 
     elements_in_block.shrink_to_fit();
 
     // Add to map.
-    element_ids_for_block_id[block_id] = elements_in_block;
+    element_ids_for_block_id[block_id] = std::move(elements_in_block);
   }
 }
 
@@ -275,7 +275,7 @@ CoupledMFEMMesh::buildMFEMMesh()
 
     std::array<double, 3> coordinates = {node(0), node(1), node(2)};
 
-    coordinates_for_node_id[node.id()] = coordinates;
+    coordinates_for_node_id[node.id()] = std::move(coordinates);
   }
 
   // 7.
@@ -390,7 +390,7 @@ CoupledMFEMMesh::getBlockIDsForBoundaryID(
       block_ids[ielement++] = block_id_for_element_id.at(element_id);
     }
 
-    block_ids_for_boundary_id[boundary_id] = block_ids;
+    block_ids_for_boundary_id[boundary_id] = std::move(block_ids);
   }
 
   return block_ids_for_boundary_id;
@@ -526,7 +526,7 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
 
   // Iterate over all boundary IDs.
   for (int boundary_id : unique_side_boundary_ids)
-  {
+  {    
     // Get element IDs of element on boundary (and their sides that are on boundary).
     auto & boundary_element_ids = element_ids_for_boundary_id.at(boundary_id);
     auto & boundary_element_sides = side_ids_for_boundary_id.at(boundary_id);
@@ -557,10 +557,10 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
       }
 
       // Add to vector.
-      boundary_node_ids[jelement] = nodes_of_element_on_side;
+      boundary_node_ids[jelement] = std::move(nodes_of_element_on_side);
     }
 
     // Add to the map.
-    node_ids_for_boundary_id[boundary_id] = boundary_node_ids;
+    node_ids_for_boundary_id[boundary_id] = std::move(boundary_node_ids);
   }
 }

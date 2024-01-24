@@ -10,7 +10,7 @@ public:
   static InputParameters validParams();
 
   MFEMBilinearFormKernel(const InputParameters & parameters);
-  virtual ~MFEMBilinearFormKernel();
+  virtual ~MFEMBilinearFormKernel() {}
 
   virtual void execute() override {}
   virtual void initialize() override {}
