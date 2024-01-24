@@ -94,7 +94,7 @@
   [SourcePotential]
     type = MFEMScalarPotentialSource
     potential = electric_potential
-    grad_electric_potential = grad_electric_potential
+    grad_potential = grad_electric_potential
     h1_fespace = H1FESpace
     hcurl_fespace = HCurlFESpace
     conductivity = electrical_conductivity

@@ -9,8 +9,7 @@ MFEMScalarPotentialSource::validParams()
   params.addRequiredParam<std::string>(
       "potential",
       "Name of the potential used in the solver, necessary to find boundary conditions");
-  params.addRequiredParam<std::string>("grad_electric_potential",
-                                       "Name of the gradient of the electric potential.");
+  params.addRequiredParam<std::string>("grad_potential", "Name of the gradient of the potential.");
   params.addRequiredParam<std::string>(
       "conductivity", "Name of the conductivity coefficient associated with the potential.");
   params.addRequiredParam<UserObjectName>("hcurl_fespace",
@@ -30,7 +29,7 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
   : MFEMSource(parameters),
     source_coef_name(std::string("source_") + getParam<std::string>("_object_name")),
     potential_name(getParam<std::string>("potential")),
-    grad_electric_potential_name(getParam<std::string>("grad_electric_potential")),
+    grad_potential_name(getParam<std::string>("grad_potential")),
     conductivity_coef_name(getParam<std::string>("conductivity")),
     hcurl_fespace(getUserObject<MFEMFESpace>("hcurl_fespace")),
     h1_fespace(getUserObject<MFEMFESpace>("h1_fespace"))
@@ -51,7 +50,7 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
   hephaestus::InputParameters scalar_potential_source_params;
   scalar_potential_source_params.SetParam("SourceName", source_coef_name);
   scalar_potential_source_params.SetParam("PotentialName", potential_name);
-  scalar_potential_source_params.SetParam("GradPotentialName", grad_electric_potential_name);
+  scalar_potential_source_params.SetParam("GradPotentialName", grad_potential_name);
   scalar_potential_source_params.SetParam("ConductivityCoefName", conductivity_coef_name);
   scalar_potential_source_params.SetParam("HCurlFESpaceName", hcurl_fespace.name());
   scalar_potential_source_params.SetParam("H1FESpaceName", h1_fespace.name());
