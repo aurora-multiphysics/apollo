@@ -27,7 +27,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
 
 MFEMProblem::~MFEMProblem()
 {
-  if (executioner != NULL)
+  if (executioner != nullptr)
   {
     delete executioner;
   }
@@ -86,11 +86,11 @@ MFEMProblem::initialSetup()
   hephaestus::InputParameters exec_params;
 
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
-  if (_moose_executioner != NULL)
+  if (_moose_executioner != nullptr)
   {
     hephaestus::TimeDomainProblemBuilder * mfem_transient_problem_builder =
         dynamic_cast<hephaestus::TimeDomainProblemBuilder *>(mfem_problem_builder);
-    if (mfem_transient_problem_builder == NULL)
+    if (mfem_transient_problem_builder == nullptr)
       mooseError("Specified formulation does not support Transient executioners");
     mfem_problem = mfem_transient_problem_builder->ReturnProblem();
     exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
@@ -105,7 +105,7 @@ MFEMProblem::initialSetup()
   {
     hephaestus::SteadyStateProblemBuilder * mfem_steady_problem_builder =
         dynamic_cast<hephaestus::SteadyStateProblemBuilder *>(mfem_problem_builder);
-    if (mfem_steady_problem_builder == NULL)
+    if (mfem_steady_problem_builder == nullptr)
       mooseError("Specified formulation does not support Steady executioners");
     mfem_problem = mfem_steady_problem_builder->ReturnProblem();
     exec_params.SetParam("Problem",
@@ -135,7 +135,7 @@ MFEMProblem::externalSolve()
 
   hephaestus::TransientExecutioner * transient_mfem_exec =
       dynamic_cast<hephaestus::TransientExecutioner *>(executioner);
-  if (transient_mfem_exec != NULL)
+  if (transient_mfem_exec != nullptr)
   {
     transient_mfem_exec->t_step = dt();
   }
@@ -205,7 +205,7 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
   // Add associated auxsolvers for CoupledCoefficients
   hephaestus::CoupledCoefficient * _coupled_coef =
       dynamic_cast<hephaestus::CoupledCoefficient *>(_coefficients.scalars.Get(name));
-  if (_coupled_coef != NULL)
+  if (_coupled_coef != nullptr)
   {
     mfem_problem_builder->AddAuxSolver(name, _coupled_coef, false);
   }

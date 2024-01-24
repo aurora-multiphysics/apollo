@@ -16,5 +16,5 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual hephaestus::Kernel<mfem::ParLinearForm> * getKernel() { return NULL; };
+  virtual hephaestus::Kernel<mfem::ParLinearForm> * getKernel() { return nullptr; };
 };
