@@ -52,6 +52,10 @@
     type = MFEMVariable
     fespace = H1FESpace
   []
+  [source_grad_potential]
+    type = MFEMVariable 
+    fespace = H1FESpace
+  []
 []
 
 [BCs]
@@ -148,6 +152,7 @@
     total_current_coef = CurrentCoef
     source_current_density_gridfunction = source_current_density
     source_potential_gridfunction = electric_potential
+    source_grad_potential = source_grad_potential
     coil_in_boundary = 1
     coil_out_boundary = 2
     block = 1

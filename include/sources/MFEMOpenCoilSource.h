@@ -21,6 +21,7 @@ public:
 protected:
   const MFEMVariable & _source_current_density_gridfunction;
   const MFEMVariable & _source_potential_gridfunction;
+  const MFEMVariable & _source_grad_potential;
   const MFEMCoefficient & _total_current_coef;
   const std::string _conductivity_coef_name;
 
