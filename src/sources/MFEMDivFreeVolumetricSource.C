@@ -7,7 +7,8 @@ MFEMDivFreeVolumetricSource::validParams()
 {
   InputParameters params = MFEMSource::validParams();
   params.addRequiredParam<UserObjectName>(
-      "vector_coefficient", "The vector MFEM coefficient providing the source to be divergence cleaned");  
+      "vector_coefficient",
+      "The vector MFEM coefficient providing the source to be divergence cleaned");
   params.addRequiredParam<UserObjectName>("hcurl_fespace",
                                           "The H(Curl) FE space to use in the source.");
   params.addRequiredParam<UserObjectName>("h1_fespace", "The H1 FE space to use in the source.");
@@ -66,5 +67,3 @@ MFEMDivFreeVolumetricSource::storeCoefficients(hephaestus::Coefficients & coeffi
 {
   coefficients._vectors.Register(source_coef_name, _restricted_coef);
 }
-
-MFEMDivFreeVolumetricSource::~MFEMDivFreeVolumetricSource() {}

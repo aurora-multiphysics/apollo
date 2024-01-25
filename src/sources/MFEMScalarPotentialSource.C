@@ -58,5 +58,3 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
 
   _source = std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params);
 }
-
-MFEMScalarPotentialSource::~MFEMScalarPotentialSource() {}

@@ -76,13 +76,12 @@ MFEMOpenCoilSource::MFEMOpenCoilSource(const InputParameters & parameters)
   {
     _coil_domains[bid] = blocks[bid];
   }
-  
-  _source = std::make_shared<hephaestus::OpenCoilSolver>(_open_coil_params, _coil_domains, _electrodes);
+
+  _source =
+      std::make_shared<hephaestus::OpenCoilSolver>(_open_coil_params, _coil_domains, _electrodes);
 }
 
 void
 MFEMOpenCoilSource::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
 }
-
-MFEMOpenCoilSource::~MFEMOpenCoilSource() {}

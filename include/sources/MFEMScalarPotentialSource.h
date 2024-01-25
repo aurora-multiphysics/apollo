@@ -7,7 +7,7 @@ public:
   static InputParameters validParams();
 
   MFEMScalarPotentialSource(const InputParameters & parameters);
-  virtual ~MFEMScalarPotentialSource();
+  virtual ~MFEMScalarPotentialSource() override {}
 
   virtual void execute() override {}
   virtual void initialize() override {}

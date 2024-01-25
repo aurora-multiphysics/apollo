@@ -8,7 +8,7 @@ public:
   static InputParameters validParams();
 
   MFEMDivFreeVolumetricSource(const InputParameters & parameters);
-  virtual ~MFEMDivFreeVolumetricSource();
+  virtual ~MFEMDivFreeVolumetricSource() override {}
 
   virtual void execute() override {}
   virtual void initialize() override {}

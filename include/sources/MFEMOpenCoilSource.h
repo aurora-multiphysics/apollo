@@ -9,7 +9,7 @@ public:
   static InputParameters validParams();
 
   MFEMOpenCoilSource(const InputParameters & parameters);
-  virtual ~MFEMOpenCoilSource();
+  virtual ~MFEMOpenCoilSource() override {}
 
   virtual void execute() override {}
   virtual void initialize() override {}
