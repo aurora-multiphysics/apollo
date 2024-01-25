@@ -10,14 +10,12 @@ public:
   static InputParameters validParams();
 
   MFEMVectorNormalIntegratedBC(const InputParameters & parameters);
-  virtual ~MFEMVectorNormalIntegratedBC();
+  ~MFEMVectorNormalIntegratedBC() override {}
 
-  virtual hephaestus::BoundaryCondition * getBC() override;
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
 
 protected:
-  MFEMVectorCoefficient * _vec_coef;
-  hephaestus::IntegratedBC _boundary_condition;
+  MFEMVectorCoefficient * _vec_coef{nullptr};
 };

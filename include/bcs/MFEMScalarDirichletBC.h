@@ -10,13 +10,12 @@ public:
   static InputParameters validParams();
 
   MFEMScalarDirichletBC(const InputParameters & parameters);
+  ~MFEMScalarDirichletBC() override {}
 
-  virtual hephaestus::BoundaryCondition * getBC() override;
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
 
 protected:
-  MFEMCoefficient * _coef;
-  hephaestus::ScalarDirichletBC _boundary_condition;
+  MFEMCoefficient * _coef{nullptr};
 };

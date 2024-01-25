@@ -14,7 +14,10 @@ public:
   MFEMBoundaryCondition(const InputParameters & parameters);
   ~MFEMBoundaryCondition() override {}
 
-  inline virtual std::shared_ptr<hephaestus::BoundaryCondition> getBC() const { return _boundary_condition; }
+  inline virtual std::shared_ptr<hephaestus::BoundaryCondition> getBC() const
+  {
+    return _boundary_condition;
+  }
 
   virtual void execute() override {}
   virtual void initialize() override {}
@@ -23,5 +26,6 @@ public:
 protected:
   std::vector<BoundaryName> _boundary_names;
   mfem::Array<int> bdr_attr;
+
   std::shared_ptr<hephaestus::BoundaryCondition> _boundary_condition{nullptr};
 };
