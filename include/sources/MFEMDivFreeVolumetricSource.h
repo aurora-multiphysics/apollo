@@ -14,7 +14,6 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual hephaestus::Source * getSource() override;
   virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:

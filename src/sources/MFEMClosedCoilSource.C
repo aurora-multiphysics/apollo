@@ -47,13 +47,8 @@ MFEMClosedCoilSource::MFEMClosedCoilSource(const InputParameters & parameters)
   {
     _coil_domains[bid] = blocks[bid];
   }
-  _source = new hephaestus::ClosedCoilSolver(_closed_coil_params, _coil_domains, _coil_xsection_id);
-}
 
-hephaestus::Source *
-MFEMClosedCoilSource::getSource()
-{
-  return _source;
+  _source = std::make_shared<hephaestus::ClosedCoilSolver>(_closed_coil_params, _coil_domains, _coil_xsection_id);
 }
 
 void

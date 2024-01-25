@@ -57,13 +57,7 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
   div_free_source_params.SetParam("H1FESpaceName", h1_fespace.name());
   div_free_source_params.SetParam("SolverOptions", _solver_options);
 
-  _source = new hephaestus::DivFreeSource(div_free_source_params);
-}
-
-hephaestus::Source *
-MFEMDivFreeVolumetricSource::getSource()
-{
-  return _source;
+  _source = std::make_shared<hephaestus::DivFreeSource>(div_free_source_params);
 }
 
 void

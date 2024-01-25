@@ -19,10 +19,11 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual hephaestus::Source * getSource();
+  virtual std::shared_ptr<hephaestus::Source> getSource() { return _source; }
+
   virtual void storeCoefficients(hephaestus::Coefficients & coefficients);
 
 protected:
   std::vector<SubdomainID> blocks;
-  hephaestus::Source * _source;
+  std::shared_ptr<hephaestus::Source> _source{nullptr};
 };
