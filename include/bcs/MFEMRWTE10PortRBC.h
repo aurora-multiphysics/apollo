@@ -11,7 +11,7 @@ public:
   static InputParameters validParams();
 
   MFEMRWTE10PortRBC(const InputParameters & parameters);
-  ~MFEMRWTE10PortRBC() override{};
+  ~MFEMRWTE10PortRBC() override {}
 
   virtual void execute() override {}
   virtual void initialize() override {}
