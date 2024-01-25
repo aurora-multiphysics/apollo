@@ -45,13 +45,13 @@ EBFormulation::EBFormulation(const InputParameters & parameters)
                 b_field_name)
 {
   if (isParamValid("current_density_name"))
-    formulation.registerCurrentDensityAux(getParam<std::string>("current_density_name"));
+    formulation.RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
   if (isParamValid("lorentz_force_density_name"))
-    formulation.registerLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
+    formulation.RegisterLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
                                                b_field_name,
                                                getParam<std::string>("current_density_name"));
   if (isParamValid("joule_heating_density_name"))
-    formulation.registerJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+    formulation.RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
                                                e_field_name,
                                                electric_conductivity_name);
 }

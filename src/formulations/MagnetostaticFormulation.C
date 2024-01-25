@@ -36,11 +36,11 @@ MagnetostaticFormulation::MagnetostaticFormulation(const InputParameters & param
         magnetic_reluctivity_name, magnetic_permeability_name, magnetic_vector_potential_name)
 {
   if (isParamValid("magnetic_flux_density_name"))
-    formulation.registerMagneticFluxDensityAux(getParam<std::string>("magnetic_flux_density_name"));
+    formulation.RegisterMagneticFluxDensityAux(getParam<std::string>("magnetic_flux_density_name"));
   if (isParamValid("magnetic_field_name"))
-    formulation.registerMagneticFieldAux(getParam<std::string>("magnetic_field_name"));
+    formulation.RegisterMagneticFieldAux(getParam<std::string>("magnetic_field_name"));
   if (isParamValid("lorentz_force_density_name"))
-    formulation.registerLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
+    formulation.RegisterLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
                                                getParam<std::string>("magnetic_flux_density_name"),
                                                getParam<std::string>("current_density_name"));
 }

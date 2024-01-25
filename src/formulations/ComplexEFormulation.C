@@ -63,15 +63,15 @@ ComplexEFormulation::ComplexEFormulation(const InputParameters & parameters)
                 e_field_im_name)
 {
   if (isParamValid("current_density_re_name") && isParamValid("current_density_im_name"))
-    formulation.registerCurrentDensityAux(getParam<std::string>("current_density_re_name"),
+    formulation.RegisterCurrentDensityAux(getParam<std::string>("current_density_re_name"),
                                           getParam<std::string>("current_density_im_name"));
   if (isParamValid("magnetic_flux_density_re_name") &&
       isParamValid("magnetic_flux_density_im_name"))
-    formulation.registerMagneticFluxDensityAux(
+    formulation.RegisterMagneticFluxDensityAux(
         getParam<std::string>("magnetic_flux_density_re_name"),
         getParam<std::string>("magnetic_flux_density_im_name"));
   if (isParamValid("joule_heating_density_name"))
-    formulation.registerJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+    formulation.RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
                                                getParam<std::string>("e_field_re_name"),
                                                getParam<std::string>("e_field_im_name"),
                                                electric_conductivity_name);

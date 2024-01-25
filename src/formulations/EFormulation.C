@@ -38,9 +38,9 @@ EFormulation::EFormulation(const InputParameters & parameters)
                 e_field_name)
 {
   if (isParamValid("current_density_name"))
-    formulation.registerCurrentDensityAux(getParam<std::string>("current_density_name"));
+    formulation.RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
   if (isParamValid("joule_heating_density_name"))
-    formulation.registerJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+    formulation.RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
                                                e_field_name,
                                                electric_conductivity_name);
 }
