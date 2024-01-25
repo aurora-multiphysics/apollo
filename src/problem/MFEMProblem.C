@@ -82,34 +82,45 @@ MFEMProblem::initialSetup()
   Transient * _moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
   if (_moose_executioner != nullptr)
   {
-    auto * mfem_transient_problem_builder =
-        dynamic_cast<hephaestus::TimeDomainProblemBuilder *>(mfem_problem_builder);
+    auto mfem_transient_problem_builder =
+        std::dynamic_pointer_cast<hephaestus::TimeDomainProblemBuilder>(mfem_problem_builder);
     if (mfem_transient_problem_builder == nullptr)
+    {
       mooseError("Specified formulation does not support Transient executioners");
+    }
+
     mfem_problem = mfem_transient_problem_builder->ReturnProblem();
+
     exec_params.SetParam("StartTime", float(_moose_executioner->getStartTime()));
     exec_params.SetParam("TimeStep", float(dt()));
     exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
     exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::TimeDomainProblem *>(mfem_problem.get()));
+
     executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
   }
   else if (dynamic_cast<Steady *>(_app.getExecutioner()))
   {
-    auto * mfem_steady_problem_builder =
-        dynamic_cast<hephaestus::SteadyStateProblemBuilder *>(mfem_problem_builder);
+    auto mfem_steady_problem_builder =
+        std::dynamic_pointer_cast<hephaestus::SteadyStateProblemBuilder>(mfem_problem_builder);
     if (mfem_steady_problem_builder == nullptr)
+    {
       mooseError("Specified formulation does not support Steady executioners");
+    }
+
     mfem_problem = mfem_steady_problem_builder->ReturnProblem();
+
     exec_params.SetParam("Problem",
                          dynamic_cast<hephaestus::SteadyStateProblem *>(mfem_problem.get()));
+
     executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
   }
   else
   {
     mooseError("Executioner used that is not currently supported by MFEMProblem");
   }
+
   mfem_problem->_outputs.EnableGLVis(getParam<bool>("use_glvis"));
 }
 
