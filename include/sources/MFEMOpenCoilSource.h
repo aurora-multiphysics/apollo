@@ -15,8 +15,6 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
-
 protected:
   const MFEMVariable & _source_current_density_gridfunction;
   const MFEMVariable & _source_potential_gridfunction;
