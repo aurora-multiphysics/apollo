@@ -30,7 +30,7 @@ public:
 
     hephaestus::CoupledCoefficient::Init(variables, coefficients);
     std::cout << "Intialising JouleHeating";
-    sigma = coefficients.scalars.Get(conductivity_coef_name);
+    sigma = coefficients._scalars.Get(conductivity_coef_name);
 
     joule_heating_gf = variables.Get("joule_heating");
   }
@@ -39,7 +39,7 @@ public:
   {
     mfem::Vector E;
     double thisSigma;
-    gf->GetVectorValue(T, ip, E);
+    _gf->GetVectorValue(T, ip, E);
     thisSigma = sigma->Eval(T, ip);
     return thisSigma * (E * E);
   }

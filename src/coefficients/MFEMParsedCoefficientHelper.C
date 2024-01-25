@@ -138,7 +138,7 @@ MFEMParsedCoefficientHelper::Init(const hephaestus::GridFunctions & variables,
   auto nmfem_coefs = _coefficient_names.size();
   for (MooseIndex(_coefficient_names) i = 0; i < nmfem_coefs; ++i)
   {
-    _coefficients[i] = coefficients.scalars.Get(_coefficient_names[i]);
+    _coefficients[i] = coefficients._scalars.Get(_coefficient_names[i]);
   }
 }
 

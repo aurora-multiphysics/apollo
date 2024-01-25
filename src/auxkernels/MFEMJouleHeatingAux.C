@@ -23,7 +23,7 @@ void
 MFEMJouleHeatingAux::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
   std::string coef_name = std::string("JouleHeating");
-  coefficients.scalars.Register(coef_name, joule_heating_aux);
+  coefficients._scalars.Register(coef_name, joule_heating_aux);
 }
 
 MFEMJouleHeatingAux::~MFEMJouleHeatingAux() {}
