@@ -42,7 +42,7 @@ MFEMProblem::outputStep(ExecFlagType type)
       int filenum(dc->getFileNumber());
       std::string filename("/Run" + std::to_string(filenum));
 
-      mfem_problem->_outputs.Register(name, dc->createDataCollection(filename), true);
+      mfem_problem->_outputs.Register(name, dc->createDataCollection(filename));
       mfem_problem->_outputs.Reset();
       dc->setFileNumber(filenum + 1);
     }

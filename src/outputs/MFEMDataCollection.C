@@ -13,3 +13,9 @@ MFEMDataCollection::validParams()
 MFEMDataCollection::MFEMDataCollection(const InputParameters & parameters) : FileOutput(parameters)
 {
 }
+
+std::shared_ptr<mfem::DataCollection>
+MFEMDataCollection::createDataCollection(const std::string & collection_name) const
+{
+  return std::make_shared<mfem::DataCollection>(collection_name);
+}

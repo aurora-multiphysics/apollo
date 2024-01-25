@@ -28,13 +28,14 @@ MFEMParaViewDataCollection::MFEMParaViewDataCollection(const InputParameters & p
 {
 }
 
-mfem::ParaViewDataCollection *
-MFEMParaViewDataCollection::createDataCollection(const std::string & collection_name)
+std::shared_ptr<mfem::DataCollection>
+MFEMParaViewDataCollection::createDataCollection(const std::string & collection_name) const
 {
-  mfem::ParaViewDataCollection * pv_dc(
-      new mfem::ParaViewDataCollection(_file_base.c_str() + collection_name));
+  auto pv_dc = std::make_shared<mfem::ParaViewDataCollection>(_file_base.c_str() + collection_name);
+
   pv_dc->SetPrecision(9);
   pv_dc->SetHighOrderOutput(_high_order_output);
   pv_dc->SetLevelsOfDetail(_refinements + 1);
+
   return pv_dc;
 }
