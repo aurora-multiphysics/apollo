@@ -63,10 +63,14 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual hephaestus::AuxSolver * getAuxSolver() override;
+  inline std::shared_ptr<hephaestus::AuxSolver> getAuxSolver() const override
+  {
+    return joule_heating_aux;
+  }
+
   virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:
   hephaestus::InputParameters joule_heating_params;
-  JouleHeatingCoefficient joule_heating_aux;
+  std::shared_ptr<JouleHeatingCoefficient> joule_heating_aux;
 };
