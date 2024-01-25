@@ -28,13 +28,13 @@ AVFormulation::AVFormulation(const InputParameters & parameters)
     electric_potential_name(getParam<std::string>("electric_potential_name")),
     magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
     electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
-    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name")),
-    formulation(magnetic_reluctivity_name,
-                magnetic_permeability_name,
-                electric_conductivity_name,
-                magnetic_vector_potential_name,
-                electric_potential_name)
+    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name"))
 {
+  formulation = std::make_shared<hephaestus::AVFormulation>(magnetic_reluctivity_name,
+                                                            magnetic_permeability_name,
+                                                            electric_conductivity_name,
+                                                            magnetic_vector_potential_name,
+                                                            electric_potential_name);
 }
 
 AVFormulation::~AVFormulation() {}

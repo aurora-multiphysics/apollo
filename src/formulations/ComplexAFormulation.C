@@ -60,31 +60,33 @@ ComplexAFormulation::ComplexAFormulation(const InputParameters & parameters)
     magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
     electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
     dielectric_permittivity_name(getParam<std::string>("dielectric_permittivity_name")),
-    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name")),
-    formulation(magnetic_reluctivity_name,
-                electric_conductivity_name,
-                dielectric_permittivity_name,
-                frequency_name,
-                magnetic_vector_potential_name,
-                magnetic_vector_potential_re_name,
-                magnetic_vector_potential_im_name)
+    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name"))
 {
+  formulation =
+      std::make_shared<hephaestus::ComplexAFormulation>(magnetic_reluctivity_name,
+                                                        electric_conductivity_name,
+                                                        dielectric_permittivity_name,
+                                                        frequency_name,
+                                                        magnetic_vector_potential_name,
+                                                        magnetic_vector_potential_re_name,
+                                                        magnetic_vector_potential_im_name);
+
   if (isParamValid("current_density_re_name") && isParamValid("current_density_im_name"))
-    formulation.RegisterCurrentDensityAux(getParam<std::string>("current_density_re_name"),
-                                          getParam<std::string>("current_density_im_name"));
+    formulation->RegisterCurrentDensityAux(getParam<std::string>("current_density_re_name"),
+                                           getParam<std::string>("current_density_im_name"));
   if (isParamValid("magnetic_flux_density_re_name") &&
       isParamValid("magnetic_flux_density_im_name"))
-    formulation.RegisterMagneticFluxDensityAux(
+    formulation->RegisterMagneticFluxDensityAux(
         getParam<std::string>("magnetic_flux_density_re_name"),
         getParam<std::string>("magnetic_flux_density_im_name"));
   if (isParamValid("electric_field_re_name") && isParamValid("electric_field_im_name"))
-    formulation.RegisterElectricFieldAux(getParam<std::string>("electric_field_re_name"),
-                                         getParam<std::string>("electric_field_im_name"));
+    formulation->RegisterElectricFieldAux(getParam<std::string>("electric_field_re_name"),
+                                          getParam<std::string>("electric_field_im_name"));
   if (isParamValid("joule_heating_density_name"))
-    formulation.RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
-                                               getParam<std::string>("electric_field_re_name"),
-                                               getParam<std::string>("electric_field_im_name"),
-                                               electric_conductivity_name);
+    formulation->RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+                                                getParam<std::string>("electric_field_re_name"),
+                                                getParam<std::string>("electric_field_im_name"),
+                                                electric_conductivity_name);
 }
 
 ComplexAFormulation::~ComplexAFormulation() {}

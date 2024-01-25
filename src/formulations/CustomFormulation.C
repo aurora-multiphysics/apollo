@@ -10,8 +10,9 @@ CustomFormulation::validParams()
 }
 
 CustomFormulation::CustomFormulation(const InputParameters & parameters)
-  : MFEMFormulation(parameters), formulation()
+  : MFEMFormulation(parameters)
 {
+  formulation = std::make_shared<hephaestus::TimeDomainEMFormulation>();
 }
 
 CustomFormulation::~CustomFormulation() {}

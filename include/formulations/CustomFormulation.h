@@ -14,8 +14,9 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual hephaestus::ProblemBuilder * getProblemBuilder() override { return &formulation; };
+
+  std::shared_ptr<hephaestus::ProblemBuilder> getProblemBuilder() override { return formulation; }
 
 private:
-  hephaestus::TimeDomainEMFormulation formulation;
+  std::shared_ptr<hephaestus::TimeDomainEMFormulation> formulation{nullptr};
 };

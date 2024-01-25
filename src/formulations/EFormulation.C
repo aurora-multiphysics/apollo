@@ -31,18 +31,19 @@ EFormulation::EFormulation(const InputParameters & parameters)
     e_field_name(getParam<std::string>("e_field_name")),
     magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
     electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
-    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name")),
-    formulation(magnetic_reluctivity_name,
-                magnetic_permeability_name,
-                electric_conductivity_name,
-                e_field_name)
+    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name"))
 {
+  formulation = std::make_shared<hephaestus::EFormulation>(magnetic_reluctivity_name,
+                                                           magnetic_permeability_name,
+                                                           electric_conductivity_name,
+                                                           e_field_name);
+
   if (isParamValid("current_density_name"))
-    formulation.RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
+    formulation->RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
   if (isParamValid("joule_heating_density_name"))
-    formulation.RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
-                                               e_field_name,
-                                               electric_conductivity_name);
+    formulation->RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+                                                e_field_name,
+                                                electric_conductivity_name);
 }
 
 EFormulation::~EFormulation() {}
