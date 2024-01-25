@@ -16,10 +16,4 @@ MFEMAuxSolver::validParams()
 
 MFEMAuxSolver::MFEMAuxSolver(const InputParameters & parameters) : GeneralUserObject(parameters) {}
 
-hephaestus::AuxSolver *
-MFEMAuxSolver::getAuxSolver()
-{
-  return _auxsolver;
-}
-
 MFEMAuxSolver::~MFEMAuxSolver() {}
