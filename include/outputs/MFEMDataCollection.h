@@ -11,10 +11,9 @@ public:
   static InputParameters validParams();
 
   MFEMDataCollection(const InputParameters & parameters);
-  virtual mfem::DataCollection * createDataCollection(const std::string & collection_name)
-  {
-    return new mfem::DataCollection(collection_name);
-  }
+
+  virtual std::shared_ptr<mfem::DataCollection>
+  createDataCollection(const std::string & collection_name) const;
 
 protected:
   void output() override {}

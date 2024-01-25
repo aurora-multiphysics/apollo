@@ -9,14 +9,11 @@ public:
   static InputParameters validParams();
 
   MFEMOpenCoilSource(const InputParameters & parameters);
-  virtual ~MFEMOpenCoilSource();
+  virtual ~MFEMOpenCoilSource() override {}
 
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-
-  virtual hephaestus::Source * getSource() override;
-  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:
   const MFEMVariable & _source_current_density_gridfunction;

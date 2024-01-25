@@ -27,13 +27,5 @@ MFEMBoundaryCondition::MFEMBoundaryCondition(const InputParameters & parameters)
     bdr_attr[i] = std::stoi(_boundary_names[i]);
   }
   _boundary_condition =
-      new hephaestus::BoundaryCondition(getParam<std::string>("variable"), bdr_attr);
+      std::make_shared<hephaestus::BoundaryCondition>(getParam<std::string>("variable"), bdr_attr);
 }
-
-hephaestus::BoundaryCondition *
-MFEMBoundaryCondition::getBC()
-{
-  return _boundary_condition;
-}
-
-MFEMBoundaryCondition::~MFEMBoundaryCondition() { delete _boundary_condition; }

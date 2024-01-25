@@ -10,15 +10,13 @@ public:
   static InputParameters validParams();
 
   MFEMComplexVectorDirichletBC(const InputParameters & parameters);
-  virtual ~MFEMComplexVectorDirichletBC();
+  ~MFEMComplexVectorDirichletBC() override {}
 
-  virtual hephaestus::BoundaryCondition * getBC() override;
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
 
 protected:
-  MFEMVectorCoefficient * _vec_coef_re;
-  MFEMVectorCoefficient * _vec_coef_im;
-  hephaestus::VectorDirichletBC _boundary_condition;
+  MFEMVectorCoefficient * _vec_coef_re{nullptr};
+  MFEMVectorCoefficient * _vec_coef_im{nullptr};
 };

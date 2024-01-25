@@ -16,17 +16,10 @@ MFEMVectorNormalIntegratedBC::validParams()
 MFEMVectorNormalIntegratedBC::MFEMVectorNormalIntegratedBC(const InputParameters & parameters)
   : MFEMBoundaryCondition(parameters),
     _vec_coef(const_cast<MFEMVectorCoefficient *>(
-        &getUserObject<MFEMVectorCoefficient>("vector_coefficient"))),
-    _boundary_condition(getParam<std::string>("variable"),
-                        bdr_attr,
-                        new mfem::BoundaryNormalLFIntegrator(*_vec_coef->getVectorCoefficient()))
+        &getUserObject<MFEMVectorCoefficient>("vector_coefficient")))
 {
+  _boundary_condition = std::make_shared<hephaestus::IntegratedBC>(
+      getParam<std::string>("variable"),
+      bdr_attr,
+      new mfem::BoundaryNormalLFIntegrator(*_vec_coef->getVectorCoefficient()));
 }
-
-hephaestus::BoundaryCondition *
-MFEMVectorNormalIntegratedBC::getBC()
-{
-  return &_boundary_condition;
-}
-
-MFEMVectorNormalIntegratedBC::~MFEMVectorNormalIntegratedBC() {}

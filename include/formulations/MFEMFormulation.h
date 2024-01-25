@@ -14,9 +14,10 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual hephaestus::ProblemBuilder * getProblemBuilder()
+
+  virtual std::shared_ptr<hephaestus::ProblemBuilder> getProblemBuilder()
   {
     mooseError(
         "Base class MFEMFormulation cannot return a valid ProblemBuilder. Use a child class.");
-  };
+  }
 };

@@ -11,9 +11,8 @@ public:
   static InputParameters validParams();
 
   MFEMRWTE10PortRBC(const InputParameters & parameters);
-  virtual ~MFEMRWTE10PortRBC();
+  ~MFEMRWTE10PortRBC() override {}
 
-  virtual hephaestus::BoundaryCondition * getBC() override;
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}

@@ -16,10 +16,10 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual hephaestus::AuxSolver * getAuxSolver();
+  inline virtual std::shared_ptr<hephaestus::AuxSolver> getAuxSolver() const { return _auxsolver; }
 
   virtual void storeCoefficients(hephaestus::Coefficients & coefficients) {}
 
 protected:
-  hephaestus::AuxSolver * _auxsolver;
+  std::shared_ptr<hephaestus::AuxSolver> _auxsolver{nullptr};
 };

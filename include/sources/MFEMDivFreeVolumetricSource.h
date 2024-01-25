@@ -8,13 +8,12 @@ public:
   static InputParameters validParams();
 
   MFEMDivFreeVolumetricSource(const InputParameters & parameters);
-  virtual ~MFEMDivFreeVolumetricSource();
+  virtual ~MFEMDivFreeVolumetricSource() override {}
 
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual hephaestus::Source * getSource() override;
   virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:
@@ -25,5 +24,5 @@ protected:
   const MFEMFESpace & hcurl_fespace;
   const MFEMFESpace & h1_fespace;
 
-  mfem::PWVectorCoefficient * _restricted_coef;
+  std::shared_ptr<mfem::PWVectorCoefficient> _restricted_coef{nullptr};
 };

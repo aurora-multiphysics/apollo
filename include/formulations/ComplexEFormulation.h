@@ -36,7 +36,8 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual hephaestus::ProblemBuilder * getProblemBuilder() override { return &formulation; };
+
+  std::shared_ptr<hephaestus::ProblemBuilder> getProblemBuilder() override { return formulation; }
 
 private:
   std::string e_field_name;
@@ -47,5 +48,5 @@ private:
   std::string electric_conductivity_name;
   std::string dielectric_permittivity_name;
   std::string magnetic_reluctivity_name;
-  hephaestus::ComplexEFormulation formulation;
+  std::shared_ptr<hephaestus::ComplexEFormulation> formulation{nullptr};
 };

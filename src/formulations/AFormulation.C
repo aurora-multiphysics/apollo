@@ -43,28 +43,30 @@ AFormulation::AFormulation(const InputParameters & parameters)
     magnetic_vector_potential_name(getParam<std::string>("magnetic_vector_potential_name")),
     magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
     electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
-    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name")),
-    formulation(magnetic_reluctivity_name,
-                magnetic_permeability_name,
-                electric_conductivity_name,
-                magnetic_vector_potential_name)
+    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name"))
 {
+  formulation = std::make_shared<hephaestus::AFormulation>(magnetic_reluctivity_name,
+                                                           magnetic_permeability_name,
+                                                           electric_conductivity_name,
+                                                           magnetic_vector_potential_name);
+
   if (isParamValid("current_density_name"))
-    formulation.registerCurrentDensityAux(getParam<std::string>("current_density_name"));
+    formulation->RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
   if (isParamValid("magnetic_flux_density_name"))
-    formulation.registerMagneticFluxDensityAux(getParam<std::string>("magnetic_flux_density_name"));
+    formulation->RegisterMagneticFluxDensityAux(
+        getParam<std::string>("magnetic_flux_density_name"));
   if (isParamValid("electric_field_name"))
-    formulation.registerElectricFieldAux(getParam<std::string>("electric_field_name"));
+    formulation->RegisterElectricFieldAux(getParam<std::string>("electric_field_name"));
   if (isParamValid("magnetic_field_name"))
-    formulation.registerMagneticFieldAux(getParam<std::string>("magnetic_field_name"));
+    formulation->RegisterMagneticFieldAux(getParam<std::string>("magnetic_field_name"));
   if (isParamValid("lorentz_force_density_name"))
-    formulation.registerLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
-                                               getParam<std::string>("magnetic_flux_density_name"),
-                                               getParam<std::string>("current_density_name"));
+    formulation->RegisterLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
+                                                getParam<std::string>("magnetic_flux_density_name"),
+                                                getParam<std::string>("current_density_name"));
   if (isParamValid("joule_heating_density_name"))
-    formulation.registerJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
-                                               getParam<std::string>("electric_field_name"),
-                                               electric_conductivity_name);
+    formulation->RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
+                                                getParam<std::string>("electric_field_name"),
+                                                electric_conductivity_name);
 }
 
 AFormulation::~AFormulation() {}

@@ -7,7 +7,8 @@ MFEMDivFreeVolumetricSource::validParams()
 {
   InputParameters params = MFEMSource::validParams();
   params.addRequiredParam<UserObjectName>(
-      "vector_coefficient", "The vector MFEM coefficient providing the source to be divergence cleaned");  
+      "vector_coefficient",
+      "The vector MFEM coefficient providing the source to be divergence cleaned");
   params.addRequiredParam<UserObjectName>("hcurl_fespace",
                                           "The H(Curl) FE space to use in the source.");
   params.addRequiredParam<UserObjectName>("h1_fespace", "The H1 FE space to use in the source.");
@@ -36,7 +37,8 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
     sourcecoefs[i] = _vec_coef->getVectorCoefficient();
     coilsegments[i] = int(blocks[i]);
   }
-  _restricted_coef = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
+
+  _restricted_coef = std::make_shared<mfem::PWVectorCoefficient>(3, coilsegments, sourcecoefs);
 
   hephaestus::InputParameters _solver_options;
   EquationSystems & es = getParam<FEProblemBase *>("_fe_problem_base")->es();
@@ -57,19 +59,11 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
   div_free_source_params.SetParam("H1FESpaceName", h1_fespace.name());
   div_free_source_params.SetParam("SolverOptions", _solver_options);
 
-  _source = new hephaestus::DivFreeSource(div_free_source_params);
-}
-
-hephaestus::Source *
-MFEMDivFreeVolumetricSource::getSource()
-{
-  return _source;
+  _source = std::make_shared<hephaestus::DivFreeSource>(div_free_source_params);
 }
 
 void
 MFEMDivFreeVolumetricSource::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
-  coefficients.vectors.Register(source_coef_name, _restricted_coef, true);
+  coefficients._vectors.Register(source_coef_name, _restricted_coef);
 }
-
-MFEMDivFreeVolumetricSource::~MFEMDivFreeVolumetricSource() {}

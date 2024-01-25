@@ -38,15 +38,15 @@ MFEMConductor::MFEMConductor(const InputParameters & parameters)
 void
 MFEMConductor::storeCoefficients(hephaestus::Subdomain & subdomain)
 {
-  subdomain.scalar_coefficients.Register(
+  subdomain._scalar_coefficients.Register(
       "electrical_conductivity",
       const_cast<MFEMCoefficient *>(_electrical_conductivity_coeff)->getCoefficient(),
       false);
-  subdomain.scalar_coefficients.Register(
+  subdomain._scalar_coefficients.Register(
       "magnetic_permeability",
       const_cast<MFEMCoefficient *>(_permeability_coeff)->getCoefficient(),
       false);
-  subdomain.scalar_coefficients.Register(
+  subdomain._scalar_coefficients.Register(
       "dielectric_permittivity",
       const_cast<MFEMCoefficient *>(_permittivity_coeff)->getCoefficient(),
       false);

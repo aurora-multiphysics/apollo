@@ -23,18 +23,11 @@ MFEMComplexVectorDirichletBC::MFEMComplexVectorDirichletBC(const InputParameters
     _vec_coef_re(const_cast<MFEMVectorCoefficient *>(
         &getUserObject<MFEMVectorCoefficient>("real_vector_coefficient"))),
     _vec_coef_im(const_cast<MFEMVectorCoefficient *>(
-        &getUserObject<MFEMVectorCoefficient>("imag_vector_coefficient"))),
-    _boundary_condition(getParam<std::string>("variable"),
-                        bdr_attr,
-                        _vec_coef_re->getVectorCoefficient(),
-                        _vec_coef_im->getVectorCoefficient())
+        &getUserObject<MFEMVectorCoefficient>("imag_vector_coefficient")))
 {
+  _boundary_condition =
+      std::make_shared<hephaestus::VectorDirichletBC>(getParam<std::string>("variable"),
+                                                      bdr_attr,
+                                                      _vec_coef_re->getVectorCoefficient(),
+                                                      _vec_coef_im->getVectorCoefficient());
 }
-
-hephaestus::BoundaryCondition *
-MFEMComplexVectorDirichletBC::getBC()
-{
-  return &_boundary_condition;
-}
-
-MFEMComplexVectorDirichletBC::~MFEMComplexVectorDirichletBC() {}

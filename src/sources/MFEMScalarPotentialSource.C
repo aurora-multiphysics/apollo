@@ -56,19 +56,5 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
   scalar_potential_source_params.SetParam("H1FESpaceName", h1_fespace.name());
   scalar_potential_source_params.SetParam("SolverOptions", _solver_options);
 
-  _source = new hephaestus::ScalarPotentialSource(scalar_potential_source_params);
+  _source = std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params);
 }
-
-hephaestus::Source *
-MFEMScalarPotentialSource::getSource()
-{
-  return _source;
-}
-
-void
-MFEMScalarPotentialSource::storeCoefficients(hephaestus::Coefficients & coefficients)
-{
-  // coefficients.vectors[source_coef_name] = _restricted_coef;
-}
-
-MFEMScalarPotentialSource::~MFEMScalarPotentialSource() {}

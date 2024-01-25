@@ -26,11 +26,12 @@ public:
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-  virtual hephaestus::ProblemBuilder * getProblemBuilder() override { return &formulation; };
+
+  std::shared_ptr<hephaestus::ProblemBuilder> getProblemBuilder() override { return formulation; }
 
 private:
   std::string magnetic_vector_potential_name;
   std::string magnetic_permeability_name;
   std::string magnetic_reluctivity_name;
-  hephaestus::MagnetostaticFormulation formulation;
+  std::shared_ptr<hephaestus::MagnetostaticFormulation> formulation{nullptr};
 };

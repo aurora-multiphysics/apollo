@@ -17,12 +17,6 @@ MFEMSource::MFEMSource(const InputParameters & parameters)
 {
 }
 
-hephaestus::Source *
-MFEMSource::getSource()
-{
-  return _source;
-}
-
 void
 MFEMSource::storeCoefficients(hephaestus::Coefficients & coefficients)
 {

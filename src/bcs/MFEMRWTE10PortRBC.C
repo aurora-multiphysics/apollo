@@ -31,14 +31,6 @@ MFEMRWTE10PortRBC::MFEMRWTE10PortRBC(const InputParameters & parameters)
     _wv{_port_width_vector(0), _port_width_vector(1), _port_width_vector(2)},
     _input_port(getParam<bool>("input_port"))
 {
-  _boundary_condition = new hephaestus::RWTE10PortRBC(
+  _boundary_condition = std::make_shared<hephaestus::RWTE10PortRBC>(
       getParam<std::string>("variable"), bdr_attr, _frequency, _lv, _wv, _input_port);
 }
-
-hephaestus::BoundaryCondition *
-MFEMRWTE10PortRBC::getBC()
-{
-  return _boundary_condition;
-}
-
-MFEMRWTE10PortRBC::~MFEMRWTE10PortRBC() {}

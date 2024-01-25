@@ -7,14 +7,11 @@ public:
   static InputParameters validParams();
 
   MFEMScalarPotentialSource(const InputParameters & parameters);
-  virtual ~MFEMScalarPotentialSource();
+  virtual ~MFEMScalarPotentialSource() override {}
 
   virtual void execute() override {}
   virtual void initialize() override {}
   virtual void finalize() override {}
-
-  virtual hephaestus::Source * getSource() override;
-  virtual void storeCoefficients(hephaestus::Coefficients & coefficients) override;
 
 protected:
   std::string source_coef_name;
@@ -23,6 +20,4 @@ protected:
   std::string conductivity_coef_name;
   const MFEMFESpace & hcurl_fespace;
   const MFEMFESpace & h1_fespace;
-
-  mfem::PWVectorCoefficient * _restricted_coef;
 };

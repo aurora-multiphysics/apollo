@@ -20,11 +20,11 @@ MFEMVisItDataCollection::MFEMVisItDataCollection(const InputParameters & paramet
 {
 }
 
-mfem::VisItDataCollection *
-MFEMVisItDataCollection::createDataCollection(const std::string & collection_name)
+std::shared_ptr<mfem::DataCollection>
+MFEMVisItDataCollection::createDataCollection(const std::string & collection_name) const
 {
-  mfem::VisItDataCollection * visit_dc(
-      new mfem::VisItDataCollection(_file_base.c_str() + collection_name));
+  auto visit_dc = std::make_shared<mfem::VisItDataCollection>(_file_base.c_str() + collection_name);
   visit_dc->SetLevelsOfDetail(_refinements + 1);
+
   return visit_dc;
 }
