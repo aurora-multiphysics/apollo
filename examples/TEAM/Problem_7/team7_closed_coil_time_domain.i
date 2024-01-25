@@ -63,6 +63,10 @@
     type = MFEMVariable
     fespace = HCurlFESpace
   []
+  [source_grad_potential]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
 []
 
 [Sources]
@@ -70,6 +74,7 @@
     type = MFEMClosedCoilSource
     total_current_coefficient = CurrentCoef
     source_current_density_dual_gridfunction = source_current_density_dual
+    source_grad_potential = source_grad_potential
     hcurl_fespace = HCurlFESpace
     h1_fespace = H1FESpace
     coil_xsection_boundary = 7
