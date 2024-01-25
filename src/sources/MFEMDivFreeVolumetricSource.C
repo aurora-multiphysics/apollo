@@ -36,7 +36,8 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
     sourcecoefs[i] = _vec_coef->getVectorCoefficient();
     coilsegments[i] = int(blocks[i]);
   }
-  _restricted_coef = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
+
+  _restricted_coef = std::make_shared<mfem::PWVectorCoefficient>(3, coilsegments, sourcecoefs);
 
   hephaestus::InputParameters _solver_options;
   EquationSystems & es = getParam<FEProblemBase *>("_fe_problem_base")->es();
@@ -63,7 +64,7 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
 void
 MFEMDivFreeVolumetricSource::storeCoefficients(hephaestus::Coefficients & coefficients)
 {
-  coefficients._vectors.Register(source_coef_name, _restricted_coef, true);
+  coefficients._vectors.Register(source_coef_name, _restricted_coef);
 }
 
 MFEMDivFreeVolumetricSource::~MFEMDivFreeVolumetricSource() {}

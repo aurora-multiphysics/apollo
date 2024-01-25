@@ -24,5 +24,5 @@ protected:
   const MFEMFESpace & hcurl_fespace;
   const MFEMFESpace & h1_fespace;
 
-  mfem::PWVectorCoefficient * _restricted_coef;
+  std::shared_ptr<mfem::PWVectorCoefficient> _restricted_coef{nullptr};
 };
