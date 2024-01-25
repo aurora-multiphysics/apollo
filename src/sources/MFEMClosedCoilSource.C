@@ -22,6 +22,9 @@ MFEMClosedCoilSource::validParams()
   params.addParam<UserObjectName>("source_current_density_dual_gridfunction",
                                   "The gridfunction to store the source current density.");
 
+  params.addParam<UserObjectName>("source_grad_potential",
+                                  "The gridfunction to store the gradient of the potential.");
+
   params.addParam<BoundaryName>("coil_xsection_boundary",
                                 "A boundary (id or name) specifying a cross section of the coil in "
                                 "mesh, at which the current will be imposed");
@@ -34,11 +37,15 @@ MFEMClosedCoilSource::MFEMClosedCoilSource(const InputParameters & parameters)
         getUserObject<MFEMVariable>("source_current_density_dual_gridfunction")),
     _hcurl_fespace(getUserObject<MFEMFESpace>("hcurl_fespace")),
     _h1_fespace(getUserObject<MFEMFESpace>("h1_fespace")),
+    _source_grad_potential(getUserObject<MFEMVariable>("source_grad_potential")),
     _total_current_coef(getUserObject<MFEMCoefficient>("total_current_coefficient")),
+    _conductivity_coef_name(std::string("electrical_conductivity")),
     _closed_coil_params({{"JGridFunctionName", _source_current_density_dual_gridfunction.name()},
+                         {"GradPotentialName", _source_grad_potential.name()},
                          {"HCurlFESpaceName", _hcurl_fespace.name()},
                          {"H1FESpaceName", _h1_fespace.name()},
                          {"IFuncCoefName", _total_current_coef.name()},
+                         {"ConductivityCoefName", _conductivity_coef_name},
                          {"Jtransfer", true}}),
     _coil_domains(blocks.size()),
     _coil_xsection_id(std::stoi(getParam<BoundaryName>("coil_xsection_boundary")))

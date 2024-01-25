@@ -19,7 +19,10 @@ protected:
   const MFEMVariable & _source_current_density_dual_gridfunction;
   const MFEMFESpace & _hcurl_fespace;
   const MFEMFESpace & _h1_fespace;
+  const MFEMVariable & _source_grad_potential;
   const MFEMCoefficient & _total_current_coef;
+  const std::string _conductivity_coef_name;
+
   const hephaestus::InputParameters _closed_coil_params;
   mfem::Array<int> _coil_domains;
   const int _coil_xsection_id;
