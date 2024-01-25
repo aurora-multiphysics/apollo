@@ -14,10 +14,9 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  // NB: unique pointer releases ownership when called. Caller is responsible for deleting kernel.
-  hephaestus::Kernel<mfem::ParBilinearForm> * getKernel() override;
+  std::shared_ptr<hephaestus::Kernel<mfem::ParBilinearForm>> getKernel() override { return _kernel; }
 
 protected:
   hephaestus::InputParameters _kernel_params;
-  std::unique_ptr<hephaestus::DiffusionKernel> _kernel{nullptr};
+  std::shared_ptr<hephaestus::DiffusionKernel> _kernel{nullptr};
 };
