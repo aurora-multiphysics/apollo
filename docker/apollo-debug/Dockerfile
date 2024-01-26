@@ -1,6 +1,6 @@
 # Build and test Apollo image
 # Get base image
-FROM alexanderianblair/apollo-deps:master
+FROM alexanderianblair/apollo-debug-deps:master
 
 # By default one core is used to compile
 ARG compile_cores=4
