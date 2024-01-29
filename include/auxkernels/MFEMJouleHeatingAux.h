@@ -5,15 +5,17 @@
 class JouleHeatingCoefficient : public hephaestus::CoupledCoefficient
 {
 private:
-  mfem::Coefficient * sigma;
-  mfem::ParGridFunction * joule_heating_gf;
+  std::shared_ptr<mfem::Coefficient> sigma{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> joule_heating_gf{nullptr};
   std::string conductivity_coef_name;
   // std::string var_name;
 
 public:
   JouleHeatingCoefficient(const hephaestus::InputParameters & params)
     : hephaestus::CoupledCoefficient(params),
-      conductivity_coef_name(params.GetParam<std::string>("ConductivityCoefName")) {}
+      conductivity_coef_name(params.GetParam<std::string>("ConductivityCoefName"))
+  {
+  }
 
   void Init(const hephaestus::GridFunctions & variables, hephaestus::Coefficients & coefficients)
   {
