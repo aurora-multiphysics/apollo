@@ -18,7 +18,7 @@ public:
   void storeCoefficients(hephaestus::Subdomain & subdomain) override;
 
 protected:
-  const MFEMCoefficient * _electrical_conductivity_coeff;
-  const MFEMCoefficient * _permittivity_coeff;
-  const MFEMCoefficient * _permeability_coeff;
+  const MFEMCoefficient * _electrical_conductivity_coeff{nullptr};
+  const MFEMCoefficient * _permittivity_coeff{nullptr};
+  const MFEMCoefficient * _permeability_coeff{nullptr};
 };

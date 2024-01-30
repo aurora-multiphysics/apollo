@@ -74,5 +74,5 @@ public:
 
 protected:
   hephaestus::InputParameters joule_heating_params;
-  std::shared_ptr<JouleHeatingCoefficient> joule_heating_aux;
+  std::shared_ptr<JouleHeatingCoefficient> joule_heating_aux{nullptr};
 };
