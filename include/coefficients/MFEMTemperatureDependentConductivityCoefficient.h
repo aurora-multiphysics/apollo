@@ -19,7 +19,11 @@ public:
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  std::shared_ptr<mfem::Coefficient> getCoefficient() override { return shared_from_this(); }
+  std::shared_ptr<mfem::Coefficient> getCoefficient() const override
+  {
+    return std::const_pointer_cast<MFEMTemperatureDependentConductivityCoefficient>(
+        shared_from_this());
+  }
 
 private:
   const Function & _func;

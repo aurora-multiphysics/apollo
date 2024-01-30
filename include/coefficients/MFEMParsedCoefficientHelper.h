@@ -57,9 +57,9 @@ public:
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  std::shared_ptr<mfem::Coefficient> getCoefficient() override
+  std::shared_ptr<mfem::Coefficient> getCoefficient() const override
   {
-    return shared_from_this();
+    return std::const_pointer_cast<MFEMParsedCoefficientHelper>(shared_from_this());
   }
 
 protected:

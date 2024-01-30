@@ -18,7 +18,7 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  virtual std::shared_ptr<mfem::Coefficient> getCoefficient()
+  virtual std::shared_ptr<mfem::Coefficient> getCoefficient() const
   {
     mooseError("Base class MFEMCoefficient cannot return a valid Coefficient. Use a child class.");
   }
