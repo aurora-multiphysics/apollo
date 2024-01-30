@@ -13,7 +13,7 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  std::shared_ptr<mfem::VectorCoefficient> getVectorCoefficient() override
+  std::shared_ptr<mfem::VectorCoefficient> getVectorCoefficient() const override
   {
     return _vector_coefficient;
   }
