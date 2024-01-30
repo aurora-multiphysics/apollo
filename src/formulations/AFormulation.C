@@ -35,6 +35,18 @@ AFormulation::validParams()
   params.addParam<std::string>(
       "joule_heating_density_name",
       "Name of L2 conforming MFEM gridfunction to store Joule heating density");
+  params.addParam<std::string>(
+      "external_current_density_name",
+      "Name of H(Div) conforming MFEM gridfunction storing external current density");
+  params.addParam<std::string>(
+      "external_magnetic_flux_density_name",
+      "Name of H(Div) conforming MFEM gridfunction storing external magnetic flux density");
+  params.addParam<std::string>(
+      "external_electric_field_name",
+      "Name of H(Curl) conforming MFEM gridfunction storing external electric field");
+  params.addParam<std::string>(
+      "external_magnetic_field_name",
+      "Name of H(Curl) conforming MFEM gridfunction storing external magnetic field");
   return params;
 }
 
@@ -51,14 +63,29 @@ AFormulation::AFormulation(const InputParameters & parameters)
                                                            magnetic_vector_potential_name);
 
   if (isParamValid("current_density_name"))
-    formulation->RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
+    formulation->RegisterCurrentDensityAux(
+        getParam<std::string>("current_density_name"),
+        isParamValid("external_current_density_name")
+            ? getParam<std::string>("external_current_density_name")
+            : "");
   if (isParamValid("magnetic_flux_density_name"))
     formulation->RegisterMagneticFluxDensityAux(
-        getParam<std::string>("magnetic_flux_density_name"));
+        getParam<std::string>("magnetic_flux_density_name"),
+        isParamValid("external_magnetic_flux_density_name")
+            ? getParam<std::string>("external_magnetic_flux_density_name")
+            : "");
   if (isParamValid("electric_field_name"))
-    formulation->RegisterElectricFieldAux(getParam<std::string>("electric_field_name"));
+    formulation->RegisterElectricFieldAux(
+        getParam<std::string>("electric_field_name"),
+        isParamValid("external_electric_field_name")
+            ? getParam<std::string>("external_electric_field_name")
+            : "");
   if (isParamValid("magnetic_field_name"))
-    formulation->RegisterMagneticFieldAux(getParam<std::string>("magnetic_field_name"));
+    formulation->RegisterMagneticFieldAux(
+        getParam<std::string>("magnetic_field_name"),
+        isParamValid("external_magnetic_field_name")
+            ? getParam<std::string>("external_magnetic_field_name")
+            : "");
   if (isParamValid("lorentz_force_density_name"))
     formulation->RegisterLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
                                                 getParam<std::string>("magnetic_flux_density_name"),

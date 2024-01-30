@@ -17,6 +17,10 @@ MFEMOpenCoilSource::validParams()
   params.addParam<UserObjectName>("source_potential_gridfunction",
                                   "The gridfunction to store the scalar potential in the coil.");
 
+  params.addParam<UserObjectName>(
+      "source_electric_field_gridfunction",
+      "The gridfunction to store the electric field of the current source.");
+
   params.addParam<UserObjectName>("source_grad_potential",
                                   "Name of the gradient of the potential.");
 
@@ -61,12 +65,16 @@ MFEMOpenCoilSource::MFEMOpenCoilSource(const InputParameters & parameters)
                     {"AbsTolerance", float(getParam<Real>("l_abs_tol"))},
                     {"MaxIter", getParam<unsigned int>("l_max_its")},
                     {"PrintLevel", getParam<int>("print_level")}}),
-    _open_coil_params({{"SourceName", _source_current_density_gridfunction.name()},
-                       {"PotentialName", _source_potential_gridfunction.name()},
-                       {"GradPotentialName", _source_grad_potential.name()},
-                       {"IFuncCoefName", _total_current_coef.name()},
-                       {"ConductivityCoefName", _conductivity_coef_name},
-                       {"SolverOptions", _solver_params}}),
+    _open_coil_params(
+        {{"PotentialName", _source_potential_gridfunction.name()},
+         {"GradPotentialName", _source_grad_potential.name()},
+         {"IFuncCoefName", _total_current_coef.name()},
+         {"ConductivityCoefName", _conductivity_coef_name},
+         {"SourceElectricFieldName",
+          isParamValid("source_electric_field_gridfunction")
+              ? getUserObject<MFEMVariable>("source_electric_field_gridfunction").name()
+              : ""},
+         {"SourceCurrentDensityName", _source_current_density_gridfunction.name()}}),
     _coil_domains(blocks.size()),
     _coil_in_id(std::stoi(getParam<BoundaryName>("coil_in_boundary"))),
     _coil_out_id(std::stoi(getParam<BoundaryName>("coil_out_boundary"))),

@@ -4,5 +4,6 @@ compiler_type: gcc
 documentation: true
 installation_type: in_tree
 registered_apps:
+- WASPAPP
 - APOLLOAPP
 - APOLLOTESTAPP
