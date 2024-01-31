@@ -31,7 +31,7 @@ CONTACT                     := no
 EXTERNAL_PETSC_SOLVER       := no
 FLUID_PROPERTIES            := no
 FUNCTIONAL_EXPANSION_TOOLS  := no
-HEAT_CONDUCTION             := yes
+HEAT_TRANSFER             	:= yes
 LEVEL_SET                   := no
 MISC                        := no
 NAVIER_STOKES               := no
@@ -61,7 +61,6 @@ BUILD_EXEC         := yes
 GEN_REVISION       := no
 DEP_APPS           := $(shell $(FRAMEWORK_DIR)/scripts/find_dep_apps.py $(APPLICATION_NAME))
 include            $(FRAMEWORK_DIR)/app.mk
-
 
 ###############################################################################
 # Additional special case targets should be added here
