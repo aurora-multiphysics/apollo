@@ -11,9 +11,9 @@ ARG WORKDIR="opt"
 #Configure MOOSE
 RUN export MOOSE_JOBS="$compile_cores" && \
     cd /$WORKDIR && \
-    git clone https://github.com/idaholab/moose && \
+    git clone https://github.com/EdwardPalmer99/moose.git && \
     cd moose && \
-    git checkout master && \
+    git checkout EdwardPalmer99/Revert-Changes-To-Executable-Linking-App-MakeFile && \
     export PETSC_DIR=/$WORKDIR/petsc && \
     export PETSC_ARCH=arch-linux-c-opt && \
     export CC=mpicc && \
