@@ -44,11 +44,11 @@ void
 MultiAppVectorTransferTemplate<MultiAppTransferClassType>::execute()
 {
   // Update all components of the vector variables.
-  getFromAuxSystem().compute(Apollo::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
+  getFromAuxSystem().compute(ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
 
   // Call execute on inherited class which will work on component variables.
   MultiAppTransferClassType::execute();
 
   // Rebuild all vector variables from their components.
-  getToAuxSystem().compute(Apollo::EXEC_RECOVER_VECTOR_POST_TRANSFER);
+  getToAuxSystem().compute(ApolloApp::EXEC_RECOVER_VECTOR_POST_TRANSFER);
 }

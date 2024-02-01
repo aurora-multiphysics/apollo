@@ -9,7 +9,7 @@ VectorVariableToComponentsAux::validParams()
   InputParameters params = WritableVectorAuxKernel::validParams();
 
   ExecFlagEnum & exec = params.set<ExecFlagEnum>("execute_on");
-  exec.addAvailableFlags(Apollo::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
+  exec.addAvailableFlags(ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER);
 
   params.addRequiredCoupledVar("component_x", "The x-component of the vector variable.");
   params.addRequiredCoupledVar("component_y", "The y-component of the vector variable.");
