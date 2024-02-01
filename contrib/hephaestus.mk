@@ -1,17 +1,29 @@
-############################### HEPHAESTUS #######################################h
-###############################################################################
-# source files
+############################### HEPHAESTUS ######################################
+#################################################################################
+MFEM_DIR				:=$(APPLICATION_DIR)/../mfem/build
 
-MFEM_INC= -I$(MFEM_DIR)  -I$(MFEM_SOURCE_DIR) -I$(MFEM_SOURCE_DIR)/miniapps/common
-MFEM_LIB= -L$(MFEM_DIR) -lmfem -lrt -L$(MFEM_DIR)/miniapps/common -lmfem-common
+include $(MFEM_DIR)/config/config.mk
 
-HEPHAESTUS_INCDIR = $(sort $(dir $(shell find $(HEPHAESTUS_DIR)/src/ -name "*.hpp")))
-HEPHAESTUS_INC=$(foreach d, $(HEPHAESTUS_INCDIR), -I$d)
-HEPHAESTUS_LIBDIR = $(HEPHAESTUS_DIR)/lib
-HEPHAESTUS_LIB = -Wl,-rpath,$(HEPHAESTUS_LIBDIR) -L$(HEPHAESTUS_LIBDIR) -lhephaestus -lnetcdf
+MFEM_INCLUDE 			:= -I$(MFEM_DIR) -I$(MFEM_SOURCE_DIR) -I$(MFEM_SOURCE_DIR)/miniapps/common
+MFEM_LIB 				:= -L$(MFEM_DIR) -lmfem -lrt -L$(MFEM_DIR)/miniapps/common -lmfem-common
 
-ADDITIONAL_INCLUDES += $(HEPHAESTUS_INC) $(MFEM_INC) -I$(MFEM_INC_DIR)/config
-ADDITIONAL_LIBS += $(HEPHAESTUS_LIB) $(MFEM_LIB)
+HEPHAESTUS_DIR 			:= $(APPLICATION_DIR)/contrib/hephaestus
+
+HEPHAESTUS_LIB_DIR		:= $(HEPHAESTUS_DIR)/lib
+HEPHAESTUS_LIB 			:= $(HEPHAESTUS_LIB_DIR)/libhephaestus.so 
+
+HEPHAESTUS_INCLUDE_LIB	:= $(sort $(dir $(shell find $(HEPHAESTUS_DIR)/src/ -name "*.hpp")))
+HEPHAESTUS_INCLUDE		:= $(foreach d, $(HEPHAESTUS_INCLUDE_LIB), -I$d)
+
+HEPHAESTUS_CXX_FLAGS 	:= -Wall $(HEPHAESTUS_INCLUDE) $(MFEM_INCLUDE) -I$(MFEM_INC_DIR)/config
+HEPHAESTUS_LDFLAGS		:= -Wl,-rpath,$(HEPHAESTUS_LIB_DIR) -L$(HEPHAESTUS_LIB_DIR) -lhephaestus -lnetcdf  $(MFEM_LIB)
+
+libmesh_CXXFlags 		+= $(HEPHAESTUS_CXX_FLAGS)
+libmesh_LDFLAGS 		+= $(HEPHAESTUS_LDFLAGS)
+
+ADDITIONAL_CPPFLAGS		+= -DHEPHAESTUS_ENABLED
+ADDITIONAL_INCLUDES 	+= $(HEPHAESTUS_CXX_FLAGS)
+ADDITIONAL_LIBS 		+= $(HEPHAESTUS_LDFLAGS)
 
 $(info ADDITIONAL_INCLUDES = $(ADDITIONAL_INCLUDES));
-$(info ADDITIONAL_LIBS = $(ADDITIONAL_LIBS));
+$(info ADDITIONAL_LIBS     = $(ADDITIONAL_LIBS));
