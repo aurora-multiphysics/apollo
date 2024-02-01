@@ -29,8 +29,8 @@ RUN cd /$WORKDIR/apollo/contrib/hephaestus/build && \
 
 # Build Apollo
 RUN cd /$WORKDIR/apollo && \
-    make -j"$compile_cores"
+    METHOD=dbg make -j"$compile_cores"
 
 # Test Apollo
 RUN cd /$WORKDIR/apollo && \
-    make test
+    METHOD=dbg make test
