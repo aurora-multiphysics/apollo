@@ -47,14 +47,19 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
           : es.parameters.get<unsigned int>("linear solver maximum iterations"));
   _solver_options.SetParam("PrintLevel", -1);
 
-  hephaestus::InputParameters scalar_potential_source_params;
-  scalar_potential_source_params.SetParam("SourceName", source_coef_name);
-  scalar_potential_source_params.SetParam("PotentialName", potential_name);
-  scalar_potential_source_params.SetParam("GradPotentialName", grad_potential_name);
-  scalar_potential_source_params.SetParam("ConductivityCoefName", conductivity_coef_name);
-  scalar_potential_source_params.SetParam("HCurlFESpaceName", hcurl_fespace.name());
-  scalar_potential_source_params.SetParam("H1FESpaceName", h1_fespace.name());
-  scalar_potential_source_params.SetParam("SolverOptions", _solver_options);
+  // hephaestus::InputParameters scalar_potential_source_params;
+  // scalar_potential_source_params.SetParam("SourceName", source_coef_name);
+  // scalar_potential_source_params.SetParam("PotentialName", potential_name);
+  // scalar_potential_source_params.SetParam("GradPotentialName", grad_potential_name);
+  // scalar_potential_source_params.SetParam("ConductivityCoefName", conductivity_coef_name);
+  // scalar_potential_source_params.SetParam("HCurlFESpaceName", hcurl_fespace.name());
+  // scalar_potential_source_params.SetParam("H1FESpaceName", h1_fespace.name());
+  // scalar_potential_source_params.SetParam("SolverOptions", _solver_options);
 
-  _source = std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params);
+  _source = std::make_shared<hephaestus::ScalarPotentialSource>(grad_potential_name,
+                                                                potential_name,
+                                                                hcurl_fespace.name(),
+                                                                h1_fespace.name(),
+                                                                conductivity_coef_name,
+                                                                _solver_options);
 }

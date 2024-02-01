@@ -7,9 +7,8 @@ MFEMClosedCoilSource::validParams()
 {
   InputParameters params = MFEMSource::validParams();
 
-  params.addRequiredParam<UserObjectName>(
-      "total_current_coefficient",
-      "The total current ($I$) flowing through the coil. May be time dependent.");
+  params.addParam<UserObjectName>("source_electric_field",
+                                  "The gridfunction to store the electric field of the source.");
 
   params.addRequiredParam<UserObjectName>(
       "hcurl_fespace",
@@ -19,11 +18,9 @@ MFEMClosedCoilSource::validParams()
       "h1_fespace",
       "The FESpace associated with the scalar potential used in the ClosedCoilSolver.");
 
-  params.addParam<UserObjectName>("source_current_density_dual_gridfunction",
-                                  "The gridfunction to store the source current density.");
-
-  params.addParam<UserObjectName>("source_grad_potential",
-                                  "The gridfunction to store the gradient of the potential.");
+  params.addRequiredParam<UserObjectName>(
+      "total_current_coefficient",
+      "The total current ($I$) flowing through the coil. May be time dependent.");
 
   params.addParam<BoundaryName>("coil_xsection_boundary",
                                 "A boundary (id or name) specifying a cross section of the coil in "
@@ -33,22 +30,17 @@ MFEMClosedCoilSource::validParams()
 
 MFEMClosedCoilSource::MFEMClosedCoilSource(const InputParameters & parameters)
   : MFEMSource(parameters),
-    _source_current_density_dual_gridfunction(
-        getUserObject<MFEMVariable>("source_current_density_dual_gridfunction")),
+    _source_electric_field(getUserObject<MFEMVariable>("source_electric_field")),
     _hcurl_fespace(getUserObject<MFEMFESpace>("hcurl_fespace")),
     _h1_fespace(getUserObject<MFEMFESpace>("h1_fespace")),
-    _source_grad_potential(getUserObject<MFEMVariable>("source_grad_potential")),
     _total_current_coef(getUserObject<MFEMCoefficient>("total_current_coefficient")),
     _conductivity_coef_name(std::string("electrical_conductivity")),
-    _closed_coil_params({{"JGridFunctionName", _source_current_density_dual_gridfunction.name()},
-                         {"GradPotentialName", _source_grad_potential.name()},
-                         {"HCurlFESpaceName", _hcurl_fespace.name()},
-                         {"H1FESpaceName", _h1_fespace.name()},
-                         {"IFuncCoefName", _total_current_coef.name()},
-                         {"ConductivityCoefName", _conductivity_coef_name},
-                         {"Jtransfer", true}}),
     _coil_domains(blocks.size()),
-    _coil_xsection_id(std::stoi(getParam<BoundaryName>("coil_xsection_boundary")))
+    _coil_xsection_id(std::stoi(getParam<BoundaryName>("coil_xsection_boundary"))),
+    _solver_params({{"Tolerance", float(getParam<Real>("l_tol"))},
+                    {"AbsTolerance", float(getParam<Real>("l_abs_tol"))},
+                    {"MaxIter", getParam<unsigned int>("l_max_its")},
+                    {"PrintLevel", getParam<int>("print_level")}})
 {
   for (unsigned int bid = 0; bid < blocks.size(); ++bid)
   {
@@ -56,5 +48,16 @@ MFEMClosedCoilSource::MFEMClosedCoilSource(const InputParameters & parameters)
   }
 
   _source = std::make_shared<hephaestus::ClosedCoilSolver>(
-      _closed_coil_params, _coil_domains, _coil_xsection_id);
+      _source_electric_field.name(),
+      _hcurl_fespace.name(),
+      _h1_fespace.name(),
+      _total_current_coef.name(),
+      _conductivity_coef_name,
+      _coil_domains,
+      _coil_xsection_id,
+      true,
+      isParamValid("source_current_density_gridfunction")
+          ? getUserObject<MFEMVariable>("source_current_density_gridfunction").name()
+          : "",
+      _solver_params);
 }
