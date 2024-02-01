@@ -10,12 +10,15 @@
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate;
 
-class MultiAppGeneralFieldNearestLocationTransfer;
 class MultiAppCopyTransfer; // NB: CopyTransfer can handle vector variables.
+class MultiAppShapeEvaluationTransfer;
+class MultiAppGeneralFieldNearestLocationTransfer;
 
 /**
  * Create all transfer types using template here. Don't forget to register them in .C file.
  */
+typedef MultiAppVectorTransferTemplate<MultiAppShapeEvaluationTransfer>
+    MultiAppShapeEvaluationTransferVector;
 typedef MultiAppVectorTransferTemplate<MultiAppGeneralFieldNearestLocationTransfer>
     MultiAppGeneralFieldNearestLocationTransferVector;
 typedef MultiAppVectorTransferTemplate<MultiAppCopyTransfer> MultiAppCopyTransferVector;

@@ -2,6 +2,7 @@
 #include "AuxiliarySystem.h"
 
 #include "MultiAppGeneralFieldNearestLocationTransfer.h"
+#include "MultiAppShapeEvaluationTransfer.h"
 #include "MultiAppCopyTransfer.h"
 
 #include "ApolloVectorTransferFlags.h"
@@ -9,6 +10,7 @@
 /**
  * Register all Moose objects that we would like here.
  */
+registerMooseObject("MooseApp", MultiAppShapeEvaluationTransferVector);
 registerMooseObject("MooseApp", MultiAppGeneralFieldNearestLocationTransferVector);
 registerMooseObject("MooseApp", MultiAppCopyTransferVector);
 
