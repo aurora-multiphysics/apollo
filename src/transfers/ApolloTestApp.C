@@ -1,0 +1,54 @@
+#include "ApolloTestApp.h"
+#include "ApolloApp.h"
+#include "Moose.h"
+#include "AppFactory.h"
+#include "MooseSyntax.h"
+#include "ModulesApp.h"
+
+InputParameters
+ApolloTestApp::validParams()
+{
+  InputParameters params = Apollo::validParams();
+  return params;
+}
+
+ApolloTestApp::ApolloTestApp(InputParameters parameters) : MooseApp(parameters)
+{
+  ApolloTestApp::registerAll(
+      _factory, _action_factory, _syntax, getParam<bool>("allow_test_objects"));
+}
+
+ApolloTestApp::~ApolloTestApp() {}
+
+void
+ApolloTestApp::registerAll(Factory & f, ActionFactory & af, Syntax & s, bool use_test_objs)
+{
+  Apollo::registerAll(f, af, s);
+  if (use_test_objs)
+  {
+    Registry::registerObjectsTo(f, {"ApolloTestApp"});
+    Registry::registerActionsTo(af, {"ApolloTestApp"});
+  }
+}
+
+void
+ApolloTestApp::registerApps()
+{
+  registerApp(ApolloApp);
+  registerApp(ApolloTestApp);
+}
+
+/***************************************************************************************************
+ *********************** Dynamic Library Entry Points - DO NOT MODIFY ******************************
+ **************************************************************************************************/
+// External entry point for dynamic application loading
+extern "C" void
+ApolloTestApp__registerAll(Factory & f, ActionFactory & af, Syntax & s)
+{
+  ApolloTestApp::registerAll(f, af, s);
+}
+extern "C" void
+ApolloTestApp__registerApps()
+{
+  ApolloTestApp::registerApps();
+}
