@@ -191,12 +191,12 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
     case VectorAuxKernelType::RECOVER_VECTOR_POST_TRANSFER:
       aux_kernel_name = "VectorVariableFromComponentsAux";
       unique_aux_kernel_name = vector_name + "_from_components";
-      exec_flag = ApolloApp::EXEC_RECOVER_VECTOR_POST_TRANSFER;
+      exec_flag = Apollo::EXEC_RECOVER_VECTOR_POST_TRANSFER;
       break;
     case VectorAuxKernelType::PREPARE_VECTOR_FOR_TRANSFER:
       aux_kernel_name = "VectorVariableToComponentsAux";
       unique_aux_kernel_name = vector_name + "_to_components";
-      exec_flag = ApolloApp::EXEC_PREPARE_VECTOR_FOR_TRANSFER;
+      exec_flag = Apollo::EXEC_PREPARE_VECTOR_FOR_TRANSFER;
       break;
     default:
       mooseError("Unsupported vector auxkernel type.");
