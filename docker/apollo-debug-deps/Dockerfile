@@ -21,19 +21,19 @@ RUN export MOOSE_JOBS="$compile_cores" && \
     export F90=mpif90 && \
     export F77=mpif77 && \
     export FC=mpif90  && \
-    METHODS='debug' ./scripts/update_and_rebuild_libmesh.sh --with-mpi && \
+    METHOD=dbg ./scripts/update_and_rebuild_libmesh.sh --with-mpi && \
     ./configure --with-derivative-size=200 --with-ad-indexing-type=global
 
 # Build WASP
 RUN cd /$WORKDIR/moose/scripts && \
-    METHODS='debug' ./update_and_rebuild_wasp.sh
+    METHOD=dbg ./update_and_rebuild_wasp.sh
 
 # Build MOOSE
 RUN cd /$WORKDIR/moose/framework && \
-    METHOD=debug make -j"$compile_cores"
+    METHOD=dbg make -j"$compile_cores"
 
 RUN cd /$WORKDIR/moose/test && \
-    METHOD=debug make -j"$compile_cores"
+    METHOD=dbg make -j"$compile_cores"
 
 # This is needed or it mpiexec complains because docker runs as root
 # Discussion on this issue https://github.com/open-mpi/ompi/issues/4451
