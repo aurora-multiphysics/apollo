@@ -175,7 +175,7 @@
     type = MFEMScalarPotentialSource
     source_grad_potential_gridfunction = source_grad_potential
     source_potential_gridfunction = source_electric_potential
-    conductivity = CoilEConductivity
+    conductivity_coef = CoilEConductivity
     h1_fespace = H1FESpace
     hcurl_fespace = HCurlFESpace
     block = 1

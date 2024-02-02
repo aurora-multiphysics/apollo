@@ -15,6 +15,9 @@
   magnetic_reluctivity_name = magnetic_reluctivity
   magnetic_permeability_name = magnetic_permeability
   magnetic_flux_density_name = magnetic_flux_density
+
+  current_density_name = total_current_density
+  # external_current_density_name = source_current_density
 []
 
 [FESpaces]
@@ -46,15 +49,19 @@
   []
   [source_current_density]
     type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [source_electric_field]
+    type = MFEMVariable
     fespace = HCurlFESpace
   []
-  [electric_potential]
+  [source_electric_potential]
     type = MFEMVariable
     fespace = H1FESpace
   []
-  [source_grad_potential]
-    type = MFEMVariable 
-    fespace = H1FESpace
+  [total_current_density]
+    type = MFEMVariable
+    fespace = HDivFESpace
   []
 []
 
@@ -151,8 +158,8 @@
     type = MFEMOpenCoilSource
     total_current_coef = CurrentCoef
     source_current_density_gridfunction = source_current_density
-    source_potential_gridfunction = electric_potential
-    source_grad_potential = source_grad_potential
+    source_electric_field_gridfunction = source_electric_field
+    source_potential_gridfunction = source_electric_potential
     coil_in_boundary = 1
     coil_out_boundary = 2
     block = 1
