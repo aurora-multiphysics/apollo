@@ -50,14 +50,14 @@
 
 [VectorTransfers]
   [push]
-    type = MultiAppShapeEvaluationTransfer
+    type = MultiAppGeneralFieldShapeEvaluationTransfer
     to_multi_app = sub_app
     source_variable = sent_vector
     variable = received_vector_sub_app
   []
 
   [pull]
-    type = MultiAppShapeEvaluationTransfer
+    type = MultiAppGeneralFieldShapeEvaluationTransfer
     from_multi_app = sub_app 
     source_variable = received_vector_sub_app
     variable = received_vector
