@@ -22,6 +22,13 @@
     requirement = 'Apollo shall have the ability to push and pull a Lagrange vector using the MultiAppGeneralFieldNearestLocationTransfer transfer.'
   []
 
+  [./PushPullLagrangeVectorShapeEvaluationTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_lagrange_vector_shape_evaluation_transfer_master.i'
+    csvdiff = 'push_pull_lagrange_vector_shape_evaluation_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to push and pull a Lagrange vector using the MultiAppShapeEvaluationTransfer transfer.'
+  []
+
   [./PullMonomialVectorNearestLocationTransfer]
     type = 'CSVDiff'
     input = 'pull_monomial_vector_nearest_location_transfer_master.i'
@@ -41,5 +48,12 @@
     input = 'push_pull_monomial_vector_nearest_location_transfer_master.i'
     csvdiff = 'push_pull_monomial_vector_nearest_location_transfer_master_out.csv'
     requirement = 'Apollo shall have the ability to push and pull a Monomial vector using the MultiAppGeneralFieldNearestLocationTransfer transfer.'
+  []
+
+  [./PushPullMonomialVectorShapeEvaluationTransfer]
+    type = 'CSVDiff'
+    input = 'push_pull_monomial_vector_shape_evaluation_transfer_master.i'
+    csvdiff = 'push_pull_monomial_vector_shape_evaluation_transfer_master_out.csv'
+    requirement = 'Apollo shall have the ability to push and pull a Monomial vector using the MultiAppShapeEvaluationTransfer transfer.'
   []
 []
