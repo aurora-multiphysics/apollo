@@ -2,6 +2,7 @@
 #include "AuxiliarySystem.h"
 
 #include "MultiAppGeneralFieldNearestLocationTransfer.h"
+#include "MultiAppGeneralFieldShapeEvaluationTransfer.h"
 #include "MultiAppShapeEvaluationTransfer.h"
 #include "MultiAppCopyTransfer.h"
 
@@ -12,6 +13,7 @@
  */
 registerMooseObject("MooseApp", MultiAppShapeEvaluationTransferVector);
 registerMooseObject("MooseApp", MultiAppGeneralFieldNearestLocationTransferVector);
+registerMooseObject("MooseApp", MultiAppGeneralFieldShapeEvaluationTransferVector);
 registerMooseObject("MooseApp", MultiAppCopyTransferVector);
 
 template <typename MultiAppTransferClassType>
