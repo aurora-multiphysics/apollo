@@ -10,7 +10,6 @@
 template <typename MultiAppTransferClassType>
 class MultiAppVectorTransferTemplate;
 
-class MultiAppCopyTransfer; // NB: CopyTransfer can handle vector variables.
 class MultiAppGeneralFieldNearestLocationTransfer;
 class MultiAppGeneralFieldShapeEvaluationTransfer;
 
@@ -19,7 +18,6 @@ class MultiAppGeneralFieldShapeEvaluationTransfer;
  */
 typedef MultiAppVectorTransferTemplate<MultiAppGeneralFieldNearestLocationTransfer>
     MultiAppGeneralFieldNearestLocationTransferVector;
-typedef MultiAppVectorTransferTemplate<MultiAppCopyTransfer> MultiAppCopyTransferVector;
 typedef MultiAppVectorTransferTemplate<MultiAppGeneralFieldShapeEvaluationTransfer>
     MultiAppGeneralFieldShapeEvaluationTransferVector;
 

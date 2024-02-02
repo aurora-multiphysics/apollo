@@ -12,7 +12,6 @@
  */
 registerMooseObject("MooseApp", MultiAppGeneralFieldNearestLocationTransferVector);
 registerMooseObject("MooseApp", MultiAppGeneralFieldShapeEvaluationTransferVector);
-registerMooseObject("MooseApp", MultiAppCopyTransferVector);
 
 template <typename MultiAppTransferClassType>
 InputParameters
