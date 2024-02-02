@@ -42,7 +42,7 @@ MFEMOpenCoilSource::validParams()
 
   params.addParam<unsigned int>(
       "l_max_its",
-      1000,
+      100,
       "The number of iterations to use in the linear solver for the OpenCoilSource");
 
   params.addParam<int>(

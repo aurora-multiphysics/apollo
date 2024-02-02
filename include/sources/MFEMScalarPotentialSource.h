@@ -14,10 +14,9 @@ public:
   virtual void finalize() override {}
 
 protected:
-  std::string source_coef_name;
-  std::string potential_name;
-  std::string grad_potential_name;
-  std::string conductivity_coef_name;
-  const MFEMFESpace & hcurl_fespace;
-  const MFEMFESpace & h1_fespace;
+  const MFEMVariable & _source_grad_potential_gridfunction;
+  const MFEMVariable & _source_potential_gridfunction;
+  std::string _conductivity_coef_name;
+  const MFEMFESpace & _hcurl_fespace;
+  const MFEMFESpace & _h1_fespace;
 };
