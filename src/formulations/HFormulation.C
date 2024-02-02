@@ -61,7 +61,7 @@ HFormulation::HFormulation(const InputParameters & parameters)
   if (isParamValid("joule_heating_density_name"))
     formulation->RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
                                                 getParam<std::string>("electric_field_name"),
-                                                electric_conductivity_name);
+                                                getParam<std::string>("current_density_name"));
 }
 
 HFormulation::~HFormulation() {}
