@@ -75,7 +75,8 @@ ComplexEFormulation::ComplexEFormulation(const InputParameters & parameters)
     formulation->RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
                                                 getParam<std::string>("e_field_re_name"),
                                                 getParam<std::string>("e_field_im_name"),
-                                                electric_conductivity_name);
+                                                getParam<std::string>("current_density_re_name"),
+                                                getParam<std::string>("current_density_im_name"));
 }
 
 ComplexEFormulation::~ComplexEFormulation() {}
