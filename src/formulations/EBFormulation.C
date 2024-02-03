@@ -28,33 +28,45 @@ EBFormulation::validParams()
   params.addParam<std::string>(
       "joule_heating_density_name",
       "Name of L2 conforming MFEM gridfunction to store Joule heating density");
+  params.addParam<std::string>(
+      "external_current_density_name",
+      "Name of H(Div) conforming MFEM gridfunction storing external current density");
   return params;
 }
 
 EBFormulation::EBFormulation(const InputParameters & parameters)
   : MFEMFormulation(parameters),
-    e_field_name(getParam<std::string>("e_field_name")),
-    b_field_name(getParam<std::string>("b_field_name")),
-    magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
-    electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
-    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name"))
+    _electric_field_name(getParam<std::string>("e_field_name")),
+    _magnetic_flux_density_name(getParam<std::string>("b_field_name")),
+    _magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
+    _electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
+    _magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name")),
+    _current_density_name(
+        isParamValid("current_density_name") ? getParam<std::string>("current_density_name") : ""),
+    _lorentz_force_density_name(isParamValid("lorentz_force_density_name")
+                                    ? getParam<std::string>("lorentz_force_density_name")
+                                    : ""),
+    _joule_heating_density_name(isParamValid("joule_heating_density_name")
+                                    ? getParam<std::string>("joule_heating_density_name")
+                                    : ""),
+    _external_current_density_name(isParamValid("external_current_density_name")
+                                       ? getParam<std::string>("external_current_density_name")
+                                       : "")
 {
-  formulation = std::make_shared<hephaestus::EBDualFormulation>(magnetic_reluctivity_name,
-                                                                magnetic_permeability_name,
-                                                                electric_conductivity_name,
-                                                                e_field_name,
-                                                                b_field_name);
+  formulation = std::make_shared<hephaestus::EBDualFormulation>(_magnetic_reluctivity_name,
+                                                                _magnetic_permeability_name,
+                                                                _electric_conductivity_name,
+                                                                _electric_field_name,
+                                                                _magnetic_flux_density_name);
 
   if (isParamValid("current_density_name"))
-    formulation->RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
+    formulation->RegisterCurrentDensityAux(_current_density_name, _external_current_density_name);
   if (isParamValid("lorentz_force_density_name"))
-    formulation->RegisterLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
-                                                b_field_name,
-                                                getParam<std::string>("current_density_name"));
+    formulation->RegisterLorentzForceDensityAux(
+        _lorentz_force_density_name, _magnetic_flux_density_name, _current_density_name);
   if (isParamValid("joule_heating_density_name"))
-    formulation->RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
-                                                e_field_name,
-                                                getParam<std::string>("current_density_name"));
+    formulation->RegisterJouleHeatingDensityAux(
+        _joule_heating_density_name, _electric_field_name, _current_density_name);
 }
 
 EBFormulation::~EBFormulation() {}

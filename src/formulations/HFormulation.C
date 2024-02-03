@@ -32,36 +32,73 @@ HFormulation::validParams()
   params.addParam<std::string>(
       "joule_heating_density_name",
       "Name of L2 conforming MFEM gridfunction to store Joule heating density");
+  params.addParam<std::string>(
+      "external_current_density_name",
+      "Name of H(Div) conforming MFEM gridfunction storing external current density");
+  params.addParam<std::string>(
+      "external_magnetic_flux_density_name",
+      "Name of H(Div) conforming MFEM gridfunction storing external magnetic flux density");
+  params.addParam<std::string>(
+      "external_electric_field_name",
+      "Name of H(Curl) conforming MFEM gridfunction storing external electric field");
+  params.addParam<std::string>(
+      "external_magnetic_field_name",
+      "Name of H(Curl) conforming MFEM gridfunction storing external magnetic field");
   return params;
 }
 
 HFormulation::HFormulation(const InputParameters & parameters)
   : MFEMFormulation(parameters),
-    magnetic_field_name(getParam<std::string>("magnetic_field_name")),
-    magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
-    electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
-    electric_resistivity_name(getParam<std::string>("electric_resistivity_name"))
+    _magnetic_field_name(getParam<std::string>("magnetic_field_name")),
+    _magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
+    _electric_conductivity_name(getParam<std::string>("electric_conductivity_name")),
+    _electric_resistivity_name(getParam<std::string>("electric_resistivity_name")),
+    _electric_field_name(
+        isParamValid("electric_field_name") ? getParam<std::string>("electric_field_name") : ""),
+    _current_density_name(
+        isParamValid("current_density_name") ? getParam<std::string>("current_density_name") : ""),
+    _magnetic_flux_density_name(isParamValid("magnetic_flux_density_name")
+                                    ? getParam<std::string>("magnetic_flux_density_name")
+                                    : ""),
+    _lorentz_force_density_name(isParamValid("lorentz_force_density_name")
+                                    ? getParam<std::string>("lorentz_force_density_name")
+                                    : ""),
+    _joule_heating_density_name(isParamValid("joule_heating_density_name")
+                                    ? getParam<std::string>("joule_heating_density_name")
+                                    : ""),
+    _external_electric_field_name(isParamValid("external_electric_field_name")
+                                      ? getParam<std::string>("external_electric_field_name")
+                                      : ""),
+    _external_magnetic_field_name(isParamValid("external_magnetic_field_name")
+                                      ? getParam<std::string>("external_magnetic_field_name")
+                                      : ""),
+    _external_current_density_name(isParamValid("external_current_density_name")
+                                       ? getParam<std::string>("external_current_density_name")
+                                       : ""),
+    _external_magnetic_flux_density_name(
+        isParamValid("external_magnetic_flux_density_name")
+            ? getParam<std::string>("external_magnetic_flux_density_name")
+            : "")
 {
-  formulation = std::make_shared<hephaestus::HFormulation>(electric_resistivity_name,
-                                                           electric_conductivity_name,
-                                                           magnetic_permeability_name,
-                                                           magnetic_field_name);
+  formulation = std::make_shared<hephaestus::HFormulation>(_electric_resistivity_name,
+                                                           _electric_conductivity_name,
+                                                           _magnetic_permeability_name,
+                                                           _magnetic_field_name);
 
-  if (isParamValid("current_density_name"))
-    formulation->RegisterCurrentDensityAux(getParam<std::string>("current_density_name"));
-  if (isParamValid("magnetic_flux_density_name"))
-    formulation->RegisterMagneticFluxDensityAux(
-        getParam<std::string>("magnetic_flux_density_name"));
   if (isParamValid("electric_field_name"))
-    formulation->RegisterElectricFieldAux(getParam<std::string>("electric_field_name"));
+    formulation->RegisterElectricFieldAux(_electric_field_name, _external_electric_field_name);
+  if (isParamValid("current_density_name"))
+    formulation->RegisterCurrentDensityAux(_current_density_name, _external_current_density_name);
+  if (isParamValid("magnetic_flux_density_name"))
+    formulation->RegisterMagneticFluxDensityAux(_magnetic_flux_density_name,
+                                                _external_magnetic_flux_density_name);
+
   if (isParamValid("lorentz_force_density_name"))
-    formulation->RegisterLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
-                                                getParam<std::string>("magnetic_flux_density_name"),
-                                                getParam<std::string>("current_density_name"));
+    formulation->RegisterLorentzForceDensityAux(
+        _lorentz_force_density_name, _magnetic_flux_density_name, _current_density_name);
   if (isParamValid("joule_heating_density_name"))
-    formulation->RegisterJouleHeatingDensityAux(getParam<std::string>("joule_heating_density_name"),
-                                                getParam<std::string>("electric_field_name"),
-                                                getParam<std::string>("current_density_name"));
+    formulation->RegisterJouleHeatingDensityAux(
+        _joule_heating_density_name, _electric_field_name, _current_density_name);
 }
 
 HFormulation::~HFormulation() {}

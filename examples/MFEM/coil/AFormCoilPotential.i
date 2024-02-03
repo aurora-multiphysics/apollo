@@ -48,13 +48,13 @@
     type = MFEMVariable
     fespace = HDivFESpace
   []
-  [source_electric_field]
+  [source_electric_potential]
     type = MFEMVariable
-    fespace = HCurlFESpace
+    fespace = H1FESpace
   []
   [source_grad_potential]
     type = MFEMVariable
-    fespace = H1FESpace
+    fespace = HCurlFESpace
   []
   [current_density]
     type = MFEMVariable
@@ -173,8 +173,8 @@
 [Sources]
   [SourcePotential]
     type = MFEMScalarPotentialSource
-    source_grad_potential_gridfunction = source_grad_potential
     source_potential_gridfunction = source_electric_potential
+    source_grad_potential_gridfunction = source_grad_potential
     conductivity_coef = CoilEConductivity
     h1_fespace = H1FESpace
     hcurl_fespace = HCurlFESpace

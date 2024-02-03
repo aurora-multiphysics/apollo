@@ -16,8 +16,7 @@
   magnetic_permeability_name = magnetic_permeability
   magnetic_flux_density_name = magnetic_flux_density
 
-  current_density_name = total_current_density
-  # external_current_density_name = source_current_density
+  external_current_density_name = source_current_density
 []
 
 [FESpaces]
@@ -58,10 +57,6 @@
   [source_electric_potential]
     type = MFEMVariable
     fespace = H1FESpace
-  []
-  [total_current_density]
-    type = MFEMVariable
-    fespace = HDivFESpace
   []
 []
 
