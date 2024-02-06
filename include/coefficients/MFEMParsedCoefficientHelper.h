@@ -79,8 +79,8 @@ protected:
   std::vector<std::string> _symbol_names;
 
   std::vector<std::string> _gridfunction_names;
-  std::vector<std::shared_ptr<mfem::ParGridFunction>> _gridfunctions;
+  std::vector<mfem::ParGridFunction *> _gridfunctions;
 
   std::vector<std::string> _coefficient_names;
-  std::vector<std::shared_ptr<mfem::Coefficient>> _coefficients;
+  std::vector<mfem::Coefficient *> _coefficients;
 };

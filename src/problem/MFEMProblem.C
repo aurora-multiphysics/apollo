@@ -207,8 +207,8 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
   _coefficients._scalars.Register(name, mfem_coef->getCoefficient());
 
   // Add associated auxsolvers for CoupledCoefficients
-  auto coupled_coef =
-      std::dynamic_pointer_cast<hephaestus::CoupledCoefficient>(_coefficients._scalars.Get(name));
+  auto coupled_coef = std::dynamic_pointer_cast<hephaestus::CoupledCoefficient>(
+      _coefficients._scalars.GetShared(name));
   if (coupled_coef != nullptr)
   {
     mfem_problem_builder->AddAuxSolver(name, std::move(coupled_coef));

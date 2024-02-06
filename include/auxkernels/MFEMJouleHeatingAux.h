@@ -5,8 +5,8 @@
 class JouleHeatingCoefficient : public hephaestus::CoupledCoefficient
 {
 private:
-  std::shared_ptr<mfem::Coefficient> sigma{nullptr};
-  std::shared_ptr<mfem::ParGridFunction> joule_heating_gf{nullptr};
+  mfem::Coefficient * sigma{nullptr};
+  mfem::ParGridFunction * joule_heating_gf{nullptr};
   std::string conductivity_coef_name;
   // std::string var_name;
 
