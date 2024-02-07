@@ -11,9 +11,9 @@ MFEMConstantCoefficient::validParams()
 }
 
 MFEMConstantCoefficient::MFEMConstantCoefficient(const InputParameters & parameters)
-  : MFEMCoefficient(parameters)
+  : MFEMCoefficient(parameters),
+    coefficient{std::make_shared<mfem::ConstantCoefficient>(getParam<double>("value"))}
 {
-  coefficient = std::make_shared<mfem::ConstantCoefficient>(getParam<double>("value"));
 }
 
 MFEMConstantCoefficient::~MFEMConstantCoefficient() {}
