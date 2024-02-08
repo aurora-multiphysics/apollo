@@ -13,8 +13,8 @@ MFEMFunctionCoefficient::validParams()
 MFEMFunctionCoefficient::MFEMFunctionCoefficient(const InputParameters & parameters)
   : MFEMCoefficient(parameters),
     _func(getFunction("function")),
-    _coefficient([&](const mfem::Vector & p, double t)
-                 { return _func.value(t, PointFromMFEMVector(p)); })
+    _coefficient(std::make_shared<mfem::FunctionCoefficient>(
+        [&](const mfem::Vector & p, double t) { return _func.value(t, PointFromMFEMVector(p)); }))
 {
 }
 

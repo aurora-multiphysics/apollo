@@ -121,6 +121,7 @@ MFEMParsedCoefficientHelper::Init(const hephaestus::GridFunctions & variables,
 {
   auto nmfem_gfs = _gridfunction_names.size();
   for (MooseIndex(_gridfunction_names) i = 0; i < nmfem_gfs; ++i)
+  {
     if (variables.Has(_gridfunction_names[i]))
     {
       _gridfunctions[i] = variables.Get(_gridfunction_names[i]);
@@ -134,6 +135,7 @@ MFEMParsedCoefficientHelper::Init(const hephaestus::GridFunctions & variables,
                  "creating MFEMParsedCoefficient\n",
                  "in MFEMParsedCoefficientHelper.\n");
     }
+  }
 
   auto nmfem_coefs = _coefficient_names.size();
   for (MooseIndex(_coefficient_names) i = 0; i < nmfem_coefs; ++i)

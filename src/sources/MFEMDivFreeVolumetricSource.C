@@ -34,7 +34,7 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
 {
   for (unsigned int i = 0; i < blocks.size(); i++)
   {
-    sourcecoefs[i] = _vec_coef->getVectorCoefficient();
+    sourcecoefs[i] = _vec_coef->getVectorCoefficient().get();
     coilsegments[i] = int(blocks[i]);
   }
 
