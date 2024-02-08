@@ -53,13 +53,12 @@ MFEMDivFreeVolumetricSource::MFEMDivFreeVolumetricSource(const InputParameters &
           : es.parameters.get<unsigned int>("linear solver maximum iterations"));
   _solver_options.SetParam("PrintLevel", -1);
 
-  hephaestus::InputParameters div_free_source_params;
-  div_free_source_params.SetParam("SourceName", source_coef_name);
-  div_free_source_params.SetParam("HCurlFESpaceName", hcurl_fespace.name());
-  div_free_source_params.SetParam("H1FESpaceName", h1_fespace.name());
-  div_free_source_params.SetParam("SolverOptions", _solver_options);
-
-  _source = std::make_shared<hephaestus::DivFreeSource>(div_free_source_params);
+  _source = std::make_shared<hephaestus::DivFreeSource>(source_coef_name,
+                                                        source_coef_name,
+                                                        hcurl_fespace.name(),
+                                                        h1_fespace.name(),
+                                                        "_source_potential",
+                                                        _solver_options);
 }
 
 void

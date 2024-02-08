@@ -50,7 +50,7 @@
     fespace = H1FESpace
   []
   [grad_electric_potential]
-    type = MFEMVariable 
+    type = MFEMVariable
     fespace = HCurlFESpace
   []
 []
@@ -124,9 +124,9 @@
 [Sources]
   [SourcePotential]
     type = MFEMScalarPotentialSource
-    potential = electric_potential
-    grad_potential = grad_electric_potential
-    conductivity = electrical_conductivity
+    source_potential_gridfunction = electric_potential
+    source_grad_potential_gridfunction = grad_electric_potential
+    conductivity_coef = CopperEConductivity
     h1_fespace = H1FESpace
     hcurl_fespace = HCurlFESpace
     block = '1 2'

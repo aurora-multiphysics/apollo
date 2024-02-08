@@ -50,10 +50,17 @@ public:
   std::shared_ptr<hephaestus::ProblemBuilder> getProblemBuilder() override { return formulation; }
 
 private:
-  std::string e_field_name;
-  std::string b_field_name;
-  std::string magnetic_permeability_name;
-  std::string electric_conductivity_name;
-  std::string magnetic_reluctivity_name;
+  std::string _electric_field_name;
+  std::string _magnetic_flux_density_name;
+  std::string _magnetic_permeability_name;
+  std::string _electric_conductivity_name;
+  std::string _magnetic_reluctivity_name;
+
+  std::string _current_density_name;
+  std::string _lorentz_force_density_name;
+  std::string _joule_heating_density_name;
+
+  std::string _external_current_density_name;
+
   std::shared_ptr<hephaestus::EBDualFormulation> formulation{nullptr};
 };
