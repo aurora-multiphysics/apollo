@@ -16,7 +16,7 @@ MFEMVectorConstantCoefficient::MFEMVectorConstantCoefficient(const InputParamete
   : MFEMVectorCoefficient(parameters),
     _vector(
         {getParam<double>("value_x"), getParam<double>("value_y"), getParam<double>("value_z")}),
-    _vector_coefficient(_vector)
+    _vector_coefficient{std::make_shared<mfem::VectorConstantCoefficient>(_vector)}
 {
 }
 

@@ -139,7 +139,7 @@ MFEMProblem::externalSolve()
   }
 
   auto * transient_mfem_exec = dynamic_cast<hephaestus::TransientExecutioner *>(executioner.get());
-  if (transient_mfem_exec != NULL)
+  if (transient_mfem_exec != nullptr)
   {
     transient_mfem_exec->_t_step = dt();
   }
@@ -204,14 +204,14 @@ MFEMProblem::addCoefficient(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMCoefficient * mfem_coef(&getUserObject<MFEMCoefficient>(name));
-  _coefficients._scalars.Register(name, mfem_coef->getCoefficient(), false);
+  _coefficients._scalars.Register(name, mfem_coef->getCoefficient());
 
   // Add associated auxsolvers for CoupledCoefficients
-  hephaestus::CoupledCoefficient * _coupled_coef =
-      dynamic_cast<hephaestus::CoupledCoefficient *>(_coefficients._scalars.Get(name));
-  if (_coupled_coef != nullptr)
+  auto coupled_coef = std::dynamic_pointer_cast<hephaestus::CoupledCoefficient>(
+      _coefficients._scalars.GetShared(name));
+  if (coupled_coef != nullptr)
   {
-    mfem_problem_builder->AddAuxSolver(name, _coupled_coef, false);
+    mfem_problem_builder->AddAuxSolver(name, std::move(coupled_coef));
   }
 }
 
@@ -222,7 +222,7 @@ MFEMProblem::addVectorCoefficient(const std::string & user_object_name,
 {
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMVectorCoefficient * mfem_vec_coef(&getUserObject<MFEMVectorCoefficient>(name));
-  _coefficients._vectors.Register(name, mfem_vec_coef->getVectorCoefficient(), false);
+  _coefficients._vectors.Register(name, mfem_vec_coef->getVectorCoefficient());
 }
 
 void
@@ -344,9 +344,9 @@ MFEMProblem::setMFEMNodalVarData(MooseVariableFieldBase & moose_var_ref)
 
   auto & libmesh_base = mesh().getMesh();
   auto & temp_solution_vector = moose_var_ref.sys().solution();
-  auto & pgf = *(mfem_problem->_gridfunctions.Get(moose_var_ref.name()));
+  auto pgf = mfem_problem->_gridfunctions.Get(moose_var_ref.name());
 
-  const auto * par_fespace = order > 1 ? pgf.ParFESpace() : nullptr;
+  const auto * par_fespace = order > 1 ? pgf->ParFESpace() : nullptr;
 
   // Count number of true local dofs.
   unsigned int true_local_dofs_count = 0;
@@ -407,7 +407,7 @@ MFEMProblem::setMFEMNodalVarData(MooseVariableFieldBase & moose_var_ref)
     }
   }
 
-  pgf.SetFromTrueDofs(mfem_true_local_dofs);
+  pgf->SetFromTrueDofs(mfem_true_local_dofs);
 
   moose_var_ref.sys().solution().close();
   moose_var_ref.sys().update();
@@ -426,7 +426,7 @@ MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
 
   auto & libmesh_base = mesh().getMesh();
   auto & temp_solution_vector = moose_var_ref.sys().solution();
-  auto & pgf = *(mfem_problem->_gridfunctions.Get(moose_var_ref.name()));
+  auto pgf = (mfem_problem->_gridfunctions.Get(moose_var_ref.name()));
 
   // Count number of true local dofs.
   unsigned int true_local_dofs_count = 0;
@@ -454,7 +454,7 @@ MFEMProblem::setMFEMElementalVarData(MooseVariableFieldBase & moose_var_ref)
     }
   }
 
-  pgf.SetFromTrueDofs(mfem_true_local_dofs);
+  pgf->SetFromTrueDofs(mfem_true_local_dofs);
 
   moose_var_ref.sys().solution().close();
   moose_var_ref.sys().update();
@@ -469,11 +469,11 @@ MFEMProblem::setMOOSENodalVarData(MooseVariableFieldBase & moose_var_ref)
   auto order = (unsigned int)moose_var_ref.order();
 
   auto & libmesh_base = mesh().getMesh();
-  auto & pgf = *(mfem_problem->_gridfunctions.Get(moose_var_ref.name()));
+  auto pgf = (mfem_problem->_gridfunctions.Get(moose_var_ref.name()));
 
-  const auto * par_fespace = (order > 1) ? pgf.ParFESpace() : nullptr;
+  const auto * par_fespace = (order > 1) ? pgf->ParFESpace() : nullptr;
 
-  auto * mfem_true_local_dofs = pgf.GetTrueDofs(); // Must delete.
+  auto * mfem_true_local_dofs = pgf->GetTrueDofs(); // Must delete.
 
   unsigned int dof_index = 0;
 
@@ -529,9 +529,9 @@ MFEMProblem::setMOOSEElementalVarData(MooseVariableFieldBase & moose_var_ref)
               "Currently, only constant-order elemental variables can be synced in parallel.");
 
   auto & libmesh_base = mesh().getMesh();
-  auto & pgf = *(mfem_problem->_gridfunctions.Get(moose_var_ref.name()));
+  auto pgf = (mfem_problem->_gridfunctions.Get(moose_var_ref.name()));
 
-  auto * mfem_local_elems = pgf.GetTrueDofs(); // Must delete.
+  auto * mfem_local_elems = pgf->GetTrueDofs(); // Must delete.
 
   unsigned int dof_index = 0;
 

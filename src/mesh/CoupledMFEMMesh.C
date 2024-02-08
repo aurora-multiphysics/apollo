@@ -526,7 +526,7 @@ CoupledMFEMMesh::buildBoundaryNodeIDs(
 
   // Iterate over all boundary IDs.
   for (int boundary_id : unique_side_boundary_ids)
-  {    
+  {
     // Get element IDs of element on boundary (and their sides that are on boundary).
     auto & boundary_element_ids = element_ids_for_boundary_id.at(boundary_id);
     auto & boundary_element_sides = side_ids_for_boundary_id.at(boundary_id);
