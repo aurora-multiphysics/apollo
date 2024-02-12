@@ -19,12 +19,12 @@ jobs:
       # First check out the repository to get the docker file
       - name: Checkout
         uses: actions/checkout@v2
-      # Now build in a container with all deps
+      # Print the context for this GitHub workflow
       - name: PrintGithubContext
-        run: echo $PRCOMMITSHA
-      - name: DockerBuildTestPR
-        if:  ${{ github.event.pull_request.head.sha != '' }}
-        run: docker build -t ci-apollo-ubuntu --build-arg build_git_sha=$PRCOMMITSHA docker/apollo
-      - name:  DockerBuildTestPush
-        if:  ${{ github.event.pull_request.head.sha == '' }}
-        run: docker build -t ci-apollo-ubuntu --build-arg build_git_sha=$GITHUB_SHA docker/apollo
+        run: echo ${PRCOMMITSHA:-$GITHUB_SHA}
+      # Now build in a container with all deps
+      - name: DockerBuildTest
+        run: |
+             docker build -t ci-apollo-ubuntu \
+                          --build-arg build_git_sha=${PRCOMMITSHA:-$GITHUB_SHA} \
+                          docker/apollo

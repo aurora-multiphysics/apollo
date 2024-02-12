@@ -2,18 +2,20 @@
 # Get base image
 FROM alexanderianblair/apollo-deps:master
 
-# By default one core is used to compile
+# By default four cores are used to compile
 ARG compile_cores=4
 
-# By default checkout mfem-moose branch
-ARG WORKDIR="opt"
-ARG build_git_sha="master"
+# By default checkout master branch
+ARG build_git_sha=master
+
+# By default we install everything under /opt
+ARG WORKDIR=opt
 
 # Get Apollo with Hephaestus
 RUN cd /$WORKDIR && \
-    git clone https://github.com/aurora-multiphysics/apollo.git && \
+    git clone https://github.com/aurora-multiphysics/apollo && \
     cd apollo && \
-    git checkout "$build_git_sha" && \
+    git checkout $build_git_sha && \
     git submodule update --init --recursive
 
 # Build Hephaestus
@@ -29,7 +31,7 @@ RUN cd /$WORKDIR/apollo/contrib/hephaestus/build && \
 
 # Build Apollo
 RUN cd /$WORKDIR/apollo && \
-    make -j"$compile_cores"
+    make -j$compile_cores
 
 # Test Apollo
 RUN cd /$WORKDIR/apollo && \
