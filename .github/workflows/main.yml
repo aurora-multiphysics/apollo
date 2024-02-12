@@ -15,16 +15,18 @@ jobs:
     name: BuildTestUbuntu
     env:
       PRCOMMITSHA : ${{ github.event.pull_request.head.sha }}
+      PRREPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
     steps:
       # First check out the repository to get the docker file
       - name: Checkout
         uses: actions/checkout@v2
       # Print the context for this GitHub workflow
       - name: PrintGithubContext
-        run: echo ${PRCOMMITSHA:-$GITHUB_SHA}
+        run: echo ${PRCOMMITSHA:-$GITHUB_SHA} ${PRREPOSITORY:-$GITHUB_REPOSITORY}
       # Now build in a container with all deps
       - name: DockerBuildTest
         run: |
              docker build -t ci-apollo-ubuntu \
                           --build-arg build_git_sha=${PRCOMMITSHA:-$GITHUB_SHA} \
+                          --build-arg build_git_repo=${PRREPOSITORY:-$GITHUB_REPOSITORY} \
                           docker/apollo
