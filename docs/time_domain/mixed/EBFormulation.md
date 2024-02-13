@@ -45,7 +45,7 @@ $$
 $$
 
 $$
-\langle \partial_t \vec B_{n+1}, \vec v \rangle_{\vec L^2(\Omega)} =
+\langle \partial_t \vec B_{n+1}, \vec v \rangle_{\vec L^2(\Omega)} = -
 \langle  \vec ∇× \vec E_{n+1}, \vec v \rangle_{\vec L^2(\Omega)}
 $$
 
