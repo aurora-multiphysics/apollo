@@ -72,10 +72,13 @@ MFEMProblem::initialSetup()
 
   mfem_problem_builder->InitializeAuxSolvers();
   mfem_problem_builder->InitializeKernels();
+  mfem_problem_builder->ConstructJacobianPreconditioner();
+  mfem_problem_builder->ConstructJacobianSolver();
+  mfem_problem_builder->ConstructNonlinearSolver();
   mfem_problem_builder->InitializeOutputs();
   mfem_problem_builder->ConstructOperator();
   mfem_problem_builder->ConstructState();
-  mfem_problem_builder->ConstructSolver();
+  mfem_problem_builder->ConstructTimestepper();
 
   hephaestus::InputParameters exec_params;
 
