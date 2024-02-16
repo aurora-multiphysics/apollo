@@ -52,8 +52,7 @@ EFormulation::EFormulation(const InputParameters & parameters)
     formulation->RegisterCurrentDensityAux(_current_density_name, _external_current_density_name);
 
   if (isParamValid("joule_heating_density_name"))
-    formulation->RegisterJouleHeatingDensityAux(
-        _joule_heating_density_name, _electric_field_name, _current_density_name);
+    formulation->RegisterJouleHeatingDensityAux(_joule_heating_density_name, _electric_field_name);
 }
 
 EFormulation::~EFormulation() {}
