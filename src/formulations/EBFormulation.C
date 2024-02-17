@@ -65,8 +65,7 @@ EBFormulation::EBFormulation(const InputParameters & parameters)
     formulation->RegisterLorentzForceDensityAux(
         _lorentz_force_density_name, _magnetic_flux_density_name, _current_density_name);
   if (isParamValid("joule_heating_density_name"))
-    formulation->RegisterJouleHeatingDensityAux(
-        _joule_heating_density_name, _electric_field_name, _current_density_name);
+    formulation->RegisterJouleHeatingDensityAux(_joule_heating_density_name, _electric_field_name);
 }
 
 EBFormulation::~EBFormulation() {}
