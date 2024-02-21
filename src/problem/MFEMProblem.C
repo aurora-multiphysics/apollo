@@ -146,8 +146,12 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
   mfem::ParMesh & mfem_par_mesh = mesh().getMFEMParMesh();
   FEProblemBase::addUserObject(user_object_name, name, parameters);
   MFEMFormulation * mfem_formulation(&getUserObject<MFEMFormulation>(name));
+
   mfem_problem_builder = mfem_formulation->getProblemBuilder();
+
+  mfem_problem_builder->ConstructOperator();
   mfem_problem_builder->ConstructEquationSystem();
+  
   mfem_problem_builder->SetMesh(std::make_shared<mfem::ParMesh>(mfem_par_mesh));
 }
 
