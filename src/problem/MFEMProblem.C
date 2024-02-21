@@ -62,20 +62,12 @@ MFEMProblem::initialSetup()
                            es.parameters.get<unsigned int>("linear solver maximum iterations"));
   _solver_options.SetParam("PrintLevel", 2);
   _coefficients.AddGlobalCoefficientsFromSubdomains();
+
   mfem_problem_builder->SetCoefficients(_coefficients);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
-  mfem_problem_builder->RegisterFESpaces();
-  mfem_problem_builder->RegisterGridFunctions();
-  mfem_problem_builder->RegisterAuxSolvers();
-  mfem_problem_builder->RegisterCoefficients();
-
-  mfem_problem_builder->InitializeAuxSolvers();
-  mfem_problem_builder->InitializeKernels();
-  mfem_problem_builder->InitializeOutputs();
-  mfem_problem_builder->ConstructOperator();
-  mfem_problem_builder->ConstructState();
-  mfem_problem_builder->ConstructSolver();
+  auto sequencer = hephaestus::ProblemBuildSequencer(mfem_problem_builder.get());
+  sequencer.ConstructEquationSystemProblem();
 
   hephaestus::InputParameters exec_params;
 
