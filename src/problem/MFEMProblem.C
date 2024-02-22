@@ -66,8 +66,22 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->SetCoefficients(_coefficients);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
-  auto sequencer = hephaestus::ProblemBuildSequencer(mfem_problem_builder.get());
-  sequencer.ConstructEquationSystemProblem();
+  mfem_problem_builder->RegisterFESpaces();
+  mfem_problem_builder->RegisterGridFunctions();
+  mfem_problem_builder->RegisterAuxSolvers();
+  mfem_problem_builder->RegisterCoefficients();
+
+  mfem_problem_builder->InitializeKernels();
+  mfem_problem_builder->SetOperatorGridFunctions();
+
+  mfem_problem_builder->ConstructJacobianPreconditioner();
+  mfem_problem_builder->ConstructJacobianSolver();
+  mfem_problem_builder->ConstructNonlinearSolver();
+
+  mfem_problem_builder->ConstructState();
+  mfem_problem_builder->ConstructTimestepper();
+  mfem_problem_builder->InitializeAuxSolvers();
+  mfem_problem_builder->InitializeOutputs();
 
   hephaestus::InputParameters exec_params;
 
@@ -149,10 +163,9 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
 
   mfem_problem_builder = mfem_formulation->getProblemBuilder();
 
+  mfem_problem_builder->SetMesh(std::make_shared<mfem::ParMesh>(mfem_par_mesh));
   mfem_problem_builder->ConstructOperator();
   mfem_problem_builder->ConstructEquationSystem();
-  
-  mfem_problem_builder->SetMesh(std::make_shared<mfem::ParMesh>(mfem_par_mesh));
 }
 
 void
