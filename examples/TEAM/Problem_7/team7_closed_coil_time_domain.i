@@ -16,7 +16,8 @@
   electric_conductivity_name = electrical_conductivity
 
   magnetic_flux_density_name = magnetic_flux_density
-  current_density_name = current_density
+  current_density_name = total_current_density
+  external_current_density_name = source_current_density
 []
 
 [FESpaces]
@@ -55,17 +56,21 @@
     type = MFEMVariable
     fespace = HDivFESpace
   []
-  [current_density]
+  [source_current_density]
     type = MFEMVariable
     fespace = HDivFESpace
   []
-  [source_current_density_dual]
+  [source_electric_field]
     type = MFEMVariable
     fespace = HCurlFESpace
   []
-  [source_grad_potential]
+  [source_electric_potential]
     type = MFEMVariable
-    fespace = HCurlFESpace
+    fespace = H1FESpace
+  []
+  [total_current_density]
+    type = MFEMVariable
+    fespace = HDivFESpace
   []
 []
 
@@ -73,8 +78,8 @@
   [SourceCoil]
     type = MFEMClosedCoilSource
     total_current_coefficient = CurrentCoef
-    source_current_density_dual_gridfunction = source_current_density_dual
-    source_grad_potential = source_grad_potential
+    source_current_density_gridfunction = source_current_density
+    source_electric_field_gridfunction = source_electric_field
     hcurl_fespace = HCurlFESpace
     h1_fespace = H1FESpace
     coil_xsection_boundary = 7

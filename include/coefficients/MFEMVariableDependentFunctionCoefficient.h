@@ -2,8 +2,10 @@
 #include "MFEMCoefficient.h"
 #include "auxsolvers.hpp"
 
-class MFEMVariableDependentFunctionCoefficient : public MFEMCoefficient,
-                                                 public hephaestus::CoupledCoefficient
+class MFEMVariableDependentFunctionCoefficient
+  : public MFEMCoefficient,
+    public hephaestus::CoupledCoefficient,
+    public std::enable_shared_from_this<MFEMVariableDependentFunctionCoefficient>
 {
 public:
   static InputParameters validParams();
@@ -17,7 +19,10 @@ public:
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  virtual mfem::Coefficient * getCoefficient() override { return this; }
+  std::shared_ptr<mfem::Coefficient> getCoefficient() const override
+  {
+    return std::const_pointer_cast<MFEMVariableDependentFunctionCoefficient>(shared_from_this());
+  }
 
 private:
   const Function & _func;

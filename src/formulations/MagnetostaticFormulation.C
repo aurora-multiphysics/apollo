@@ -24,27 +24,52 @@ MagnetostaticFormulation::validParams()
   params.addParam<std::string>(
       "lorentz_force_density_name",
       "Name of L2 conforming MFEM gridfunction to store Lorentz force density");
+  params.addParam<std::string>(
+      "external_current_density_name",
+      "Name of H(Div) conforming MFEM gridfunction storing external current density");
+  params.addParam<std::string>(
+      "external_magnetic_flux_density_name",
+      "Name of H(Div) conforming MFEM gridfunction storing external magnetic flux density");
+  params.addParam<std::string>(
+      "external_magnetic_field_name",
+      "Name of H(Curl) conforming MFEM gridfunction storing external magnetic field");
+
   return params;
 }
 
 MagnetostaticFormulation::MagnetostaticFormulation(const InputParameters & parameters)
   : MFEMFormulation(parameters),
-    magnetic_vector_potential_name(getParam<std::string>("magnetic_vector_potential_name")),
-    magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
-    magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name"))
+    _magnetic_vector_potential_name(getParam<std::string>("magnetic_vector_potential_name")),
+    _magnetic_permeability_name(getParam<std::string>("magnetic_permeability_name")),
+    _magnetic_reluctivity_name(getParam<std::string>("magnetic_reluctivity_name")),
+    _magnetic_field_name(
+        isParamValid("magnetic_field_name") ? getParam<std::string>("magnetic_field_name") : ""),
+    _magnetic_flux_density_name(isParamValid("magnetic_flux_density_name")
+                                    ? getParam<std::string>("magnetic_flux_density_name")
+                                    : ""),
+    _external_magnetic_field_name(isParamValid("external_magnetic_field_name")
+                                      ? getParam<std::string>("external_magnetic_field_name")
+                                      : ""),
+    _external_current_density_name(isParamValid("external_current_density_name")
+                                       ? getParam<std::string>("external_current_density_name")
+                                       : ""),
+    _external_magnetic_flux_density_name(
+        isParamValid("external_magnetic_flux_density_name")
+            ? getParam<std::string>("external_magnetic_flux_density_name")
+            : "")
 {
   formulation = std::make_shared<hephaestus::MagnetostaticFormulation>(
-      magnetic_reluctivity_name, magnetic_permeability_name, magnetic_vector_potential_name);
+      _magnetic_reluctivity_name, _magnetic_permeability_name, _magnetic_vector_potential_name);
 
-  if (isParamValid("magnetic_flux_density_name"))
-    formulation->RegisterMagneticFluxDensityAux(
-        getParam<std::string>("magnetic_flux_density_name"));
   if (isParamValid("magnetic_field_name"))
-    formulation->RegisterMagneticFieldAux(getParam<std::string>("magnetic_field_name"));
+    formulation->RegisterElectricFieldAux(_magnetic_field_name, _external_magnetic_field_name);
+  if (isParamValid("magnetic_flux_density_name"))
+    formulation->RegisterMagneticFluxDensityAux(_magnetic_flux_density_name,
+                                                _external_magnetic_flux_density_name);
+
   if (isParamValid("lorentz_force_density_name"))
-    formulation->RegisterLorentzForceDensityAux(getParam<std::string>("lorentz_force_density_name"),
-                                                getParam<std::string>("magnetic_flux_density_name"),
-                                                getParam<std::string>("current_density_name"));
+    formulation->RegisterLorentzForceDensityAux(
+        _lorentz_force_density_name, _magnetic_flux_density_name, _external_current_density_name);
 }
 
 MagnetostaticFormulation::~MagnetostaticFormulation() {}

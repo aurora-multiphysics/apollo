@@ -63,7 +63,7 @@ ElementVectorL2Difference::checkVectorVariables() const
 
   if (!first || !second)
   {
-    mooseError("Coupled vector variable is NULL.");
+    mooseError("Coupled vector variable is nullptr.");
   }
 
   if (first->feType().family != second->feType().family)
