@@ -23,12 +23,12 @@ RUN cd /$WORKDIR && \
 RUN cd /$WORKDIR/apollo/contrib/hephaestus/ && \
     mkdir build && \
     cd build && \
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
-    make -j1
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build .. && \
+    ninja
 
 # Test Hephaestus
 RUN cd /$WORKDIR/apollo/contrib/hephaestus/build && \
-    make test
+    ninja test
 
 # Build Apollo
 RUN cd /$WORKDIR/apollo && \
