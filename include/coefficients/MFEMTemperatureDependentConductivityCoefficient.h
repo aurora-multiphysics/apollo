@@ -1,5 +1,6 @@
 #pragma once
 #include "MFEMCoefficient.h"
+#include "ApolloUtils.h"
 #include "auxsolvers.hpp"
 
 class MFEMTemperatureDependentConductivityCoefficient
@@ -21,8 +22,7 @@ public:
 
   std::shared_ptr<mfem::Coefficient> getCoefficient() const override
   {
-    return std::const_pointer_cast<MFEMTemperatureDependentConductivityCoefficient>(
-        shared_from_this());
+    return ApolloUtils::dynamic_const_cast<mfem::Coefficient>(getSharedPtr());
   }
 
 private:

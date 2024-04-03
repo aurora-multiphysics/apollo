@@ -2,6 +2,7 @@
 
 #include "FunctionParserUtils.h"
 #include "MFEMCoefficient.h"
+#include "ApolloUtils.h"
 #include "auxsolvers.hpp"
 #include "libmesh/fparser_ad.hh"
 #include "libmesh/quadrature.h"
@@ -25,8 +26,7 @@
  */
 class MFEMParsedCoefficientHelper : public MFEMCoefficient,
                                     public hephaestus::CoupledCoefficient,
-                                    public FunctionParserUtils<false>,
-                                    public std::enable_shared_from_this<MFEMParsedCoefficientHelper>
+                                    public FunctionParserUtils<false>
 {
 public:
   enum class VariableNameMappingMode
@@ -59,7 +59,7 @@ public:
 
   std::shared_ptr<mfem::Coefficient> getCoefficient() const override
   {
-    return std::const_pointer_cast<MFEMParsedCoefficientHelper>(shared_from_this());
+    return ApolloUtils::dynamic_const_cast<mfem::Coefficient>(getSharedPtr());
   }
 
 protected:
