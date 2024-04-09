@@ -23,6 +23,7 @@ MFEMProblem::MFEMProblem(const InputParameters & params)
     _outputs(),
     _exec_params()
 {
+  hephaestus::logger.set_level(spdlog::level::info);
 }
 
 MFEMProblem::~MFEMProblem() {}
@@ -60,7 +61,6 @@ MFEMProblem::initialSetup()
                            float(es.parameters.get<Real>("linear solver absolute tolerance")));
   _solver_options.SetParam("MaxIter",
                            es.parameters.get<unsigned int>("linear solver maximum iterations"));
-  _solver_options.SetParam("PrintLevel", 2);
   _coefficients.AddGlobalCoefficientsFromSubdomains();
 
   mfem_problem_builder->SetCoefficients(_coefficients);

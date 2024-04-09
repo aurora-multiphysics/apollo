@@ -37,8 +37,8 @@ This step is not needed if using the supplied alexanderianblair/apollo container
 cd /opt/apollo/contrib/hephaestus/
 mkdir build
 cd build
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build -DMFEM_COMMON_INCLUDES=/opt/mfem/miniapps/common  ..
-make
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build ..
+ninja
 ```
 
 Apollo can then be built with the following commands from the top level `apollo` directory in either of the above containers:
