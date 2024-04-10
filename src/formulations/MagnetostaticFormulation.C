@@ -47,6 +47,9 @@ MagnetostaticFormulation::MagnetostaticFormulation(const InputParameters & param
     _magnetic_flux_density_name(isParamValid("magnetic_flux_density_name")
                                     ? getParam<std::string>("magnetic_flux_density_name")
                                     : ""),
+    _lorentz_force_density_name(isParamValid("lorentz_force_density_name")
+                                    ? getParam<std::string>("lorentz_force_density_name")
+                                    : ""),
     _external_magnetic_field_name(isParamValid("external_magnetic_field_name")
                                       ? getParam<std::string>("external_magnetic_field_name")
                                       : ""),
