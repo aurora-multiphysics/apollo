@@ -154,6 +154,28 @@ protected:
   void setMOOSENodalVarData(MooseVariableFieldBase & moose_variable);
   void setMOOSEElementalVarData(MooseVariableFieldBase & moose_variable);
 
+  bool isTransientProblem() const;
+  bool isSteadyProblem() const;
+
+  hephaestus::TimeDomainEquationSystemProblemBuilder *
+  getTimeDomainEquationSystemProblemBuilder() const;
+
+  hephaestus::SteadyStateEquationSystemProblemBuilder *
+  getSteadyStateEquationSystemProblemBuilder() const;
+
+  template <class T>
+  void addKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
+  {
+    if (isTransientProblem())
+      getTimeDomainEquationSystemProblemBuilder()->AddKernel(std::move(var_name),
+                                                             std::move(kernel));
+    else if (isSteadyProblem())
+      getSteadyStateEquationSystemProblemBuilder()->AddKernel(std::move(var_name),
+                                                              std::move(kernel));
+    else
+      mooseError("Cannot add a kernel to problem type.");
+  }
+
   std::string _input_mesh;
   std::string _formulation_name;
   int _order;
@@ -165,6 +187,8 @@ protected:
 
   std::shared_ptr<hephaestus::ProblemBuilder> mfem_problem_builder{nullptr};
 
-  std::unique_ptr<hephaestus::Problem> mfem_problem;
-  std::unique_ptr<hephaestus::Executioner> executioner;
+  std::unique_ptr<hephaestus::Problem>
+      mfem_problem; // No!! Needs to be SteadyStateProblem or TimeDependentProblem.
+  std::unique_ptr<hephaestus::Executioner>
+      executioner; // TODO: - no!!! Will need to be derived class.
 };
