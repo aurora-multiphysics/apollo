@@ -187,8 +187,6 @@ protected:
 
   std::shared_ptr<hephaestus::ProblemBuilder> mfem_problem_builder{nullptr};
 
-  std::unique_ptr<hephaestus::Problem>
-      mfem_problem; // No!! Needs to be SteadyStateProblem or TimeDependentProblem.
-  std::unique_ptr<hephaestus::Executioner>
-      executioner; // TODO: - no!!! Will need to be derived class.
+  std::unique_ptr<hephaestus::Problem> mfem_problem{nullptr};
+  std::unique_ptr<hephaestus::Executioner> executioner{nullptr};
 };
