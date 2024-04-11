@@ -51,34 +51,6 @@ MFEMProblem::outputStep(ExecFlagType type)
   FEProblemBase::outputStep(type);
 }
 
-bool
-MFEMProblem::isTransientProblem() const
-{
-  Transient * moose_executioner = dynamic_cast<Transient *>(_app.getExecutioner());
-  return (moose_executioner != nullptr);
-}
-
-bool
-MFEMProblem::isSteadyProblem() const
-{
-  Steady * moose_executioner = dynamic_cast<Steady *>(_app.getExecutioner());
-  return (moose_executioner != nullptr);
-}
-
-hephaestus::TimeDomainEquationSystemProblemBuilder *
-MFEMProblem::getTimeDomainEquationSystemProblemBuilder() const
-{
-  return static_cast<hephaestus::TimeDomainEquationSystemProblemBuilder *>(
-      mfem_problem_builder.get());
-}
-
-hephaestus::SteadyStateEquationSystemProblemBuilder *
-MFEMProblem::getSteadyStateEquationSystemProblemBuilder() const
-{
-  return static_cast<hephaestus::SteadyStateEquationSystemProblemBuilder *>(
-      mfem_problem_builder.get());
-}
-
 void
 MFEMProblem::initialSetup()
 {

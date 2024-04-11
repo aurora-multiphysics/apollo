@@ -154,26 +154,28 @@ protected:
   void setMOOSENodalVarData(MooseVariableFieldBase & moose_variable);
   void setMOOSEElementalVarData(MooseVariableFieldBase & moose_variable);
 
-  bool isTransientProblem() const;
-  bool isSteadyProblem() const;
-
-  hephaestus::TimeDomainEquationSystemProblemBuilder *
-  getTimeDomainEquationSystemProblemBuilder() const;
-
-  hephaestus::SteadyStateEquationSystemProblemBuilder *
-  getSteadyStateEquationSystemProblemBuilder() const;
-
   template <class T>
   void addKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
-    if (isTransientProblem())
-      getTimeDomainEquationSystemProblemBuilder()->AddKernel(std::move(var_name),
-                                                             std::move(kernel));
-    else if (isSteadyProblem())
-      getSteadyStateEquationSystemProblemBuilder()->AddKernel(std::move(var_name),
-                                                              std::move(kernel));
-    else
-      mooseError("Cannot add a kernel to problem type.");
+    using namespace hephaestus;
+
+    TimeDomainEquationSystemProblemBuilder * td_eqn_system_problem_builder{nullptr};
+    SteadyStateEquationSystemProblemBuilder * ss_eqn_system_problem_builder{nullptr};
+
+    ProblemBuilder * problem_builder = mfem_problem_builder.get();
+
+    if ((td_eqn_system_problem_builder = dynamic_cast<TimeDomainEquationSystemProblemBuilder *>(problem_builder)))
+    {
+      td_eqn_system_problem_builder->AddKernel(std::move(var_name), std::move(kernel));
+    }
+    else if ((ss_eqn_system_problem_builder = dynamic_cast<SteadyStateEquationSystemProblemBuilder *>(problem_builder)))
+    {
+      ss_eqn_system_problem_builder->AddKernel(std::move(var_name), std::move(kernel));
+    }
+    else 
+    {
+      mooseError("Cannot add kernel with name '" + var_name + "' because there is no equation system.");
+    }
   }
 
   std::string _input_mesh;
