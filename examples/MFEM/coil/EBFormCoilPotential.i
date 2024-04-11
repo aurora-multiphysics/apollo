@@ -45,13 +45,13 @@
     type = MFEMVariable
     fespace = HDivFESpace
   []
-  [electric_potential]
+  [source_electric_potential]
     type = MFEMVariable
     fespace = H1FESpace
   []
-  [electric_grad_potential]
-    type = MFEMVariable 
-    fespace = H1FESpace 
+  [source_grad_potential]
+    type = MFEMVariable
+    fespace = HCurlFESpace
   []
 []
 
@@ -91,19 +91,12 @@
   []
 []
 [Materials]
-  [coil]
-    type = MFEMConductor
-    electrical_conductivity_coeff = CoilEConductivity
-    electric_permittivity_coeff = CoilPermittivity
-    magnetic_permeability_coeff = CoilPermeability
-    block = 1
-  []
   [air]
     type = MFEMConductor
     electrical_conductivity_coeff = AirEConductivity
     electric_permittivity_coeff = AirPermittivity
     magnetic_permeability_coeff = AirPermeability
-    block = 2
+    block = '1 2'
   []
   [core]
     type = MFEMConductor
@@ -176,9 +169,9 @@
 [Sources]
   [SourcePotential]
     type = MFEMScalarPotentialSource
-    potential = electric_potential
-    grad_potential = electric_grad_potential
-    conductivity = electrical_conductivity
+    source_grad_potential_gridfunction = source_grad_potential
+    source_potential_gridfunction = source_electric_potential
+    conductivity_coef = CoilEConductivity
     hcurl_fespace = HCurlFESpace
     h1_fespace = H1FESpace
     block = 1

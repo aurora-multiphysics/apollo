@@ -1,5 +1,6 @@
 #pragma once
 #include "MFEMCoefficient.h"
+#include "ApolloUtils.h"
 #include "auxsolvers.hpp"
 
 class MFEMVariableDependentFunctionCoefficient : public MFEMCoefficient,
@@ -17,7 +18,10 @@ public:
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  virtual mfem::Coefficient * getCoefficient() override { return this; }
+  std::shared_ptr<mfem::Coefficient> getCoefficient() const override
+  {
+    return ApolloUtils::dynamic_const_cast<mfem::Coefficient>(getSharedPtr());
+  }
 
 private:
   const Function & _func;

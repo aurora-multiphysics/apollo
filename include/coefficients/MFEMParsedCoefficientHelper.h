@@ -2,6 +2,7 @@
 
 #include "FunctionParserUtils.h"
 #include "MFEMCoefficient.h"
+#include "ApolloUtils.h"
 #include "auxsolvers.hpp"
 #include "libmesh/fparser_ad.hh"
 #include "libmesh/quadrature.h"
@@ -56,7 +57,10 @@ public:
 
   double Eval(mfem::ElementTransformation & trans, const mfem::IntegrationPoint & ip) override;
 
-  virtual mfem::Coefficient * getCoefficient() override { return this; }
+  std::shared_ptr<mfem::Coefficient> getCoefficient() const override
+  {
+    return ApolloUtils::dynamic_const_cast<mfem::Coefficient>(getSharedPtr());
+  }
 
 protected:
   usingFunctionParserUtilsMembers(false);

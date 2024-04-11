@@ -14,7 +14,10 @@ public:
   virtual void initialize() override {}
   virtual void finalize() override {}
 
-  std::shared_ptr<hephaestus::Kernel<mfem::ParBilinearForm>> getKernel() override { return _kernel; }
+  std::shared_ptr<hephaestus::Kernel<mfem::ParBilinearForm>> getKernel() override
+  {
+    return _kernel;
+  }
 
 protected:
   hephaestus::InputParameters _kernel_params;

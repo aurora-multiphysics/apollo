@@ -6,6 +6,7 @@ Apollo provides a MOOSE interface to the Hephaestus electromagnetic solvers and 
 Apollo facilitates coupling between the extensive range of existing MOOSE physics modules and derived electromagnetic variables such as heat sources from Ohmic heating, allowing the simulation of systems such as induction heaters.
 
 Apollo is still under active development and is being updated frequently.
+
 # Getting Started
 Docker images of Apollo for Ubuntu with all dependencies are built weekly and uploaded to DockerHub, and
 can be downloaded via
@@ -22,28 +23,31 @@ Alternatively, up-to-date images of only the current dependencies for Apollo can
 ```
 docker pull alexanderianblair/apollo-deps:master
 ```
-for those who with to build Apollo themselves.
+for those who wish to build Apollo themselves.
 
 Dockerfiles used to build these images can be found in the `apollo/docker` directory.
+
 # Building Software and Tests
-After downloading Apollo from this repository, first update the hephaestus git submodule with 
+After downloading Apollo from this repository, first update the Hephaestus git submodule with
 ```
 git submodule update --init --recursive
 ```
-This step is not needed if using the supplied alexanderianblair/apollo container. After updating, build the hephaestus library with
+This step is not needed if using the supplied alexanderianblair/apollo container. After updating, build the Hephaestus library with
 ```
 cd /opt/apollo/contrib/hephaestus/
 mkdir build
 cd build
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build -DMFEM_COMMON_INCLUDES=/opt/mfem/miniapps/common  ..
-make
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build ..
+ninja
 ```
 
 Apollo can then be built with the following commands from the top level `apollo` directory in either of the above containers:
-    make -j4 
-    make test -j4
+```
+make -j4 
+make test -j4
+```
 
-Running `make test` after `apollo` is built will run the entire set of tests found in `apollo/test`. Running a specific test (or tests) is possible by using the `apollo/run_tests` python script and using the `--re` command line argument to pass in a regular expression satisfied by the names of the tests you wish to run; for example:
+Running `make test` after Apollo is built will run the entire set of tests found in `apollo/test`. Running a specific test (or tests) is possible by using the `apollo/run_tests` python script and using the `--re` command line argument to pass in a regular expression satisfied by the names of the tests you wish to run; for example:
 ```
 /opt/apollo/run_tests --re=CoupledFONodalMFEMVar
 ```

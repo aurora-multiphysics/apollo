@@ -6,7 +6,6 @@
 
 [Problem]
   type = MFEMProblem
-  use_glvis = false
 []
 
 [Formulation]
@@ -15,7 +14,14 @@
   magnetic_reluctivity_name = magnetic_reluctivity
   magnetic_permeability_name = magnetic_permeability
   electric_conductivity_name = electrical_conductivity
+
+  electric_field_name = total_electric_field
+  current_density_name = total_current_density
   magnetic_flux_density_name = magnetic_flux_density
+  joule_heating_density_name = joule_heating_density
+
+  external_current_density_name = source_current_density
+  external_electric_field_name = source_electric_field
 []
 
 [FESpaces]
@@ -34,6 +40,11 @@
     fespace_type = RT
     order = CONSTANT
   []
+  [L2FESpace]
+    type = MFEMFESpace
+    fespace_type = L2
+    order = CONSTANT
+  []
 []
 
 [AuxVariables]
@@ -47,15 +58,27 @@
   []
   [source_current_density]
     type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [source_electric_field]
+    type = MFEMVariable
     fespace = HCurlFESpace
   []
-  [electric_potential]
+  [source_electric_potential]
     type = MFEMVariable
     fespace = H1FESpace
   []
-  [source_grad_potential]
-    type = MFEMVariable 
-    fespace = H1FESpace
+  [total_current_density]
+    type = MFEMVariable
+    fespace = HDivFESpace
+  []
+  [total_electric_field]
+    type = MFEMVariable
+    fespace = HCurlFESpace
+  []
+  [joule_heating_density]
+    type = MFEMVariable
+    fespace = L2FESpace
   []
 []
 
@@ -113,7 +136,7 @@
 [Coefficients]
   [CoilEConductivity]
     type = MFEMConstantCoefficient
-    value = 62.83185
+    value = 62.83185e-6
   []
   [CoilPermeability]
     type = MFEMConstantCoefficient
@@ -139,7 +162,7 @@
 
   [CoreEConductivity]
     type = MFEMConstantCoefficient
-    value = 62.83185e-6
+    value = 62.83185
   []
   [CorePermeability]
     type = MFEMConstantCoefficient
@@ -157,12 +180,12 @@
 []
 
 [Sources]
-  [SourcePotential]
+  [SourceCoil]
     type = MFEMOpenCoilSource
     total_current_coef = CurrentCoef
     source_current_density_gridfunction = source_current_density
-    source_potential_gridfunction = electric_potential
-    source_grad_potential = source_grad_potential
+    source_electric_field_gridfunction = source_electric_field
+    source_potential_gridfunction = source_electric_potential
     coil_in_boundary = 1
     coil_out_boundary = 2
     block = 1

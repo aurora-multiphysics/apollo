@@ -6,12 +6,14 @@ InputParameters
 MFEMScalarPotentialSource::validParams()
 {
   InputParameters params = MFEMSource::validParams();
+
+  params.addParam<UserObjectName>("source_potential_gridfunction",
+                                  "The gridfunction to store the scalar potential in the coil.");
+  params.addParam<UserObjectName>(
+      "source_grad_potential_gridfunction",
+      "The gridfunction to store the potential gradient of the current source.");
   params.addRequiredParam<std::string>(
-      "potential",
-      "Name of the potential used in the solver, necessary to find boundary conditions");
-  params.addRequiredParam<std::string>("grad_potential", "Name of the gradient of the potential.");
-  params.addRequiredParam<std::string>(
-      "conductivity", "Name of the conductivity coefficient associated with the potential.");
+      "conductivity_coef", "Name of the conductivity coefficient associated with the potential.");
   params.addRequiredParam<UserObjectName>("hcurl_fespace",
                                           "The H(Curl) FE space to use in the source.");
   params.addRequiredParam<UserObjectName>("h1_fespace", "The H1 FE space to use in the source.");
@@ -27,12 +29,12 @@ MFEMScalarPotentialSource::validParams()
 
 MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & parameters)
   : MFEMSource(parameters),
-    source_coef_name(std::string("source_") + getParam<std::string>("_object_name")),
-    potential_name(getParam<std::string>("potential")),
-    grad_potential_name(getParam<std::string>("grad_potential")),
-    conductivity_coef_name(getParam<std::string>("conductivity")),
-    hcurl_fespace(getUserObject<MFEMFESpace>("hcurl_fespace")),
-    h1_fespace(getUserObject<MFEMFESpace>("h1_fespace"))
+    _source_grad_potential_gridfunction(
+        getUserObject<MFEMVariable>("source_grad_potential_gridfunction")),
+    _source_potential_gridfunction(getUserObject<MFEMVariable>("source_potential_gridfunction")),
+    _conductivity_coef_name(getParam<std::string>("conductivity_coef")),
+    _hcurl_fespace(getUserObject<MFEMFESpace>("hcurl_fespace")),
+    _h1_fespace(getUserObject<MFEMFESpace>("h1_fespace"))
 {
   hephaestus::InputParameters _solver_options;
   EquationSystems & es = getParam<FEProblemBase *>("_fe_problem_base")->es();
@@ -47,14 +49,12 @@ MFEMScalarPotentialSource::MFEMScalarPotentialSource(const InputParameters & par
           : es.parameters.get<unsigned int>("linear solver maximum iterations"));
   _solver_options.SetParam("PrintLevel", -1);
 
-  hephaestus::InputParameters scalar_potential_source_params;
-  scalar_potential_source_params.SetParam("SourceName", source_coef_name);
-  scalar_potential_source_params.SetParam("PotentialName", potential_name);
-  scalar_potential_source_params.SetParam("GradPotentialName", grad_potential_name);
-  scalar_potential_source_params.SetParam("ConductivityCoefName", conductivity_coef_name);
-  scalar_potential_source_params.SetParam("HCurlFESpaceName", hcurl_fespace.name());
-  scalar_potential_source_params.SetParam("H1FESpaceName", h1_fespace.name());
-  scalar_potential_source_params.SetParam("SolverOptions", _solver_options);
-
-  _source = std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params);
+  _source = std::make_shared<hephaestus::ScalarPotentialSource>(
+      _source_grad_potential_gridfunction.name(),
+      _source_potential_gridfunction.name(),
+      _hcurl_fespace.name(),
+      _h1_fespace.name(),
+      _conductivity_coef_name,
+      -1,
+      _solver_options);
 }

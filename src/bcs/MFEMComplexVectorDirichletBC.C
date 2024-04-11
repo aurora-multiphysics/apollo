@@ -28,6 +28,6 @@ MFEMComplexVectorDirichletBC::MFEMComplexVectorDirichletBC(const InputParameters
   _boundary_condition =
       std::make_shared<hephaestus::VectorDirichletBC>(getParam<std::string>("variable"),
                                                       bdr_attr,
-                                                      _vec_coef_re->getVectorCoefficient(),
-                                                      _vec_coef_im->getVectorCoefficient());
+                                                      _vec_coef_re->getVectorCoefficient().get(),
+                                                      _vec_coef_im->getVectorCoefficient().get());
 }
