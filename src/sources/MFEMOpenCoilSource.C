@@ -22,6 +22,10 @@ MFEMOpenCoilSource::validParams()
       "total_current_coef",
       "The total current ($I$) flowing through the coil. May be time dependent.");
 
+  params.addParam<UserObjectName>(
+      "electrical_conductivity_coef",
+      "The electrical conductivity of the coil. May be time dependent.");
+
   params.addParam<BoundaryName>(
       "coil_in_boundary",
       "The boundary (id or name) from the mesh determinining the coil input terminal");
@@ -57,7 +61,7 @@ MFEMOpenCoilSource::MFEMOpenCoilSource(const InputParameters & parameters)
         getUserObject<MFEMVariable>("source_electric_field_gridfunction")),
     _source_potential_gridfunction(getUserObject<MFEMVariable>("source_potential_gridfunction")),
     _total_current_coef(getUserObject<MFEMCoefficient>("total_current_coef")),
-    _conductivity_coef_name(std::string("electrical_conductivity")),
+    _conductivity_coef(getUserObject<MFEMCoefficient>("electrical_conductivity_coef")),
     _solver_params({{"Tolerance", float(getParam<Real>("l_tol"))},
                     {"AbsTolerance", float(getParam<Real>("l_abs_tol"))},
                     {"MaxIter", getParam<unsigned int>("l_max_its")},
@@ -76,7 +80,7 @@ MFEMOpenCoilSource::MFEMOpenCoilSource(const InputParameters & parameters)
       _source_electric_field_gridfunction.name(),
       _source_potential_gridfunction.name(),
       _total_current_coef.name(),
-      _conductivity_coef_name,
+      _conductivity_coef.name(),
       _coil_domains,
       _electrodes,
       true,

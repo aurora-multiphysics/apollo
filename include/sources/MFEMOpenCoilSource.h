@@ -19,7 +19,7 @@ protected:
   const MFEMVariable & _source_electric_field_gridfunction;
   const MFEMVariable & _source_potential_gridfunction;
   const MFEMCoefficient & _total_current_coef;
-  const std::string _conductivity_coef_name;
+  const MFEMCoefficient & _conductivity_coef;
 
   const hephaestus::InputParameters _solver_params;
   mfem::Array<int> _coil_domains;
