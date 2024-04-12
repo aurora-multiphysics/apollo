@@ -162,18 +162,11 @@ protected:
   {
     using namespace hephaestus;
 
-    TimeDomainEquationSystemProblemBuilder * td_eqn_system_problem_builder{nullptr};
-    SteadyStateEquationSystemProblemBuilder * ss_eqn_system_problem_builder{nullptr};
+    EquationSystemProblemBuilderInterface * eqn_system_problem_builder{nullptr};
 
-    ProblemBuilder * problem_builder = mfem_problem_builder.get();
-
-    if ((td_eqn_system_problem_builder = dynamic_cast<TimeDomainEquationSystemProblemBuilder *>(problem_builder)))
+    if ((eqn_system_problem_builder = dynamic_cast<EquationSystemProblemBuilderInterface *>(mfem_problem_builder.get())))
     {
-      td_eqn_system_problem_builder->AddKernel(std::move(var_name), std::move(kernel));
-    }
-    else if ((ss_eqn_system_problem_builder = dynamic_cast<SteadyStateEquationSystemProblemBuilder *>(problem_builder)))
-    {
-      ss_eqn_system_problem_builder->AddKernel(std::move(var_name), std::move(kernel));
+      eqn_system_problem_builder->AddKernel(std::move(var_name), std::move(kernel));
     }
     else 
     {
