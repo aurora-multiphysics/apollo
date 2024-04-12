@@ -66,22 +66,8 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->SetCoefficients(_coefficients);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
-  mfem_problem_builder->RegisterFESpaces();
-  mfem_problem_builder->RegisterGridFunctions();
-  mfem_problem_builder->RegisterAuxSolvers();
-  mfem_problem_builder->RegisterCoefficients();
-  
-  mfem_problem_builder->InitializeKernels();
-  mfem_problem_builder->SetOperatorGridFunctions();
-
-  mfem_problem_builder->ConstructJacobianPreconditioner();
-  mfem_problem_builder->ConstructJacobianSolver();
-  mfem_problem_builder->ConstructNonlinearSolver();
-
-  mfem_problem_builder->ConstructState();
-  mfem_problem_builder->ConstructTimestepper();
-  mfem_problem_builder->InitializeAuxSolvers();
-  mfem_problem_builder->InitializeOutputs();
+  // NB: set to false to avoid reconstructing problem operator.
+  mfem_problem_builder->FinalizeProblem(false);
 
   hephaestus::InputParameters exec_params;
 
