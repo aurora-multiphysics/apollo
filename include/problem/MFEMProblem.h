@@ -154,6 +154,9 @@ protected:
   void setMOOSENodalVarData(MooseVariableFieldBase & moose_variable);
   void setMOOSEElementalVarData(MooseVariableFieldBase & moose_variable);
 
+  /**
+   * Template method for adding kernels. We can only add kernels using equation system problem builders.
+   */
   template <class T>
   void addKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
