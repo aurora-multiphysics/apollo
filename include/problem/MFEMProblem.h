@@ -154,6 +154,26 @@ protected:
   void setMOOSENodalVarData(MooseVariableFieldBase & moose_variable);
   void setMOOSEElementalVarData(MooseVariableFieldBase & moose_variable);
 
+  /**
+   * Template method for adding kernels. We can only add kernels using equation system problem builders.
+   */
+  template <class T>
+  void addKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
+  {
+    using namespace hephaestus;
+
+    EquationSystemProblemBuilderInterface * eqn_system_problem_builder{nullptr};
+
+    if ((eqn_system_problem_builder = dynamic_cast<EquationSystemProblemBuilderInterface *>(mfem_problem_builder.get())))
+    {
+      eqn_system_problem_builder->AddKernel(std::move(var_name), std::move(kernel));
+    }
+    else 
+    {
+      mooseError("Cannot add kernel with name '" + var_name + "' because there is no equation system.");
+    }
+  }
+
   std::string _input_mesh;
   std::string _formulation_name;
   int _order;
@@ -165,6 +185,6 @@ protected:
 
   std::shared_ptr<hephaestus::ProblemBuilder> mfem_problem_builder{nullptr};
 
-  std::unique_ptr<hephaestus::Problem> mfem_problem;
-  std::unique_ptr<hephaestus::Executioner> executioner;
+  std::unique_ptr<hephaestus::Problem> mfem_problem{nullptr};
+  std::unique_ptr<hephaestus::Executioner> executioner{nullptr};
 };
