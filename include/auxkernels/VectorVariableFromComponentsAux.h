@@ -19,7 +19,7 @@ protected:
   MooseVariable & _component_y;
   MooseVariable & _component_z;
 
-  const Order & _vector_order;
+  const Order _vector_order;
   const FEFamily _vector_family;
 
 private:
