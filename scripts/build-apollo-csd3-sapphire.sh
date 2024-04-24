@@ -10,6 +10,12 @@
 #SBATCH --exclusive
 . /etc/profile.d/modules.sh  
 
+#TODO:
+# - Remove xdr requirement from moose/scripts/configure_libmesh
+# - Resolve yaml and hit failures in MOOSE test builds
+# - Resolve build errors linking hephaestus tests when using intel compilers
+# - Split SuperLU_dist build out into separate method
+
 function load_modules() {
     module purge
     module load rhel8/default-icl cmake
@@ -47,6 +53,7 @@ function load_modules() {
     export PATH=${BUILD_PATH}:${PATH}
 
     cd ${WORKDIR}
+
     #Need to set some compiler flags via config file"
     echo "-std=c++17" >> icpx.cfg
     echo "-Wno-tautological-constant-compare" >> icpx.cfg
@@ -140,10 +147,6 @@ function build_moose() {
     # if [ -d "$WORKDIR/moose" ] ; then
     #    return
     # fi
-    #remove xdr requirement from libmesh build
-#    _build_mpich33
-    # load_modules
-    #build_vtk_git
     cd $WORKDIR
     git clone https://github.com/idaholab/moose
     cd moose
@@ -192,8 +195,7 @@ function build_moose() {
     export I_MPI_F90=ifx
     export I_MPI_F77=ifx
     export I_MPI_C=icx
-    # TODO: remove xdr requirement from libmesh build
-
+  
     ./configure --with-derivative-size=200 --with-ad-indexing-type=global
     METHODS='opt' ./scripts/update_and_rebuild_wasp.sh
     cd framework
@@ -283,8 +285,3 @@ build_moose
 build_gslib
 build_mfem
 build_apollo
-
-
-
-#libmesh -remove patch and enable xdr from moose/scripts/configure_libmesh
-#hephaestus tests fail to build
