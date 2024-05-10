@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=20
-#SBATCH --time=04:00:00
+#SBATCH --time=01:30:00
 #SBATCH --mail-type=none
 #SBATCH -p sapphire
 #SBATCH -A UKAEA-AP001-CPU
@@ -9,12 +9,6 @@
 #SBATCH -o out_%j_%A_%a
 #SBATCH --exclusive
 . /etc/profile.d/modules.sh  
-
-#TODO:
-# - Remove xdr requirement from moose/scripts/configure_libmesh
-# - Resolve yaml and hit failures in MOOSE test builds
-# - Resolve build errors linking hephaestus tests when using intel compilers
-# - Split SuperLU_dist build out into separate method
 
 function load_modules() {
     module purge
@@ -47,13 +41,11 @@ function load_modules() {
     PETSC_INSTALL_DIR=${BUILD_PATH}/petsc
 
     MOOSE_COMMIT=4e99faf9804480e7be302895ff9b8ded5b9944ea
-
-    APOLLO_COMMIT=6d3f2edd1792e0538490231de12935b4b5d4ff24
+    APOLLO_COMMIT=master
 
     export PATH=${BUILD_PATH}:${PATH}
 
     cd ${WORKDIR}
-
     #Need to set some compiler flags via config file"
     echo "-std=c++17" >> icpx.cfg
     echo "-Wno-tautological-constant-compare" >> icpx.cfg
@@ -71,7 +63,7 @@ function load_modules() {
     export I_MPI_F77=ifx  
 }
 
-function _build_hdf5() {
+function build_hdf5() {
     cd ${WORKDIR}
     mkdir -p ${HDF5_DIR_NAME} || { echo "Failed to create ${HDF5_DIR_NAME}" ; exit 1 ; }
 
@@ -95,14 +87,14 @@ function _build_hdf5() {
     echo "HDF5 built" 
 }
 
-function _build_petsc() {
+function download_superlu_dist() {
     cd $WORKDIR
-    # echo "Downloading SuperLU_dist"
-    # curl -kLJO https://github.com/xiaoyeli/superlu_dist/archive/refs/tags/v8.1.0.tar.gz
-    # curl -kLJO https://github.com/xiaoyeli/superlu_dist/archive/refs/tags/v8.1.0.tar.gz
-    # if [ -d "$WORKDIR/petsc" ] ; then
-    #    return
-    # fi
+    echo "Downloading SuperLU_dist"
+    curl -kLJO https://github.com/xiaoyeli/superlu_dist/archive/refs/tags/v8.1.0.tar.gz
+}
+
+function build_petsc() {
+    cd $WORKDIR
     mkdir -p petsc
     cd petsc
     curl -kL -O http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.19.3.tar.gz
@@ -141,13 +133,18 @@ function _build_petsc() {
     export PETSC_DIR=$WORKDIR/petsc
 }
 
+function build_libtirpc() {
+    # Build libtirpc (libmesh dependency)
+    wget https://sourceforge.net/projects/libtirpc/files/libtirpc/1.3.3/libtirpc-1.3.3.tar.bz2 -O- | tar -xj
+    mkdir libtirpc
+    mv libtirpc-* libtirpc/build
+    cd libtirpc/build
+    ./configure --prefix=$WORKDIR/libtirpc --disable-gssapi --disable-static && make && make install
+}
+
 function build_moose() {
     export MOOSE_JOBS=32
     cd $WORKDIR 
-    # if [ -d "$WORKDIR/moose" ] ; then
-    #    return
-    # fi
-    cd $WORKDIR
     git clone https://github.com/idaholab/moose
     cd moose
     git checkout ${MOOSE_COMMIT} || { echo "Checkout failed" ; exit 1 ; }
@@ -165,24 +162,8 @@ function build_moose() {
     export I_MPI_F77=ifort
     export I_MPI_C=icc
 
-    # echo "diff --git a/scripts/update_and_rebuild_libmesh.sh b/scripts/update_and_rebuild_libmesh.sh
-    # index e49933bb68..b4d4159843 100755
-    # --- a/scripts/update_and_rebuild_libmesh.sh
-    # +++ b/scripts/update_and_rebuild_libmesh.sh
-    # @@ -157,6 +157,11 @@ if [ -z \"\$go_fast\" ]; then
-    # SRC_DIR=\${SCRIPT_DIR}/../libmesh configure_libmesh \$DISABLE_TIMESTAMPS \\
-    #                                                     \$VTK_OPTIONS \\
-    #                                                     \$* | tee -a \"\$SCRIPT_DIR/\$DIAGNOSTIC_LOG\" || exit 1
-    # +  export I_MPI_CXX=icpx
-    # +  export I_MPI_FC=ifx
-    # +  export I_MPI_F90=ifx
-    # +  export I_MPI_F77=ifx
-    # +  export I_MPI_C=icx
-    # else
-    # # The build directory must already exist: you can't do --fast for
-    # # an initial build." > moose.patch
-
-    # git apply moose.patch || { echo "Patch failed" ; exit 1 ; }
+    export CPPFLAGS=-I$WORKDIR/libtirpc/include/tirpc
+    export LDFLAGS=-L$WORKDIR/libtirpc/lib
 
     ./scripts/update_and_rebuild_libmesh.sh \
         --with-cxx-std=2017 \
@@ -195,7 +176,7 @@ function build_moose() {
     export I_MPI_F90=ifx
     export I_MPI_F77=ifx
     export I_MPI_C=icx
-  
+
     ./configure --with-derivative-size=200 --with-ad-indexing-type=global
     METHODS='opt' ./scripts/update_and_rebuild_wasp.sh
     cd framework
@@ -223,9 +204,6 @@ function build_gslib() {
 
 function build_mfem() {
     cd $WORKDIR
-    # if [ -d "$WORKDIR/mfem" ] ; then
-    #    return
-    # fi
     git clone https://github.com/Heinrich-BR/mfem.git
     cd mfem
     git checkout SubmeshBoundary
@@ -260,27 +238,24 @@ function build_mfem() {
 
 function build_apollo() {
     cd $WORKDIR
-    # if [ -d "$WORKDIR/apollo" ] ; then
-    #    return
-    # fi
-
     git clone https://github.com/aurora-multiphysics/apollo.git
     cd apollo
     git checkout ${APOLLO_COMMIT}
     git submodule update --init --recursive
     cd contrib/hephaestus/
-    # git checkout master
     mkdir build
     cd build
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build ..
-    ninja
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build -DCMAKE_CATCH_DISCOVER_TESTS_DISCOVERY_MODE=PRE_TEST ..
+    ninja 
     cd /$WORKDIR/apollo
     make -j"$compile_cores"
 }
 
 load_modules
-_build_hdf5
-_build_petsc
+build_hdf5
+download_superlu_dist
+build_petsc
+build_libtirpc
 build_moose
 build_gslib
 build_mfem
