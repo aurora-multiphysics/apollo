@@ -203,7 +203,8 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
       break;
   }
 
-  auto params = _factory.getValidParams(aux_kernel_name);
+  // NB: we need to use the correct factory!
+  auto params = problem.getMooseApp().getFactory().getValidParams(aux_kernel_name);
 
   params.set<AuxVariableName>("variable") = vector_name;
   params.set<std::vector<VariableName>>("component_x") = {
@@ -217,7 +218,6 @@ AddVectorTransferAction::addVectorAuxKernel(FEProblemBase & problem,
   // will be triggered in the template transfer class which wraps around the existing transfer
   // class.
   params.set<ExecFlagEnum>("execute_on") = exec_flag;
-
   problem.addAuxKernel(aux_kernel_name, unique_aux_kernel_name, params);
 }
 
