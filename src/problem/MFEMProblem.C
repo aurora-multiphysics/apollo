@@ -66,22 +66,8 @@ MFEMProblem::initialSetup()
   mfem_problem_builder->SetCoefficients(_coefficients);
   mfem_problem_builder->SetSolverOptions(_solver_options);
 
-  mfem_problem_builder->RegisterFESpaces();
-  mfem_problem_builder->RegisterGridFunctions();
-  mfem_problem_builder->RegisterAuxSolvers();
-  mfem_problem_builder->RegisterCoefficients();
-
-  mfem_problem_builder->InitializeKernels();
-  mfem_problem_builder->SetOperatorGridFunctions();
-
-  mfem_problem_builder->ConstructJacobianPreconditioner();
-  mfem_problem_builder->ConstructJacobianSolver();
-  mfem_problem_builder->ConstructNonlinearSolver();
-
-  mfem_problem_builder->ConstructState();
-  mfem_problem_builder->ConstructTimestepper();
-  mfem_problem_builder->InitializeAuxSolvers();
-  mfem_problem_builder->InitializeOutputs();
+  // NB: set to false to avoid reconstructing problem operator.
+  mfem_problem_builder->FinalizeProblem(false);
 
   hephaestus::InputParameters exec_params;
 
@@ -102,7 +88,7 @@ MFEMProblem::initialSetup()
     exec_params.SetParam("EndTime", float(_moose_executioner->endTime()));
     exec_params.SetParam("VisualisationSteps", getParam<int>("vis_steps"));
     exec_params.SetParam("Problem",
-                         dynamic_cast<hephaestus::TimeDomainProblem *>(mfem_problem.get()));
+                         static_cast<hephaestus::TimeDomainProblem *>(mfem_problem.get()));
 
     executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
   }
@@ -118,7 +104,7 @@ MFEMProblem::initialSetup()
     mfem_problem = mfem_steady_problem_builder->ReturnProblem();
 
     exec_params.SetParam("Problem",
-                         dynamic_cast<hephaestus::SteadyStateProblem *>(mfem_problem.get()));
+                         static_cast<hephaestus::SteadyStateProblem *>(mfem_problem.get()));
 
     executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
   }
@@ -165,7 +151,6 @@ MFEMProblem::setFormulation(const std::string & user_object_name,
 
   mfem_problem_builder->SetMesh(std::make_shared<mfem::ParMesh>(mfem_par_mesh));
   mfem_problem_builder->ConstructOperator();
-  mfem_problem_builder->ConstructEquationSystem();
 }
 
 void
@@ -278,14 +263,13 @@ MFEMProblem::addKernel(const std::string & kernel_name,
   if (dynamic_cast<const MFEMLinearFormKernel *>(kernel) != nullptr)
   {
     MFEMLinearFormKernel * lf_kernel(&getUserObject<MFEMLinearFormKernel>(name));
-    mfem_problem_builder->AddKernel<mfem::ParLinearForm>(parameters.get<std::string>("variable"),
-                                                         lf_kernel->getKernel());
+    addKernel<mfem::ParLinearForm>(parameters.get<std::string>("variable"), lf_kernel->getKernel());
   }
   else if (dynamic_cast<const MFEMBilinearFormKernel *>(kernel) != nullptr)
   {
     MFEMBilinearFormKernel * blf_kernel(&getUserObject<MFEMBilinearFormKernel>(name));
-    mfem_problem_builder->AddKernel<mfem::ParBilinearForm>(parameters.get<std::string>("variable"),
-                                                           blf_kernel->getKernel());
+    addKernel<mfem::ParBilinearForm>(parameters.get<std::string>("variable"),
+                                     blf_kernel->getKernel());
   }
   else
   {
@@ -305,7 +289,6 @@ MFEMProblem::addAuxKernel(const std::string & kernel_name,
     FEProblemBase::addUserObject(kernel_name, name, parameters);
     MFEMAuxSolver * mfem_auxsolver(&getUserObject<MFEMAuxSolver>(name));
 
-    // NB: - set own_data = false to prevent double-free.
     mfem_problem_builder->AddPostprocessor(name, mfem_auxsolver->getAuxSolver());
     mfem_auxsolver->storeCoefficients(_coefficients);
   }
