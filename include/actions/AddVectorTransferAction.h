@@ -123,7 +123,8 @@ protected:
   /**
    * Creates the FEType of a variable corresponding to a component of a vector variable.
    */
-  InputParameters buildInputParametersForComponents(MooseVariableFEBase & vector_variable) const;
+  InputParameters buildInputParametersForComponents(FEProblemBase & problem,
+                                                    MooseVariableFEBase & vector_variable) const;
 
   /**
    * Check whether the variable is a vector variable of the supported family/order.

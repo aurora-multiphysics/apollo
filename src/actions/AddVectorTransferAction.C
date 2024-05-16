@@ -418,7 +418,7 @@ AddVectorTransferAction::buildVectorComponents(FEProblemBase & problem,
     else
     {
       // Attempt to add the auxiliary variable.
-      auto component_parameters = buildInputParametersForComponents(vector_variable);
+      auto component_parameters = buildInputParametersForComponents(problem, vector_variable);
 
       problem.addAuxVariable("MooseVariable", component_name, component_parameters);
     }
@@ -451,6 +451,7 @@ AddVectorTransferAction::buildVectorComponentExtension(VectorComponent component
 
 InputParameters
 AddVectorTransferAction::buildInputParametersForComponents(
+  FEProblemBase & problem,
     MooseVariableFEBase & vector_variable) const
 {
   if (!isSupportedVectorVariable(vector_variable))
@@ -461,7 +462,7 @@ AddVectorTransferAction::buildInputParametersForComponents(
   const auto vector_order = getVariableOrder(vector_variable);
   const auto vector_family = getVariableFamily(vector_variable);
 
-  InputParameters params = _factory.getValidParams("MooseVariable");
+  InputParameters params = problem.getMooseApp().getFactory().getValidParams("MooseVariable");
 
   // Should be same order as vector variable but obviously of a different family.
   params.set<MooseEnum>("order") = Utility::enum_to_string<Order>(OrderWrapper{vector_order});
