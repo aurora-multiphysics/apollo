@@ -16,7 +16,7 @@ public:
 
 protected:
   /**
-   * Non-writable references to component variables.
+   * Non-writable references to the component variables.
    */
   const MooseVariable & _component_x;
   const MooseVariable & _component_y;
