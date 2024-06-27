@@ -77,6 +77,18 @@
   []
 []
 
+[AuxKernels]
+  [LineSampler]
+    type = MFEMLineSamplerAux
+    filename = 'bfield.csv'
+    variable = magnetic_flux_density_real
+    num_points = 100
+    start_point = '0.09 0.072 0.034'
+    end_point = '0.1 0.072 0.034'
+    header = 't (s), x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)'
+  []
+[]
+
 [Sources]
   [SourceCoil]
     type = MFEMClosedCoilSource
