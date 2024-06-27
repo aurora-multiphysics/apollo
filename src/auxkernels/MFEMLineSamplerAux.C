@@ -33,7 +33,7 @@ MFEMLineSamplerAux::MFEMLineSamplerAux(const InputParameters & parameters)
                                                      getParam<std::string>("filename"),
                                                      getParam<std::string>("header"))}
 {
-  _line_sampler_aux->SetPriority(10);
+  _line_sampler_aux->SetPriority(99);
 }
 
 MFEMLineSamplerAux::~MFEMLineSamplerAux() {}
