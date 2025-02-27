@@ -27,4 +27,12 @@
     csvdiff = 'monomial_vector_variable_to_components_aux_out.csv'
     requirement = 'Apollo shall have the ability to extract the components from a constant-order Monomial vector variable.'
   []
+
+  [./TimeAverageJouleHeatingAux]
+  type = 'CSVDiff'
+  input = 'TimeAverageJouleHeatingAux.i'
+  csvdiff = 'time_average_joule_heating_aux_out.csv'
+  requirement = 'Apollo shall have the ability to compute time-averaged Joule heating as a heat source.'
+[]
+
 []
