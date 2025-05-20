@@ -60,13 +60,13 @@
     type = ParsedFunction
     value = cos(2.0*pi*freq*t)
     vars = 'freq'
-    vals = '0.01666667'
+    vals = '100000'
   []
   [potential_low]
     type = ParsedFunction
     value = -cos(2.0*pi*freq*t)
     vars = 'freq'
-    vals = '0.01666667'
+    vals = '100000'
   []
   [cu-ohfc-rx]
     type = ADPiecewiseLinear
@@ -158,6 +158,8 @@
 
   [average_joule_heating_aux]
     type = MFEMTimeAverageJouleHeatingAux
+    time_step = 2.5e-7
+    skip = 2.5e-7
   []
  
 []
@@ -226,9 +228,9 @@
 
 [Executioner]
   type = Transient
-  dt = 0.25
+  dt = 2.5e-7
   start_time = 0.0
-  end_time = 1.0
+  end_time = 1e-4
 
   l_tol = 1e-16
   l_max_its = 100
@@ -237,6 +239,6 @@
 [Outputs]
   [ParaViewDataCollection]
     type = MFEMParaViewDataCollection
-    file_base = ../inputs/Data
+    file_base = ./inputs/Data
   []
 []

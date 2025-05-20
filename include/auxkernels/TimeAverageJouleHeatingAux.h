@@ -10,14 +10,21 @@ private:
   mfem::ParGridFunction * avg_joule_heating_gf{nullptr};
 
   std::string conductivity_coef_name;
+  
+  double time_step;
+  double skip;
+
   double current_time{0.0};
-  double time_step{0.0};
   double start_time{0.0};
+  
 
 public:
   TimeAverageJouleHeatingCoefficient(const hephaestus::InputParameters & params)
     : hephaestus::CoupledCoefficient(params),
-      conductivity_coef_name(params.GetParam<std::string>("ConductivityCoefName"))
+      conductivity_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
+      time_step(params.GetParam<double>("time_step")),
+      skip(params.GetParam<double>("skip"))
+
   {}
 
   void Init(const hephaestus::GridFunctions & variables, hephaestus::Coefficients & coefficients)
@@ -38,18 +45,19 @@ public:
     double thisSigma = sigma->Eval(T, ip);
 
     double joule_heat = thisSigma * (E * E);
+    //  return thisSigma * (E * E);
 
     double previous_avg = avg_joule_heating_gf->GetValue(T, ip);
-    double weight = (current_time > start_time + 1e-20) ? (time_step / (current_time - start_time + time_step)) : 1.0;
-    double avg_joule_heat = (1 - weight) * previous_avg + weight * joule_heat;
+    double weight = (current_time > skip) ? (time_step / (current_time - skip)) : 0.0;
+    double avg_joule_heat = (1.0 - weight) * previous_avg + weight * joule_heat;
 
+    // return avg_joule_heat;
     return avg_joule_heat;
   }
 
-  void Solve(double t, double dt)
+  void Solve(double t)
   {
     current_time = t;
-    time_step = dt;
     this->SetTime(t);
     avg_joule_heating_gf->ProjectCoefficient(*this);
   }
