@@ -1,3 +1,8 @@
+# Archival Notice
+Apollo has now been archived following the addition of MFEM support and MFEM-based electromagnetics examples to the core MOOSE framework. EM-relevant capabilities previously enabled through Apollo are now accessible from the core MOOSE framework, and development has now moved to the main MOOSE repository. Interested users can find out how to get started with MFEM-based electromagnetics simulations in MOOSE from https://mooseframework.inl.gov/syntax/MFEM/index.html.
+
+This repository is no longer being actively updated; the following is left for reference for historic users.
+ 
 # Apollo
 Apollo is a MOOSE-based application created for the scalable solution of finite element electromagnetics problems using the MFEM-based library Hephaestus, as part of the Aurora multiphysics package.
 
