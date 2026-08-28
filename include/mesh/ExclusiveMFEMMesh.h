@@ -24,7 +24,7 @@
 #include "libmesh/numeric_vector.h"
 #include "libmesh/system.h"
 #include "libmesh/vtk_io.h"
-#include "mfem.hpp"
+#include "hephaestus.hpp"
 
 /**
  * ExclusiveMFEMMesh
@@ -92,4 +92,7 @@ protected:
    */
   std::shared_ptr<MFEMMesh> _mfem_mesh;
   std::shared_ptr<MFEMParMesh> _mfem_par_mesh;
+  mfem::H1_FECollection default_nodal_fecoll;
+  std::shared_ptr<mfem::ParFiniteElementSpace> default_nodal_fespace{nullptr};
+  // std::shared_ptr<mfem::ParFiniteElementSpace> default_nodal_fespace(pmesh.get(), &fecm, 3);
 };

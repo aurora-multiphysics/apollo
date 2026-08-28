@@ -438,6 +438,9 @@ CoupledMFEMMesh::buildMFEMParMesh()
   convertSerialDofMappingsToParallel(*_mfem_mesh.get(), *_mfem_par_mesh.get());
 
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
+  default_nodal_fespace =
+      std::make_shared<mfem::ParFiniteElementSpace>(_mfem_par_mesh.get(), &default_nodal_fecoll, 3);
+  _mfem_par_mesh->SetNodalFESpace(default_nodal_fespace.get());  
 }
 
 void

@@ -18,7 +18,10 @@ ExclusiveMFEMMesh::validParams()
   return params;
 }
 
-ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters & parameters) : FileMesh(parameters) {}
+ExclusiveMFEMMesh::ExclusiveMFEMMesh(const InputParameters & parameters)
+  : FileMesh(parameters), default_nodal_fecoll(1, 3)
+{
+}
 
 ExclusiveMFEMMesh::~ExclusiveMFEMMesh() {}
 
@@ -62,6 +65,9 @@ ExclusiveMFEMMesh::buildMFEMParMesh()
 {
   _mfem_par_mesh = std::make_shared<MFEMParMesh>(MPI_COMM_WORLD, getMFEMMesh());
   _mfem_mesh.reset(); // Lower reference count of serial mesh since no longer needed.
+  default_nodal_fespace =
+      std::make_shared<mfem::ParFiniteElementSpace>(_mfem_par_mesh.get(), &default_nodal_fecoll, 3);
+  _mfem_par_mesh->SetNodalFESpace(default_nodal_fespace.get());
 }
 
 MFEMMesh &
