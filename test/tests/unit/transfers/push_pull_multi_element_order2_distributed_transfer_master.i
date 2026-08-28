@@ -48,7 +48,7 @@
   [sub_app]
     type = TransientMultiApp
     positions = '0 0 0'
-    input_files = 'push_pull_multi_element_order2_transfer_sub_app.i'
+    input_files = 'push_pull_multi_element_order2_distributed_transfer_sub_app.i'
     execute_on = timestep_begin
   []
 []

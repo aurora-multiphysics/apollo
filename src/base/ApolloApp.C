@@ -3,6 +3,9 @@
 #include "AppFactory.h"
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
+#include "Transfer.h"
+#include "MultiAppTransfer.h"
+#include "MultiAppCopyTransfer.h"
 
 InputParameters
 ApolloApp::validParams()
@@ -63,6 +66,13 @@ associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
   addTaskDependency("add_elemental_field_variable", "add_mfem_fespaces");
   addTaskDependency("add_kernel", "add_mfem_fespaces");
   addTaskDependency("add_mfem_sources", "add_mfem_fespaces");
+
+  // Custom vector transfer
+  registerSyntaxTask("AddVectorTransferAction", "VectorTransfers/*", "add_vector_transfer");
+  registerMooseObjectTask("add_vector_transfer", Transfer, false);
+  appendMooseObjectTask("add_vector_transfer", MultiAppTransfer);
+  appendMooseObjectTask("add_vector_transfer", MultiAppCopyTransfer);
+  addTaskDependency("add_transfer", "add_vector_transfer");
 }
 
 void
